@@ -63,20 +63,80 @@ function listSourceFiles(dir) {
   return out
 }
 
-/** Relative runtime imports only. Type-only imports and packages are irrelevant to the bundle. */
-function relativeImports(source) {
-  const specifiers = []
-  const pattern = /(?:^|\n)\s*(?:import|export)\s+([\s\S]*?)from\s*['"](\.[^'"]*)['"]/g
-  for (const match of source.matchAll(pattern)) {
-    const clause = match[1]
-    if (/^\s*type\s/.test(clause)) continue
-    specifiers.push(match[2])
+/**
+ * Blanks out comments while preserving offsets and every string literal, so the import patterns
+ * below cannot be fooled by `// import x from './shells/store'` or by a block comment sitting
+ * inside an import clause. Scanning character by character is what keeps `'http://example.com'`
+ * from being mistaken for a line comment.
+ */
+function stripComments(source) {
+  let out = ''
+  let index = 0
+  while (index < source.length) {
+    const char = source[index]
+    const next = source[index + 1]
+    if (char === '/' && next === '/') {
+      while (index < source.length && source[index] !== '\n') {
+        out += ' '
+        index += 1
+      }
+      continue
+    }
+    if (char === '/' && next === '*') {
+      while (index < source.length && !(source[index] === '*' && source[index + 1] === '/')) {
+        out += source[index] === '\n' ? '\n' : ' '
+        index += 1
+      }
+      out += '  '
+      index += 2
+      continue
+    }
+    if (char === "'" || char === '"' || char === '`') {
+      const quote = char
+      out += char
+      index += 1
+      while (index < source.length && source[index] !== quote) {
+        if (source[index] === '\\') {
+          out += source.slice(index, index + 2)
+          index += 2
+          continue
+        }
+        out += source[index]
+        index += 1
+      }
+      out += source[index] ?? ''
+      index += 1
+      continue
+    }
+    out += char
+    index += 1
+  }
+  return out
+}
+
+/**
+ * Relative runtime imports only, tagged with whether they are dynamic. Type-only imports and
+ * package imports are irrelevant to the bundle. The clause pattern stops at the next top-level
+ * `import`/`export` so a statement like `export type X = { from: string }` cannot swallow the
+ * import that follows it and hide a real shell dependency.
+ */
+function relativeImports(rawSource) {
+  const source = stripComments(rawSource)
+  const found = []
+  const clausePattern = /(?:^|\n)\s*(?:import|export)\s+((?:(?!\n\s*(?:import|export)\b)[\s\S])*?)from\s*['"](\.[^'"]*)['"]/g
+  for (const match of source.matchAll(clausePattern)) {
+    if (/^\s*type\s/.test(match[1])) continue
+    found.push({ specifier: match[2], isDynamic: false })
   }
   // Bare side-effect imports: `import './thing'`
-  for (const match of source.matchAll(/(?:^|\n)\s*import\s*['"](\.[^'"]*)['"]/g)) specifiers.push(match[1])
+  for (const match of source.matchAll(/(?:^|\n)\s*import\s*['"](\.[^'"]*)['"]/g)) {
+    found.push({ specifier: match[1], isDynamic: false })
+  }
   // Dynamic imports, including the lazy() form.
-  for (const match of source.matchAll(/import\(\s*['"](\.[^'"]*)['"]\s*\)/g)) specifiers.push(match[1])
-  return specifiers
+  for (const match of source.matchAll(/import\(\s*['"](\.[^'"]*)['"]\s*\)/g)) {
+    found.push({ specifier: match[1], isDynamic: true })
+  }
+  return found
 }
 
 function resolveImport(fromFile, specifier) {
@@ -123,11 +183,13 @@ function findViolations(files, dir) {
     while (queue.length) {
       const chain = queue.shift()
       const current = chain[chain.length - 1]
-      for (const specifier of relativeImports(sources.get(current) ?? '')) {
+      for (const { specifier, isDynamic } of relativeImports(sources.get(current) ?? '')) {
         const target = resolveImport(current, specifier)
         if (!target || !sources.has(target)) continue
         if (isShellFile(target, dir)) {
-          if (relative(dir, current) === AUTHORIZED_SHELL_IMPORTER) continue
+          // App.tsx may reference the shell, but only through a dynamic import: a static one
+          // would pull the whole shell tree into the bundle that every visitor downloads.
+          if (relative(dir, current) === AUTHORIZED_SHELL_IMPORTER && isDynamic) continue
           const key = `${relative(dir, root)} -> ${relative(dir, target)}`
           if (reported.has(key)) continue
           reported.add(key)

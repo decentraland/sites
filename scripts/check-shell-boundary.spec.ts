@@ -124,6 +124,79 @@ describe('when checking the dual-shell import boundary', () => {
     })
   })
 
+  describe('and a statement before the import ends in a `from` property', () => {
+    beforeEach(() => {
+      write(
+        'pages/index.tsx',
+        "export type NavState = { from: string }\nimport { store } from '../shells/store'\nexport const Home = () => store\n"
+      )
+    })
+
+    it('should still see the import that follows it', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(1)
+      expect(result.stdout).toContain('shells/store.ts')
+    })
+  })
+
+  describe('and an import clause carries a block comment', () => {
+    beforeEach(() => {
+      write('pages/index.tsx', "import { /* export type noise */ store } from '../shells/store'\nexport const Home = () => store\n")
+    })
+
+    it('should not let the comment hide the import', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(1)
+      expect(result.stdout).toContain('shells/store.ts')
+    })
+  })
+
+  describe('and a shell import is commented out', () => {
+    beforeEach(() => {
+      write('pages/index.tsx', "// import { store } from '../shells/store'\nexport const Home = () => null\n")
+    })
+
+    it('should exit 0 because commented code never runs', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(0)
+    })
+  })
+
+  describe('and a string literal looks like a comment', () => {
+    beforeEach(() => {
+      write(
+        'pages/index.tsx',
+        "const url = 'https://example.com'\nimport { store } from '../shells/store'\nexport const Home = () => [url, store]\n"
+      )
+    })
+
+    it('should not treat the double slash inside the string as a comment', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(1)
+      expect(result.stdout).toContain('shells/store.ts')
+    })
+  })
+
+  describe('and App.tsx imports the shell statically', () => {
+    beforeEach(() => {
+      write('App.tsx', "import { store } from './shells/store'\nexport const App = () => store\n")
+    })
+
+    it('should exit 1 because a static import lands in the initial bundle', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(1)
+      expect(result.stdout).toContain('App.tsx')
+      expect(result.stdout).toContain('shells/store.ts')
+    })
+  })
+
+  describe('and App.tsx imports the shell through lazy', () => {
+    it('should exit 0 because the dynamic import is the authorized split point', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(0)
+    })
+  })
+
   describe('and the source directory does not exist', () => {
     it('should exit 2 with a usage error', () => {
       const result = runCheck(join(dir, 'missing'))
