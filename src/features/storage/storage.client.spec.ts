@@ -268,3 +268,31 @@ describe('storage.client endpoints', () => {
     })
   })
 })
+
+describe('when two accounts read the same storage realm and position', () => {
+  let store: ReturnType<typeof setupStore>
+  let otherIdentity: typeof identity
+
+  beforeEach(() => {
+    signedFetchMock.mockReset()
+    store = setupStore()
+    otherIdentity = { ...identity, authChain: [{ type: 'SIGNER', payload: '0xother', signature: '' }] } as typeof identity
+    signedFetchMock
+      .mockResolvedValueOnce(makeResponse({ data: ['PRIVATE_KEY'] }))
+      .mockResolvedValueOnce(makeResponse('denied', { status: 403 }))
+  })
+
+  afterEach(() => {
+    store.dispatch(storageClient.util.resetApiState())
+    jest.resetAllMocks()
+  })
+
+  it('should check the second account permissions without serving the first account keys', async () => {
+    await store.dispatch(storageEndpoints.endpoints.listEnvKeys.initiate({ identity, ...ctx })).unwrap()
+    await expect(
+      store.dispatch(storageEndpoints.endpoints.listEnvKeys.initiate({ identity: otherIdentity, ...ctx })).unwrap()
+    ).rejects.toMatchObject({ status: 403 })
+    expect(storageEndpoints.endpoints.listEnvKeys.select({ identity: otherIdentity, ...ctx })(store.getState()).data).toBeUndefined()
+    expect(signedFetchMock).toHaveBeenCalledTimes(2)
+  })
+})

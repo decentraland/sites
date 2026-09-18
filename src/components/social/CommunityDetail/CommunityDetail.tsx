@@ -41,7 +41,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
   const shouldFetchMembersAndEvents = !isPrivate || member
 
   const shouldFetchRequests = isLoggedIn && !!address && isPrivate && !member
-  const { data: memberRequestsData, isLoading: isLoadingMemberRequests } = useGetMemberRequestsQuery(
+  const { currentData: memberRequestsData, isLoading: isLoadingMemberRequests } = useGetMemberRequestsQuery(
     { address: address ?? '', type: RequestType.REQUEST_TO_JOIN },
     { skip: !shouldFetchRequests }
   )
@@ -77,7 +77,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
     async (communityId: string) => {
       if (!isLoggedIn || !address) return
       try {
-        await joinCommunity(communityId).unwrap()
+        await joinCommunity({ id: communityId, account: address.toLowerCase() }).unwrap()
         setErrorKind(null)
       } catch (err) {
         // Log raw error for debugging; surface a generic message via i18n (rule 10).

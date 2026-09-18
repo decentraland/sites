@@ -16,7 +16,7 @@ const PAGE_SIZE = 4
 function Upcoming() {
   const { t } = useTranslation()
   const { identity } = useAuthIdentity()
-  const { data: events = [] } = useGetUpcomingEventsQuery(identity ? { identity } : undefined)
+  const { currentData: events = [] } = useGetUpcomingEventsQuery(identity ? { identity } : undefined)
   const [activePage, setActivePage] = useState(0)
   const { closeEventDetailModal, editActiveEvent, modalData, openEventDetailModal } = useEventDetailModal()
   const trackRef = useRef<HTMLDivElement>(null)

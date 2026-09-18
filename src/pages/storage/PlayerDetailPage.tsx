@@ -28,7 +28,7 @@ import { useStorageTrack } from '../../hooks/useStorageTrack'
 import { SegmentEvent } from '../../modules/segment.types'
 import { SectionHeader } from './shared.styled'
 
-function PlayerDetailPage() {
+function PlayerDetailPageContent() {
   useStorageRedirect()
   const t = useFormatMessage()
   const navigate = useNavigate()
@@ -37,7 +37,7 @@ function PlayerDetailPage() {
   const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: keys, isLoading } = useListPlayerKeysQuery(
+  const { currentData: keys, isLoading } = useListPlayerKeysQuery(
     { identity, address, realm, position },
     { skip: !identity || !address || blocked }
   )
@@ -168,6 +168,11 @@ function PlayerDetailPage() {
       />
     </StorageLayout>
   )
+}
+
+function PlayerDetailPage() {
+  const { address } = useAuthIdentity()
+  return <PlayerDetailPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { PlayerDetailPage }

@@ -38,7 +38,7 @@ jest.mock('../../features/events/events.admin.types', () => ({
 const mockUpdatePermissions = jest.fn()
 
 jest.mock('../../features/events/events.admin.client', () => ({
-  useListAdminsQuery: () => ({ data: mockAdmins, isFetching: false, refetch: jest.fn() }),
+  useListAdminsQuery: () => ({ currentData: mockAdmins, isFetching: false, refetch: jest.fn() }),
   useUpdateAdminPermissionsMutation: () => [(args: unknown) => ({ unwrap: () => mockUpdatePermissions(args) }), { isLoading: false }]
 }))
 

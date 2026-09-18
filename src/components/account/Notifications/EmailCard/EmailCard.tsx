@@ -7,6 +7,7 @@ import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { Card, Description, EmailInput, Heading, HeadingRow, InputRow, SaveButton, StatusBadge } from './EmailCard.styled'
 
 interface EmailCardProps {
+  address: string
   email?: string
   unconfirmedEmail?: string
   details?: SubscriptionDetails
@@ -14,7 +15,7 @@ interface EmailCardProps {
   onToggleAll?: (enabled: boolean) => void
 }
 
-const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, onToggleAll }: EmailCardProps) => {
+const EmailCard = ({ address, email = '', unconfirmedEmail, details, disabled = false, onToggleAll }: EmailCardProps) => {
   const t = useFormatMessage()
   const [setEmail, { isLoading, isError, reset }] = useSetEmailMutation()
   const [value, setValue] = useState(unconfirmedEmail || email)
@@ -50,8 +51,8 @@ const EmailCard = ({ email = '', unconfirmedEmail, details, disabled = false, on
       return
     }
     setIsValid(true)
-    void setEmail({ email: value })
-  }, [value, setEmail])
+    void setEmail({ address, email: value })
+  }, [address, value, setEmail])
 
   const isConfirmed = !!email && !unconfirmedEmail
   const isPending = !!unconfirmedEmail

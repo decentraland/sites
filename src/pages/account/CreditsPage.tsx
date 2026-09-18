@@ -10,11 +10,13 @@ import { CreditsPanel } from './CreditsPage.styled'
 
 const CreditsPage = () => {
   const t = useFormatMessage()
-  const { address } = useAuthIdentity()
+  const { address, hasValidIdentity } = useAuthIdentity()
 
   // AccountLayout gates the whole section behind a localStorage identity, so `address` is present
   // by the time this page renders; `skipToken` only guards the brief unauthenticated window.
-  const { data, isLoading } = useGetUserCreditsStatusQuery(address ?? '', { skip: !address })
+  const { currentData: data, isLoading } = useGetUserCreditsStatusQuery(address?.toLowerCase() ?? '', {
+    skip: !address || !hasValidIdentity
+  })
   const [optOut, { isLoading: isLeaving }] = useOptOutFromCreditsMutation()
   const [register, { isLoading: isJoining }] = useRegisterForCreditsMutation()
 

@@ -1,5 +1,6 @@
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { creditsClient } from '../../services/creditsClient'
+import { getAuthSession } from '../../utils/authSession'
 import { UserCreditsStatus } from './account-credits.types'
 import type { UserCreditsStatusEnvelope, UserCreditsStatusResponse } from './account-credits.types'
 
@@ -18,8 +19,9 @@ const accountCreditsApi = creditsClient.injectEndpoints({
     // resolved status. `queryFn` (not `query` + `transformResponse`) because
     // `transformResponse` never runs for the 404 case.
     getUserCreditsStatus: builder.query<UserCreditsStatusResponse, string>({
+      serializeQueryArgs: ({ queryArgs }) => ({ address: queryArgs.toLowerCase() }),
       async queryFn(address, _api, _extraOptions, baseQuery) {
-        const result = await baseQuery(`/users/${encodeURIComponent(address)}/status`)
+        const result = await baseQuery({ url: `/users/${encodeURIComponent(address)}/status`, account: address })
         if (result.error) {
           if (isFetchBaseQueryError(result.error) && result.error.status === 404) {
             return { data: NOT_REGISTERED_RESPONSE }
@@ -36,7 +38,7 @@ const accountCreditsApi = creditsClient.injectEndpoints({
     // status cache to OPTED_OUT so the card flips to "Opted Out" without a refetch.
     optOutFromCredits: builder.mutation<void, string>({
       async queryFn(address, _api, _extraOptions, baseQuery) {
-        const result = await baseQuery({ url: `/users/${encodeURIComponent(address)}`, method: 'DELETE' })
+        const result = await baseQuery({ url: `/users/${encodeURIComponent(address)}`, account: address, method: 'DELETE' })
         if (result.error) {
           if (isFetchBaseQueryError(result.error) && result.error.status === 404) {
             return { data: undefined }
@@ -46,8 +48,10 @@ const accountCreditsApi = creditsClient.injectEndpoints({
         return { data: undefined }
       },
       async onQueryStarted(address, { dispatch, queryFulfilled }) {
+        const session = getAuthSession()
         try {
           await queryFulfilled
+          if (session !== getAuthSession()) return
           dispatch(
             accountCreditsApi.util.updateQueryData('getUserCreditsStatus', address, draft => {
               draft.status = UserCreditsStatus.OPTED_OUT
@@ -65,15 +69,17 @@ const accountCreditsApi = creditsClient.injectEndpoints({
     // email. On success we patch the status cache to ENROLLED so the card flips without a refetch.
     registerForCredits: builder.mutation<void, string>({
       async queryFn(address, _api, _extraOptions, baseQuery) {
-        const result = await baseQuery({ url: '/users', method: 'POST', body: { address } })
+        const result = await baseQuery({ url: '/users', account: address, method: 'POST', body: { address } })
         if (result.error) {
           return { error: result.error }
         }
         return { data: undefined }
       },
       async onQueryStarted(address, { dispatch, queryFulfilled }) {
+        const session = getAuthSession()
         try {
           await queryFulfilled
+          if (session !== getAuthSession()) return
           dispatch(
             accountCreditsApi.util.updateQueryData('getUserCreditsStatus', address, draft => {
               draft.status = UserCreditsStatus.ENROLLED

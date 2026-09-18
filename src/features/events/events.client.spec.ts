@@ -629,7 +629,7 @@ describe('eventsClient', () => {
   })
 
   describe('when getUpcomingEvents is dispatched twice with the same identity', () => {
-    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+    const mockIdentity = { authChain: [{ payload: '0xabc' }], ephemeralIdentity: {} } as unknown as AuthIdentity
 
     beforeEach(() => {
       mockFetchWithOptionalIdentity.mockClear()
@@ -1005,5 +1005,43 @@ describe('eventsClient', () => {
       expect(requestedUrl).toContain('to=')
       expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.any(String), mockIdentity, expect.any(AbortSignal))
     })
+  })
+})
+
+describe('when events have account-specific fields', () => {
+  let store: ReturnType<typeof createTestStore>
+  let identityA: AuthIdentity
+  let identityB: AuthIdentity
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+    store = createTestStore()
+    identityA = { authChain: [{ payload: '0xaaa' }] } as AuthIdentity
+    identityB = { authChain: [{ payload: '0xbbb' }] } as AuthIdentity
+    mockGetEnv.mockReturnValue('https://events.test')
+    mockFetchWithOptionalIdentity
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: 'event', attending: true }] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: 'event', attending: false }] }) })
+  })
+
+  afterEach(() => {
+    store.dispatch(eventsClient.util.resetApiState())
+    jest.resetAllMocks()
+  })
+
+  it('should fetch the next signed-in account instead of reusing the authenticated boolean key', async () => {
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all', identity: identityA })).unwrap()
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all', identity: identityB })).unwrap()
+    expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
+    expect(eventsClient.endpoints.getEvents.select({ list: 'all', identity: identityB })(store.getState()).data).toEqual([
+      { id: 'event', attending: false }
+    ])
+  })
+
+  it('should keep anonymous reads available in their own cache entry', async () => {
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all', identity: identityA })).unwrap()
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all' })).unwrap()
+    expect(mockFetchWithOptionalIdentity).toHaveBeenLastCalledWith(expect.any(String), undefined, expect.any(AbortSignal))
+    expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
   })
 })

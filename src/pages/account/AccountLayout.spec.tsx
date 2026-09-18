@@ -85,7 +85,7 @@ describe('AccountLayout', () => {
 
   describe('when the visitor is not signed in', () => {
     beforeEach(() => {
-      mockUseAuthIdentity.mockReturnValue({ address: undefined })
+      mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, address: undefined })
     })
 
     it('should render the sign-in prompt instead of the account sections', () => {
@@ -98,7 +98,7 @@ describe('AccountLayout', () => {
 
   describe('when signed in on desktop', () => {
     beforeEach(() => {
-      mockUseAuthIdentity.mockReturnValue({ address: '0x1234567890123456789012345678901234567890' })
+      mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, address: '0x1234567890123456789012345678901234567890' })
     })
 
     it('should render the sidebar and the active section side by side', () => {
@@ -112,7 +112,7 @@ describe('AccountLayout', () => {
   describe('when signed in on mobile', () => {
     beforeEach(() => {
       mockIsMobile = true
-      mockUseAuthIdentity.mockReturnValue({ address: '0x1234567890123456789012345678901234567890' })
+      mockUseAuthIdentity.mockReturnValue({ hasValidIdentity: true, address: '0x1234567890123456789012345678901234567890' })
     })
 
     it('should show only the dashboard sidebar on the index route', () => {

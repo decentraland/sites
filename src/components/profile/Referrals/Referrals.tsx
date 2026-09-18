@@ -1,6 +1,8 @@
+import { skipToken } from '@reduxjs/toolkit/query'
 import { CircularProgress, Typography } from 'decentraland-ui2'
 import { useGetReferralProgressQuery } from '../../../features/profile/profile.referrals.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useProfileAvatar } from '../../../hooks/useProfileAvatar'
 import { ReferralHeroSection } from './ReferralHeroSection'
 import { ReferralJourney } from './ReferralJourney'
@@ -13,7 +15,14 @@ interface ReferralsProps {
 function Referrals({ profileAddress }: ReferralsProps) {
   const t = useFormatMessage()
   const { avatar } = useProfileAvatar(profileAddress)
-  const { data, isLoading, error } = useGetReferralProgressQuery()
+  const { address, hasValidIdentity } = useAuthIdentity()
+  const {
+    currentData: data,
+    isLoading,
+    error
+  } = useGetReferralProgressQuery(
+    hasValidIdentity && address?.toLowerCase() === profileAddress.toLowerCase() ? { address: address.toLowerCase() } : skipToken
+  )
 
   if (isLoading) {
     return (

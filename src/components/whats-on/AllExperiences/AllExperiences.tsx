@@ -43,7 +43,7 @@ function useAllExperiencesData({ today, startOffset, columnCount, identity, list
   // upcoming occurrence falls inside `from`/`to`. To make every occurrence in `recurrent_dates`
   // visible across the calendar, drop the date range and bucket on the client via bucketEventsByDay.
   const {
-    data: allEvents = [],
+    currentData: allEvents = [],
     isLoading,
     isError
   } = useGetEventsQuery(

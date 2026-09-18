@@ -1,5 +1,6 @@
 import { useGetCommunityEventsQuery } from '../features/communities/communities.client'
 import type { CommunityEvent, CommunityEventsResponse } from '../features/communities/communities.types'
+import { useAuthIdentity } from './useAuthIdentity'
 import { usePaginatedQuery } from './usePaginatedQuery'
 import type { UsePaginatedCommunityEventsOptions, UsePaginatedCommunityEventsResult } from './usePaginatedCommunityEvents.types'
 
@@ -9,9 +10,15 @@ function usePaginatedCommunityEvents({
   communityId,
   enabled = true
 }: UsePaginatedCommunityEventsOptions): UsePaginatedCommunityEventsResult {
-  const result = usePaginatedQuery<{ communityId: string; limit?: number; offset?: number }, CommunityEventsResponse, CommunityEvent[]>({
+  const { address, hasValidIdentity } = useAuthIdentity()
+  const account = hasValidIdentity ? address?.toLowerCase() : undefined
+  const result = usePaginatedQuery<
+    { communityId: string; account?: string; limit?: number; offset?: number },
+    CommunityEventsResponse,
+    CommunityEvent[]
+  >({
     queryHook: useGetCommunityEventsQuery,
-    queryArg: { communityId },
+    queryArg: { communityId, account },
     enabled: enabled && !!communityId,
     defaultLimit: DEFAULT_LIMIT,
     extractItems: data => data.data.events ?? [],
@@ -21,7 +28,7 @@ function usePaginatedCommunityEvents({
       const total = data.data.total ?? 0
       return current < total
     },
-    resetDependency: communityId
+    resetDependency: `${communityId}:${account ?? 'anon'}`
   })
 
   return {
