@@ -221,9 +221,15 @@ function run(argv, io) {
   }
 
   if (writeBaseline) {
+    // A locale that failed strict parsing is absent from parityByLocale, so writing now would
+    // drop its recorded debt and hide it once the file is fixed. Keep the old baseline intact.
+    if (failed) {
+      io.log('FAIL: baseline left unchanged — fix the errors above and run again')
+      return 1
+    }
     writeFileSync(baselinePath, serializeBaseline(parityByLocale))
     io.log(`baseline written: ${rel(baselinePath)}`)
-    return failed ? 1 : 0
+    return 0
   }
 
   const baseline = readBaseline(baselinePath)

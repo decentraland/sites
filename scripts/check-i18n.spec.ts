@@ -289,6 +289,17 @@ describe('when running the i18n check', () => {
       expect(write.status).toBe(1)
       expect(write.stdout).toContain('fr.json: duplicate key "a"')
     })
+
+    it('should leave an existing baseline untouched when a locale fails to parse', () => {
+      const existing = json({ es: { missing: ['page.home.cta'] } })
+      writeFileSync(join(dir, 'parity-baseline.json'), existing)
+      writeFileSync(join(dir, 'fr.json'), '{ "a": 1, "a": 2 }\n')
+
+      const write = runCheck(dir, ['--write-baseline'])
+
+      expect(write.status).toBe(1)
+      expect(readFileSync(join(dir, 'parity-baseline.json'), 'utf8')).toBe(existing)
+    })
   })
 
   describe('and --write-baseline is passed with no debt', () => {
