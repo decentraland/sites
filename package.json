@@ -18,7 +18,8 @@
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
     "lint:pkg": "npmPkgJsonLint .",
-    "lint:i18n": "node scripts/check-i18n.mjs"
+    "lint:i18n": "node scripts/check-i18n.mjs",
+    "lint:shells": "node scripts/check-shell-boundary.mjs"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "16.1.6",
