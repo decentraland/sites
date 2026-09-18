@@ -7,7 +7,13 @@ const jestConfig: Config = {
   maxWorkers: '50%',
   workerIdleMemoryLimit: '1GB',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.spec.ts', '<rootDir>/src/**/*.spec.tsx', '<rootDir>/api/**/*.spec.ts'],
+  testMatch: [
+    '<rootDir>/src/**/*.test.ts',
+    '<rootDir>/src/**/*.spec.ts',
+    '<rootDir>/src/**/*.spec.tsx',
+    '<rootDir>/api/**/*.spec.ts',
+    '<rootDir>/scripts/**/*.spec.ts'
+  ],
   transform: {
     ['^.+\\.tsx?$']: [
       'ts-jest',
