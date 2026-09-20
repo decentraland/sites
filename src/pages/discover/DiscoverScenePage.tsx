@@ -6,10 +6,12 @@ import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { dclColors } from 'decentraland-ui2'
 import { PinGlyph } from '../../components/discover/_shared/CardIcons'
+import { SharePlaceButton } from '../../components/discover/_shared/SharePlaceButton'
 import { SceneJumpInModal } from '../../components/discover/SceneJumpInModal'
 import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/discover/SceneLiveWatcher'
 import { getEnv } from '../../config/env'
 import {
+  buildDetailPath,
   buildJumpLandingHref,
   parsePositionParam,
   useGetDiscoverPlaceByPositionQuery,
@@ -235,6 +237,9 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   // metadata resolves.
   const positionLabel = parsedPosition ? `${parsedPosition[0]},${parsedPosition[1]}` : undefined
   const headerTitle = place?.title ?? (kind === 'world' ? worldName : positionLabel) ?? ''
+  // The place's canonical path, not `window.location`: the URL in the bar can carry
+  // a `?profile=` overlay or an `env` param that has no business in a share link.
+  const shareTarget = useMemo(() => (place && buildDetailPath(place)) || location.pathname, [place, location.pathname])
   // Location string shown in the header tag. World detail uses the world
   // name; place detail uses the base parcel coords.
   const locationLabel = kind === 'world' ? place?.world_name ?? worldName : place?.base_position ?? positionLabel ?? ''
@@ -308,6 +313,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
                   {locationLabel}
                 </LocationTag>
               )}
+              <SharePlaceButton target={shareTarget} title={headerTitle} />
             </HeaderRight>
           </ViewerHeader>
           <SceneWatcherCard
