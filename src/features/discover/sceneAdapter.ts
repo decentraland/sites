@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { AuthIdentity } from '@dcl/crypto'
 import { signedFetchFactory } from 'decentraland-crypto-fetch'
 import { getEnv } from '../../config/env'
 import { getGuestIdentity } from './guestIdentity'
@@ -70,19 +69,18 @@ interface FetchSceneAdapterArgs {
   parcel?: string
   worldName?: string
   sceneId?: string
-  // When provided, signs the gatekeeper request as the logged-in user so the
-  // LiveKit participant identity is the real wallet address. Required for
-  // sending chat messages — guest-identity messages show as random 0x… and
-  // have no profile lookup. Absent → fall back to ephemeral guest identity.
-  identity?: AuthIdentity
 }
 
-// Signed-fetch the gatekeeper's /get-scene-adapter. Uses the caller-supplied
-// identity (logged-in user) when present, otherwise mints an ephemeral guest
-// identity. Returns null on any failure — the caller's job to render an empty
-// state. We never throw to keep the scene detail page resilient.
+// Signed-fetch the gatekeeper's /get-scene-adapter. ALWAYS signs with the
+// ephemeral guest identity, never with the visitor's wallet: the gatekeeper
+// derives the LiveKit participant identity from the signer, and LiveKit evicts
+// the older participant when two connections share one identity, so the real
+// wallet would kick that same user out of the scene in the Explorer. Full
+// rationale in `docs/domains/discover.md` → "Watcher identity invariant".
+// Returns null on any failure — the caller's job to render an empty state.
+// We never throw to keep the scene detail page resilient.
 async function fetchSceneAdapter(args: FetchSceneAdapterArgs): Promise<SceneAdapterCredentials | null> {
-  const { parcel, worldName, sceneId: explicitSceneId, identity: userIdentity } = args
+  const { parcel, worldName, sceneId: explicitSceneId } = args
   try {
     let sceneId: string | null
     let realmName: string
@@ -104,7 +102,7 @@ async function fetchSceneAdapter(args: FetchSceneAdapterArgs): Promise<SceneAdap
       return null
     }
 
-    const identity = userIdentity ?? (await getGuestIdentity())
+    const identity = await getGuestIdentity()
     const url = `${getGatekeeperUrl()}/get-scene-adapter`
 
     const response = await signedFetch(url, {

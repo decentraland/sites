@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import type { AuthIdentity } from '@dcl/crypto'
 import type { LiveKitCredentials } from '../features/cast2/cast2.types'
 import { generateRandomName } from '../features/cast2/cast2.utils'
 import { fetchCastWatcherToken, fetchSceneAdapter } from '../features/discover/sceneAdapter'
@@ -10,10 +9,6 @@ interface UseSceneRoomArgs {
   // For multi-scene worlds, the explicit entity hash to target. When absent
   // the gatekeeper resolves to the world's default scene.
   sceneId?: string
-  // Logged-in identity from useAuthIdentity. When present, the gatekeeper
-  // request is signed as the real wallet so chat messages publish under the
-  // user's address (profile + claimed name resolve). Absent → guest identity.
-  identity?: AuthIdentity
 }
 
 interface SceneRoomState {
@@ -28,7 +23,7 @@ interface SceneRoomState {
 // not inside it — otherwise it would break the grid-template-areas layout
 // on `DiscoverScenePage`.
 function useSceneRoom(args: UseSceneRoomArgs): SceneRoomState {
-  const { location, parcel, sceneId, identity: userIdentity } = args
+  const { location, parcel, sceneId } = args
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
   const [mode, setMode] = useState<'scene' | 'cast'>('scene')
   const [status, setStatus] = useState<SceneRoomState['status']>('loading')
@@ -40,9 +35,7 @@ function useSceneRoom(args: UseSceneRoomArgs): SceneRoomState {
     setCredentials(null)
     ;(async () => {
       const sceneCreds = await fetchSceneAdapter(
-        location.endsWith('.eth')
-          ? { worldName: location, parcel, sceneId, identity: userIdentity }
-          : { parcel: location, identity: userIdentity }
+        location.endsWith('.eth') ? { worldName: location, parcel, sceneId } : { parcel: location }
       )
       if (cancelled) return
       if (sceneCreds) {
@@ -66,10 +59,9 @@ function useSceneRoom(args: UseSceneRoomArgs): SceneRoomState {
     return () => {
       cancelled = true
     }
-    // Re-run when login state flips. `userIdentity` is memoized per-address by
-    // useAuthIdentity, so this only fires on actual identity change — not on
-    // every render.
-  }, [location, parcel, sceneId, userIdentity])
+    // Deliberately independent of login state — see the identity invariant on
+    // `fetchSceneAdapter`. Signing in or out must not re-open the room.
+  }, [location, parcel, sceneId])
 
   return { status, mode, credentials }
 }
