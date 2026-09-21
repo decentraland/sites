@@ -1721,6 +1721,7 @@
       "filter_favorites": "Favourites",
       "empty_owner_title": "Nothing here yet—but that's easy to change",
       "empty_owner_subtitle": "My Places shows the spaces you own or manage in Decentraland. The easiest way to start is with a NAME, which unlocks your own World.",
+      "empty_owner_has_name_subtitle": "My Places shows the spaces you own or manage in Decentraland. You already have a NAME — publish a World on it and it will appear here.",
       "empty_owner_cta": "Get a name",
       "empty_favorites_title": "Nothing saved yet",
       "empty_favorites_subtitle": "Add favorite Places by tapping the heart on a place card or the map in Decentraland. You'll find them all here.",
