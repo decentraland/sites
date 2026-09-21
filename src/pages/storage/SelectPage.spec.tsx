@@ -170,18 +170,18 @@ const nativeIntersectionObserver = window.IntersectionObserver
 
 describe('SelectPage', () => {
   let intersectionCallback: IntersectionObserverCallback | undefined
-  let collaboratorScenes: { data?: CollaboratorScenesResponse; isLoading: boolean; isFetching: boolean; isError: boolean }
+  let collaboratorScenes: { currentData?: CollaboratorScenesResponse; isLoading: boolean; isFetching: boolean; isError: boolean }
   let lands: Land[]
 
   beforeEach(() => {
-    collaboratorScenes = { data: createPage(0), isLoading: false, isFetching: false, isError: false }
+    collaboratorScenes = { currentData: createPage(0), isLoading: false, isFetching: false, isError: false }
     mockUseAuthIdentity.mockReturnValue({
       identity: { authChain: [] },
       hasValidIdentity: true,
       address: '0x1'
     })
     mockCollaboratorScenesQuery.mockImplementation(() => collaboratorScenes)
-    mockContributableDomainsQuery.mockReturnValue({ data: [{ name: 'shared.dcl.eth' }], isLoading: false })
+    mockContributableDomainsQuery.mockReturnValue({ currentData: [{ name: 'shared.dcl.eth' }], isLoading: false })
     mockDCLNamesQuery.mockReturnValue({ data: ['gabi.dcl.eth'], isLoading: false })
     lands = [createLand('1', 'Sunset Parcel'), createLand('2', 'Harbor Estate')]
     mockLandsQuery.mockImplementation(() => ({ data: lands, isLoading: false }))
@@ -283,7 +283,7 @@ describe('SelectPage', () => {
     describe('and the scene lives in Genesis City', () => {
       it('should omit the realm param', () => {
         collaboratorScenes = {
-          data: {
+          currentData: {
             data: [{ sceneId: 'genesis-1', worldName: '', baseParcel: '5,5', title: 'Plaza', realmKind: 'genesis' }],
             pagination: { limit: PAGE_SIZE, offset: 0, total: 1 }
           },
@@ -303,7 +303,7 @@ describe('SelectPage', () => {
 
   describe('when the collaborations query fails', () => {
     it('should show the error copy instead of the empty state', () => {
-      collaboratorScenes = { data: undefined, isLoading: false, isFetching: false, isError: true }
+      collaboratorScenes = { currentData: undefined, isLoading: false, isFetching: false, isError: true }
       render(<SelectPage />)
       openCollaborationsTab()
 
@@ -314,7 +314,7 @@ describe('SelectPage', () => {
   describe('when every collaboration fits in the first page', () => {
     it('should render no sentinel to observe', () => {
       collaboratorScenes = {
-        data: { data: [createScene(0)], pagination: { limit: PAGE_SIZE, offset: 0, total: 1 } },
+        currentData: { data: [createScene(0)], pagination: { limit: PAGE_SIZE, offset: 0, total: 1 } },
         isLoading: false,
         isFetching: false,
         isError: false
@@ -330,7 +330,7 @@ describe('SelectPage', () => {
     it('should show the spinner and keep the observer disarmed until it settles', () => {
       const fulfilledOffset = 0
       mockCollaboratorScenesQuery.mockImplementation((arg: { offset?: number }) => ({
-        data: createPage(fulfilledOffset),
+        currentData: createPage(fulfilledOffset),
         isLoading: false,
         isFetching: (arg.offset ?? 0) !== fulfilledOffset,
         isError: false
