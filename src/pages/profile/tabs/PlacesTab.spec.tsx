@@ -61,8 +61,13 @@ jest.mock('../../../features/profile/profile.places.client', () => ({
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string) => key
 }))
+// Mutable so a test can put the owner on either side of the "do you already have a NAME" branch.
+const mockAvatar: { name: string; ethAddress: string; hasClaimedName?: boolean } = {
+  name: 'ProfileOwner',
+  ethAddress: '0xaaa'
+}
 jest.mock('../../../hooks/useProfileAvatar', () => ({
-  useProfileAvatar: () => ({ avatar: { name: 'ProfileOwner', ethAddress: '0xaaa' } })
+  useProfileAvatar: () => ({ avatar: mockAvatar })
 }))
 jest.mock('./OverviewTab.styled', () => ({
   EmptyBio: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('p', null, children),
@@ -223,13 +228,32 @@ describe('PlacesTab', () => {
         >)
       })
 
-      it('should render the my places empty state with a get-a-name CTA linking to the shop', () => {
+      afterEach(() => {
+        delete mockAvatar.hasClaimedName
+      })
+
+      it('should offer a NAME to an owner who does not have one, linking to the shop', () => {
         render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
 
         expect(screen.getByText('profile.places.empty_owner_title')).toBeInTheDocument()
+        expect(screen.getByText('profile.places.empty_owner_subtitle')).toBeInTheDocument()
         const cta = screen.getByText('profile.places.empty_owner_cta')
         expect(cta).toBeInTheDocument()
         expect(cta.getAttribute('data-href')).toBe('/shop/items?category=names')
+      })
+
+      /**
+       * The owner already did the part the other branch asks for. Sending them back to buy a second NAME
+       * is the page failing to notice what it already knows about them.
+       */
+      it('should offer worlds to an owner who already has a NAME, not another NAME', () => {
+        mockAvatar.hasClaimedName = true
+        render(<PlacesTab address={ADDRESS} isOwnProfile={true} />)
+
+        expect(screen.getByText('profile.places.empty_owner_has_name_subtitle')).toBeInTheDocument()
+        expect(screen.queryByText('profile.places.empty_owner_cta')).not.toBeInTheDocument()
+        const cta = screen.getByText('profile.header.manage_world')
+        expect(cta.getAttribute('data-href')).toBe('https://decentraland.org/builder/worlds')
       })
     })
 
