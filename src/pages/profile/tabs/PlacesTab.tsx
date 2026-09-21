@@ -5,6 +5,8 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import PublicIcon from '@mui/icons-material/Public'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import VerifiedIcon from '@mui/icons-material/Verified'
 import { useAnalytics } from '@dcl/hooks'
 import type { Avatar } from '@dcl/schemas'
@@ -12,7 +14,8 @@ import { CircularProgress, SceneCard, Typography } from 'decentraland-ui2'
 import { FilterChip, FiltersRow } from '../../../components/profile/FilterChips'
 import { PlaceDetailModal, useOpenPlaceModal } from '../../../components/profile/PlaceDetailModal'
 import { JumpInBadgeIcon, ProfileEmptyState } from '../../../components/profile/ProfileEmptyState'
-import { GET_A_NAME_URL } from '../../../components/profile/profileLinks'
+import { GET_A_NAME_URL, manageWorldUrl } from '../../../components/profile/profileLinks'
+import { getEnv } from '../../../config/env'
 import { useGetProfileFavoritePlacesQuery, useGetProfilePlacesQuery } from '../../../features/profile/profile.places.client'
 import type { ProfileFavoritePlace, ProfilePlace } from '../../../features/profile/profile.places.client'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -47,6 +50,7 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
   // Owned places all belong to the profile user, so one cached profile resolves every card's
   // "by" row. Favourite places carry their own `owner_avatar` (batch-resolved by the client).
   const { avatar: profileAvatar } = useProfileAvatar(address)
+  const hasClaimedName = !!profileAvatar?.hasClaimedName
 
   const places = useMemo<ProfileFavoritePlace[]>(
     () => (showFavorites ? favorites.data?.data ?? [] : owned.data?.data ?? []),
@@ -115,7 +119,22 @@ function PlacesTab({ address, isOwnProfile }: PlacesTabProps) {
         />
       )
     } else if (isOwnProfile) {
-      emptyContent = (
+      /**
+       * Two different people reach this screen, and they need opposite next steps.
+       *
+       * Someone with no NAME needs one — it is what unlocks a World. Someone who already holds one has
+       * done that part and needs to publish; telling them to go buy a NAME reads as the page not knowing
+       * who they are. The profile already carries the answer, so the branch costs no extra request.
+       */
+      const worldsUrl = manageWorldUrl(getEnv('BUILDER_URL'))
+      emptyContent = hasClaimedName ? (
+        <ProfileEmptyState
+          icon={<PlaceOutlinedIcon />}
+          title={t('profile.places.empty_owner_title')}
+          subtitle={t('profile.places.empty_owner_has_name_subtitle')}
+          action={worldsUrl ? { label: t('profile.header.manage_world'), href: worldsUrl, startIcon: <PublicIcon /> } : undefined}
+        />
+      ) : (
         <ProfileEmptyState
           icon={<PlaceOutlinedIcon />}
           title={t('profile.places.empty_owner_title')}
