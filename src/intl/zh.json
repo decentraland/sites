@@ -1170,6 +1170,7 @@
       "filter_favorites": "收藏",
       "empty_owner_title": "这里还什么都没有——但这很容易改变",
       "empty_owner_subtitle": "“我的地点”会显示你在 Decentraland 中拥有或管理的空间。最简单的开始方式是获取一个 NAME，它会解锁你专属的 World。",
+      "empty_owner_has_name_subtitle": "“我的地点”会显示你在 Decentraland 中拥有或管理的空间。你已经拥有 NAME，在它上面发布一个 World，就会显示在这里。",
       "empty_owner_cta": "获取 NAME",
       "empty_favorites_title": "还没有收藏任何内容",
       "empty_favorites_subtitle": "在地点卡片或 Decentraland 地图上点击爱心即可添加收藏的地点。你可以在这里找到它们。",
