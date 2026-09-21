@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { CardsGrid, CenteredRow, EmptyState, LoadMoreRow, SelectPageContainer } from './SelectPage.styled'
+import { CardsGrid, CenteredRow, EmptyState, LoadMoreSentinel, SelectPageContainer } from './SelectPage.styled'
 
 jest.mock('decentraland-ui2', () => {
   const actual = jest.requireActual('../../__test-utils__/styledMock')
@@ -18,7 +18,7 @@ describe('SelectPage styled components', () => {
           <CenteredRow>spinner</CenteredRow>
           <CardsGrid>card</CardsGrid>
           <EmptyState>nothing here</EmptyState>
-          <LoadMoreRow>load more</LoadMoreRow>
+          <LoadMoreSentinel>load more</LoadMoreSentinel>
         </SelectPageContainer>
       )
 

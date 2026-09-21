@@ -763,7 +763,6 @@
         "no_collaborations": "Aucune collaboration trouvée",
         "collaborations_error": "Impossible de charger vos collaborations. Veuillez réessayer.",
         "collaborations_hint": "Les scènes récemment accordées peuvent mettre un moment à apparaître.",
-        "load_more": "Charger plus",
         "realm_world": "Monde",
         "realm_genesis": "Genesis City"
       },

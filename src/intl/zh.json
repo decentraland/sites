@@ -768,7 +768,6 @@
         "no_collaborations": "未找到协作",
         "collaborations_error": "无法加载您的协作，请重试。",
         "collaborations_hint": "最近授予的场景可能需要一些时间才会显示。",
-        "load_more": "加载更多",
         "realm_world": "世界",
         "realm_genesis": "Genesis City"
       },

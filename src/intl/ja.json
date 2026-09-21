@@ -768,7 +768,6 @@
         "no_collaborations": "コラボレーションが見つかりません",
         "collaborations_error": "コラボレーションを読み込めませんでした。もう一度お試しください。",
         "collaborations_hint": "最近付与されたシーンは表示されるまで少し時間がかかる場合があります。",
-        "load_more": "もっと読み込む",
         "realm_world": "ワールド",
         "realm_genesis": "Genesis City"
       },

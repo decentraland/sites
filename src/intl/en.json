@@ -908,7 +908,6 @@
         "no_collaborations": "No collaborations found",
         "collaborations_error": "Could not load your collaborations. Please try again.",
         "collaborations_hint": "Recently granted scenes may take a moment to appear.",
-        "load_more": "Load more",
         "realm_world": "World",
         "realm_genesis": "Genesis City"
       },

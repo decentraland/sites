@@ -25,9 +25,11 @@ const CenteredRow = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(8)
 }))
 
-const LoadMoreRow = styled(Box)(({ theme }) => ({
+const LoadMoreSentinel = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: theme.spacing(8),
   marginTop: theme.spacing(3)
 }))
 
@@ -37,4 +39,4 @@ const EmptyState = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary
 }))
 
-export { CardsGrid, CenteredRow, EmptyState, LoadMoreRow, SelectPageContainer }
+export { CardsGrid, CenteredRow, EmptyState, LoadMoreSentinel, SelectPageContainer }

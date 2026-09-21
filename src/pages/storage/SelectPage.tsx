@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ChangeEvent, SyntheticEvent } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
-import { Box, Button, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
 import { CollaboratorSceneCard } from '../../components/storage/CollaboratorSceneCard'
 import { LandCard } from '../../components/storage/LandCard'
 import { SearchField } from '../../components/storage/SearchField'
@@ -25,10 +25,11 @@ import type {
 } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useInfiniteScrollSentinel } from '../../hooks/useInfiniteScrollSentinel'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { usePaginatedQuery } from '../../hooks/usePaginatedQuery'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
-import { CardsGrid, CenteredRow, EmptyState, LoadMoreRow, SelectPageContainer } from './SelectPage.styled'
+import { CardsGrid, CenteredRow, EmptyState, LoadMoreSentinel, SelectPageContainer } from './SelectPage.styled'
 
 const COLLABORATIONS_PAGE_SIZE = 20
 
@@ -62,6 +63,11 @@ function SelectPageContent() {
     extractTotal: page => page.pagination.total,
     getHasMore: page => page.pagination.offset + page.pagination.limit < page.pagination.total,
     resetDependency: address
+  })
+  const collaborationsSentinelRef = useInfiniteScrollSentinel({
+    hasMore: hasMoreCollaborations,
+    isLoading: collaborationsFetchingMore,
+    onLoadMore: handleLoadMoreCollaborations
   })
   const { data: dclNames, isLoading: namesLoading } = useGetUserDCLNamesQuery({ address: address ?? '' }, { skip: !address })
   const { data: rentals, isLoading: rentalsLoading } = useGetUserRentalsQuery({ address: address ?? '' }, { skip: !address })
@@ -250,11 +256,11 @@ function SelectPageContent() {
                     ))}
                   </CardsGrid>
                   {hasMoreCollaborations ? (
-                    <LoadMoreRow>
-                      <Button variant="outlined" onClick={handleLoadMoreCollaborations} disabled={collaborationsFetchingMore}>
-                        {t('component.storage.select_page.load_more')}
-                      </Button>
-                    </LoadMoreRow>
+                    <LoadMoreSentinel ref={collaborationsSentinelRef}>
+                      {collaborationsFetchingMore ? (
+                        <CircularProgress size={24} aria-label={t('component.storage.select_page.loading')} />
+                      ) : null}
+                    </LoadMoreSentinel>
                   ) : null}
                 </>
               )}
