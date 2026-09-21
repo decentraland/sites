@@ -763,7 +763,13 @@
         "scene_count_one": "1개의 씬",
         "edit": "편집",
         "edit_scenes": "씬 편집",
-        "select_scene": "씬 선택"
+        "select_scene": "씬 선택",
+        "collaborations": "협업",
+        "no_collaborations": "컬래버레이션을 찾을 수 없습니다",
+        "collaborations_error": "컬래버레이션을 불러오지 못했습니다. 다시 시도하세요.",
+        "collaborations_hint": "최근에 권한이 부여된 씬은 표시되기까지 잠시 걸릴 수 있습니다.",
+        "realm_world": "월드",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "환경 변수",
@@ -1164,6 +1170,7 @@
       "filter_favorites": "즐겨찾기",
       "empty_owner_title": "아직 아무것도 없어요—하지만 쉽게 바꿀 수 있어요",
       "empty_owner_subtitle": "내 장소에는 Decentraland에서 소유하거나 관리하는 공간이 표시됩니다. 가장 쉬운 시작 방법은 NAME을 얻는 것이며, 나만의 World가 열립니다.",
+      "empty_owner_has_name_subtitle": "내 장소에는 Decentraland에서 소유하거나 관리하는 공간이 표시됩니다. 이미 NAME이 있으니 해당 NAME에 World를 게시하면 여기에 표시됩니다.",
       "empty_owner_cta": "NAME 받기",
       "empty_favorites_title": "아직 저장한 항목이 없어요",
       "empty_favorites_subtitle": "장소 카드나 Decentraland 지도에서 하트를 눌러 즐겨찾는 장소를 추가하세요. 여기에서 모두 확인할 수 있어요.",

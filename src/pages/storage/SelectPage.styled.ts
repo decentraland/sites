@@ -19,10 +19,24 @@ const CardsGrid = styled(Box)(({ theme }) => ({
   gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))'
 }))
 
+const CenteredRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  marginTop: theme.spacing(8)
+}))
+
+const LoadMoreSentinel = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: theme.spacing(8),
+  marginTop: theme.spacing(3)
+}))
+
 const EmptyState = styled(Typography)(({ theme }) => ({
   paddingBlock: theme.spacing(6),
   textAlign: 'center',
   color: theme.palette.text.secondary
 }))
 
-export { CardsGrid, EmptyState, SelectPageContainer }
+export { CardsGrid, CenteredRow, EmptyState, LoadMoreSentinel, SelectPageContainer }

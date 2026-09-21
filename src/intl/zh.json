@@ -763,7 +763,13 @@
         "scene_count_one": "1 个场景",
         "edit": "编辑",
         "edit_scenes": "编辑场景",
-        "select_scene": "选择场景"
+        "select_scene": "选择场景",
+        "collaborations": "协作",
+        "no_collaborations": "未找到协作",
+        "collaborations_error": "无法加载您的协作，请重试。",
+        "collaborations_hint": "最近授予的场景可能需要一些时间才会显示。",
+        "realm_world": "世界",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "环境变量",
@@ -1164,6 +1170,7 @@
       "filter_favorites": "收藏",
       "empty_owner_title": "这里还什么都没有——但这很容易改变",
       "empty_owner_subtitle": "“我的地点”会显示你在 Decentraland 中拥有或管理的空间。最简单的开始方式是获取一个 NAME，它会解锁你专属的 World。",
+      "empty_owner_has_name_subtitle": "“我的地点”会显示你在 Decentraland 中拥有或管理的空间。你已经拥有 NAME，在它上面发布一个 World，就会显示在这里。",
       "empty_owner_cta": "获取 NAME",
       "empty_favorites_title": "还没有收藏任何内容",
       "empty_favorites_subtitle": "在地点卡片或 Decentraland 地图上点击爱心即可添加收藏的地点。你可以在这里找到它们。",

@@ -763,7 +763,13 @@
         "scene_count_one": "1 個のシーン",
         "edit": "編集",
         "edit_scenes": "シーンを編集",
-        "select_scene": "シーンを選択"
+        "select_scene": "シーンを選択",
+        "collaborations": "コラボレーション",
+        "no_collaborations": "コラボレーションが見つかりません",
+        "collaborations_error": "コラボレーションを読み込めませんでした。もう一度お試しください。",
+        "collaborations_hint": "最近付与されたシーンは表示されるまで少し時間がかかる場合があります。",
+        "realm_world": "ワールド",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "環境変数",
@@ -1164,6 +1170,7 @@
       "filter_favorites": "お気に入り",
       "empty_owner_title": "まだ何もありません。でも、簡単に変えられます",
       "empty_owner_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。まずはNAMEを取得するのが一番簡単で、自分だけのWorldを使えるようになります。",
+      "empty_owner_has_name_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。すでにNAMEをお持ちなので、そこにWorldを公開すると、ここに表示されます。",
       "empty_owner_cta": "NAMEを取得",
       "empty_favorites_title": "保存済みのものはまだありません",
       "empty_favorites_subtitle": "プレイスカードやDecentralandのマップでハートをタップして、お気に入りのプレイスを追加しましょう。ここですべて見つけられます。",

@@ -758,7 +758,13 @@
         "scene_count_one": "1 scène",
         "edit": "Modifier",
         "edit_scenes": "Modifier les scènes",
-        "select_scene": "Sélectionner une scène"
+        "select_scene": "Sélectionner une scène",
+        "collaborations": "Collaborations",
+        "no_collaborations": "Aucune collaboration trouvée",
+        "collaborations_error": "Impossible de charger vos collaborations. Veuillez réessayer.",
+        "collaborations_hint": "Les scènes récemment accordées peuvent mettre un moment à apparaître.",
+        "realm_world": "Monde",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Variables d’environnement",
@@ -1159,6 +1165,7 @@
       "filter_favorites": "Favoris",
       "empty_owner_title": "Rien ici pour l'instant — mais c'est facile à changer",
       "empty_owner_subtitle": "Mes Lieux affiche les espaces que vous possédez ou gérez dans Decentraland. Le plus simple pour commencer est d'obtenir un NAME, qui débloque votre propre World.",
+      "empty_owner_has_name_subtitle": "Mes Lieux affiche les espaces que vous possédez ou gérez dans Decentraland. Vous avez déjà un NAME : publiez un World dessus et il apparaîtra ici.",
       "empty_owner_cta": "Obtenir un name",
       "empty_favorites_title": "Rien d'enregistré pour l'instant",
       "empty_favorites_subtitle": "Ajoutez des Lieux favoris en appuyant sur le cœur d’une carte de lieu ou sur la carte de Decentraland. Vous les retrouverez tous ici.",
