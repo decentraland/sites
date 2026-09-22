@@ -1267,6 +1267,8 @@
     "error_description_too_long": "Description cannot exceed 5000 characters",
     "error_duration_invalid": "Enter duration as hh:mm",
     "error_duration_too_long": "Maximum allowed duration is 24 hours",
+    "error_date_in_past": "Start date cannot be in the past.",
+    "error_repeat_end_date_in_past": "Repeat until date cannot be in the past.",
     "error_submit": "Something went wrong. Please try again.",
     "error_invalid_image_type": "Please upload a PNG, JPG, or GIF file.",
     "error_invalid_vertical_image_type": "Vertical cover must be PNG or JPG.",

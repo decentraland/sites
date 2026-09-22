@@ -23,7 +23,8 @@ import {
   computeUpcomingOccurrences,
   localDateToEndOfDayIso,
   parseDurationMs,
-  recurrenceToApi
+  recurrenceToApi,
+  todayDateString
 } from '../../../hooks/useCreateEventForm.helpers'
 import type { CreateEventFormState } from '../../../hooks/useCreateEventForm.types'
 import { formatLocalDate, formatLocalTime, formatUtcTime, getUtcDayDelta } from '../../../utils/whatsOnTime'
@@ -327,6 +328,7 @@ function EventForm({
                     helperText={errors.startDate}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
+                    inputProps={{ min: todayDateString() }}
                     InputProps={{
                       endAdornment: <EventIcon sx={{ color: '#a09ba8', fontSize: 24, pointerEvents: 'none' }} />
                     }}
@@ -386,6 +388,7 @@ function EventForm({
                     helperText={errors.repeatEndDate}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
+                    inputProps={{ min: todayDateString() }}
                   />
                   <UpcomingDatesGroup>
                     <UpcomingDatesLabel>{t('create_event.upcoming_dates_label')}</UpcomingDatesLabel>
