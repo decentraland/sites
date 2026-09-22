@@ -93,7 +93,7 @@ Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logi
 
 ## Auth flow
 
-No Web3 providers (no wagmi, magic-sdk, core-web3, thirdweb). Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`). Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
+Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`) on every tier. Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Web3 (`wagmi`, `viem`, `magic-sdk`, `thirdweb`, `@dcl/core-web3`) is declared and loads only behind the lazy `BlockchainShell`, never on a lightweight route nor in the base `DappsShell` chunk. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
 
 ## Performance
 

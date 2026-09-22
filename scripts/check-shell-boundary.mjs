@@ -115,6 +115,23 @@ function stripComments(source) {
 }
 
 /**
+ * True when a clause leaves nothing in the bundle: either `type { X }` / `type X`, or a braced
+ * list whose every member carries the inline `type` modifier. A list that mixes the two, or any
+ * default or namespace binding, still imports a value at runtime.
+ */
+function isTypeOnlyClause(clause) {
+  const trimmed = clause.trim()
+  if (/^type\s/.test(trimmed)) return true
+  const braced = trimmed.match(/^\{([\s\S]*)\}$/)
+  if (!braced) return false
+  const members = braced[1]
+    .split(',')
+    .map(member => member.trim())
+    .filter(Boolean)
+  return members.length > 0 && members.every(member => /^type\s/.test(member))
+}
+
+/**
  * Relative runtime imports only, tagged with whether they are dynamic. Type-only imports and
  * package imports are irrelevant to the bundle. The clause pattern stops at the next top-level
  * `import`/`export` so a statement like `export type X = { from: string }` cannot swallow the
@@ -125,7 +142,7 @@ function relativeImports(rawSource) {
   const found = []
   const clausePattern = /(?:^|\n)\s*(?:import|export)\s+((?:(?!\n\s*(?:import|export)\b)[\s\S])*?)from\s*['"](\.[^'"]*)['"]/g
   for (const match of source.matchAll(clausePattern)) {
-    if (/^\s*type\s/.test(match[1])) continue
+    if (isTypeOnlyClause(match[1])) continue
     found.push({ specifier: match[2], isDynamic: false })
   }
   // Bare side-effect imports: `import './thing'`

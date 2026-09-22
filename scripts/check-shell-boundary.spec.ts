@@ -96,6 +96,47 @@ describe('when checking the dual-shell import boundary', () => {
     })
   })
 
+  describe('and every member of the import carries the inline type modifier', () => {
+    beforeEach(() => {
+      write('pages/index.tsx', "import { type RootState } from '../shells/store'\nexport const Home = (s: RootState) => s\n")
+    })
+
+    it('should exit 0 because nothing of it survives the build', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(0)
+    })
+  })
+
+  describe('and the import mixes an inline type member with a value member', () => {
+    beforeEach(() => {
+      write(
+        'pages/index.tsx',
+        "import { type RootState, store } from '../shells/store'\nexport const Home = (s: RootState) => [s, store]\n"
+      )
+    })
+
+    it('should exit 1 because the value member is a real dependency', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(1)
+      expect(result.stdout).toContain('shells/store.ts')
+    })
+  })
+
+  describe('and a default import is combined with an inline type member', () => {
+    beforeEach(() => {
+      write(
+        'pages/index.tsx',
+        "import Store, { type RootState } from '../shells/store'\nexport const Home = (s: RootState) => [s, Store]\n"
+      )
+    })
+
+    it('should exit 1 because the default binding is a real dependency', () => {
+      const result = runCheck(dir)
+      expect(result.status).toBe(1)
+      expect(result.stdout).toContain('shells/store.ts')
+    })
+  })
+
   describe('and a heavy route imports the shell', () => {
     beforeEach(() => {
       write('pages/account/WalletsPage.tsx', "import { store } from '../../shells/store'\nexport const Wallets = () => store\n")

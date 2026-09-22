@@ -32,7 +32,7 @@ Three route tiers protect homepage Lighthouse performance:
 - **Lightweight (with Layout)**: `/`, legal, marketing, sign-in, etc. No Redux, no Web3, data via `useSyncExternalStore` clients.
 - **Heavy (`<DappsShell />` lazy chunk)**: every absorbed dapp. Boots Redux + RTK Query + the per-domain client only when the user navigates into one of these areas.
 
-Authentication everywhere reads identity from `localStorage` via `useAuthIdentity` — no wagmi, magic-sdk, or thirdweb. Mutations on heavy routes sign requests via `signedFetch(identity)`.
+Authentication everywhere reads identity from `localStorage` via `useAuthIdentity`, and mutations on heavy routes sign requests via `signedFetch(identity)`. The Web3 stack (wagmi, magic-sdk, thirdweb) loads only behind the lazy `BlockchainShell`, for the account actions that need a signer.
 
 Read `CLAUDE.md` before adding routes, RTK Query clients, i18n keys, or styled components.
 
