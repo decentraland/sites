@@ -85,6 +85,9 @@ const UsersAdminPage = lazyWithRetry(() => import('./pages/events/UsersAdminPage
 const LegacyHangoutRedirect = lazyWithRetry(() =>
   import('./pages/events/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect }))
 )
+const CreateEventAliasRedirect = lazyWithRetry(() =>
+  import('./pages/events/CreateEventAliasRedirect').then(m => ({ default: m.CreateEventAliasRedirect }))
+)
 const LegacyWhatsOnRedirect = lazyWithRetry(() =>
   import('./pages/events/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect }))
 )
@@ -254,6 +257,10 @@ const App = () => {
                   <Route path="/events" element={<WhatsOnHomePage />} />
                   <Route path="/events/new-event" element={<CreateEventPage />} />
                   <Route path="/events/edit-event/:eventId" element={<CreateEventPage />} />
+                  {/* What an assistant guesses when asked to link to event creation. */}
+                  <Route path="/events/submit" element={<CreateEventAliasRedirect />} />
+                  <Route path="/events/create" element={<CreateEventAliasRedirect />} />
+                  <Route path="/events/new" element={<CreateEventAliasRedirect />} />
                   {/* Legacy aliases — preserve query string + location state. */}
                   <Route path="/events/new-hangout" element={<LegacyHangoutRedirect />} />
                   <Route path="/events/edit-hangout/:eventId" element={<LegacyHangoutRedirect />} />
