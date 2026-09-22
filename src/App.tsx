@@ -234,8 +234,10 @@ const App = () => {
                 prefixes redirect with their subpath and query intact, so shared links, bookmarks and
                 indexed pages keep resolving. Each redirect fires a Segment event so these routes can
                 be sunset once the traffic dries up. */}
+              {/* route-manifest: redirect */}
               <Route path="/whats-on/*" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
               <Route path="/whats-on" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+              {/* route-manifest: redirect */}
               <Route path="/discover/*" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
               <Route path="/discover" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
               {/* Deep links from the standalone events/places sites, which carried their target in the
@@ -291,6 +293,7 @@ const App = () => {
                   <Route path="s/streaming" element={<StreamerPage />} />
                   <Route path="w/:worldName/parcel/:parcel" element={<WatcherPage />} />
                   <Route path="w/:location" element={<WatcherPage />} />
+                  {/* route-manifest: not-found */}
                   <Route path="*" element={<CastNotFoundPage />} />
                 </Route>
                 <Route path="/storage" element={<StorageRedirectPage />} />
@@ -299,6 +302,7 @@ const App = () => {
                 <Route path="/storage/scene" element={<StorageScenePage />} />
                 <Route path="/storage/players" element={<StoragePlayersPage />} />
                 <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
+                {/* route-manifest: not-found */}
                 <Route path="/storage/*" element={<StorageNotFoundPage />} />
                 {/* Discover — the new explore section (Live Now + Featured + Explore grid,
                   scene preview). Communities LIST is a Discover tab; community DETAIL is
@@ -310,8 +314,10 @@ const App = () => {
                   <Route path="/places/world/:name" element={<DiscoverScenePage kind="world" />} />
                 </Route>
                 {/* Same generic not-found page serves both section catch-alls. */}
+                {/* route-manifest: not-found */}
                 <Route path="/places/*" element={<SocialNotFoundPage />} />
                 <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+                {/* route-manifest: not-found */}
                 <Route path="/social/*" element={<SocialNotFoundPage />} />
                 {/* Profile routes — absorbed from decentraland/profile + decentraland/account dapps.
                   ORDER MATTERS in react-router v7: literal `me` and `accounts` segments come before
@@ -336,6 +342,7 @@ const App = () => {
                   <Route path="credits" element={<AccountCreditsPage />} />
                   <Route path="security" element={<AccountSecurityPage />} />
                   <Route path="delete" element={<AccountDeletePage />} />
+                  {/* route-manifest: not-found */}
                   <Route path="*" element={<AccountNotFoundPage />} />
                 </Route>
               </Route>
@@ -346,6 +353,7 @@ const App = () => {
               immersive UX) and `*` ranks below every explicit route, so real
               pages, legacy redirects (/events/*, /places/*) and area-scoped
               catch-alls (/cast/*, /storage/*, /social/*, /account/*) still win. */}
+            {/* route-manifest: not-found */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
