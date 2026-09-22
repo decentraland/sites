@@ -89,6 +89,13 @@ function readMarker(node, siblings, sourceFile) {
   return null
 }
 
+// A marker like {/`*` route-manifest: not-found `*`/} parses as an expression node carrying only a
+// comment and no expression. That is the one computed child that is not hiding a route.
+function isCommentOnly(expression, sourceFile) {
+  if (expression.expression) return false
+  return /\/\*[\s\S]*\*\//.test(expression.getText(sourceFile))
+}
+
 function collectRoutes(sourceFile) {
   const valid = new Set()
   const notFound = []
@@ -98,7 +105,31 @@ function collectRoutes(sourceFile) {
 
     if ((ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) && !ts.isJsxText(node)) {
       const opening = ts.isJsxElement(node) ? node.openingElement : node
-      if (opening.tagName.getText(sourceFile) === 'Route') {
+      const tagName = opening.tagName.getText(sourceFile)
+
+      // A `<Routes>` child that is an expression hides routes from this extractor, and a manifest
+      // that under-reports turns a live page into a 404 at the edge. The same goes for a spread on
+      // a Route: its path is not readable here. Refuse rather than emit a manifest missing them.
+      if (tagName === 'Routes' && ts.isJsxElement(node)) {
+        for (const child of node.children) {
+          if (!ts.isJsxExpression(child) || isCommentOnly(child, sourceFile)) continue
+          const { line } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile))
+          throw new BuildError(
+            `src/App.tsx:${line + 1} — <Routes> has a computed child; every route must be a literal ` +
+              `<Route> element or the manifest silently omits it`
+          )
+        }
+      }
+
+      if (tagName === 'Route' && opening.attributes.properties.some(ts.isJsxSpreadAttribute)) {
+        const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
+        throw new BuildError(
+          `src/App.tsx:${line + 1} — <Route> uses a spread attribute; its path cannot be read, so the ` +
+            `manifest would silently omit this route`
+        )
+      }
+
+      if (tagName === 'Route') {
         const path = readPathAttribute(opening, sourceFile)
         const isIndex = hasIndexAttribute(opening, sourceFile)
 
@@ -134,12 +165,36 @@ function collectRoutes(sourceFile) {
   return { valid: [...valid].sort(), notFound: notFound.sort() }
 }
 
+/**
+ * The grammar the edge matcher implements. Anything else (an optional `:id?`, a wildcard mid-path)
+ * would be matched there with different semantics than React Router uses here, so it fails the
+ * build rather than shipping a manifest the worker will read differently.
+ */
+function assertSupportedPattern(pattern) {
+  if (pattern === '*') return
+  const segments = pattern.split('/').slice(1)
+  for (const segment of segments) {
+    const unsupported =
+      (segment.includes('*') && segment !== '*') ||
+      (segment === '*' && segment !== segments[segments.length - 1]) ||
+      segment.includes('?')
+    if (unsupported) {
+      throw new BuildError(
+        `route "${pattern}" uses syntax the edge matcher does not implement (optional params and ` +
+          `mid-path wildcards); support it there first or rewrite the route`
+      )
+    }
+  }
+}
+
 function buildManifest(srcPath) {
   const source = readFileSync(srcPath, 'utf8')
   const sourceFile = ts.createSourceFile(srcPath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   const { valid, notFound } = collectRoutes(sourceFile)
 
   if (!valid.length) throw new BuildError(`no routes found in ${srcPath}; refusing to emit an empty manifest`)
+
+  for (const pattern of [...valid, ...notFound]) assertSupportedPattern(pattern)
 
   return { version: MANIFEST_VERSION, enforcedScope: ENFORCED_SCOPE, routes: valid, notFoundRoutes: notFound }
 }

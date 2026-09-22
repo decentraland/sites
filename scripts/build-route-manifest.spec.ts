@@ -150,6 +150,65 @@ describe('when extracting the route manifest from a router', () => {
     })
   })
 
+  describe('and a route is spread from an object', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events" element={<Something />} />
+      <Route {...someRoute} />
+    </Routes>`)
+    })
+
+    it('should fail rather than omit the route it cannot read', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('spread attribute')
+    })
+  })
+
+  describe('and routes are injected as an expression', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events" element={<Something />} />
+      {extraRoutes}
+    </Routes>`)
+    })
+
+    it('should fail rather than emit a manifest missing them', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('computed child')
+    })
+  })
+
+  describe('and a marker comment is the only expression child', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      {/* route-manifest: not-found */}
+      <Route path="*" element={<Something />} />
+      <Route path="/events" element={<Something />} />
+    </Routes>`)
+    })
+
+    it('should not mistake it for a computed child', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(0)
+    })
+  })
+
+  describe('and a route uses syntax the edge matcher does not implement', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events/:id?" element={<Something />} />
+    </Routes>`)
+    })
+
+    it('should fail rather than ship a pattern the worker reads differently', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('does not implement')
+    })
+  })
+
   describe('and the router declares no routes at all', () => {
     beforeEach(() => {
       writeRouter('    <div />')
