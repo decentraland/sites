@@ -1164,6 +1164,7 @@
       "filter_favorites": "お気に入り",
       "empty_owner_title": "まだ何もありません。でも、簡単に変えられます",
       "empty_owner_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。まずはNAMEを取得するのが一番簡単で、自分だけのWorldを使えるようになります。",
+      "empty_owner_has_name_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。すでにNAMEをお持ちなので、そこにWorldを公開するとここに表示されます。",
       "empty_owner_cta": "NAMEを取得",
       "empty_favorites_title": "保存済みのものはまだありません",
       "empty_favorites_subtitle": "プレイスカードやDecentralandのマップでハートをタップして、お気に入りのプレイスを追加しましょう。ここですべて見つけられます。",
