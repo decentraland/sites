@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { PlaceDetailModalContent, PlaceDetailModalHero } from '../../whats-on/PlaceDetailModal'
+import { PlaceDetailModalContent, PlaceDetailModalHero } from '../../events/PlaceDetailModal'
 import { normalizeProfilePlace } from './normalizers'
 import type { PlaceDetailSurfaceProps } from './PlaceDetailModal.types'
 

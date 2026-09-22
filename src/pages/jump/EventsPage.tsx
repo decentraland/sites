@@ -3,9 +3,9 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ShareIcon from '@mui/icons-material/Share'
 import { AnimatedBackground, useMobileMediaQuery } from 'decentraland-ui2'
+import { CalendarAddIcon } from '../../components/events/common/CalendarAddIcon'
+import { RemindMeButton as WatsonRemindMeButton } from '../../components/events/common/RemindMeButton'
 import { Card } from '../../components/jump/Card'
-import { CalendarAddIcon } from '../../components/whats-on/common/CalendarAddIcon'
-import { RemindMeButton as WatsonRemindMeButton } from '../../components/whats-on/common/RemindMeButton'
 import { getEnv } from '../../config/env'
 import {
   DEFAULT_POSITION,

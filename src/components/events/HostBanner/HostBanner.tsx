@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 import { useTranslation } from '@dcl/hooks'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
-import avatarImage from '../../../images/whats-on/images/host_avatar.webp'
-import sceneImage from '../../../images/whats-on/images/host_scene.webp'
+import avatarImage from '../../../images/events/images/host_avatar.webp'
+import sceneImage from '../../../images/events/images/host_scene.webp'
 import { redirectToAuth } from '../../../utils/authRedirect'
 import {
   AvatarImage,

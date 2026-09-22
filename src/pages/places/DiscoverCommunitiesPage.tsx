@@ -14,8 +14,8 @@ import {
   PageTitle,
   RetryButton,
   SearchField
-} from '../../components/discover/_shared'
-import { CommunityCard } from '../../components/discover/CommunityCard'
+} from '../../components/places/_shared'
+import { CommunityCard } from '../../components/places/CommunityCard'
 import { useGetCommunitiesListQuery } from '../../features/discover'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'

@@ -67,10 +67,10 @@ jest.mock('../../hooks/useDeferredTrack', () => ({
 
 // Card stubs — the real cards have their own specs; here they only need to
 // surface the title and forward the empty-click contract.
-jest.mock('../../components/discover/LiveEventCard', () => ({
+jest.mock('../../components/places/LiveEventCard', () => ({
   LiveEventCard: ({ place }: { place: DiscoverPlace }) => <div data-testid="live-card">{place.title}</div>
 }))
-jest.mock('../../components/discover/FeaturedCard', () => ({
+jest.mock('../../components/places/FeaturedCard', () => ({
   FeaturedCard: ({ place, onEmptyClick }: { place: DiscoverPlace; onEmptyClick?: (p: DiscoverPlace) => void }) => (
     <div data-testid="featured-card" data-users={place.user_count ?? ''}>
       <button type="button" onClick={() => onEmptyClick?.(place)}>
@@ -79,7 +79,7 @@ jest.mock('../../components/discover/FeaturedCard', () => ({
     </div>
   )
 }))
-jest.mock('../../components/discover/PlaceCard', () => ({
+jest.mock('../../components/places/PlaceCard', () => ({
   PlaceCard: ({ place, onEmptyClick }: { place: DiscoverPlace; onEmptyClick?: (p: DiscoverPlace) => void }) => (
     <div data-testid="place-card">
       <button type="button" onClick={() => onEmptyClick?.(place)}>
@@ -88,7 +88,7 @@ jest.mock('../../components/discover/PlaceCard', () => ({
     </div>
   )
 }))
-jest.mock('../../components/discover/SceneJumpInModal', () => ({
+jest.mock('../../components/places/SceneJumpInModal', () => ({
   SceneJumpInModal: ({ place, onClose }: { place: DiscoverPlace; onClose: () => void }) => (
     <div role="dialog" aria-label={place.title}>
       <button type="button" onClick={onClose}>

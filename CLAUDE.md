@@ -33,13 +33,13 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 
 These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query middleware, and the heaviest deps (contentful rich-text renderer, dompurify, `livekit-client` + `@livekit/components-react` for cast) only when one of these routes is navigated to.
 
-**No Web3 providers on the main/lightweight tiers, nor in the base `DappsShell` chunk.** Authentication on most heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. The one exception is the account Wallets "Send" and Delete actions, gated behind the lazy `BlockchainShell` (below). The homepage and every lightweight route stay Web3-free (~580-780KB saved vs. the federated predecessor).
+**No Web3 providers on the main/lightweight tiers, nor in the base `DappsShell` chunk.** Authentication on most heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — events / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. The one exception is the account Wallets "Send" and Delete actions, gated behind the lazy `BlockchainShell` (below). The homepage and every lightweight route stay Web3-free (~580-780KB saved vs. the federated predecessor).
 
 ### Third tier: `BlockchainShell` (on-demand Web3, `src/shells/BlockchainShell.tsx`)
 
 A lazy, opt-in shell for the few account actions that need a connected signer (Wallets Send; Delete). It wraps children in `@dcl/core-web3`'s `WalletStateProvider` + `Web3LazyProvider`, which dynamically import the heavy Web3 stack (`wagmi` / `viem` / `magic-sdk` / `@magic-ext/oauth2`) only when an action mounts the shell, then calls `injectWeb3Reducers()` to append core-web3's `wallet` / `network` / `transactions` slices to the already-running `DappsShell` store (`createLazyStoreEnhancer` in `store.ts`). Children are withheld behind a readiness gate until the providers are mounted, so wagmi hooks never run without a `WagmiProvider`. The base `DappsShell` store only statically imports the lightweight `@dcl/core-web3/lazy` facade (the enhancer + provider shells) — the wagmi/viem bundle is code-split and never loads on a non-account heavy route.
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/discover/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/events/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/places/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
 
 ## Directory map (top-level)
 
@@ -61,7 +61,7 @@ A lazy, opt-in shell for the few account actions that need a connected signer (W
 | `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`.           |
 | `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.                     |
 | `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                              |
-| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).                      |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by events, social, storage mutations).                        |
 | `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
 | `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
 | `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
@@ -72,7 +72,7 @@ A lazy, opt-in shell for the few account actions that need a connected signer (W
 
 Each absorbed dapp's feature client, base client, components, and pages live under per-dapp docs. Load the one matching your task:
 
-- `docs/domains/whats-on.md` — `src/features/events/`, components/whats-on, pages/whats-on. Events API + admin + lightweight discovery.
+- `docs/domains/events.md` — `src/features/events/`, components/events, pages/events. Events API + admin + lightweight discovery.
 - `docs/domains/blog.md` — `src/features/cms/`, `src/services/cmsClient.ts`, `src/shared/blog/`. Contentful + cms-server search.
 - `docs/domains/jump.md` — `src/features/places/`, `src/services/placesClient.ts`. Launcher deep-link resolution.
 - `docs/domains/social.md` — `src/features/communities/`, `src/services/socialClient.ts`. Communities API.
@@ -81,7 +81,7 @@ Each absorbed dapp's feature client, base client, components, and pages live und
 - `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
 - `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
 - `docs/domains/profile.md` — `src/features/profile/`, components/profile, pages/profile. Profile route group + modal surfaces + social RPC.
-- `docs/domains/discover.md` — `src/features/discover/`, components/discover, pages/discover. Destinations feed + live presence + bevy scene preview.
+- `docs/domains/places.md` — `src/features/discover/`, components/places, pages/places. Destinations feed + live presence + bevy scene preview.
 
 ### Skill + hook governance
 
@@ -166,7 +166,7 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
 - **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
 - **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
-- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,discover,cast,storage,account}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
+- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{events,blog,jump,social,places,cast,storage,account}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
 
 ### Naming
@@ -210,7 +210,7 @@ npm run lint:shells
 
 It walks the import graph from every lightweight entry point (`src/main.tsx`, `src/pages/*` outside the heavy route groups, `components/Layout`, `components/LandingNavbar`, `components/LandingFooter`) and fails if any of them can reach `src/shells/*` at runtime, printing the full chain. Indirect paths through a helper or a barrel count; `import type` does not, because it leaves nothing in the bundle.
 
-Do NOT grep for `from '.*shells/'` instead. It misses the indirect paths and flags the heavy route trees (`src/pages/{whats-on,blog,jump,social,discover,cast,storage,account,profile}/*` and the components they own), which are explicitly allowed to import the shell.
+Do NOT grep for `from '.*shells/'` instead. It misses the indirect paths and flags the heavy route trees (`src/pages/{events,blog,jump,social,places,cast,storage,account,profile}/*` and the components they own), which are explicitly allowed to import the shell.
 
 ### 3. YAGNI check
 

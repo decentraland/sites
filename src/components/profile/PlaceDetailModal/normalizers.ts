@@ -1,6 +1,6 @@
 import type { ProfilePlace } from '../../../features/profile/profile.places.client'
 import { parseCoordinates } from '../../../utils/whatsOnUrl'
-import type { ModalPlaceData } from '../../whats-on/PlaceDetailModal'
+import type { ModalPlaceData } from '../../events/PlaceDetailModal'
 
 // Map the lightweight ProfilePlace shape returned by `/places?owner=` and
 // `/worlds?owner=` into the rich ModalPlaceData consumed by the whats-on

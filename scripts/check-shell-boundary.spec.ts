@@ -248,7 +248,7 @@ describe('when checking the dual-shell import boundary', () => {
       const result = runVerify()
       expect(result.status).toBe(2)
       expect(result.stderr).toContain('no longer exist')
-      expect(result.stderr).toContain('whats-on')
+      expect(result.stderr).toContain('events')
     })
   })
 

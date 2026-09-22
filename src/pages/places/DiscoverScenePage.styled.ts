@@ -1,5 +1,5 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
-import { SCENE_PANEL_GRADIENT } from '../../components/discover/_shared/DiscoverShell.styled'
+import { SCENE_PANEL_GRADIENT } from '../../components/places/_shared/DiscoverShell.styled'
 
 // Scene detail (live view) — pixel-matched to the Figma frame 2151:30900
 // (1643×1128): two columns — the viewer card (header bar + bevy watcher +

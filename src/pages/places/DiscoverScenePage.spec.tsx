@@ -39,7 +39,7 @@ jest.mock('../../features/discover/sceneAdapter', () => ({
 }))
 
 // Heavy LiveKit-backed children — substituted with prop-surfacing stubs.
-jest.mock('../../components/discover/SceneLiveWatcher', () => ({
+jest.mock('../../components/places/SceneLiveWatcher', () => ({
   SceneRoomMount: ({ credentials, children }: { credentials: unknown; children?: React.ReactNode }) => (
     <div data-testid="room-mount" data-has-credentials={credentials ? 'yes' : 'no'}>
       {children}
@@ -64,7 +64,7 @@ jest.mock('../../components/discover/SceneLiveWatcher', () => ({
   )
 }))
 
-jest.mock('../../components/discover/SceneJumpInModal', () => ({
+jest.mock('../../components/places/SceneJumpInModal', () => ({
   SceneJumpInModal: (props: { place: { title: string }; liveCount?: number; onClose: () => void }) => (
     <div role="dialog" aria-label={props.place.title} data-live-count={props.liveCount}>
       <button type="button" onClick={props.onClose}>
