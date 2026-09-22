@@ -48,7 +48,7 @@ website's half of the handshake. It now ships as two static files:
 | `public/.well-known/apple-app-site-association` | iOS      | `/jump*`, `/mobile*`       |
 | `public/.well-known/assetlinks.json`            | Android  | the whole host (see below) |
 
-Three things to know before touching them:
+Four things to know before touching them:
 
 - **The OS forwards the whole URL, so the app's parser is the allowlist.** An app link hands
   `deep_link.rs` the untouched query string, and it types the params it knows and ignores the rest.
@@ -56,9 +56,16 @@ Three things to know before touching them:
 - **Android verifies the HOST, not the path.** `assetlinks.json` has no per-path opt-in; the paths
   come from the app manifest's `pathPrefix` entries, today `/mobile`, `/jump`, `/events` and
   `/places`. So shipping the file activates all four on Android. iOS is ours to scope and is
-  scoped to `/jump*` + `/mobile*`, because the app's router has no handler for the SPA's
-  `/places/place/:position` shape and would land the user in Discover instead. Narrowing Android
-  to match is a godot-explorer manifest change, not a sites change.
+  scoped to `/jump*` + `/mobile*`. Narrowing Android to match is a change in the
+  `decentraland/godotengine` fork (`platform/android/java/app/src/main/AndroidManifest.xml`), which
+  is where the intent-filters live — godot-explorer's `godot/android/` is generated and untracked.
+- **The app's router matches exact paths, and the website uses subpaths.**
+  `deep_link_router.gd` matches `/jump`, `/open`, `/events` and `/places` literally; anything else
+  falls to a default that teleports, which silently does nothing when the URL carries no position
+  or realm. So `/jump?position=&realm=` works, `/jump/places?position=` works by accident (it
+  teleports through the default), and `/jump/events?id=<uuid>` — the shape the app's own
+  notifications and share links use — opens the app and does nothing. That needs a godot-explorer
+  fix before the iOS `/jump*` claim is a net win; see the checklist in the PR.
 - **`decentraland.zone` gets both files from the same bundle**, which is what we want: the app
   declares `applinks:decentraland.zone` too, and `deep_link.rs` infers `dclenv=zone` from the host.
 
