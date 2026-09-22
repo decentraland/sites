@@ -77,19 +77,19 @@ const BlogSignInRedirect = lazyWithRetry(() => import('./pages/blog/SignInRedire
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazyWithRetry(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
-const WhatsOnHomePage = lazyWithRetry(() => import('./pages/whats-on/HomePage').then(m => ({ default: m.HomePage })))
-const CreateEventPage = lazyWithRetry(() => import('./pages/whats-on/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
-const WhatsOnLayout = lazyWithRetry(() => import('./pages/whats-on/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
-const PendingEventsPage = lazyWithRetry(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
-const UsersAdminPage = lazyWithRetry(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
+const WhatsOnHomePage = lazyWithRetry(() => import('./pages/events/HomePage').then(m => ({ default: m.HomePage })))
+const CreateEventPage = lazyWithRetry(() => import('./pages/events/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+const WhatsOnLayout = lazyWithRetry(() => import('./pages/events/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
+const PendingEventsPage = lazyWithRetry(() => import('./pages/events/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
+const UsersAdminPage = lazyWithRetry(() => import('./pages/events/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
 const LegacyHangoutRedirect = lazyWithRetry(() =>
-  import('./pages/whats-on/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect }))
+  import('./pages/events/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect }))
 )
 const LegacyWhatsOnRedirect = lazyWithRetry(() =>
-  import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect }))
+  import('./pages/events/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect }))
 )
 const LegacyWorldRedirect = lazyWithRetry(() =>
-  import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect }))
+  import('./pages/events/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect }))
 )
 const RenamedSectionRedirect = lazyWithRetry(() =>
   import('./pages/RenamedSectionRedirect').then(m => ({ default: m.RenamedSectionRedirect }))
@@ -106,12 +106,12 @@ const SocialNotFoundPage = lazyWithRetry(() => import('./pages/social/SocialNotF
 // decentraland.social experience: a unified DISCOVER landing (LIVE NOW + Featured
 // + Explore grid with search and category filters), the COMMUNITIES list tab, and
 // SCENE detail (place / world deep link with the bevy preview).
-const DiscoverLayout = lazyWithRetry(() => import('./components/discover/DiscoverLayout').then(m => ({ default: m.DiscoverLayout })))
-const DiscoverHomePage = lazyWithRetry(() => import('./pages/discover/DiscoverHomePage').then(m => ({ default: m.DiscoverHomePage })))
+const DiscoverLayout = lazyWithRetry(() => import('./components/places/DiscoverLayout').then(m => ({ default: m.DiscoverLayout })))
+const DiscoverHomePage = lazyWithRetry(() => import('./pages/places/DiscoverHomePage').then(m => ({ default: m.DiscoverHomePage })))
 const DiscoverCommunitiesPage = lazyWithRetry(() =>
-  import('./pages/discover/DiscoverCommunitiesPage').then(m => ({ default: m.DiscoverCommunitiesPage }))
+  import('./pages/places/DiscoverCommunitiesPage').then(m => ({ default: m.DiscoverCommunitiesPage }))
 )
-const DiscoverScenePage = lazyWithRetry(() => import('./pages/discover/DiscoverScenePage').then(m => ({ default: m.DiscoverScenePage })))
+const DiscoverScenePage = lazyWithRetry(() => import('./pages/places/DiscoverScenePage').then(m => ({ default: m.DiscoverScenePage })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazyWithRetry(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))

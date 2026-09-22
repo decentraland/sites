@@ -20,11 +20,10 @@ const SHELL_DIR = 'shells'
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx']
 
 // Route groups that render inside DappsShell. Everything under them may import the shell.
-// These are DIRECTORY names under src/pages, not URLs: `/events` is served from `whats-on/` and
-// `/places` from `discover/`, which kept their original folder names through the route rename.
-// A stale entry here would silently downgrade a heavy route group to the lightweight tier and
-// report its legitimate shell imports as violations, so a missing directory is a hard error.
-const HEAVY_PAGE_DIRS = ['whats-on', 'blog', 'jump', 'social', 'discover', 'cast', 'storage', 'account', 'profile']
+// These are DIRECTORY names under src/pages, not URLs. A stale entry here would silently
+// downgrade a heavy route group to the lightweight tier and report its legitimate shell imports
+// as violations, so a missing directory is a hard error.
+const HEAVY_PAGE_DIRS = ['events', 'blog', 'jump', 'social', 'places', 'cast', 'storage', 'account', 'profile']
 
 // Entry points that ship on the lightweight tier. Anything they can reach must stay shell-free.
 const LIGHTWEIGHT_ROOTS = ['main.tsx', 'components/Layout', 'components/LandingNavbar', 'components/LandingFooter', 'pages']

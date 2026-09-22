@@ -57,7 +57,7 @@ type ModalProps = {
   onSubmit: (payload: { address: string; permissions: string[] }) => void
 }
 
-jest.mock('../../components/whats-on/AdminPermissionsModal', () => ({
+jest.mock('../../components/events/AdminPermissionsModal', () => ({
   AdminPermissionsModal: ({ open, mode, initialUser, onSubmit, onClose }: ModalProps) =>
     open ? (
       <div data-testid="admin-permissions-modal" data-mode={mode}>

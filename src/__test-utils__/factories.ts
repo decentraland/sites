@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { ModalEventData } from '../components/whats-on/EventDetailModal/EventDetailModal.types'
+import type { ModalEventData } from '../components/events/EventDetailModal/EventDetailModal.types'
 import type { HotScene, LiveNowCard } from '../features/events/events.helpers'
 import type { EventEntry } from '../features/events/events.types'
 

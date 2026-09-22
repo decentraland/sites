@@ -5,9 +5,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { dclColors } from 'decentraland-ui2'
-import { PinGlyph } from '../../components/discover/_shared/CardIcons'
-import { SceneJumpInModal } from '../../components/discover/SceneJumpInModal'
-import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/discover/SceneLiveWatcher'
+import { PinGlyph } from '../../components/places/_shared/CardIcons'
+import { SceneJumpInModal } from '../../components/places/SceneJumpInModal'
+import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/places/SceneLiveWatcher'
 import { getEnv } from '../../config/env'
 import {
   buildJumpLandingHref,

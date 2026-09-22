@@ -2,7 +2,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMockEvent } from '../../__test-utils__/factories'
-import type { EventDetailModalProps } from '../../components/whats-on/EventDetailModal/EventDetailModal.types'
+import type { EventDetailModalProps } from '../../components/events/EventDetailModal/EventDetailModal.types'
 import type { EventEntry } from '../../features/events/events.types'
 /* eslint-disable-next-line @typescript-eslint/no-require-imports */
 const { PendingEventsPage } = require('./PendingEventsPage')
@@ -43,7 +43,7 @@ jest.mock('../../features/events/events.admin.client', () => ({
   ]
 }))
 
-jest.mock('../../components/whats-on/EventDetailModal', () => ({
+jest.mock('../../components/events/EventDetailModal', () => ({
   EventDetailModal: ({ adminActions, onClose, data }: EventDetailModalProps) => (
     <div data-testid="event-detail-modal" data-event-id={data?.id} data-has-admin-actions={adminActions ? 'true' : 'false'}>
       <button type="button" onClick={onClose}>
@@ -63,11 +63,11 @@ jest.mock('../../components/whats-on/EventDetailModal', () => ({
   )
 }))
 
-jest.mock('../../components/whats-on/EventDetailModal/normalizers', () => ({
+jest.mock('../../components/events/EventDetailModal/normalizers', () => ({
   normalizeEventEntry: (event: EventEntry) => ({ id: event.id, name: event.name })
 }))
 
-jest.mock('../../components/whats-on/PendingEventCard', () => ({
+jest.mock('../../components/events/PendingEventCard', () => ({
   PendingEventCard: ({
     event,
     onClick
@@ -77,7 +77,7 @@ jest.mock('../../components/whats-on/PendingEventCard', () => ({
   }) => <button onClick={() => onClick(event)}>{event.name}</button>
 }))
 
-jest.mock('../../components/whats-on/RejectEventModal', () => ({
+jest.mock('../../components/events/RejectEventModal', () => ({
   RejectEventModal: ({
     open,
     onSubmit,

@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import { WhatsOnLayout } from './WhatsOnLayout'
 
-jest.mock('../../components/whats-on/AdminTabsBar', () => ({
+jest.mock('../../components/events/AdminTabsBar', () => ({
   AdminTabsBar: () => <div data-testid="admin-tabs-bar" />
 }))
 

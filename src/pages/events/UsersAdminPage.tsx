@@ -19,7 +19,7 @@ import {
   TableRow,
   TextField
 } from 'decentraland-ui2'
-import { AdminPermissionsModal } from '../../components/whats-on/AdminPermissionsModal'
+import { AdminPermissionsModal } from '../../components/events/AdminPermissionsModal'
 import { useListAdminsQuery, useUpdateAdminPermissionsMutation } from '../../features/events/events.admin.client'
 import { AdminPermission } from '../../features/events/events.admin.types'
 import type { AdminProfileSettings } from '../../features/events/events.admin.types'

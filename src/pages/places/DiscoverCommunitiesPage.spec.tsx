@@ -24,7 +24,7 @@ jest.mock('../../hooks/usePageViewTracking', () => ({
   usePageViewTracking: (...args: unknown[]) => mockUsePageViewTracking(...args)
 }))
 
-jest.mock('../../components/discover/CommunityCard', () => ({
+jest.mock('../../components/places/CommunityCard', () => ({
   CommunityCard: ({ community }: { community: DiscoverCommunity }) => <div data-testid="community-card">{community.name}</div>
 }))
 
