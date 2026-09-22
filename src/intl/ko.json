@@ -978,6 +978,8 @@
     "featured_item_clear": "추천 아이템 지우기",
     "error_invalid_featured_item": "유효한 컬렉션 또는 아이템 URN이어야 합니다",
     "error_image_too_large": "이 이미지를 500KB 이하로 압축할 수 없습니다. 더 작은 파일을 선택해 주세요.",
+    "error_date_in_past": "시작 날짜는 과거일 수 없습니다.",
+    "error_repeat_end_date_in_past": "반복 종료 날짜는 과거일 수 없습니다.",
     "recommended_size": "(권장 크기: 1920 × 1080, 안전 영역: 1080 × 1080)",
     "image_helper": "PNG, JPG 또는 GIF를 업로드하세요(1920×1080px, 최대 500kb). 모든 화면 해상도에 맞도록 주요 비주얼과 텍스트는 중앙의 1080×1080 안전 영역 안에 배치하세요.",
     "vertical_recommended_size": "권장 크기: 716 × 1814 px",
