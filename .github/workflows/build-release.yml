@@ -63,8 +63,6 @@ jobs:
           deterministic-snapshot: true
           only-update-versions: true
 
-      # Stays on `npm install`: the oddish step above rewrites the version in package.json, which
-      # leaves it out of sync with the lockfile, and `npm ci` refuses to run in that state.
       - name: Install
         run: npm install
         env:
