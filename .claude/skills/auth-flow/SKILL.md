@@ -1,11 +1,21 @@
 ---
 name: auth-flow
-description: Use when working with authentication, identity, wallet, or sign-in/sign-out logic in the SPA. Covers the localStorage-based wallet hooks, identity resolution, signed mutations, and the no-Web3-providers boundary. Triggers on edits to `src/hooks/useWalletAddress.ts`, `src/hooks/useAuthIdentity.ts`, `src/utils/signedFetch.ts`, or any code touching `single-sign-on-*`, MetaMask `accountsChanged`, or sign-in/sign-out flows. Also on mentions of "auth", "identity", "wallet", "sign-in", "sign-out", "signedFetch", "SSO".
+description: Use when working with authentication, identity, wallet, or sign-in/sign-out logic in the SPA. Covers the localStorage-based wallet hooks, identity resolution, signed mutations, and which tier is allowed to load Web3. Triggers on edits to `src/hooks/useWalletAddress.ts`, `src/hooks/useAuthIdentity.ts`, `src/utils/signedFetch.ts`, or any code touching `single-sign-on-*`, MetaMask `accountsChanged`, or sign-in/sign-out flows. Also on mentions of "auth", "identity", "wallet", "sign-in", "sign-out", "signedFetch", "SSO".
 ---
 
 # auth-flow
 
-This SPA has **no Web3 providers** (no wagmi, magic-sdk, core-web3, thirdweb). Authentication is entirely localStorage-based, which is what lets lightweight routes ship without ~580-780KB of crypto deps.
+Authentication is localStorage-based on every tier, which is what lets lightweight routes ship without ~580-780KB of crypto deps.
+
+Web3 does exist in this repo: `wagmi`, `viem`, `magic-sdk`, `@magic-ext/oauth2`, `thirdweb` and `@dcl/core-web3` are declared dependencies, and `src/shells/BlockchainShell.tsx` mounts them. The rule is about **where** they may load, not whether they exist:
+
+| Tier                                                         | Web3                      | Reached from                                                                           |
+| ------------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------- |
+| Lightweight (`<Layout />`, navbar, landing, legal, download) | never                     | —                                                                                      |
+| `DappsShell` base chunk                                      | never                     | the lazy import in `src/App.tsx`                                                       |
+| `BlockchainShell`                                            | yes, dynamically imported | only the account actions that need a signer (Wallets send/claim/swap/withdraw, Delete) |
+
+So: do not add a Web3 import to lightweight code or to the base `DappsShell` chunk. Inside `src/shells/BlockchainShell.tsx` and the account components it wraps (`src/components/account/Wallets/*`), Web3 imports are the intended design.
 
 ## Wallet & identity hooks
 
@@ -32,12 +42,12 @@ Routes that mutate data (whats-on create event, social communities, storage uplo
 
 `useAuthIdentity` and `useWalletAddress` are **safe on lightweight routes**. They don't import Redux or Web3 providers. The navbar (`src/components/LandingNavbar/`) consumes `useWalletAddress` directly and is part of the lightweight `<Layout />`.
 
-Do NOT introduce wagmi, magic-sdk, core-web3, or thirdweb into this repo. The whole reason for the dual-shell architecture is that lightweight routes stay lean — see CLAUDE.md > Architecture > Dual Shell.
+`npm run lint:shells` walks the import graph from every lightweight entry point and fails if any of them can reach `src/shells/*` at runtime, including through a helper or a barrel. Run it after moving code between tiers.
 
 ## Pitfalls
 
 - Forgetting that `useWalletAddress` is reactive — components re-render when the user signs in/out from another tab. If you cache identity in `useState`, you'll show stale data.
-- Reaching for wagmi or magic-sdk because they're familiar — those would re-add the ~580KB of deps we deleted.
+- Reaching for wagmi or magic-sdk on a lightweight route or in the base `DappsShell` chunk — that re-adds ~580KB to pages that never need a signer. They belong behind `BlockchainShell`.
 - Calling `signedFetch` on a route that runs before `useAuthIdentity` settles → `identity` is `undefined` and the request 401s. Gate on `hasValidIdentity`.
 - OTP/Magic email sign-in maps to a stable on-chain wallet address. Sign-in pending snapshot logic must fingerprint the ephemeral payload, not just addresses.
 - `/blog/sign-in` uses a parallel redirect helper (`blogAuthRedirect`) that does NOT call `markSignInPending` — any wallet-switcher flow there will land on a stale wallet.

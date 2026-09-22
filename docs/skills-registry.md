@@ -27,17 +27,18 @@ Each row maps to a `SKILL.md` under `.claude/skills/<name>/`.
 
 Reference docs for per-dapp file maps. **Not skills** — no auto-load. Read on demand when working in that dapp.
 
-| Doc                        | Covers                                                                                                                |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `docs/domains/whats-on.md` | `src/features/events/`, `components/whats-on/`, `pages/whats-on/`. Events API + admin + lightweight discovery client. |
-| `docs/domains/blog.md`     | `src/features/cms/`, `src/services/cmsClient.ts`, `src/shared/blog/`. Contentful + cms-server.                        |
-| `docs/domains/jump.md`     | `src/features/places/`, `src/services/placesClient.ts`. Launcher deep-link resolution.                                |
-| `docs/domains/social.md`   | `src/features/communities/`, `src/services/socialClient.ts`. Communities API.                                         |
-| `docs/domains/cast.md`     | `src/features/cast2/`, `src/services/cast2Client.ts`. LiveKit streaming.                                              |
-| `docs/domains/storage.md`  | `src/features/storage/`, `src/services/storageClient.ts`, `src/services/subgraphClient.ts`. Storage + subgraph.       |
-| `docs/domains/reels.md`    | `src/features/reels/`, `components/Reels/`. Layout-less, lightweight tier.                                            |
-| `docs/domains/report.md`   | `src/features/report/`, `components/Report/`. Lightweight, no RTK Query.                                              |
-| `docs/domains/profile.md`  | `src/features/profile/`, `components/profile/`, `pages/profile/`. Profile route group + modal surfaces.               |
+| Doc                        | Covers                                                                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `docs/domains/whats-on.md` | `src/features/events/`, `components/whats-on/`, `pages/whats-on/`. Events API + admin + lightweight discovery client.   |
+| `docs/domains/blog.md`     | `src/features/cms/`, `src/services/cmsClient.ts`, `src/shared/blog/`. Contentful + cms-server.                          |
+| `docs/domains/jump.md`     | `src/features/places/`, `src/services/placesClient.ts`. Launcher deep-link resolution.                                  |
+| `docs/domains/social.md`   | `src/features/communities/`, `src/services/socialClient.ts`. Communities API.                                           |
+| `docs/domains/cast.md`     | `src/features/cast2/`, `src/services/cast2Client.ts`. LiveKit streaming.                                                |
+| `docs/domains/storage.md`  | `src/features/storage/`, `src/services/storageClient.ts`, `src/services/subgraphClient.ts`. Storage + subgraph.         |
+| `docs/domains/reels.md`    | `src/features/reels/`, `components/Reels/`. Layout-less, lightweight tier.                                              |
+| `docs/domains/report.md`   | `src/features/report/`, `components/Report/`. Lightweight, no RTK Query.                                                |
+| `docs/domains/profile.md`  | `src/features/profile/`, `components/profile/`, `pages/profile/`. Profile route group + modal surfaces.                 |
+| `docs/domains/discover.md` | `src/features/discover/`, `components/discover/`, `pages/discover/`. Destinations feed + live presence + scene preview. |
 
 ## Active hooks (auto-fire)
 
@@ -61,14 +62,14 @@ Quick lookup for which skill (if any) owns each Pre-PR rule. Rules without a ski
 | Rule  | Topic                                                                                     | Owned by                                           |
 | ----- | ----------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | 1     | Code-reviewer agent dispatch                                                              | skill `pre-pr-review`                              |
-| 2     | Architectural boundary check                                                              | CLAUDE.md (Architecture > Dual Shell)              |
+| 2     | Architectural boundary check                                                              | `npm run lint:shells` + CLAUDE.md                  |
 | 3     | YAGNI                                                                                     | CLAUDE.md                                          |
 | 4     | DRY                                                                                       | CLAUDE.md                                          |
 | 5     | Behavior changes / NOTE comments                                                          | CLAUDE.md                                          |
 | 6     | Test coverage (95% floor)                                                                 | skill `coverage-guard`                             |
 | 7     | Barrel exports                                                                            | CLAUDE.md (also referenced from `rtk-query-split`) |
 | 8     | ESLint scope                                                                              | CLAUDE.md                                          |
-| 9     | i18n parity + no dupe keys                                                                | skill `add-i18n-key`                               |
+| 9     | i18n parity + no dupe keys                                                                | `npm run lint:i18n` + skill `add-i18n-key`         |
 | 10    | Error handling (no raw bodies to UI)                                                      | CLAUDE.md                                          |
 | 11    | List rendering (memo)                                                                     | CLAUDE.md                                          |
 | 12    | N+1 hot paths                                                                             | CLAUDE.md                                          |
