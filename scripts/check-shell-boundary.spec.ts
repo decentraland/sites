@@ -238,6 +238,20 @@ describe('when checking the dual-shell import boundary', () => {
     })
   })
 
+  describe('and a heavy route group is verified against the folders on disk', () => {
+    const runVerify = () => {
+      const result = spawnSync(process.execPath, [SCRIPT, '--dir', dir, '--verify-heavy-dirs'], { encoding: 'utf8' })
+      return { status: result.status, stderr: result.stderr }
+    }
+
+    it('should exit 2 and name the folders it could not find', () => {
+      const result = runVerify()
+      expect(result.status).toBe(2)
+      expect(result.stderr).toContain('no longer exist')
+      expect(result.stderr).toContain('whats-on')
+    })
+  })
+
   describe('and the source directory does not exist', () => {
     it('should exit 2 with a usage error', () => {
       const result = runCheck(join(dir, 'missing'))

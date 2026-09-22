@@ -20,6 +20,10 @@ const SHELL_DIR = 'shells'
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx']
 
 // Route groups that render inside DappsShell. Everything under them may import the shell.
+// These are DIRECTORY names under src/pages, not URLs: `/events` is served from `whats-on/` and
+// `/places` from `discover/`, which kept their original folder names through the route rename.
+// A stale entry here would silently downgrade a heavy route group to the lightweight tier and
+// report its legitimate shell imports as violations, so a missing directory is a hard error.
 const HEAVY_PAGE_DIRS = ['whats-on', 'blog', 'jump', 'social', 'discover', 'cast', 'storage', 'account', 'profile']
 
 // Entry points that ship on the lightweight tier. Anything they can reach must stay shell-free.
@@ -31,13 +35,15 @@ const AUTHORIZED_SHELL_IMPORTER = 'App.tsx'
 class UsageError extends Error {}
 
 function parseArgs(argv) {
-  const options = { dir: 'src' }
+  const options = { dir: 'src', verifyHeavyDirs: false }
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--dir') {
       const value = argv[i + 1]
       if (value === undefined || value.startsWith('--')) throw new UsageError('--dir expects a value')
       options.dir = value
       i += 1
+    } else if (argv[i] === '--verify-heavy-dirs') {
+      options.verifyHeavyDirs = true
     } else if (argv[i].startsWith('--')) {
       throw new UsageError(`unknown option ${argv[i]}`)
     }
@@ -223,8 +229,18 @@ function findViolations(files, dir) {
 }
 
 function run(argv, io) {
-  const { dir } = parseArgs(argv)
+  const { dir, verifyHeavyDirs } = parseArgs(argv)
   if (!existsSync(dir)) throw new UsageError(`source directory not found: ${dir}`)
+
+  if (verifyHeavyDirs) {
+    const stale = HEAVY_PAGE_DIRS.filter(name => !existsSync(join(dir, 'pages', name)))
+    if (stale.length) {
+      throw new UsageError(
+        `HEAVY_PAGE_DIRS lists directories that no longer exist under pages/: ${stale.join(', ')}. ` +
+          'Update the list to the current folder names, otherwise those route groups are treated as lightweight.'
+      )
+    }
+  }
 
   const files = listSourceFiles(dir)
   const violations = findViolations(files, dir)
