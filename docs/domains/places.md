@@ -1,4 +1,4 @@
-# Discover
+# places (routes: /places, formerly Discover)
 
 The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live Now rail + Featured rail + Explore band), `/places/communities`, `/places/place/:position`, `/places/world/:name`, `/places/*` (404, reuses `SocialNotFoundPage`). All render inside `<DiscoverLayout />` (purple radial page background, 64/96 navbar clearance).
 

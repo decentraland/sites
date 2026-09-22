@@ -1,4 +1,4 @@
-# whats-on
+# events (routes: /events, formerly What's On)
 
 Events + hangouts area. Mounted under `<DappsShell />` (heavy route).
 
