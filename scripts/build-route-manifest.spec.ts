@@ -195,6 +195,77 @@ describe('when extracting the route manifest from a router', () => {
     })
   })
 
+  describe('and an expression is nested inside a Route', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events">{extraRoutes}</Route>
+    </Routes>`)
+    })
+
+    it('should fail, since a nested route composed elsewhere would be omitted', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('computed child')
+    })
+  })
+
+  describe('and routes are grouped in a fragment with an expression', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <><Route path="/events" />{extraRoutes}</>
+    </Routes>`)
+    })
+
+    it('should look through the fragment rather than trust the direct children', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('computed child')
+    })
+  })
+
+  describe('and routes are grouped in a fragment with no expression', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <><Route path="/events" /><Route path="/blog" /></>
+    </Routes>`)
+    })
+
+    it('should collect them all', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(0)
+      expect(routesOf(result.stdout)).toEqual(['/blog', '/events'])
+    })
+  })
+
+  describe('and a route opts into case-sensitive matching', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events/X" caseSensitive element={<Something />} />
+    </Routes>`)
+    })
+
+    it('should fail rather than flatten a flag the manifest cannot carry', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('caseSensitive')
+    })
+  })
+
+  describe('and a wildcard sits mid-path next to a trailing one', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      {/* route-manifest: redirect */}
+      <Route path="/events/*/x/*" element={<Something />} />
+    </Routes>`)
+    })
+
+    it('should reject it by position, not by comparing it to the last segment', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('does not implement')
+    })
+  })
+
   describe('and a route uses syntax the edge matcher does not implement', () => {
     beforeEach(() => {
       writeRouter(`    <Routes>

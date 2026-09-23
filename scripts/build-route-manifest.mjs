@@ -96,6 +96,32 @@ function isCommentOnly(expression, sourceFile) {
   return /\/\*[\s\S]*\*\//.test(expression.getText(sourceFile))
 }
 
+/**
+ * Rejects a computed child in any node that composes routes, descending through fragments so
+ * `<Routes><><Route />{extra}</></Routes>` is caught too. A marker comment is an expression node
+ * with no `.expression`, which is the one computed child that hides nothing.
+ */
+function hasAttribute(opening, name, sourceFile) {
+  return opening.attributes.properties.some(
+    property => ts.isJsxAttribute(property) && property.name.getText(sourceFile) === name
+  )
+}
+
+function assertNoComputedRoutes(node, sourceFile) {
+  for (const child of node.children) {
+    if (ts.isJsxFragment(child)) {
+      assertNoComputedRoutes(child, sourceFile)
+      continue
+    }
+    if (!ts.isJsxExpression(child) || isCommentOnly(child, sourceFile)) continue
+    const { line } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile))
+    throw new BuildError(
+      `src/App.tsx:${line + 1} — <${node.openingElement?.tagName?.getText(sourceFile) ?? 'fragment'}> has a ` +
+        `computed child; every route must be a literal <Route> element or the manifest silently omits it`
+    )
+  }
+}
+
 function collectRoutes(sourceFile) {
   const valid = new Set()
   const notFound = []
@@ -107,18 +133,22 @@ function collectRoutes(sourceFile) {
       const opening = ts.isJsxElement(node) ? node.openingElement : node
       const tagName = opening.tagName.getText(sourceFile)
 
-      // A `<Routes>` child that is an expression hides routes from this extractor, and a manifest
-      // that under-reports turns a live page into a 404 at the edge. The same goes for a spread on
-      // a Route: its path is not readable here. Refuse rather than emit a manifest missing them.
-      if (tagName === 'Routes' && ts.isJsxElement(node)) {
-        for (const child of node.children) {
-          if (!ts.isJsxExpression(child) || isCommentOnly(child, sourceFile)) continue
-          const { line } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile))
-          throw new BuildError(
-            `src/App.tsx:${line + 1} — <Routes> has a computed child; every route must be a literal ` +
-              `<Route> element or the manifest silently omits it`
-          )
-        }
+      // An expression anywhere routes are composed hides routes from this extractor, and a manifest
+      // that under-reports turns a live page into a 404 at the edge. `<Routes>` is not the only such
+      // place: a `<Route>` nests children, and a fragment inside either one composes them too.
+      if ((tagName === 'Routes' || tagName === 'Route') && ts.isJsxElement(node)) {
+        assertNoComputedRoutes(node, sourceFile)
+      }
+
+      // `caseSensitive` changes how the router matches, and the manifest is a flat list of strings
+      // with nowhere to carry it: the edge matches case-insensitively for everything. Rejected
+      // rather than flattened, which would silently make the two disagree.
+      if (tagName === 'Route' && hasAttribute(opening, 'caseSensitive', sourceFile)) {
+        const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
+        throw new BuildError(
+          `src/App.tsx:${line + 1} — <Route> sets caseSensitive, which the manifest cannot express ` +
+            `and the edge matcher does not implement; add support on both sides first`
+        )
       }
 
       if (tagName === 'Route' && opening.attributes.properties.some(ts.isJsxSpreadAttribute)) {
@@ -156,9 +186,11 @@ function collectRoutes(sourceFile) {
       }
     }
 
-    const children = ts.isJsxElement(node) ? node.children : []
+    if (ts.isJsxFragment(node)) assertNoComputedRoutes(node, sourceFile)
+
+    const children = ts.isJsxElement(node) ? node.children : ts.isJsxFragment(node) ? node.children : []
     for (const child of children) visit(child, nextParent, children)
-    if (!ts.isJsxElement(node)) ts.forEachChild(node, child => visit(child, nextParent, []))
+    if (!ts.isJsxElement(node) && !ts.isJsxFragment(node)) ts.forEachChild(node, child => visit(child, nextParent, []))
   }
 
   visit(sourceFile, '/', [])
@@ -173,11 +205,12 @@ function collectRoutes(sourceFile) {
 function assertSupportedPattern(pattern) {
   if (pattern === '*') return
   const segments = pattern.split('/').slice(1)
-  for (const segment of segments) {
+  for (const [index, segment] of segments.entries()) {
+    // Compared by INDEX, not by value: with `/events/*/x/*` the first `*` equals the last one, so a
+    // value comparison lets a mid-path wildcard through and the worker then rejects the whole
+    // manifest, disabling enforcement for the bundle.
     const unsupported =
-      (segment.includes('*') && segment !== '*') ||
-      (segment === '*' && segment !== segments[segments.length - 1]) ||
-      segment.includes('?')
+      (segment.includes('*') && segment !== '*') || (segment === '*' && index !== segments.length - 1) || segment.includes('?')
     if (unsupported) {
       throw new BuildError(
         `route "${pattern}" uses syntax the edge matcher does not implement (optional params and ` +
