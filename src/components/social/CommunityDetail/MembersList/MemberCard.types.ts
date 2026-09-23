@@ -1,9 +1,5 @@
-type MemberCardProps = {
-  memberAddress: string
-  name: string
-  role: string
-  profilePictureUrl: string
-  hasClaimedName?: boolean
-}
+import type { CommunityMemberCard } from '../../../../features/communities/communities.helpers.types'
+
+type MemberCardProps = CommunityMemberCard
 
 export type { MemberCardProps }

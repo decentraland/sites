@@ -3,6 +3,17 @@ import type { CreateEventFormState } from './useCreateEventForm.types'
 
 const DURATION_PATTERN = /^([0-9]{1,2}):([0-5][0-9])$/
 
+// Kept in parity with the events API's `featured_item` schema (events repo `src/entities/Event/schemas.ts`):
+// same pattern and the same 160-char cap. Only collections-v2 URNs are accepted for now (base avatars,
+// collections-v1, third-party and smart-wearable `?baseUrl=` URNs are deliberately out of scope for this
+// iteration); the testnet chains stay so `.zone` can be exercised with amoy/sepolia items.
+const FEATURED_ITEM_URN_PATTERN = /^urn:decentraland:(matic|ethereum|amoy|sepolia):collections-v2:0x[a-fA-F0-9]{40}(:\d+)?$/
+const FEATURED_ITEM_URN_MAX_LENGTH = 160
+
+function isValidFeaturedItemUrn(value: string): boolean {
+  return value.length <= FEATURED_ITEM_URN_MAX_LENGTH && FEATURED_ITEM_URN_PATTERN.test(value)
+}
+
 function parseDurationMs(value: string): number | null {
   const match = value.match(DURATION_PATTERN)
   if (!match) return null
@@ -134,6 +145,7 @@ const INITIAL_STATE: CreateEventFormState = {
   coordY: '0',
   world: '',
   communityId: '',
+  featuredItem: '',
   email: ''
 }
 
@@ -146,6 +158,28 @@ function splitIsoDateTime(iso: string | null | undefined): { date: string; time:
   const date = `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`
   const time = `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`
   return { date, time }
+}
+
+// A recurrence end is a calendar-day boundary, not the start of that day. Serializing a date input
+// at local midnight converts UTC+ timezones to the previous UTC date and, more importantly, places
+// the cutoff before every occurrence on the selected final day. Use the end of the local day so the
+// API's inclusive `recurrent_until` boundary contains that day's occurrence.
+function localDateToEndOfDayIso(date: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+  if (!match) return null
+
+  const parsed = new Date(`${date}T23:59:59.999`)
+  const [, year, month, day] = match
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== Number(year) ||
+    parsed.getMonth() + 1 !== Number(month) ||
+    parsed.getDate() !== Number(day)
+  ) {
+    return null
+  }
+
+  return parsed.toISOString()
 }
 
 function durationMsToHhMm(durationMs: number | null | undefined): string {
@@ -184,8 +218,10 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
   const referenceStartAt = resolveFormReferenceStartAt(event, now)
   const start = splitIsoDateTime(referenceStartAt)
   const durationMs = resolveDurationMs(event, referenceStartAt)
-  const lastRecurrentDate = event.recurrent_dates?.[event.recurrent_dates.length - 1] ?? null
-  const repeatEnd = splitIsoDateTime(lastRecurrentDate)
+  // `recurrent_dates` is only a materialized occurrence window and may stop before the rule does.
+  // The edit form must hydrate the actual recurrence boundary. Local parsing also recovers the
+  // calendar date selected by the creator from existing local-midnight values (issue #707).
+  const repeatEnd = splitIsoDateTime(event.recurrent_until)
   // Treat events whose `world: true` flag isn't backed by a non-empty `server`
   // name as Land. The combination is an upstream-data symptom: the events API
   // has been observed returning `world: true` for events created with valid
@@ -215,8 +251,34 @@ function eventEntryToFormState(event: EventEntry, now: number = Date.now()): Cre
     coordY: isWorld ? '0' : String(event.y ?? 0),
     world: isWorld ? event.server ?? '' : '',
     communityId: event.community_id ?? '',
+    featuredItem: event.featured_item ?? '',
     email: event.contact ?? ''
   }
+}
+
+// Content fields the events backend re-moderates on: editing any of them on an already-approved
+// event flips it back to pending for a fresh review (see the events repo's `updateEvent.ts`
+// `MODERATED_CONTENT_FIELDS`). This mirrors the exact submit payload mapping in `handleSubmit`
+// (trim, world→x/y/server derivation, empty-description/featured-item→null) so callers can warn the
+// owner only when a save would actually re-trigger review — not for date/recurrence/email/community
+// edits, which the backend leaves approved. The featured item is moderated too: promoting a different
+// wearable/emote/collection is content moderators must re-check. Kept in parity with the backend's
+// moderated set for the fields this form can edit (categories aren't editable here, so they're omitted).
+function hasModeratedContentChanged(form: CreateEventFormState, initialEvent: EventEntry | null): boolean {
+  if (!initialEvent) return false
+  const isWorld = form.location === 'world'
+  return (
+    form.name.trim() !== initialEvent.name ||
+    (form.description.trim() || null) !== initialEvent.description ||
+    form.imageUrl !== initialEvent.image ||
+    (form.verticalImageUrl || null) !== initialEvent.image_vertical ||
+    isWorld !== Boolean(initialEvent.world) ||
+    (isWorld ? 0 : Number(form.coordX)) !== initialEvent.x ||
+    (isWorld ? 0 : Number(form.coordY)) !== initialEvent.y ||
+    (isWorld ? form.world : null) !== initialEvent.server ||
+    // `?? null` hedges against an events deployment that predates the column and omits the key entirely.
+    (form.featuredItem.trim() || null) !== (initialEvent.featured_item ?? null)
+  )
 }
 
 export {
@@ -226,6 +288,9 @@ export {
   computeUpcomingOccurrences,
   durationMsToHhMm,
   eventEntryToFormState,
+  hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
+  localDateToEndOfDayIso,
   parseDurationMs,
   recurrenceToApi
 }

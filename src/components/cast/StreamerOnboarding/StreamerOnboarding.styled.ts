@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { keyframes } from '@emotion/react'
 import { Box, TextField, Typography, dclColors, styled } from 'decentraland-ui2'
+import { DropdownItem, DropdownList } from '../common/DeviceSelector/DeviceSelector.styled'
 
 const spin = keyframes({
   '0%': { transform: 'rotate(0deg)' },
@@ -151,6 +152,9 @@ const SelectorButton = styled('button')<{ $isOpen: boolean }>(({ theme, $isOpen 
   transition: 'background-color 0.2s ease',
   borderRadius: theme.spacing(0.5),
   gap: theme.spacing(0.25),
+  '&:focus-visible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 2 },
+  '&:active': { backgroundColor: theme.palette.action.selected },
+  '&:disabled': { color: theme.palette.text.disabled, cursor: 'not-allowed' },
   '&:hover': {
     backgroundColor: 'rgba(0, 0, 0, 0.04)'
   },
@@ -174,41 +178,6 @@ const SelectorLabel = styled('span')(({ theme }) => ({
   color: '#1a1a1a',
   [theme.breakpoints.down('sm')]: {
     display: 'none'
-  }
-}))
-
-const DropdownList = styled('div')(({ theme }) => ({
-  position: 'fixed',
-  minWidth: '250px',
-  marginTop: theme.spacing(0.5),
-  background: 'white',
-  border: '1px solid #e0e0e0',
-  borderRadius: theme.spacing(1),
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  zIndex: 10001,
-  maxHeight: '200px',
-  overflowY: 'auto',
-  [theme.breakpoints.down('sm')]: {
-    minWidth: '200px',
-    maxWidth: '90vw'
-  }
-}))
-
-const DropdownItem = styled('div')<{ $isSelected: boolean }>(({ theme, $isSelected }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: `${theme.spacing(1)} ${theme.spacing(1.5)}`,
-  fontSize: '14px',
-  color: $isSelected ? '#FF2D55' : '#1a1a1a',
-  cursor: 'pointer',
-  transition: 'background-color 0.15s ease',
-  '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.04)'
-  },
-  '& svg': {
-    fontSize: '18px',
-    color: '#FF2D55'
   }
 }))
 

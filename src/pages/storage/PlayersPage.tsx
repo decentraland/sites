@@ -13,7 +13,7 @@ import { useGetProfileNames } from '../../features/profile/profile.client'
 import { useClearAllPlayersMutation, useListPlayersQuery } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
@@ -21,15 +21,15 @@ import { SegmentEvent } from '../../modules/segment.types'
 import { CardsGrid } from './SelectPage.styled'
 import { SectionHeader } from './shared.styled'
 
-function PlayersPage() {
+function PlayersPageContent() {
   useStorageRedirect()
   const t = useFormatMessage()
   const navigate = useNavigate()
   const { identity } = useAuthIdentity()
-  const { realm, position } = useStorageScope()
+  const { realm, position, blocked } = useStorageScope()
   const track = useStorageTrack()
 
-  const { data: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity })
+  const { currentData: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [clearAllPlayers] = useClearAllPlayersMutation()
 
   const [query, setQuery] = useState('')
@@ -65,7 +65,7 @@ function PlayersPage() {
     setClearOpen(false)
   }, [clearAllPlayers, identity, realm, position, track])
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.players.title'),
     properties: { section: 'storage_players', realm: realm ?? undefined, position: position ?? undefined }
   })
@@ -129,6 +129,11 @@ function PlayersPage() {
       />
     </StorageLayout>
   )
+}
+
+function PlayersPage() {
+  const { address } = useAuthIdentity()
+  return <PlayersPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { PlayersPage }

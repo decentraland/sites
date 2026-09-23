@@ -4,7 +4,7 @@ import { Provider } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 import { CircularProgress } from 'decentraland-ui2'
 import { CenteredBox } from '../App.styled'
-import { ProfileModalHost } from '../components/profile/ProfileModal'
+import { ProfileModalHost, ProfileModalHostProvider } from '../components/profile/ProfileModal'
 import { getEnv } from '../config/env'
 import { store } from './store'
 
@@ -63,15 +63,20 @@ function DappsShell() {
     <HelmetProvider>
       <Provider store={store}>
         <Suspense fallback={<DappsShellFallback />}>
-          <Outlet />
-          {/* ProfileModalHost listens to `?profile=<address>` and renders the
-              full profile experience as an overlay on top of whats-on, blog,
-              social, jump, cast, storage and profile pages. Mounting it at
-              shell level keeps the store + RTK clients bundled with the heavy
-              chunk so the lightweight homepage stays slim. Lightweight routes
-              that want to open a profile must navigate to `/profile/<address>`
-              instead of calling `useOpenProfileModal()`. */}
-          <ProfileModalHost />
+          {/* ProfileModalHostProvider flags every heavy route as host-capable so
+              `useOpenProfileModal` opens the `?profile=` overlay here. Lightweight,
+              Layout-less routes (e.g. the standalone reels viewer) render outside
+              this provider, so the same hook navigates to `/profile/<address>`
+              instead of writing a `?profile=` param nothing renders. */}
+          <ProfileModalHostProvider>
+            <Outlet />
+            {/* ProfileModalHost listens to `?profile=<address>` and renders the
+                full profile experience as an overlay on top of whats-on, blog,
+                social, jump, cast, storage and profile pages. Mounting it at
+                shell level keeps the store + RTK clients bundled with the heavy
+                chunk so the lightweight homepage stays slim. */}
+            <ProfileModalHost />
+          </ProfileModalHostProvider>
         </Suspense>
       </Provider>
     </HelmetProvider>

@@ -1,5 +1,6 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../config/env'
+import { identityAddress } from '../../utils/identityScope'
 import { fetchWithIdentity } from '../../utils/signedFetch'
 import { REJECTION_REASON_MAX_LENGTH } from './events.admin.types'
 import type {
@@ -52,6 +53,7 @@ const adminClient = createApi({
   keepUnusedDataFor: 60,
   endpoints: build => ({
     getMyProfileSettings: build.query<AdminProfileSettings, IdentityOnlyParams>({
+      serializeQueryArgs: ({ queryArgs }) => ({ account: identityAddress(queryArgs.identity) }),
       queryFn: async ({ identity }) => {
         try {
           const response = await fetchWithIdentity(`${getEventsApiUrl()}/profiles/me/settings`, identity, 'GET')
@@ -67,6 +69,7 @@ const adminClient = createApi({
       providesTags: ['MyAdmin']
     }),
     listAdmins: build.query<AdminProfileSettings[], IdentityOnlyParams>({
+      serializeQueryArgs: ({ queryArgs }) => ({ account: identityAddress(queryArgs.identity) }),
       queryFn: async ({ identity }) => {
         try {
           const response = await fetchWithIdentity(`${getEventsApiUrl()}/profiles/settings`, identity, 'GET')
@@ -105,6 +108,7 @@ const adminClient = createApi({
       invalidatesTags: ['Admins', 'MyAdmin']
     }),
     getAdminEvents: build.query<EventEntry[], IdentityOnlyParams>({
+      serializeQueryArgs: ({ queryArgs }) => ({ account: identityAddress(queryArgs.identity) }),
       queryFn: async ({ identity }) => {
         try {
           const response = await fetchWithIdentity(`${getEventsApiUrl()}/events`, identity, 'GET')

@@ -40,6 +40,7 @@ import { redirectToAuth } from '../../../utils/authRedirect'
 import { getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
 import { FriendsModal } from '../FriendsModal'
 import { ProfileAvatar } from '../ProfileAvatar'
+import { GET_A_NAME_URL } from '../profileLinks'
 import { useModalFriendsNavigation } from '../ProfileModal/ModalProfileNavigation'
 import { getFriendButtonConfig } from './ProfileHeader.helpers'
 import {
@@ -158,9 +159,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
   const openFriendsSurface = useModalFriendsNavigation()
 
   const handleGetAName = useCallback(() => {
-    const builderUrl = getEnv('BUILDER_URL')
-    if (!builderUrl) return
-    window.open(`${builderUrl.replace(/\/+$/, '')}/names`, '_blank', 'noopener,noreferrer')
+    window.open(GET_A_NAME_URL, '_blank', 'noopener,noreferrer')
   }, [])
 
   const handleManageWorld = useCallback(() => {

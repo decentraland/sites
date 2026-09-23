@@ -1,21 +1,30 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { setupListeners } from '@reduxjs/toolkit/query'
+import { createLazyStoreEnhancer } from '@dcl/core-web3/lazy'
 import { blogReducer } from '../features/cms/cms.slice'
 import { adminClient } from '../features/events/events.admin.client'
 import { eventsClient } from '../features/events/events.client'
+import { accountNotificationsClient } from '../services/accountNotificationsClient'
 import { cast2Client } from '../services/cast2Client'
 import { cmsClient } from '../services/cmsClient'
+import { creditsClient } from '../services/creditsClient'
 import { marketplaceClient } from '../services/marketplaceClient'
 import { placesClient } from '../services/placesClient'
 import { referralClient } from '../services/referralClient'
 import { socialClient } from '../services/socialClient'
 import { storageClient } from '../services/storageClient'
 import { subgraphClient } from '../services/subgraphClient'
+import { watchAuthCache } from './authCacheReset'
 import { createJumpEventsListenerMiddleware } from './jumpEvents.listeners'
+import { clearPrivateCaches } from './privateCaches'
 import { createWhatsOnAdminListenerMiddleware } from './whatsOnAdmin.listeners'
 
-const rootReducer = combineReducers({
+// Kept as a map (not the combined reducer) so the BlockchainShell's lazy enhancer can rebuild the
+// root reducer with the core-web3 slices appended while preserving every static reducer. Left
+// un-annotated so TS infers the precise per-slice state the RTK Query middleware type-checks against.
+const staticReducers = {
   [eventsClient.reducerPath]: eventsClient.reducer,
   [adminClient.reducerPath]: adminClient.reducer,
   blog: blogReducer,
@@ -26,11 +35,13 @@ const rootReducer = combineReducers({
   [storageClient.reducerPath]: storageClient.reducer,
   [subgraphClient.reducerPath]: subgraphClient.reducer,
   [marketplaceClient.reducerPath]: marketplaceClient.reducer,
-  [referralClient.reducerPath]: referralClient.reducer
-})
+  [referralClient.reducerPath]: referralClient.reducer,
+  [accountNotificationsClient.reducerPath]: accountNotificationsClient.reducer,
+  [creditsClient.reducerPath]: creditsClient.reducer
+}
 
 const store = configureStore({
-  reducer: rootReducer,
+  reducer: combineReducers(staticReducers),
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
       .prepend(createWhatsOnAdminListenerMiddleware().middleware, createJumpEventsListenerMiddleware().middleware)
@@ -44,10 +55,28 @@ const store = configureStore({
         storageClient.middleware,
         subgraphClient.middleware,
         marketplaceClient.middleware,
-        referralClient.middleware
+        referralClient.middleware,
+        accountNotificationsClient.middleware,
+        creditsClient.middleware
       ),
   devTools: import.meta.env.DEV
 })
+
+// Wire up the global `focus` + `online` listeners so any query that opts into
+// `refetchOnFocus` / `refetchOnReconnect` actually fires. Without this call,
+// those flags are silently ignored. Used by the /places LIVE rail to keep
+// hot-scenes / live-worlds data fresh when the user returns to the tab.
+setupListeners(store.dispatch)
+
+const stopAuthCacheWatch = watchAuthCache(() => clearPrivateCaches(store.dispatch))
+if (import.meta.hot) import.meta.hot.dispose(stopAuthCacheWatch)
+
+/**
+ * Lazily injects core-web3's `wallet` / `network` / `transactions` slices into the store once the
+ * BlockchainShell's `Web3LazyProvider` has loaded the (heavy) Web3 bundle. Additive — every static
+ * reducer above is preserved. No-op after the first call. Only `BlockchainShell` should invoke it.
+ */
+const injectWeb3Reducers = createLazyStoreEnhancer(store, staticReducers)
 
 type RootState = ReturnType<typeof store.getState>
 type AppDispatch = typeof store.dispatch
@@ -55,5 +84,5 @@ type AppDispatch = typeof store.dispatch
 const useAppDispatch = () => useDispatch<AppDispatch>()
 const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
-export { store, useAppDispatch, useAppSelector }
+export { injectWeb3Reducers, store, useAppDispatch, useAppSelector }
 export type { RootState, AppDispatch }

@@ -29,7 +29,8 @@ jest.mock('../App.styled', () => ({
 }))
 
 jest.mock('../components/profile/ProfileModal', () => ({
-  ProfileModalHost: () => null
+  ProfileModalHost: () => null,
+  ProfileModalHostProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
 
 function renderShell() {

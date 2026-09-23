@@ -1,6 +1,7 @@
 import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
 import { fetchWithIdentity } from '../../utils/signedFetch'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 import type { FetchListOptions, FetchListResult, Image, ImageUser, Rarity, WearableParsed } from './reels.types'
 
 const FETCH_TIMEOUT_MS = 5000
@@ -18,7 +19,7 @@ async function fetchImageById(id: string, signal?: AbortSignal): Promise<Image> 
   const cached = imageCache.get(id)
   if (cached) return cached
   const response = await fetch(`${getReelServiceUrl()}/api/images/${id}/metadata`, {
-    signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
   })
   if (!response.ok) throw new Error(`Image ${id} not found`)
   const image = (await response.json()) as Image
@@ -26,6 +27,11 @@ async function fetchImageById(id: string, signal?: AbortSignal): Promise<Image> 
   return image
 }
 
+// camera-reel-service has no visibility query param — it gates visibility purely by auth: a request
+// signed as the owner returns ALL images (public + private, each carrying `isPublic`), an unsigned
+// request returns only public ones. So pass `identity` ONLY when fetching the owner's own gallery
+// (so they can filter public/private client-side); never pass it for someone else's gallery, or it
+// would leak that user's private snapshots.
 async function fetchImagesByUser(
   address: string,
   options: FetchListOptions,
@@ -36,7 +42,7 @@ async function fetchImagesByUser(
   const url = `${getReelServiceUrl()}/api/users/${address}/images?${params.toString()}`
   const response = identity
     ? await fetchWithIdentity(url, identity, 'GET', undefined, undefined, signal)
-    : await fetch(url, { signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    : await fetch(url, { signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS) })
   if (!response.ok) throw new Error(`Cannot fetch images for ${address}`)
   return (await response.json()) as FetchListResult
 }
@@ -89,7 +95,7 @@ async function fetchGraph(url: string | undefined, urns: string[], signal?: Abor
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: WEARABLE_QUERY, variables: { urns } }),
-      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
     })
     if (!response.ok) return []
     const json = (await response.json()) as { data?: { items?: GraphQLItem[] } }
@@ -167,7 +173,7 @@ async function fetchProfileFaces(addresses: string[], signal?: AbortSignal): Pro
       // eslint-disable-next-line @typescript-eslint/naming-convention
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids: uniqueIds }),
-      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      signal: signal ?? timeoutSignal(FETCH_TIMEOUT_MS)
     })
     if (!response.ok) return result
     const profiles = (await response.json()) as ProfileResponse[]

@@ -12,7 +12,7 @@ import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
 import { useCreatorHubDownload } from '../../hooks/useCreatorHubDownload'
 import bannerImage from '../../images/download/creator-hub/download-creator-hub-banner.png'
-import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { BannerImage, CardContainer, DownloadActions, InfoContainer, PageContainer, Title } from './CreatorHubDownload.styled'
 
 const CreatorHubDownload = memo(() => {
@@ -39,6 +39,7 @@ const CreatorHubDownload = memo(() => {
                 }}
                 event={SegmentEvent.DOWNLOAD}
                 place={SectionViewedTrack.DOWNLOAD}
+                downloadTarget={DownloadTarget.CREATOR_HUB}
                 endIcon={<DownloadButtonImage src={primaryOption.image} alt="" />}
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 label={l('page.download.download_for', { os_name: primaryOption.text })}
@@ -53,6 +54,7 @@ const CreatorHubDownload = memo(() => {
                       data-place={SectionViewedTrack.DOWNLOAD}
                       data-event={SegmentEvent.DOWNLOAD}
                       data-os={option.text}
+                      data-download-target={DownloadTarget.CREATOR_HUB}
                       onClick={event => {
                         event.preventDefault()
                         trackClick(event)

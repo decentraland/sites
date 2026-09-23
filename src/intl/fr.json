@@ -5,7 +5,7 @@
   "page": {
     "download": {
       "title": "Télécharger Decentraland",
-      "description": "Téléchargez Decentraland et commencez à explorer le métavers",
+      "description": "Téléchargez Decentraland et venez traîner",
       "download_onboarding_title": "Téléchargez Decentraland\net venez traîner !",
       "not_available": "Non disponible pour votre système d'exploitation",
       "not_available_subtitle": "Decentraland est disponible pour <span>Windows</span> et <span>macOS</span>.",
@@ -118,6 +118,9 @@
         "view_all": "Voir tout"
       }
     },
+    "events": {
+      "page_title": "Événements — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -206,13 +209,16 @@
         "messages_count": "{count} message",
         "messages_count_plural": "{count} messages",
         "no_messages": "Aucun message pour le moment. {action}",
-        "no_messages_yet": "Aucun message pour le moment",
+        "no_messages_yet": "Pas encore de messages.",
         "start_conversation": "Lancez la conversation !",
         "sign_in_to_participate": "Connectez-vous pour participer.",
         "type_message": "Écrivez un message...",
         "sign_in_prompt": "Connectez-vous pour envoyer des messages dans le chat",
         "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour envoyer des messages",
-        "footer_text": "Rendez-vous dans {sceneName} sur Decentraland pour participer au chat."
+        "footer_text": "Rendez-vous dans {sceneName} sur Decentraland pour participer au chat.",
+        "footer_jump_prefix": "Rejoignez",
+        "footer_jump_suffix": "dans Decentraland pour participer au chat.",
+        "unavailable": "Le chat est indisponible pour le moment."
       },
       "people": {
         "title": "Participants",
@@ -348,6 +354,27 @@
       "title": "Signaler un joueur – Decentraland",
       "success_title": "Signalement envoyé – Decentraland"
     },
+    "confirm_email": {
+      "title": "Confirmez votre e-mail – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "Confirmez votre e-mail",
+      "heading_confirmed": "E-mail confirmé !",
+      "description_account": "Complétez le défi de sécurité ci-dessous et cliquez sur « Confirmer l'e-mail » pour activer les notifications de votre compte.",
+      "description_credits": "Complétez le défi de sécurité ci-dessous et cliquez sur « Confirmer l'e-mail » pour commencer à gagner des Marketplace Credits.",
+      "confirmed_account": "Tout est prêt. Retournez sur l'application Decentraland et commencez à utiliser votre compte.",
+      "confirmed_credits": "Tout est prêt. Retournez sur l'application Decentraland et commencez à gagner des Marketplace Credits.",
+      "confirm_button": "Confirmer l'e-mail",
+      "confirming_button": "Confirmation...",
+      "go_to_marketplace": "Aller au Marketplace",
+      "go_to_account": "Retour au compte",
+      "error_generic": "Nous n'avons pas pu confirmer votre e-mail. Réessayez ou demandez un nouveau lien de confirmation.",
+      "invalid_link_title": "Lien invalide",
+      "invalid_link_description": "Ce lien de confirmation est invalide ou a expiré.",
+      "invalid_source_title": "Source invalide",
+      "invalid_source_description": "Source de confirmation invalide. Vérifiez le lien de votre e-mail.",
+      "missing_address_title": "Adresse manquante",
+      "missing_address_description": "Le paramètre d'adresse est requis dans l'URL. Vérifiez le lien de votre e-mail."
+    },
     "play": {
       "title": "La version web n'est plus disponible.",
       "subtitle": "Continuez à jouer sur l'application de bureau ou mobile.",
@@ -356,12 +383,19 @@
       "jump_in": "ENTRER !",
       "experimental": "Envie de continuer à jouer sur le web ? Essayez la version expérimentale {here}",
       "here": "ICI"
+    },
+    "not_found": {
+      "title_oops": "Oups !",
+      "title_rest": "Cette page a quitté le monde.",
+      "description": "Le lien est peut-être obsolète, mais Decentraland est toujours en ligne. Découvrez des événements communautaires, des sets de DJ, des jeux conçus par des créateurs et de nouvelles expériences dans le monde.",
+      "cta": "Voir le programme"
     }
   },
   "page_invite": {
     "social": {
       "title": "Rejoignez Decentraland - Un monde virtuel construit par sa communauté",
-      "description": "Personnalisez votre avatar, retrouvez des gens du monde entier et découvrez Decentraland. Commencez depuis votre navigateur, puis téléchargez l'application pour entrer."
+      "description": "Decentraland, c'est là où vous passez du temps en ligne. Rejoignez des projections de films, des concerts, des quiz et d'autres événements communautaires. Venez quand vous voulez et voyez qui est là.",
+      "title_with_name": "{name} vous a invité à rejoindre Decentraland"
     },
     "hero": {
       "title": "vous a invité à rejoindre Decentraland",
@@ -432,7 +466,7 @@
         "subtitle": "En savoir plus sur Decentraland",
         "cta": {
           "label": "voir plus",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -476,7 +510,7 @@
         "menu": "Menu",
         "getting_started": {
           "title": "Pour commencer",
-          "what_is": "Qu'est-ce que Decentraland ?",
+          "what_is": "À propos de Decentraland",
           "download": "Télécharger Decentraland",
           "system_requirements": "Configuration requise",
           "faqs": "FAQ",
@@ -562,17 +596,13 @@
         },
         "support_updates_section": {
           "title": "Mises à jour du Support",
-          "item_count": "5",
-          "item_0_question": "Sortie Explorer - v0.141.0 (22/4/2026)",
-          "item_0_answer": "Client :\n\nFonctionnalités :\n- Désactiver le bouton « changer de compte » pour les nouveaux utilisateurs\n- Étendre AVPro pour prendre en charge les vidéos YouTube et Google Drive publiques (v2)\n- Éclat lumineux pour le soleil et la lune\n\nCorrections :\n- Activer uniquement le paramètre de diffusion de la scène actuelle\n- Erreur lors de la suppression de membres d'une communauté\n- Multiples problèmes de chargement LSD et d'assets\n- Écran de connexion superposé sur un nouveau compte\n- Supprimer le bouton du micro lors d'un appel sortant\n\nPour plus de détails, veuillez consulter la PR.",
-          "item_1_question": "Nouvelle version du Creator Hub (v0.35.0)",
-          "item_1_answer": "Fonctionnalités :\n- Spawn Areas : Vous pouvez maintenant voir une représentation visuelle des zones d'apparition directement dans l'éditeur de scènes, et ajuster les zones d'apparition visuellement, y compris les plages de décalage aléatoire.\n- Catalogue d'Actifs Dynamique avec Compatibilité SDK : Le catalogue d'actifs charge désormais la dernière version depuis le CDN à l'exécution, de sorte que les nouveaux actifs apparaissent automatiquement sans attendre une mise à jour complète de l'application.\n- Permissions d'Accès aux Worlds : L'onglet \"Accès\" est désormais disponible dans les paramètres des Worlds, vous permettant de gérer qui peut entrer dans votre world directement depuis le Creator Hub.\n\nCorrections :\n- Disposition de Scène en Mode Avancé : La disposition de scène se met désormais correctement à jour lors de l'édition en mode avancé.\n- Sol Dupliqué dans les Scènes : L'ouverture d'une scène ne rend plus un plan de sol dupliqué.\n- Récupération des Projets Gérés : Correction d'un échec lors du chargement des projets gérés.\n- Signature de Code Windows : Le pipeline de compilation Windows échoue désormais correctement en cas d'erreurs de signature de code au lieu de produire silencieusement des exécutables non signés.\n- Dépendance Legacy Supprimée : Remplacement de la bibliothèque obsolète decentraland-connect par une implémentation vendorisée plus légère utilisant viem, réduisant la taille du bundle.\n\nAméliorations :\n- Peaufinage de l'UI : Mise à jour des couleurs, styles de composants, alignement des transformations, en-tête de l'inspecteur d'entités, renommage d'entités et style de l'onglet actifs pour une meilleure expérience d'édition.\n- Texte de l'Onglet Collaborateurs : Mise à jour du texte dans l'onglet collaborateurs avec des instructions plus claires.",
-          "item_2_question": "Attention Créateurs : Mises à jour du Backface Culling",
-          "item_2_answer": "Le Backface Culling est désormais activé par défaut dans le moteur sur tous les matériaux des modèles.\n\nPourquoi : Optimisation significative des performances.\nComment : Étant une optimisation du moteur, elle affecte également les matériaux déjà publiés.\n\nPoints d'Action :\nNous vous encourageons à vérifier vos scènes en suivant la section Dépannage dans la documentation.\n\nQuelques scénarios à vérifier en priorité :\n- Drapeaux, rideaux, murs faits de Plans : Si un mur fait d'un plan avec un matériau simple face, il ne sera pas visible de l'autre côté.\n- Herbe / Feuilles d'un arbre faites de Plans avec des matériaux simple face : Même cas que ci-dessus.\n- Intérieur de Cubes et autres formes servant de pièces : Si le matériau du cube est orienté vers l'extérieur, il ne sera pas visible de l'intérieur.",
-          "item_3_question": "Extension Visual Studio - Fin du Support",
-          "item_3_answer": "Avec la priorité donnée au Creator Hub, l'extension Visual Studio n'est plus supportée.\n\nL'extension a été retirée du VS Marketplace.",
-          "item_4_question": "Player.logs - Comment les obtenir",
-          "item_4_answer": "Voici un guide pour trouver et générer le fichier Player.log. Ces fichiers peuvent être utiles pour le dépannage des problèmes signalés.\n\nOuvrez le chat dans l'application de bureau Decentraland et tapez : /logs\n\nOu :\n\nPour Windows :\nNaviguez vers : C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nTrouvez le fichier nommé Player.log\n\nPour Mac :\nOuvrez Finder et appuyez sur Cmd + Shift + G pour ouvrir le dialogue \"Aller au dossier\".\nEntrez le chemin : /Users/UserName/Library/Logs/Decentraland/Explorer/\nTrouvez le fichier nommé Player.log\n\nLe fichier Player.log affiche les problèmes de la session actuelle/active.\nLe fichier Player-prev.log affiche les problèmes de la session précédente.\n\nLogs du Launcher (output.log) :\nWindows : C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac : /Users/UserName/Library/Logs/DecentralandLauncherLight"
+          "item_count": "3",
+          "item_0_question": "Attention Créateurs : Mises à jour du Backface Culling",
+          "item_0_answer": "Le Backface Culling est désormais activé par défaut dans le moteur sur tous les matériaux des modèles.\n\nPourquoi : Optimisation significative des performances.\nComment : Étant une optimisation du moteur, elle affecte également les matériaux déjà publiés.\n\nPoints d'Action :\nNous vous encourageons à vérifier vos scènes en suivant la section Dépannage dans la documentation.\n\nQuelques scénarios à vérifier en priorité :\n- Drapeaux, rideaux, murs faits de Plans : Si un mur fait d'un plan avec un matériau simple face, il ne sera pas visible de l'autre côté.\n- Herbe / Feuilles d'un arbre faites de Plans avec des matériaux simple face : Même cas que ci-dessus.\n- Intérieur de Cubes et autres formes servant de pièces : Si le matériau du cube est orienté vers l'extérieur, il ne sera pas visible de l'intérieur.",
+          "item_1_question": "Extension Visual Studio - Fin du Support",
+          "item_1_answer": "Avec la priorité donnée au Creator Hub, l'extension Visual Studio n'est plus supportée.\n\nL'extension a été retirée du VS Marketplace.",
+          "item_2_question": "Player.logs - Comment les obtenir",
+          "item_2_answer": "Voici un guide pour trouver et générer le fichier Player.log. Ces fichiers peuvent être utiles pour le dépannage des problèmes signalés.\n\nOuvrez le chat dans l'application de bureau Decentraland et tapez : /logs\n\nOu :\n\nPour Windows :\nNaviguez vers : C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nTrouvez le fichier nommé Player.log\n\nPour Mac :\nOuvrez Finder et appuyez sur Cmd + Shift + G pour ouvrir le dialogue \"Aller au dossier\".\nEntrez le chemin : /Users/UserName/Library/Logs/Decentraland/Explorer/\nTrouvez le fichier nommé Player.log\n\nLe fichier Player.log affiche les problèmes de la session actuelle/active.\nLe fichier Player-prev.log affiche les problèmes de la session précédente.\n\nLogs du Launcher (output.log) :\nWindows : C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac : /Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "État du Système",
@@ -605,6 +635,9 @@
         "shop": "Boutique",
         "create": "Créer",
         "learn": "Apprendre",
+        "discover": "Découvrir",
+        "events": "Événements",
+        "places": "Lieux",
         "jump_in": "Entrer",
         "sign_in": "Se connecter",
         "signing_in": "Connexion...",
@@ -626,6 +659,7 @@
         "create_in_decentraland": "Créer dans Decentraland",
         "publish_wearables_emotes": "Publier des vêtements et emotes",
         "publish_land": "Publier un terrain",
+        "creator_documentation": "Documentation pour les créateurs",
         "get_started": "Commencer",
         "start_creating": "Commencer à créer",
         "see_whats_new": "Voir les nouveautés",
@@ -633,7 +667,7 @@
         "my_assets": "Mes actifs",
         "account_settings": "Paramètres du compte",
         "marketplace_authorizations": "Autorisations du Marketplace",
-        "whats_on": "Actualités"
+        "credits_balance": "{count} crédits"
       }
     },
     "reels": {
@@ -833,7 +867,8 @@
         "not_found": "Ce monde ou cette scène est introuvable dans le service de stockage.",
         "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
         "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
-        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes."
+        "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes.",
+        "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée."
       }
     },
     "report": {
@@ -894,16 +929,52 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "Ce hangout n’est plus disponible. Parcourez",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "Cet événement n’est plus disponible. Parcourez",
+        "deleted_notice_link": "Tous les événements",
         "deleted_notice_suffix": "pour en découvrir plus."
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "mobile_docs_cta": "Découvrez la documentation créateur",
+        "scroll_label": "Faire défiler jusqu'à la section suivante"
+      },
+      "live_scenes": {
+        "title": "ce que les créateurs construisent en ce moment",
+        "title_highlight": "Explorez",
+        "online": "{count} en ligne",
+        "view_all": "Voir toutes les scènes en direct"
+      },
+      "blog": {
+        "title": "du blog",
+        "title_highlight": "Les nouveautés",
+        "view_all": "Lire le blog"
+      }
+    },
+    "error_boundary": {
+      "title": "Une erreur est survenue",
+      "message": "Nous n'avons pas pu charger cette page. Vérifiez votre connexion et réessayez.",
+      "reload": "Recharger"
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "Modifier le nom, la description, l'image ou le lieu d'un événement approuvé le renvoie en révision.",
+    "featured_item_label": "Wearables en Vedette (Optionnel)",
+    "featured_item_placeholder": "Recherchez des articles et collections ou collez un URN",
+    "featured_item_by": "Par {creator}",
+    "featured_item_group_items": "Articles",
+    "featured_item_group_collections": "Collections",
+    "featured_item_searching": "Recherche…",
+    "featured_item_no_results": "Aucun article ni collection trouvé",
+    "featured_item_min_length": "Saisissez au moins {count} caractères",
+    "featured_item_error": "Impossible de joindre la marketplace. Réessayez.",
+    "featured_item_clear": "Retirer l'article en vedette",
+    "error_invalid_featured_item": "Doit être un URN valide de collection ou d'article",
     "error_image_too_large": "Nous n'avons pas pu compresser cette image en dessous de 500 Ko. Veuillez choisir un fichier plus petit.",
+    "recommended_size": "(taille recommandée : 1920 × 1080, zone de sécurité : 1080 × 1080)",
+    "image_helper": "Importez un PNG, JPG ou GIF (1920×1080px, 500 ko max). Gardez les visuels et le texte importants dans la zone de sécurité centrée de 1080×1080 pour qu'ils s'adaptent à toutes les résolutions d'écran.",
     "vertical_recommended_size": "Taille recommandée : 716 × 1814 px",
     "recurrence": "Récurrence",
     "every_day": "Chaque jour",
@@ -928,7 +999,6 @@
       "decentraland_community": "Communauté Decentraland",
       "members": "Membres",
       "by": "Par",
-      "unknown": "Inconnu",
       "joined": "REJOINT",
       "sign_in_to_join": "CONNECTEZ-VOUS POUR REJOINDRE",
       "request_to_join": "DEMANDER À REJOINDRE",
@@ -1089,6 +1159,7 @@
       "filter_favorites": "Favoris",
       "empty_owner_title": "Rien ici pour l'instant — mais c'est facile à changer",
       "empty_owner_subtitle": "Mes Lieux affiche les espaces que vous possédez ou gérez dans Decentraland. Le plus simple pour commencer est d'obtenir un NAME, qui débloque votre propre World.",
+      "empty_owner_has_name_subtitle": "Mes Lieux affiche les espaces que vous possédez ou gérez dans Decentraland. Vous avez déjà un NAME : publiez un World dessus et il apparaîtra ici.",
       "empty_owner_cta": "Obtenir un name",
       "empty_favorites_title": "Rien d'enregistré pour l'instant",
       "empty_favorites_subtitle": "Ajoutez des Lieux favoris en appuyant sur le cœur d’une carte de lieu ou sur la carte de Decentraland. Vous les retrouverez tous ici.",
@@ -1099,7 +1170,11 @@
       "empty_member": "Ce membre n'a pris aucune photo.",
       "count": "{count} photos",
       "empty_owner_subtitle": "Entrez et commencez à collectionner des souvenirs ! Appuyez sur « C » pour ouvrir l’appareil photo et sur la « barre d’espace » pour prendre une photo.",
-      "empty_owner_cta": "Entrer"
+      "empty_owner_cta": "Entrer",
+      "filter_all": "Toutes",
+      "filter_public": "Publiques",
+      "filter_private": "Privées",
+      "empty_filter": "Aucune photo ne correspond à ce filtre."
     },
     "referral_rewards": {
       "anonymous": "Connectez-vous pour inviter des amis et débloquer des récompenses.",
@@ -1149,13 +1224,13 @@
   "event_detail": {
     "delete": "Supprimer",
     "delete_modal": {
-      "title": "Voulez-vous vraiment supprimer votre hangout ?",
-      "subtitle": "Ce hangout sera définitivement supprimé de vos hangouts. Cette action est irréversible.",
+      "title": "Voulez-vous vraiment supprimer votre événement ?",
+      "subtitle": "Cet événement sera définitivement supprimé de vos événements. Cette action est irréversible.",
       "cancel": "Annuler",
-      "confirm": "Supprimer le hangout",
-      "toast_title": "Hangout supprimé avec succès",
-      "toast_description": "Votre hangout {name} a été supprimé avec succès !",
-      "error": "Nous n'avons pas pu supprimer votre hangout. Veuillez réessayer."
+      "confirm": "Supprimer l'événement",
+      "toast_title": "Événement supprimé avec succès",
+      "toast_description": "Votre événement {name} a été supprimé avec succès !",
+      "error": "Nous n'avons pas pu supprimer votre événement. Veuillez réessayer."
     },
     "recurrent_daily": "Se répète tous les jours",
     "recurrent_weekly": "Se répète chaque semaine",
@@ -1174,7 +1249,8 @@
     "hero_every_days": "Tous les {days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "À partir du {schedule}"
+    "schedule_starting": "À partir du {schedule}",
+    "featured_item": "Article en vedette"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1189,5 +1265,439 @@
   "upcoming": {
     "today_at": "Aujourd'hui {time}",
     "tomorrow_at": "Demain {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "Lieux — Decentraland"
+    },
+    "card": {
+      "jump_in": "Rejoindre",
+      "by": "Par",
+      "featured": "En vedette"
+    },
+    "live": {
+      "heading": "En direct",
+      "scroll_previous": "Lieux en direct précédents",
+      "scroll_next": "Plus de lieux en direct"
+    },
+    "explore": {
+      "search_placeholder": "Rechercher des lieux",
+      "empty": "Aucun lieu ne correspond aux filtres.",
+      "filters": "Filtres",
+      "remove_filter": "Retirer le filtre",
+      "category": {
+        "label": "Catégorie",
+        "all": "Toute catégorie",
+        "social": "Social",
+        "music": "Musique",
+        "art": "Art",
+        "game": "Jeu",
+        "fashion": "Mode",
+        "education": "Éducation",
+        "shop": "Boutique",
+        "sports": "Sports",
+        "business": "Affaires"
+      },
+      "section": {
+        "featured": "Lieux en vedette"
+      },
+      "tab": {
+        "explore_all": "Tout explorer",
+        "favourites": "Favoris",
+        "my_places": "Mes lieux"
+      },
+      "signin_favourites": "Connectez-vous et ajoutez des lieux en favoris pour les retrouver ici.",
+      "empty_favourites": "Vous n'avez encore aucun lieu en favori.",
+      "signin_my_places": "Connectez-vous pour voir les lieux que vous avez créés.",
+      "sign_in": "Se connecter",
+      "empty_my_places": "Vous n'avez encore publié aucun lieu.",
+      "error": "Une erreur est survenue lors du chargement des lieux.",
+      "retry": "Réessayer"
+    },
+    "communities": {
+      "page_title": "Communautés — Decentraland",
+      "heading": "Communautés",
+      "search_placeholder": "Rechercher des communautés",
+      "empty": "Aucune communauté trouvée.",
+      "members_count": "{count, plural, one {# membre} other {# membres}}",
+      "error": "Une erreur est survenue lors du chargement des communautés."
+    },
+    "scene": {
+      "people_count": "{count, plural, one {# personne dans le monde} other {# personnes dans le monde}}",
+      "people_empty": "Personne ici pour le moment.",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "Regarder en direct",
+      "close_media": "Arrêter",
+      "fullscreen": "Plein écran",
+      "exit_fullscreen": "Quitter",
+      "scene_picker": "Scène",
+      "connecting": "Connexion à la scène…",
+      "waiting": {
+        "title": "Activité de la scène",
+        "hint": "{count, plural, =0 {Personne d'autre n'est ici — soyez le premier à rejoindre.} one {# personne est sur cette scène. Son chat est en direct à droite.} other {# personnes sont sur cette scène. Leur chat est en direct à droite.}}"
+      },
+      "not_found": {
+        "title": "Scène introuvable",
+        "description": "Impossible de charger ce lieu ou ce monde. Il a peut-être été supprimé."
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "Cette expérience n'est pas disponible sur les navigateurs mobiles. Téléchargez l'application :"
+      },
+      "what_to_expect": "À quoi s’attendre",
+      "copy_link": "Copier le lien",
+      "close": "Fermer",
+      "explore_scene": "Explorer la scène",
+      "copied": "Copié !"
+    },
+    "featured": {
+      "view_all": "Voir tous les lieux à la une",
+      "view_less": "Voir moins"
+    }
+  },
+  "account": {
+    "meta": {
+      "title": "Paramètres du compte"
+    },
+    "nav": {
+      "section_label": "Paramètres du compte",
+      "wallets": "Portefeuilles",
+      "notifications": "Notifications",
+      "credits": "Paramètres des crédits",
+      "security": "Sécurité",
+      "delete": "Supprimer le compte",
+      "logout": "Se déconnecter",
+      "close": "Fermer"
+    },
+    "sign_in": {
+      "title": "Connectez-vous pour gérer votre compte",
+      "cta": "Se connecter"
+    },
+    "coming_soon": "Bientôt disponible",
+    "pages": {
+      "wallets": {
+        "title": "Portefeuilles"
+      },
+      "notifications": {
+        "title": "Notifications"
+      },
+      "credits": {
+        "title": "Paramètres des crédits"
+      },
+      "security": {
+        "title": "Sécurité"
+      },
+      "delete": {
+        "title": "Supprimer le compte"
+      }
+    },
+    "not_found": {
+      "title": "Page introuvable",
+      "description": "La page de compte que vous recherchez n’existe pas.",
+      "cta": "Aller aux portefeuilles"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "Acheter",
+        "swap": "Échanger",
+        "send": "Envoyer",
+        "receive": "Recevoir",
+        "more": "Plus d'actions"
+      },
+      "receive": {
+        "title": "Recevoir des MANA",
+        "description": "Partagez l’adresse de votre portefeuille pour recevoir des MANA et d’autres actifs.",
+        "copy": "Copier l’adresse",
+        "copied": "Copié !",
+        "close": "Fermer"
+      },
+      "send": {
+        "title": "Envoyer du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour envoyer du MANA.",
+        "switch_description": "Basculez votre portefeuille sur le bon réseau pour continuer.",
+        "switch_button": "Changer de réseau",
+        "to_label": "Adresse du destinataire",
+        "amount_label": "Montant",
+        "invalid_address": "Saisissez une adresse de portefeuille valide",
+        "insufficient_balance": "Solde insuffisant",
+        "send_button": "Envoyer",
+        "confirm_in_wallet": "Confirmez dans votre portefeuille…",
+        "sending": "Envoi en cours…",
+        "success": "MANA envoyé avec succès.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "swap": {
+        "title": "Échanger du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour transférer du MANA vers Polygon.",
+        "switch_description": "Basculez votre portefeuille sur Ethereum pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Transférez votre MANA d'Ethereum vers Polygon. Deux transactions sont nécessaires : une autorisation, puis le dépôt.",
+        "amount_label": "Montant",
+        "submit": "Transférer vers Polygon",
+        "approving": "Autorisez dans votre portefeuille…",
+        "depositing": "Dépôt en cours…",
+        "success": "Votre MANA est en route vers Polygon. L'arrivée peut prendre quelques minutes.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "transactions": {
+        "title": "Transactions",
+        "empty": "Aucune transaction pour l'instant.",
+        "type": {
+          "send": "Envoyé",
+          "swap": "Échange",
+          "received": "Reçu",
+          "withdraw": "Retrait"
+        },
+        "status": {
+          "pending": "En attente",
+          "confirmed": "Confirmée",
+          "failed": "Échouée",
+          "bridging": "En transit",
+          "checkpoint": "Réclamable"
+        },
+        "pending_title": "Transactions en attente",
+        "latest_title": "Dernières transactions",
+        "load_more": "Charger plus",
+        "claim": "Réclamer"
+      },
+      "withdraw": {
+        "title": "Retirer du MANA",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour transférer du MANA vers Ethereum.",
+        "switch_description": "Passez votre portefeuille sur Polygon pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Transférez votre MANA de Polygon vers Ethereum. Il est brûlé sur Polygon maintenant ; vous le réclamerez sur Ethereum une fois le checkpoint validé (cela peut prendre quelques heures).",
+        "amount_label": "Montant",
+        "submit": "Retirer vers Ethereum",
+        "withdrawing": "Retrait en cours…",
+        "success": "Votre retrait a démarré. Une fois le checkpoint validé (quelques heures), revenez le réclamer sur Ethereum.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "claim": {
+        "title": "Réclamer le retrait",
+        "loading": "Chargement du portefeuille…",
+        "connect_description": "Connectez votre portefeuille pour réclamer votre MANA sur Ethereum.",
+        "switch_description": "Passez votre portefeuille sur Ethereum pour continuer.",
+        "switch_button": "Changer de réseau",
+        "description": "Votre retrait de {amount} MANA est prêt. Réclamez-le sur Ethereum pour recevoir votre MANA.",
+        "submit": "Réclamer sur Ethereum",
+        "claiming": "Réclamation en cours…",
+        "success": "Votre MANA a été libéré sur Ethereum.",
+        "close": "Fermer",
+        "rejected": "Vous avez rejeté la transaction.",
+        "error": "Impossible de réclamer le retrait. Veuillez réessayer.",
+        "not_ready": "Ce retrait n'est pas encore prêt à être réclamé. Le checkpoint peut prendre quelques heures ; veuillez réessayer plus tard."
+      },
+      "buy": {
+        "title": "Acheter du MANA",
+        "subtitle": "Choisissez le MANA que vous voulez acheter :",
+        "close": "Fermer",
+        "error": "Impossible d'ouvrir le fournisseur. Veuillez réessayer.",
+        "network": {
+          "ethereum": {
+            "label": "MANA Ethereum",
+            "name": "Ethereum",
+            "description": "Utilisez-le pour acheter des LAND, des noms et certains wearables sur Ethereum."
+          },
+          "polygon": {
+            "label": "MANA Polygon",
+            "name": "Polygon",
+            "description": "Utilisez-le pour acheter la plupart des wearables et emotes sur Polygon."
+          }
+        },
+        "provider_title": "Acheter du MANA {network} avec {provider}",
+        "provider_subtitle": "Vous pouvez payer par carte de débit et de crédit, Apple Pay, Google Pay ou virement bancaire.",
+        "continue": "Continuer avec {provider}",
+        "learn_more": "En savoir plus sur {provider}",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "Ouverture…"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Ne manquez aucune notification Decentraland lorsque vous êtes absent ! Inscrivez-vous pour recevoir des notifications par e-mail et choisissez celles que vous souhaitez recevoir ci-dessous.",
+      "loading": "Chargement de vos paramètres de notification…",
+      "load_error": "Nous n'avons pas pu charger vos paramètres de notification. Veuillez réessayer plus tard.",
+      "groups": {
+        "marketplace": "Marketplace",
+        "worlds": "Worlds",
+        "credits": "Crédits du Marketplace",
+        "streaming": "Streaming dans le monde",
+        "events": "Événements",
+        "rewards": "Cadeaux et récompenses",
+        "dao": "DAO",
+        "tips": "Pourboires",
+        "referral": "Parrainages"
+      },
+      "email": {
+        "title": "Notifications par e-mail",
+        "placeholder": "exemple@decentraland.org",
+        "invalid": "E-mail invalide",
+        "error": "Nous n'avons pas pu enregistrer votre e-mail. Veuillez réessayer.",
+        "description": {
+          "without_email": "Saisissez votre e-mail, puis consultez votre boîte de réception pour y trouver le lien de confirmation. Après confirmation, vous pourrez personnaliser les notifications ci-dessous.",
+          "with_email": "Si vous souhaitez mettre à jour votre adresse e-mail, modifiez-la ci-dessous. Pensez ensuite à vérifier l'e-mail de confirmation dans votre boîte de réception !",
+          "pending_approval": "E-mail de confirmation envoyé, vérifiez votre boîte de réception.",
+          "confirmed": "Votre e-mail a été confirmé."
+        },
+        "status": {
+          "confirmed": "confirmé",
+          "pending": "en attente de validation"
+        },
+        "button": {
+          "submit": "Envoyer",
+          "resend": "Renvoyer",
+          "save": "Enregistrer"
+        },
+        "master_label": "Activer/désactiver toutes les notifications par e-mail"
+      },
+      "types": {
+        "item_sold": "Objet vendu",
+        "bid_accepted": "Offre acceptée",
+        "bid_received": "Offre reçue",
+        "royalties_earned": "Royalties perçues",
+        "rental_ended": "Période de location du LAND terminée",
+        "rental_started": "LAND loué",
+        "worlds_access_restored": "Accès au World rétabli",
+        "worlds_access_restricted": "Accès au World restreint en raison d’un stockage insuffisant",
+        "worlds_missing_resources": "Avertissement de stockage World insuffisant",
+        "worlds_permission_granted": "Permissions World pour visiter/déployer/diffuser accordées",
+        "worlds_permission_revoked": "Permissions World pour visiter/déployer/diffuser révoquées",
+        "credits_reminder_complete_goals": "Objectifs incomplets",
+        "credits_reminder_claim_credits": "Crédits non réclamés",
+        "credits_reminder_usage": "Crédits sur le point d’expirer",
+        "credits_reminder_do_not_miss_out": "Objectifs non commencés",
+        "streaming_key_expired": "Clé de stream expirée",
+        "streaming_key_reset": "Clé de stream réinitialisée",
+        "streaming_key_revoke": "Clé de stream désactivée",
+        "streaming_place_updated": "Scène de stream modifiée",
+        "streaming_time_exceeded": "Délai de stream dépassé",
+        "events_started": "Événement commencé",
+        "events_starts_soon": "L’événement commence bientôt",
+        "reward_assignment": "Objet gratuit reçu",
+        "reward_campaign_out_of_funds": "Campagne de cadeaux à court de fonds",
+        "reward_campaign_out_of_stock": "Campagne de cadeaux en rupture de stock",
+        "governance_announcement": "Nouvelle annonce du DAO",
+        "governance_authored_proposal_finished": "Le vote sur votre proposition est terminé",
+        "governance_coauthor_requested": "Demande de co-rédaction d’une proposition reçue",
+        "governance_new_comment_on_project_update": "Nouveau commentaire sur la mise à jour de votre projet",
+        "governance_new_comment_on_proposal": "Nouveau commentaire sur votre proposition",
+        "governance_proposal_enacted": "Proposition adoptée",
+        "governance_voting_ended_voter": "Le vote est terminé sur une proposition que vous avez votée",
+        "tip_received": "Pourboire reçu",
+        "referral_invited_users_accepted": "Parrainage terminé",
+        "referral_new_tier_reached": "Récompense de parrainage débloquée"
+      }
+    },
+    "credits": {
+      "title": "Programme de Crédits du Marketplace",
+      "description": "Gagnez des crédits hebdomadaires en accomplissant des objectifs dans le monde.",
+      "status_label": "Statut :",
+      "status": {
+        "enrolled": "Inscrit",
+        "opted_out": "Désinscrit",
+        "not_registered": "Non inscrit"
+      },
+      "learn_more": "En savoir plus",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "Rejoindre le programme",
+      "leave_button": "Quitter le programme",
+      "leave_modal": {
+        "warning": "Quitter les Crédits du Marketplace ?",
+        "description": "Vous cesserez de gagner des crédits hebdomadaires. Vous pouvez vous réinscrire à tout moment.",
+        "cancel": "Annuler",
+        "confirm": "Quitter le programme",
+        "errors": {
+          "generic": "Impossible de quitter le programme pour le moment. Veuillez réessayer.",
+          "already_claimed": "Vous ne pouvez pas quitter cette semaine car vous avez déjà réclamé des crédits. Veuillez réessayer la semaine prochaine."
+        }
+      },
+      "join_errors": {
+        "generic": "Impossible de rejoindre le programme pour le moment. Veuillez réessayer.",
+        "email_required": "Ajoutez et confirmez un e-mail dans Notifications avant de rejoindre le programme de crédits."
+      }
+    },
+    "delete": {
+      "title": "Supprimer le compte",
+      "danger_description": "Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
+      "warning": "Les éléments suivants seront perdus à jamais :",
+      "consequences": {
+        "profile": {
+          "title": "Profil",
+          "description": "votre nom d’utilisateur, avatar, biographie et nom affiché"
+        },
+        "social": {
+          "title": "Connexions sociales",
+          "description": "liste d’amis et utilisateurs bloqués"
+        },
+        "marketplace": {
+          "title": "Activité du Marketplace",
+          "description": "annonces ouvertes, historique d’achats et offres"
+        },
+        "credits": {
+          "title": "Crédits de la plateforme",
+          "description": "tout solde ou récompense non dépensé"
+        },
+        "favorites": {
+          "title": "Favoris et historique",
+          "description": "lieux enregistrés, activité récente et confirmations d’événements"
+        },
+        "notifications": {
+          "title": "Notifications et préférences",
+          "description": "tous vos paramètres et l’historique des notifications"
+        }
+      },
+      "asset_warning_title": "Actifs on-chain en danger",
+      "asset_warning_description": "La suppression de votre compte peut vous faire perdre définitivement l’accès à vos actifs on-chain (wearables, emotes, LAND, etc.). Assurez-vous d’exporter votre clé privée avant de continuer.",
+      "export_key_description": "Allez dans l’onglet Wallets et utilisez le gestionnaire de portefeuille sous votre adresse pour exporter votre clé privée.",
+      "export_key_link": "Aller aux Wallets",
+      "export_key_description_magic": "Allez dans l’onglet Sécurité pour consulter et sauvegarder votre clé privée avant de supprimer votre compte.",
+      "export_key_link_magic": "Aller à la Sécurité",
+      "acknowledge": "J’ai sauvegardé ma clé privée et je comprends que la suppression de mon compte est irréversible.",
+      "delete_button": "Supprimer le compte",
+      "modal": {
+        "title": "Êtes-vous sûr de vouloir supprimer votre compte ?",
+        "description": "Cette action est irréversible. Toutes vos données seront définitivement supprimées. Pour confirmer, veuillez taper DELETE dans le champ ci-dessous et confirmer.",
+        "input_label": "Tapez DELETE",
+        "deleting": "Suppression...",
+        "delete": "Supprimer le compte",
+        "cancel": "Annuler",
+        "generic_error": "Échec de la suppression de votre compte. Veuillez réessayer plus tard."
+      },
+      "unavailable_title": "La suppression de compte n’est pas disponible pour ce portefeuille",
+      "unavailable_description": "La suppression de votre compte ne s’applique qu’aux comptes créés avec un e-mail ou une connexion sociale. Les portefeuilles auto-gérés (comme MetaMask ou WalletConnect) contrôlent leurs propres clés ; il n’y a donc rien à supprimer ici — déconnectez-vous simplement."
+    },
+    "security": {
+      "title": "Clé privée",
+      "intro": "Votre compte Decentraland repose sur un portefeuille auto-géré. Votre clé privée est l’identifiant maître qui contrôle ce portefeuille et tout ce qu’il contient : votre MANA, vos NAMEs, votre LAND, vos wearables et vos emotes.",
+      "responsibility_title": "Vous gardez le contrôle total",
+      "responsibility_description": "Sauvegarder votre clé privée vous permet d’accéder à votre portefeuille depuis n’importe quelle application compatible et protège vos actifs si vous perdez un jour l’accès à votre connexion. Avec l’auto-conservation, cette responsabilité vous incombe à vous seul.",
+      "warning_title": "Ne partagez jamais votre clé privée",
+      "warning_description": "Quiconque possède votre clé privée dispose d’un contrôle total et irréversible sur votre compte et peut déplacer tous vos actifs. Aucun membre de l’équipe Decentraland ne vous la demandera jamais. Conservez-la hors ligne, dans un endroit accessible à vous seul.",
+      "reveal_description": "Vous serez redirigé vers la page de révélation sécurisée de Magic dans un nouvel onglet pour consulter et sauvegarder votre clé privée. Vous devez terminer la connexion sur le site de Magic avec la même méthode que celle utilisée pour vous connecter à Decentraland.",
+      "reveal_button": "Révéler la clé privée",
+      "unavailable_title": "Les paramètres de sécurité ne sont pas disponibles pour ce portefeuille",
+      "unavailable_description": "La révélation d’une clé privée ne s’applique qu’aux comptes créés avec un e-mail ou une connexion sociale. Les portefeuilles auto-gérés (comme MetaMask ou WalletConnect) gèrent déjà leurs propres clés ; il n’y a donc rien à révéler ici."
+    },
+    "copy": "Copier",
+    "copied": "Copié !"
+  },
+  "live_now": {
+    "navigate_previous": "Afficher les scènes en direct précédentes",
+    "navigate_next": "Afficher les scènes en direct suivantes"
   }
 }

@@ -3,6 +3,7 @@ import {
   buildMarketplaceWearableUrl,
   buildPlaceUrl,
   buildProfileUrl,
+  buildReelUrl,
   buildTwitterShareUrl,
   formatPhotoDate
 } from './reels.helpers'
@@ -53,6 +54,25 @@ describe('reels.helpers', () => {
   describe('when building marketplace wearable URL', () => {
     it('should target /contracts/{collectionId}/items/{blockchainId}', () => {
       expect(buildMarketplaceWearableUrl('0xcoll', '42')).toBe('https://market.decentraland.org/contracts/0xcoll/items/42')
+    })
+  })
+
+  describe('when building a reel URL', () => {
+    const originalLocation = window.location
+
+    beforeAll(() => {
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: { ...originalLocation, origin: 'https://decentraland.org' }
+      })
+    })
+
+    afterAll(() => {
+      Object.defineProperty(window, 'location', { writable: true, value: originalLocation })
+    })
+
+    it('should target {origin}/reels/{imageId} regardless of the current page', () => {
+      expect(buildReelUrl('img-1')).toBe('https://decentraland.org/reels/img-1')
     })
   })
 

@@ -113,23 +113,26 @@ const profilePlacesApi = placesClient.injectEndpoints({
           // Log the raw upstream body for ops/Sentry but DO NOT propagate it through
           // RTK Query's `error.data` — review rule 10 forbids surfacing raw server bodies to
           // the UI (and reaching `error.data` is undocumented anyway).
-          if (!places.ok) {
-            console.error('[ProfilePlaces] /places failed', places.status, places.body)
-            return { error: { status: places.status, error: 'Places fetch failed' } }
-          }
-          if (!worlds.ok) {
-            console.error('[ProfilePlaces] /worlds failed', worlds.status, worlds.body)
-            return { error: { status: worlds.status, error: 'Worlds fetch failed' } }
+          if (!places.ok) console.error('[ProfilePlaces] /places failed', places.status, places.body)
+          if (!worlds.ok) console.error('[ProfilePlaces] /worlds failed', worlds.status, worlds.body)
+          // Resilient fan-out (issue #608): a failure in ONE endpoint must not blank the
+          // other's results. A world-only owner (no LAND) would otherwise lose their worlds
+          // whenever /places flakes, and vice versa. Only surface an error when BOTH fail.
+          if (!places.ok && !worlds.ok) {
+            return { error: { status: places.status, error: 'Places and worlds fetch failed' } }
           }
           const merged: ProfilePlace[] = [
-            ...(worlds.data.data ?? []).map(w => ({ ...w, world: true as const })),
-            ...(places.data.data ?? [])
+            ...(worlds.ok ? worlds.data.data ?? [] : []).map(w => ({ ...w, world: true as const })),
+            ...(places.ok ? places.data.data ?? [] : [])
           ]
           return {
             data: {
               ok: true,
               data: merged,
-              total: (places.data.total ?? 0) + (worlds.data.total ?? 0)
+              // NOTE (issue #608): on a partial failure `total` only counts the surviving
+              // endpoint, so it can under-report. Acceptable trade-off — we'd rather show the
+              // data we have than blank the tab; the failed half's count is genuinely unknown.
+              total: (places.ok ? places.data.total ?? 0 : 0) + (worlds.ok ? worlds.data.total ?? 0 : 0)
             }
           }
         } catch (error) {
@@ -158,17 +161,16 @@ const profilePlacesApi = placesClient.injectEndpoints({
             fetchFavorites('places', identity, limit, offset),
             fetchFavorites('worlds', identity, limit, offset)
           ])
-          if (!places.ok) {
-            console.error('[ProfilePlaces] favorite /places failed', places.status, places.body)
-            return { error: { status: places.status, error: 'Favorite places fetch failed' } }
-          }
-          if (!worlds.ok) {
-            console.error('[ProfilePlaces] favorite /worlds failed', worlds.status, worlds.body)
-            return { error: { status: worlds.status, error: 'Favorite worlds fetch failed' } }
+          if (!places.ok) console.error('[ProfilePlaces] favorite /places failed', places.status, places.body)
+          if (!worlds.ok) console.error('[ProfilePlaces] favorite /worlds failed', worlds.status, worlds.body)
+          // Resilient fan-out (issue #608): keep the surviving endpoint's favourites instead
+          // of blanking the whole view when only one of /places or /worlds fails.
+          if (!places.ok && !worlds.ok) {
+            return { error: { status: places.status, error: 'Favorite places and worlds fetch failed' } }
           }
           const merged: ProfileFavoritePlace[] = [
-            ...(worlds.data.data ?? []).map(w => ({ ...w, world: true as const })),
-            ...(places.data.data ?? [])
+            ...(worlds.ok ? worlds.data.data ?? [] : []).map(w => ({ ...w, world: true as const })),
+            ...(places.ok ? places.data.data ?? [] : [])
           ]
           const owners = Array.from(new Set(merged.map(place => place.owner?.toLowerCase()).filter((o): o is string => Boolean(o))))
           const avatars = await fetchOwnerAvatars(owners)
@@ -180,7 +182,9 @@ const profilePlacesApi = placesClient.injectEndpoints({
             data: {
               ok: true,
               data: merged,
-              total: (places.data.total ?? 0) + (worlds.data.total ?? 0)
+              // NOTE (issue #608): see getProfilePlaces — `total` only counts the surviving
+              // endpoint on a partial failure and can under-report.
+              total: (places.ok ? places.data.total ?? 0 : 0) + (worlds.ok ? worlds.data.total ?? 0 : 0)
             }
           }
         } catch (error) {

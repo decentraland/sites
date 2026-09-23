@@ -5,7 +5,9 @@ description: Use when adding, editing, or removing a translation key in src/intl
 
 # add-i18n-key
 
-Repo has **6 locale files** in `src/intl/`: `en.json` (source of truth), `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json`. Every key must exist in all six. Missing locales fall back to the raw key, which the review-bot CI flags as **P2**.
+Repo has **6 locale files** in `src/intl/`: `en.json` (source of truth), `es.json`, `fr.json`, `ja.json`, `ko.json`, `zh.json`. Every key must exist in all six. A missing key silently renders the English copy (`LocaleContext` sets `fallbackLocale="en"`), so nothing in the UI reveals the gap; `npm run lint:i18n` (CI + lint-staged) is what catches it, and the review bot flags it as **P2**.
+
+Known debt is tracked in `src/intl/parity-baseline.json` as exact `(locale, type, key)` sets. The check fails on any key not in the baseline AND on any baselined key that is no longer missing (prune it). Counts never matter, only sets.
 
 ## When to use
 
@@ -22,17 +24,14 @@ Repo has **6 locale files** in `src/intl/`: `en.json` (source of truth), `es.jso
 
 1. **Edit `src/intl/en.json` first.** It is the source of truth.
 2. Mirror the change in all five sibling locales. Use the same key path. Translation can be the English string verbatim if a real translation isn't available — anything beats a missing key.
-3. Verify no duplicate top-level keys:
+3. Run the check:
    ```bash
-   node -e 'const j=require("./src/intl/en.json");const k=Object.keys(j);if(new Set(k).size!==k.length)throw new Error("dupe keys")'
+   npm run lint:i18n
    ```
-4. Verify the key resolves in every locale:
-   ```bash
-   for f in en es fr ja ko zh; do node -e "const j=require('./src/intl/${f}.json'); const v=j.path?.to?.your_key; if(!v) throw new Error('${f}: missing'); console.log('${f}:', v)"; done
-   ```
-   Replace `path.to.your_key` with the actual nested path.
+   It reports duplicate members at any depth (with line:column), comments, trailing commas, and every key missing/extra/mismatched per locale that is not already in the baseline. Do NOT use `Object.keys` after `JSON.parse` to look for duplicates: the parser has already collapsed them.
+4. If you fixed keys that were in `src/intl/parity-baseline.json`, prune them with `npm run lint:i18n -- --write-baseline` and commit the smaller baseline. Never run `--write-baseline` to make a NEW missing key pass; add the key to the locale instead.
 5. Run `npm run format` to normalize JSON.
-6. Commit all six files in one commit.
+6. Commit all six files (and the baseline, if it shrank) in one commit.
 
 ## Namespace conventions
 
@@ -51,5 +50,6 @@ Use the `i18n-auditor` agent when adding many keys or before a release.
 ## Pitfalls
 
 - Editing only `en.json` and pushing — review-bot flags it P2.
-- Adding the key as a duplicate top-level entry instead of nesting — `node -e` check above catches it.
+- Adding the key as a duplicate member (top-level or nested) instead of merging into the existing object — `npm run lint:i18n` catches it with the line and column.
+- Running `--write-baseline` to silence a new missing key — the baseline diff shows up in the PR and reviewers will ask why.
 - Forgetting `npm run format` — Prettier reorders JSON; CI fails.

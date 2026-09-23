@@ -2,29 +2,58 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { DownloadSuccess } from './DownloadSuccess'
 
-const mockTrack = jest.fn()
 const mockCalculateDownloadUrl = jest.fn()
 const mockStreamOrFallback = jest.fn()
+// Identity passthrough (keeps `href` assertions on the raw url) but recordable
+// so tests can assert which query params the component forwarded to the gateway.
+const mockAddQueryParams = jest.fn((url: string, _params?: Record<string, unknown>) => url)
 let searchParamsInstance = new URLSearchParams()
 // Mutable so individual tests can flip the auth state used by the component.
 let mockHasValidIdentity = false
-// Mutable so tests can simulate Segment finishing its lazy init mid-flight.
-let analyticsIsInitialized = true
-// Captured at module load so we can drive `useDeferredTrack`'s init effect by
-// re-rendering the component with a fresh value of `isInitialized`.
-const analyticsListeners: Array<() => void> = []
+
+// download_started/success/failed now bypass useDeferredTrack entirely and go
+// straight through the unload-safe beacon transport (see downloadTracking.ts).
+// Mock it directly rather than @dcl/hooks's `track`, which no longer receives
+// these events.
+// getEnv reaches config/index which uses import.meta (Vite-only). The referrer
+// util pulls it in transitively; stub it so the flag reads as off by default.
+jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => undefined) }))
+
+const mockPostSegmentEvent = jest.fn()
+jest.mock('../../modules/segmentBeacon', () => ({
+  postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
+}))
+jest.mock('../../modules/segmentAnonymousId', () => ({
+  ensureSegmentAnonymousId: () => 'anon-fixed'
+}))
+
+const findEventCall = (event: string) => mockPostSegmentEvent.mock.calls.find(([callEvent]) => callEvent === event)
+
+// Real fingerprint values by default so the existing `fp_*` assertions below
+// keep working; individual tests can swap the implementation to throw to
+// cover the P2-4 regression (a fingerprint failure must not drop campaign
+// params or click correlation from buildTrackerExtra).
+const mockCollectClientFingerprint = jest.fn(() => ({
+  fp_screen_width: 1024,
+  fp_screen_height: 768,
+  fp_device_pixel_ratio: 1,
+  fp_hardware_concurrency: 8,
+  fp_timezone: 'UTC',
+  fp_language: 'en-US',
+  fp_platform: 'MacIntel'
+}))
+jest.mock('../../modules/fingerprint', () => ({
+  collectClientFingerprint: () => mockCollectClientFingerprint()
+}))
 
 jest.mock('decentraland-ui2', () => ({
   Logo: () => null,
   Typography: ({ children }: { children: React.ReactNode }) => <span>{children}</span>
 }))
 
+const mockAnalyticsPage = jest.fn()
+
 jest.mock('@dcl/hooks', () => ({
-  useAnalytics: () => {
-    // The listener pattern is a no-op for tests that don't care, and lets the
-    // "queued events drain when Segment loads" test re-trigger a render.
-    return { isInitialized: analyticsIsInitialized, track: mockTrack }
-  },
   useTranslation: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, unknown>) => {
@@ -36,16 +65,35 @@ jest.mock('@dcl/hooks', () => ({
         return id
       }
     }
-  })
+  }),
+  // usePageView (this page is outside <Layout />, so it emits its own pageview)
+  useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
 
 jest.mock('react-router-dom', () => ({
-  useSearchParams: () => [searchParamsInstance, jest.fn()]
+  useSearchParams: () => [searchParamsInstance, jest.fn()],
+  useLocation: () => ({ pathname: '/download_success', search: '', hash: '', state: null, key: 'test' })
 }))
 
+// The download_funnel_exit diagnostic: mock the module (which otherwise pulls
+// in config/env → import.meta, unloadable under Jest) so we can assert the
+// visibilitychange→hidden handler fires it with the right funnel-state snapshot.
+const mockSendDownloadFunnelExit = jest.fn()
+jest.mock('../../modules/downloadFunnelExit', () => ({
+  sendDownloadFunnelExit: (...args: unknown[]) => mockSendDownloadFunnelExit(...args)
+}))
+
+// Drive the shared subscribeVisibility primitive used by useDownloadFunnelExit.
+const setVisibility = (hidden: boolean): void => {
+  Object.defineProperty(document, 'hidden', { value: hidden, configurable: true })
+  Object.defineProperty(document, 'visibilityState', { value: hidden ? 'hidden' : 'visible', configurable: true })
+  document.dispatchEvent(new Event('visibilitychange'))
+}
+
+const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
 jest.mock('../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anonUserId',
-  useAnonUserId: () => 'anon-123'
+  useAnonUserId: () => mockUseAnonUserId()
 }))
 
 jest.mock('../../hooks/useGetIdentityId', () => ({
@@ -57,6 +105,7 @@ jest.mock('../../hooks/useAuthIdentity', () => ({
 }))
 
 jest.mock('../../modules/downloadWithIdentity', () => ({
+  ...jest.requireActual('../../modules/downloadWithIdentity'),
   calculateDownloadUrl: (...args: unknown[]) => mockCalculateDownloadUrl(...args),
   getDownloadLinkWithIdentity: jest.fn()
 }))
@@ -65,12 +114,18 @@ jest.mock('../../modules/streamOrFallback', () => ({
   streamOrFallback: (...args: unknown[]) => mockStreamOrFallback(...args)
 }))
 
+const mockCaptureDownloadError = jest.fn()
+jest.mock('../../modules/downloadFunnelSentry', () => ({
+  captureDownloadError: (...args: unknown[]) => mockCaptureDownloadError(...args),
+  recordDownloadMilestone: jest.fn()
+}))
+
 jest.mock('../../modules/url', () => ({
   FALLBACK_CDN_RELEASE_LINKS: {
     Windows: { amd64: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe' },
     macOS: { arm64: 'https://cdn.decentraland.org/launcher/Decentraland-arm64.dmg' }
   },
-  addQueryParamsToUrlString: (url: string) => url
+  addQueryParamsToUrlString: (...args: [string, Record<string, unknown>]) => mockAddQueryParams(...args)
 }))
 
 type LayoutProps = {
@@ -106,6 +161,23 @@ jest.mock('../../components/LandingFooter', () => ({
   LandingFooter: () => <div data-testid="footer" />
 }))
 
+beforeEach(() => {
+  // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
+  // re-establish the default anon id (resolved immediately) before every test.
+  mockUseAnonUserId.mockReturnValue('anon-123')
+  // Restore the identity passthrough wiped by resetAllMocks.
+  mockAddQueryParams.mockImplementation((url: string) => url)
+  mockCollectClientFingerprint.mockReturnValue({
+    fp_screen_width: 1024,
+    fp_screen_height: 768,
+    fp_device_pixel_ratio: 1,
+    fp_hardware_concurrency: 8,
+    fp_timezone: 'UTC',
+    fp_language: 'en-US',
+    fp_platform: 'MacIntel'
+  })
+})
+
 describe('when DownloadSuccess mounts with os, place, and a successful url resolution', () => {
   beforeEach(() => {
     searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
@@ -120,14 +192,19 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
 
   afterEach(() => {
     jest.resetAllMocks()
-    analyticsListeners.length = 0
+  })
+
+  it('should emit a pageview for /download_success (the route is outside <Layout />, which owns the shared page() call)', () => {
+    render(<DownloadSuccess />)
+
+    expect(mockAnalyticsPage).toHaveBeenCalledWith('/download_success')
   })
 
   it('should fire download_started with the resolved downloadUrl as href (not the CDN fallback)', async () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_started',
         expect.objectContaining({
           place: 'landing-hero',
@@ -139,11 +216,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           revisit: 0,
           fp_screen_width: expect.any(Number),
           fp_screen_height: expect.any(Number)
-        })
+        }),
+        'anon-fixed'
       )
     })
 
-    const startedCall = mockTrack.mock.calls.find(([event]) => event === 'download_started')
+    const startedCall = findEventCall('download_started')
     expect(startedCall?.[1]).toHaveProperty('started_at', expect.any(Number))
   })
 
@@ -151,7 +229,7 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_success',
         expect.objectContaining({
           place: 'landing-hero',
@@ -165,11 +243,12 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           bytes_transferred: 4 * 1024 * 1024,
           fp_screen_width: expect.any(Number),
           fp_device_pixel_ratio: expect.any(Number)
-        })
+        }),
+        'anon-fixed'
       )
     })
 
-    const successCall = mockTrack.mock.calls.find(([event]) => event === 'download_success')
+    const successCall = findEventCall('download_success')
     expect(successCall?.[1]).toHaveProperty('started_at', expect.any(Number))
     expect(successCall?.[1]).toHaveProperty('succeeded_at', expect.any(Number))
     expect(successCall?.[1]).toHaveProperty('duration_ms', expect.any(Number))
@@ -179,11 +258,11 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
 
-    const startedIdx = mockTrack.mock.calls.findIndex(([event]) => event === 'download_started')
-    const successIdx = mockTrack.mock.calls.findIndex(([event]) => event === 'download_success')
+    const startedIdx = mockPostSegmentEvent.mock.calls.findIndex(([event]) => event === 'download_started')
+    const successIdx = mockPostSegmentEvent.mock.calls.findIndex(([event]) => event === 'download_success')
     expect(startedIdx).toBeGreaterThanOrEqual(0)
     expect(successIdx).toBeGreaterThan(startedIdx)
   })
@@ -193,8 +272,16 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     try {
       render(<DownloadSuccess />)
       await waitFor(() => {
-        expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ auth_state: 'authenticated' }))
-        expect(mockTrack).toHaveBeenCalledWith('download_success', expect.objectContaining({ auth_state: 'authenticated' }))
+        expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+          'download_started',
+          expect.objectContaining({ auth_state: 'authenticated' }),
+          expect.anything()
+        )
+        expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+          'download_success',
+          expect.objectContaining({ auth_state: 'authenticated' }),
+          expect.anything()
+        )
       })
     } finally {
       mockHasValidIdentity = false
@@ -206,11 +293,195 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
 
-    const successCall = mockTrack.mock.calls.find(([event]) => event === 'download_success')
+    const successCall = findEventCall('download_success')
     expect(successCall?.[1]).not.toHaveProperty('bytes_transferred')
+  })
+})
+
+describe('when the /download_success URL carries partner campaign params', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&utm_source=shefi&utm_campaign=partner-q3')
+    sessionStorage.clear()
+    window.history.replaceState(
+      {},
+      '',
+      '/download_success?os=Windows&arch=amd64&place=download-page&utm_source=shefi&utm_campaign=partner-q3'
+    )
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should tag download_started with download_target=desktop_installer and the campaign params', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_started',
+        expect.objectContaining({
+          download_target: 'desktop_installer',
+          utm_source: 'shefi',
+          utm_campaign: 'partner-q3'
+        }),
+        'anon-fixed'
+      )
+    })
+  })
+
+  it('should carry the same desktop_installer attribution onto download_success', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_success',
+        expect.objectContaining({
+          download_target: 'desktop_installer',
+          utm_source: 'shefi',
+          utm_campaign: 'partner-q3'
+        }),
+        'anon-fixed'
+      )
+    })
+  })
+})
+
+describe('when the /download_success URL carries a mac_arch hint', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=intel')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=download-page&mac_arch=intel')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should forward mac_arch onto download_started and download_success', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+    })
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+  })
+
+  it('should forward the unknown bucket as-is (Mac with an unreadable GPU)', async () => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=unknown')
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'unknown' }), 'anon-fixed')
+    })
+  })
+})
+
+describe('when the /download_success URL carries an out-of-allowlist mac_arch', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macOS&arch=arm64&place=download-page&mac_arch=sparc')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=macOS&arch=arm64&place=download-page&mac_arch=sparc')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Decentraland.dmg?sig=abc',
+      filename: 'Decentraland.dmg'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should drop an unrecognized mac_arch value instead of emitting it', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
+    })
+    const startedCall = findEventCall('download_started')
+    expect(startedCall?.[1]).not.toHaveProperty('mac_arch')
+  })
+})
+
+describe('when the /download_success URL carries first-launch deep-link params', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&position=10,20&realm=foo.eth')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page&position=10,20&realm=foo.eth')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should append position and realm to the file URL so the launcher can parse the file-origin URL', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockAddQueryParams).toHaveBeenCalledWith(
+        'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+        expect.objectContaining({ position: '10,20', realm: 'foo.eth' })
+      )
+    })
+  })
+
+  it('should mint an anon_user_id so the deep-link download stays on the gateway route', async () => {
+    // No anon_user_id available, but position/realm are present — the installer
+    // must come from the gateway (only it bakes them in), which needs an anon
+    // id, so one is minted rather than falling back to the CDN.
+    mockUseAnonUserId.mockReturnValue(undefined)
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })), {
+      timeout: 2000
+    })
+  })
+})
+
+describe('when the /download_success URL carries default deep-link params', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&position=0,0&realm=main')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page&position=0,0&realm=main')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should not append the default position/realm to the file URL', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => {
+      expect(mockAddQueryParams).toHaveBeenCalled()
+    })
+    const params = mockAddQueryParams.mock.calls[0][1] as Record<string, string>
+    expect(params).not.toHaveProperty('position')
+    expect(params).not.toHaveProperty('realm')
   })
 })
 
@@ -234,10 +505,10 @@ describe('when DownloadSuccess mounts without a place query param', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
     })
 
-    const startedCall = mockTrack.mock.calls.find(([event]) => event === 'download_started')
+    const startedCall = findEventCall('download_started')
     expect(startedCall?.[1]).not.toHaveProperty('place')
   })
 })
@@ -262,23 +533,22 @@ describe('when DownloadSuccess mounts with a place query param that is not in th
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
     })
 
-    const startedCall = mockTrack.mock.calls.find(([event]) => event === 'download_started')
+    const startedCall = findEventCall('download_started')
     expect(startedCall?.[1]).not.toHaveProperty('place')
   })
 })
 
-describe('when Segment has not finished lazy-loading at mount (race condition)', () => {
+describe('when Segment has not finished lazy-loading at mount', () => {
   // Regression guard for the previous race where calculateDownloadUrl resolved
-  // before Segment did and the funnel events dropped silently.
-  // With the new useDeferredTrack hook, events are queued and drained on
-  // isInitialized → true. Asserting the "no fire while uninitialized" half here;
-  // the "drains once Segment is ready" half is covered below.
+  // before Segment did and the funnel events dropped silently. download_started
+  // /success/failed now go through the unload-safe beacon transport
+  // (postSegmentEvent + ensureSegmentAnonymousId), which fires immediately
+  // regardless of Segment's own lazy-boot state — there is no queue to drain.
 
   beforeEach(() => {
-    analyticsIsInitialized = false
     searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
     sessionStorage.clear()
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
@@ -291,10 +561,9 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
 
   afterEach(() => {
     jest.resetAllMocks()
-    analyticsIsInitialized = true
   })
 
-  it('should still attempt the download while Segment is loading and queue both analytics events', async () => {
+  it('should fire download_started/success via the beacon transport even though Segment has not booted', async () => {
     render(<DownloadSuccess />)
 
     // The download itself is attempted regardless of Segment readiness — UX
@@ -303,13 +572,12 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
       expect(mockStreamOrFallback).toHaveBeenCalled()
     })
 
-    // While analytics is still loading, neither event has fired — they sit
-    // in the deferred track queue waiting for isInitialized.
-    // The drain-on-init half of the contract is covered by useDeferredTrack's
-    // own unit tests; replicating it here would require breaking through the
-    // component's React.memo barrier, which serves no value over those tests.
-    expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
-    expect(mockTrack).not.toHaveBeenCalledWith('download_success', expect.anything())
+    // Both events fire immediately via the beacon transport — no queueing on
+    // Segment's isInitialized flag.
+    await waitFor(() => {
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), 'anon-fixed')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), 'anon-fixed')
+    })
   })
 })
 
@@ -321,7 +589,7 @@ describe('when Segment has not finished lazy-loading at mount (race condition)',
 
 describe('when the user clicks the footer re-download link', () => {
   beforeEach(() => {
-    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&utm_source=shefi&utm_campaign=partner-launch')
     sessionStorage.setItem('downloadSuccess:triggered:Windows:amd64', '1')
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
     mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.test/Foo.exe', filename: 'Foo.exe' })
@@ -340,11 +608,39 @@ describe('when the user clicks the footer re-download link', () => {
     await waitFor(() => {
       expect(mockStreamOrFallback).toHaveBeenCalled()
     })
-    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ place: 'download-success-footer' }))
-    expect(mockTrack).toHaveBeenCalledWith(
-      'download_success',
-      expect.objectContaining({ place: 'download-success-footer', filename: 'Foo.exe' })
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+      'download_started',
+      expect.objectContaining({
+        place: 'download-success-footer',
+        download_target: 'desktop_installer',
+        utm_source: 'shefi',
+        utm_campaign: 'partner-launch'
+      }),
+      expect.anything()
     )
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+      'download_success',
+      expect.objectContaining({
+        place: 'download-success-footer',
+        filename: 'Foo.exe',
+        download_target: 'desktop_installer',
+        utm_source: 'shefi',
+        utm_campaign: 'partner-launch'
+      }),
+      expect.anything()
+    )
+  })
+
+  it('should mint an anon id for a deep-link footer re-download so it stays on the gateway route', async () => {
+    // Footer re-download with position/realm but no anon id: the installer must
+    // come from the gateway, so an anon id is minted rather than hitting the CDN.
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&position=10,20&realm=foo.eth')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&position=10,20&realm=foo.eth')
+    mockUseAnonUserId.mockReturnValue(undefined)
+    const { findByRole } = render(<DownloadSuccess />)
+    const link = await findByRole('link')
+    link.click()
+    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })))
   })
 
   it('should ignore a second click while a re-download is in flight', async () => {
@@ -368,7 +664,7 @@ describe('when the user clicks the footer re-download link', () => {
     // default resolved mock, so the next mockRejectedValueOnce we set up only
     // affects the footer click — not the page-mount flow.
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
     mockCalculateDownloadUrl.mockRejectedValueOnce(new Error('boom'))
 
@@ -376,7 +672,16 @@ describe('when the user clicks the footer re-download link', () => {
     link.click()
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.objectContaining({ place: 'download-success-footer' }))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_failed',
+        expect.objectContaining({
+          place: 'download-success-footer',
+          download_target: 'desktop_installer',
+          utm_source: 'shefi',
+          utm_campaign: 'partner-launch'
+        }),
+        expect.anything()
+      )
     })
   })
 
@@ -384,7 +689,7 @@ describe('when the user clicks the footer re-download link', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined)
     const { findByRole } = render(<DownloadSuccess />)
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_success', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
     })
     // URL resolution succeeds for the footer too; stream rejects after the
     // tracker is built so the catch branch must reuse it (covers the
@@ -395,17 +700,24 @@ describe('when the user clicks the footer re-download link', () => {
     link.click()
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
-        expect.objectContaining({ place: 'download-success-footer', reason: 'footer stream blew up' })
+        expect.objectContaining({ place: 'download-success-footer', reason: 'footer stream blew up' }),
+        expect.anything()
       )
     })
+    // Sentry must tag the footer flow with the footer place so the issue joins
+    // to its own download_failed event (not the page-level place).
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', place: 'download-success-footer' })
+    )
   })
 })
 
 describe('when DownloadSuccess mounts and the url resolution rejects', () => {
   beforeEach(() => {
-    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page')
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=download-page&utm_source=shefi')
     sessionStorage.clear()
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=download-page')
     mockCalculateDownloadUrl.mockRejectedValue(new Error('No download link available'))
@@ -420,7 +732,7 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
         expect.objectContaining({
           place: 'download-page',
@@ -430,10 +742,45 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
           anon_user_id: 'anon-123',
           auth_state: 'anonymous',
           revisit: 0,
-          reason: 'No download link available'
-        })
+          reason: 'No download link available',
+          // The fallback tracker must carry the same attribution as the main
+          // one — otherwise every failed-on-mount download silently loses the
+          // desktop_installer/utm tagging and skews per-campaign failure rates.
+          download_target: 'desktop_installer',
+          utm_source: 'shefi'
+        }),
+        expect.anything()
       )
     })
+  })
+
+  it('should capture the error in Sentry tagged with step calculate_url when no tracker was built', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_failed')).toBeDefined())
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', step: 'calculate_url', os: 'Windows' })
+    )
+  })
+
+  it('should capture the error in Sentry tagged with step stream when the stream throws after the tracker is built', async () => {
+    mockCalculateDownloadUrl.mockReset()
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockReset()
+    mockStreamOrFallback.mockRejectedValue(new Error('stream blew up'))
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_failed')).toBeDefined())
+    expect(mockCaptureDownloadError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ feature: 'download_funnel', step: 'stream' })
+    )
   })
 
   it('should fire download_failed via the built tracker when the stream itself throws (URL resolution succeeded)', async () => {
@@ -452,26 +799,27 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith(
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
         'download_failed',
         expect.objectContaining({
           place: 'download-page',
           href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
           reason: 'stream blew up'
-        })
+        }),
+        expect.anything()
       )
     })
-    expect(mockTrack).toHaveBeenCalledWith('download_started', expect.anything())
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
   })
 
   it('should NOT fire download_started when URL resolution fails before the tracker is built', async () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_failed', expect.anything())
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_failed', expect.anything(), expect.anything())
     })
 
-    expect(mockTrack).not.toHaveBeenCalledWith('download_started', expect.anything())
+    expect(mockPostSegmentEvent).not.toHaveBeenCalledWith('download_started', expect.anything(), expect.anything())
   })
 })
 
@@ -494,14 +842,14 @@ describe('when the same os/arch is revisited within the session', () => {
   it('should report revisit=0 on the first mount and increment on subsequent mounts of the same os/arch', async () => {
     const { unmount } = render(<DownloadSuccess />)
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 0 }))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 0 }), expect.anything())
     })
     unmount()
-    mockTrack.mockClear()
+    mockPostSegmentEvent.mockClear()
 
     render(<DownloadSuccess />)
     await waitFor(() => {
-      expect(mockTrack).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 1 }))
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 1 }), expect.anything())
     })
   })
 
@@ -516,5 +864,355 @@ describe('when the same os/arch is revisited within the session', () => {
     await waitFor(() => {
       expect(mockStreamOrFallback).toHaveBeenCalledTimes(2)
     })
+  })
+})
+
+describe('when anon_user_id has not resolved yet at mount', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    mockUseAnonUserId.mockReturnValue(undefined)
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    jest.resetAllMocks()
+  })
+
+  it('should wait for the anon id timeout before starting the download', async () => {
+    render(<DownloadSuccess />)
+
+    // Before the timeout elapses the download must not have started.
+    expect(mockCalculateDownloadUrl).not.toHaveBeenCalled()
+
+    // Flush the 800ms grace period; the download proceeds without an anon id.
+    await React.act(async () => {
+      jest.advanceTimersByTime(800)
+    })
+
+    expect(mockCalculateDownloadUrl).toHaveBeenCalled()
+  })
+
+  it('should clear the pending timeout on unmount before it fires', () => {
+    const clearSpy = jest.spyOn(global, 'clearTimeout')
+    const { unmount } = render(<DownloadSuccess />)
+    unmount()
+    expect(clearSpy).toHaveBeenCalled()
+    clearSpy.mockRestore()
+  })
+})
+
+describe('when the page unmounts mid-flight (abort handling)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should bail out after url resolution when the request was aborted by an unmount', async () => {
+    let resolveUrl: ((value: { url: string; filename: string }) => void) | undefined
+    mockCalculateDownloadUrl.mockReturnValue(
+      new Promise(resolve => {
+        resolveUrl = resolve
+      })
+    )
+
+    const { unmount } = render(<DownloadSuccess />)
+    // Abort the in-flight request, then let url resolution settle.
+    unmount()
+    await React.act(async () => {
+      resolveUrl?.({ url: 'https://cdn.decentraland.org/x.exe', filename: 'x.exe' })
+      await Promise.resolve()
+    })
+
+    // Because the controller was aborted before resolution, the stream is never
+    // requested and no success/started analytics fire post-abort.
+    expect(mockStreamOrFallback).not.toHaveBeenCalled()
+  })
+
+  it('should not finalize the stream result when aborted mid-stream', async () => {
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.decentraland.org/x.exe', filename: 'x.exe' })
+    let resolveStream: ((value: { bytesTransferred: number }) => void) | undefined
+    mockStreamOrFallback.mockReturnValue(
+      new Promise(resolve => {
+        resolveStream = resolve
+      })
+    )
+
+    const { unmount } = render(<DownloadSuccess />)
+    await waitFor(() => expect(mockStreamOrFallback).toHaveBeenCalled())
+
+    unmount()
+    await React.act(async () => {
+      resolveStream?.({ bytesTransferred: 10 })
+      await Promise.resolve()
+    })
+
+    // The post-abort success branch is skipped, so download_success never fires.
+    expect(mockPostSegmentEvent).not.toHaveBeenCalledWith('download_success', expect.anything(), expect.anything())
+  })
+})
+
+describe('when the user leaves the page (download_funnel_exit)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero')
+    sessionStorage.clear()
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    setVisibility(false)
+  })
+
+  it('should fire the exit event when hidden, with the fired flags after a completed download', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()))
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(1)
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        os: 'Windows',
+        arch: 'amd64',
+        place: 'landing-hero',
+        startedFired: true,
+        successFired: true,
+        failedFired: false,
+        anonUserId: 'anon-123',
+        msOnPage: expect.any(Number)
+      })
+    )
+  })
+
+  it('should report the minted anon id on exit for a deep-link session so it joins the funnel rows', async () => {
+    // Regression: the exit beacon must carry the SAME id the download rows use.
+    // For a cold anonymous deep-link session the id is minted at download time,
+    // so the exit snapshot has to read it (not the still-undefined anon hook).
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&position=10,20&realm=foo.eth')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&place=landing-hero&position=10,20&realm=foo.eth')
+    mockUseAnonUserId.mockReturnValue(undefined)
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()), {
+      timeout: 2000
+    })
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' }))
+  })
+
+  it('should report startedFired=false when the user leaves before the download events fire', async () => {
+    // Never resolves → download_started fires but success/failed do not before exit.
+    mockCalculateDownloadUrl.mockReturnValue(new Promise(() => undefined))
+    render(<DownloadSuccess />)
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(
+      expect.objectContaining({ startedFired: false, successFired: false, failedFired: false })
+    )
+  })
+
+  it('should fire again on a later hide (dedup handled in the warehouse)', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()))
+
+    React.act(() => {
+      setVisibility(true) // switch away
+      setVisibility(false) // come back
+      setVisibility(true) // leave
+    })
+
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledTimes(2)
+  })
+
+  it('should NOT fire the exit event on a direct landing with no place (no download click)', async () => {
+    // No `place` param → resolveDownloadPlace returns UNKNOWN → not a funnel session.
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64')
+    window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64')
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), expect.anything()))
+
+    React.act(() => {
+      setVisibility(true)
+    })
+
+    expect(mockSendDownloadFunnelExit).not.toHaveBeenCalled()
+  })
+})
+
+describe('when a download click correlation exists in sessionStorage', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=windows&place=landing-hero')
+    sessionStorage.setItem('downloadFunnel:lastClick', JSON.stringify({ click_id: 'click-abc', clicked_at: Date.now() - 500 }))
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.exe', filename: 'dl.exe' })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1, deliveryMode: 'streamed', gatewayRequestId: 'req-xyz' })
+  })
+
+  afterEach(() => {
+    sessionStorage.removeItem('downloadFunnel:lastClick')
+    jest.resetAllMocks()
+  })
+
+  it('should attach click_id and ms_since_click to download_started', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    const [, payload] = findEventCall('download_started')!
+    expect(payload).toEqual(expect.objectContaining({ click_id: 'click-abc', ms_since_click: expect.any(Number) }))
+  })
+
+  it('should attach click_id to the download_funnel_exit snapshot', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    setVisibility(true)
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ clickId: 'click-abc' }))
+  })
+
+  // Regression: on macOS this URL is stored in the DMG's kMDItemWhereFroms
+  // xattr and the launcher recovers the auth token from it. Launchers up to
+  // 1.21.2 accept any UUID-shaped query param as the token, so a forwarded
+  // click_id shadowed the identityId in the path and broke auto-login.
+  it('should not forward click_id as a query param to the gateway download url', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    expect(mockAddQueryParams).toHaveBeenCalledWith('https://gw/dl.exe', expect.not.objectContaining({ click_id: expect.anything() }))
+  })
+
+  it('should attach delivery_mode and gateway_request_id to download_success', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_success')).toBeDefined())
+    const [, payload] = findEventCall('download_success')!
+    expect(payload).toEqual(expect.objectContaining({ delivery_mode: 'streamed', gateway_request_id: 'req-xyz' }))
+  })
+})
+
+describe('when the download stream resolves without a gateway request id (macOS / fallback)', () => {
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=macos&place=landing-hero')
+    sessionStorage.clear()
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.dmg', filename: 'dl.dmg' })
+    mockStreamOrFallback.mockResolvedValue({ deliveryMode: 'anchor_native' })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should record delivery_mode but omit gateway_request_id on download_success', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_success')).toBeDefined())
+    const [, payload] = findEventCall('download_success')!
+    expect(payload).toEqual(expect.objectContaining({ delivery_mode: 'anchor_native' }))
+    expect(payload).not.toHaveProperty('gateway_request_id')
+  })
+})
+
+describe('when collectClientFingerprint throws', () => {
+  // Regression guard for P2-4: a fingerprint failure used to be caught by a
+  // try/catch that wrapped the ENTIRE buildTrackerExtra body, so it also
+  // discarded the campaign params and (now) the click correlation. The fix
+  // isolates the try/catch to only the collectClientFingerprint() call.
+  beforeEach(() => {
+    searchParamsInstance = new URLSearchParams('os=Windows&arch=amd64&place=landing-hero&utm_source=shefi&utm_campaign=partner-q3')
+    sessionStorage.clear()
+    sessionStorage.setItem('downloadFunnel:lastClick', JSON.stringify({ click_id: 'click-abc', clicked_at: Date.now() - 500 }))
+    window.history.replaceState(
+      {},
+      '',
+      '/download_success?os=Windows&arch=amd64&place=landing-hero&utm_source=shefi&utm_campaign=partner-q3'
+    )
+    mockCalculateDownloadUrl.mockResolvedValue({
+      url: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
+      filename: 'Install-Decentraland.exe'
+    })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+    mockCollectClientFingerprint.mockImplementation(() => {
+      throw new Error('fingerprint blew up')
+    })
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    sessionStorage.removeItem('downloadFunnel:lastClick')
+    jest.resetAllMocks()
+  })
+
+  it('should still carry the utm_* params and click_id on download_started', async () => {
+    render(<DownloadSuccess />)
+
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    const [, payload] = findEventCall('download_started')!
+    expect(payload).toEqual(
+      expect.objectContaining({
+        utm_source: 'shefi',
+        utm_campaign: 'partner-q3',
+        click_id: 'click-abc',
+        download_target: 'desktop_installer'
+      })
+    )
+    expect(payload).not.toHaveProperty('fp_screen_width')
+  })
+})
+
+describe('when DownloadSuccess mounts', () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    searchParamsInstance = new URLSearchParams('os=windows&place=landing-hero')
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://gw/dl.exe', filename: 'dl.exe' })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1 })
+  })
+
+  afterEach(() => {
+    sessionStorage.clear()
+    jest.resetAllMocks()
+  })
+
+  it('should fire download_success_arrived immediately, before the download starts', () => {
+    mockUseAnonUserId.mockReturnValue(undefined) // gate de 800ms sin resolver
+    render(<DownloadSuccess />)
+    const arrived = findEventCall('download_success_arrived')
+    expect(arrived).toBeDefined()
+    expect(arrived![1]).toEqual(
+      expect.objectContaining({ os: 'Windows', arch: 'amd64', place: 'landing-hero', revisit: 0, auth_state: 'anonymous' })
+    )
+    expect(findEventCall('download_started')).toBeUndefined()
+  })
+
+  it('should keep place=unknown in the payload so direct landings are measurable', () => {
+    searchParamsInstance = new URLSearchParams('os=windows')
+    render(<DownloadSuccess />)
+    expect(findEventCall('download_success_arrived')![1]).toEqual(expect.objectContaining({ place: 'unknown' }))
+  })
+
+  it('should fire arrived exactly once per mount', async () => {
+    render(<DownloadSuccess />)
+    await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
+    const arrivedCalls = mockPostSegmentEvent.mock.calls.filter(([event]) => event === 'download_success_arrived')
+    expect(arrivedCalls).toHaveLength(1)
   })
 })

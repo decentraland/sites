@@ -16,11 +16,11 @@ import {
 import type { Land, World } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { CardsGrid, EmptyState, SelectPageContainer } from './SelectPage.styled'
 
-function SelectPage() {
+function SelectPageContent() {
   useStorageRedirect()
   const t = useFormatMessage()
   const navigate = useNavigate()
@@ -29,7 +29,10 @@ function SelectPage() {
   const [worldsQuery, setWorldsQuery] = useState('')
   const [landsQuery, setLandsQuery] = useState('')
 
-  const { data: contributableDomains, isLoading: domainsLoading } = useGetContributableDomainsQuery({ identity }, { skip: !identity })
+  const { currentData: contributableDomains, isLoading: domainsLoading } = useGetContributableDomainsQuery(
+    { identity },
+    { skip: !identity }
+  )
   const { data: dclNames, isLoading: namesLoading } = useGetUserDCLNamesQuery({ address: address ?? '' }, { skip: !address })
   const { data: rentals, isLoading: rentalsLoading } = useGetUserRentalsQuery({ address: address ?? '' }, { skip: !address })
 
@@ -90,7 +93,7 @@ function SelectPage() {
     [navigate]
   )
 
-  useBlogPageTracking({
+  usePageViewTracking({
     name: t('page.storage.select.title'),
     properties: { section: 'storage_select' }
   })
@@ -175,6 +178,11 @@ function SelectPage() {
       ) : null}
     </SelectPageContainer>
   )
+}
+
+function SelectPage() {
+  const { address } = useAuthIdentity()
+  return <SelectPageContent key={address?.toLowerCase() ?? 'anon'} />
 }
 
 export { SelectPage }

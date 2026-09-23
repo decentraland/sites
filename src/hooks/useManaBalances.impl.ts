@@ -1,6 +1,7 @@
 import { createPublicClient, formatEther, getAddress, http } from 'viem'
 import { mainnet, polygon, polygonAmoy, sepolia } from 'viem/chains'
-import { Env, getEnv } from '@dcl/ui-env'
+import { Env } from '@dcl/ui-env'
+import { getCurrentEnv } from '../config/env'
 import type { ManaBalances } from './useManaBalances.types'
 
 /**
@@ -43,7 +44,7 @@ const ERC20_BALANCE_OF_ABI = [
 ] as const
 
 function getContracts() {
-  const env = getEnv()
+  const env = getCurrentEnv()
   return env === Env.PRODUCTION ? MANA_CONTRACTS.production : MANA_CONTRACTS.development
 }
 
@@ -53,7 +54,7 @@ let polyClient: ReturnType<typeof createPublicClient> | null = null
 function getClients() {
   if (!ethClient || !polyClient) {
     const contracts = getContracts()
-    const env = getEnv()
+    const env = getCurrentEnv()
     ethClient = createPublicClient({
       chain: env === Env.PRODUCTION ? mainnet : sepolia,
       transport: http(contracts.ethereum.rpc)

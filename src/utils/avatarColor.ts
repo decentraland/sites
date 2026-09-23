@@ -99,5 +99,26 @@ function getAvatarBackgroundColor(displayName: string | undefined | null): strin
   return rgbToHex(hsvToRgb(hue, SATURATION, VALUE))
 }
 
-export { DCL_FOUNDATION_BACKGROUND_COLOR, fnv1a32, getAvatarBackgroundColor, getDisplayName, getValidatedName, hsvToRgb, rgbToHex }
+// Inline colored-disc avatar fallback used when a Catalyst face256 isn't
+// available (community cards with no CDN thumbnail, place cards whose owner
+// has no deployed profile). Returns a `data:image/svg+xml;…` URL the
+// surrounding card primitive can drop into an `<img>` slot without an
+// extra network request.
+function getSyntheticAvatarUrl(name: string): string {
+  const bg = getAvatarBackgroundColor(name)
+  const initial = (name.match(/[\p{L}\p{N}]/u)?.[0] ?? '?').toUpperCase()
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="${bg}"/><text x="16" y="22" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="700" fill="white">${initial}</text></svg>`
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
+export {
+  DCL_FOUNDATION_BACKGROUND_COLOR,
+  fnv1a32,
+  getAvatarBackgroundColor,
+  getDisplayName,
+  getSyntheticAvatarUrl,
+  getValidatedName,
+  hsvToRgb,
+  rgbToHex
+}
 export type { DisplayNameInput, Rgb }

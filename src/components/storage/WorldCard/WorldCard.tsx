@@ -36,6 +36,10 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
   const sceneCount = scenes?.length ?? 0
   const firstScene = scenes?.[0]
   const isMultiScene = sceneCount > 1
+  // Never let a click send an undefined base parcel: the storage-service reads an
+  // absent parcel as 0,0, which fails for worlds deployed off-origin. Block Edit until
+  // the scene list has resolved to at least one scene with a real baseParcel.
+  const isEditDisabled = isLoading || sceneCount === 0
 
   const handleEditClick = useCallback(() => {
     onEditClick(world.name, firstScene?.baseParcel)
@@ -94,6 +98,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
               size="small"
               color="primary"
               disableElevation
+              disabled={isEditDisabled}
               onClick={handleEditClick}
               aria-label={t('component.storage.select_page.edit')}
               sx={{ pr: 0, gap: 0 }}
@@ -114,6 +119,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
               variant="contained"
               size="small"
               color="primary"
+              disabled={isEditDisabled}
               onClick={handleEditClick}
               aria-label={t('component.storage.select_page.edit')}
             >

@@ -83,6 +83,39 @@ describe('UserMetadata', () => {
     expect(trackMock).toHaveBeenCalledWith('Reels Show Wearables', { userAddress: '0xa' })
   })
 
+  it('should track the click, prevent default and open the profile modal on a plain left-click', () => {
+    render(<UserMetadata user={baseUser} isFirst={true} />)
+    const link = screen.getByText('alice').closest('a') as HTMLAnchorElement
+
+    const prevented = !fireEvent.click(link, { button: 0 })
+
+    expect(trackMock).toHaveBeenCalledWith('Reels Click Profile', {
+      userAddress: '0xa',
+      legacyProfileUrl: 'https://profile/0xa'
+    })
+    expect(openProfileMock).toHaveBeenCalledWith('0xa')
+    expect(prevented).toBe(true)
+  })
+
+  it('should let modifier clicks fall through so the profile can open in a new tab', () => {
+    render(<UserMetadata user={baseUser} isFirst={true} />)
+    const link = screen.getByText('alice').closest('a') as HTMLAnchorElement
+
+    fireEvent.click(link, { button: 0, metaKey: true })
+
+    // Tracking still fires, but navigation is left to the browser.
+    expect(trackMock).toHaveBeenCalledWith('Reels Click Profile', {
+      userAddress: '0xa',
+      legacyProfileUrl: 'https://profile/0xa'
+    })
+    expect(openProfileMock).not.toHaveBeenCalled()
+  })
+
+  it('should render a static name without a link when the user has no address', () => {
+    render(<UserMetadata user={{ ...baseUser, userAddress: '' }} isFirst={true} />)
+    expect(screen.getByText('alice').closest('a')).toBeNull()
+  })
+
   it('should render NoWearables placeholder when wearablesParsed is empty', () => {
     render(<UserMetadata user={baseUser} isFirst={true} initialWearableVisibility={true} />)
     expect(screen.getByText('component.reels.metadata.no_wearable')).toBeInTheDocument()

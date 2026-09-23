@@ -86,14 +86,15 @@ const HeroContent = styled(Box)(({ theme }) => ({
   }
 }))
 
-// Rendered as a plain <h3> (not MUI Typography h2) with styles that match the
-// prerendered hero shell's h3 byte-for-byte. Matching the computed styles means
-// Chrome's LCP size calculation ties between shell and React copies, so the
-// earlier-painted shell wins and LCP stays anchored at FCP time. Do NOT add
+// Rendered as a plain <h1> (the homepage's main heading, not MUI Typography)
+// with styles that match the prerendered hero shell's h1 byte-for-byte. All
+// typography comes from these rules, not the tag, so the UA h1 defaults are
+// fully overridden and the computed size ties with the shell copy — Chrome
+// keeps LCP anchored on the earlier-painted shell at FCP time. Do NOT add
 // textShadow, letter-spacing drift, or tag changes without re-matching the
 // shell CSS in scripts/prerender-hero.mjs — a 6% size delta was previously
 // enough to flip the LCP candidate to React.
-const HeroTitle = styled('h3')(({ theme }) => ({
+const HeroTitle = styled('h1')(({ theme }) => ({
   color: dclColors.neutral.white,
   fontFamily: 'Inter, Helvetica, Arial, sans-serif',
   fontSize: 60,
@@ -283,13 +284,20 @@ const MobileHeroContent = styled(Box)(({ theme }) => ({
   maxWidth: 393
 }))
 
-const MobileHeroTitle = styled(Typography)({
+// The homepage's main heading on mobile, so it renders as <h1>. It was a
+// Typography (body1) <p>; the explicit rules below reproduce that appearance
+// byte-for-byte — the added `margin: 0` cancels the UA <h1> margin and
+// `letterSpacing: 0.00938em` restores body1's inherited tracking — so the tag
+// swap carries no visual change.
+const MobileHeroTitle = styled('h1')({
   color: dclColors.neutral.white,
   fontFamily: 'Inter, sans-serif',
   fontWeight: 700,
   fontSize: 40,
   lineHeight: 1.2,
-  textAlign: 'center'
+  letterSpacing: '0.00938em',
+  textAlign: 'center',
+  margin: 0
 })
 
 export {

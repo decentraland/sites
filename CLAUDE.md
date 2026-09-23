@@ -21,51 +21,58 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 
 ### Heavy routes (`DappsShell`, lazy-loaded)
 
-- **What's on**: `/whats-on`, `/whats-on/new-hangout`, `/whats-on/edit-hangout/:eventId`, `/whats-on/admin/pending-events`, `/whats-on/admin/users` (plus legacy `/whats-on/new-event` and `/whats-on/edit-event/:eventId` aliases that redirect into the hangout flow). `/events/*` and `/places/*` legacy paths from the standalone events/places sites redirect into `/whats-on` with deep-link params.
+- **Events** (was What's On at `/whats-on`): `/events`, `/events/new-event`, `/events/edit-event/:eventId`, `/events/admin/pending-events`, `/events/admin/users` (plus legacy `/events/new-hangout` and `/events/edit-hangout/:eventId` aliases that redirect into the event flow). The old `/whats-on*` prefix redirects here with its subpath and query intact via `RenamedSectionRedirect`, and the standalone-site deep links `/events/event?id=`, `/places/place?position=` and `/places/world?name=` still resolve.
 - **Blog**: `/blog`, `/blog/preview`, `/blog/search`, `/blog/sign-in`, `/blog/author/:authorSlug`, `/blog/:categorySlug`, `/blog/:categorySlug/:postSlug`.
 - **Jump** (launcher deep-link handler): `/jump`, `/jump/places`, `/jump/places/invalid`, `/jump/events`, `/jump/events/invalid`, plus the `/jump/event` legacy alias used by production.
 - **Social** (communities): `/social/communities/:id`, `/social/*` (catch-all not-found).
+- **Places** (was Discover at `/discover`, which redirects here; absorbs the standalone decentraland.social experience): `/places` (Live Now rail + Featured POIs + full-bleed Explore band with Explore all / Favourites / My places tabs, search + category filter — a right filter drawer on mobile), `/places/communities` (list tab; cards link into the pre-existing `/social/communities/:id` detail), `/places/place/:position` (Genesis City parcel detail), `/places/world/:name` (world detail, same shape), `/places/*` (catch-all, reuses `SocialNotFoundPage`). New pages render inside `<DiscoverLayout />`; data comes from `src/features/discover/` (endpoints injected into `placesClient` / `socialClient`). Junk listings (roads, empty parcels with only the `map.png` placeholder, `interactive-text` deploys) are hidden by `isHiddenPlace`; card covers fall back to a solid tile via `placeCoverImage`.
+  - **Scene detail** (`DiscoverScenePage`): live presence gates two states. Empty scene (desktop) → `SceneJumpInModal` over the grid; mobile always renders the modal as a full page (bevy-web can't run on touch devices) with LIVE + presence badges when live. Live scene (desktop) → 2-column grid: viewer card (bevy iframe via `SceneLiveWatcher`) + In-World Chat (`ChatPanel`, unconditionally read-only), always visible — it renders the empty-chat shell when the room is quiet. The bevy embed URL comes from `getEnv('BEVY_WEB_URL')` (`.zone` dev/stg — `.org`'s `frame-ancestors` CSP rejects non-.org parents — `.org` prd) with `systemScene=tortilla.dcl.eth` (patched scene-viewer: fly camera at the scene spawn point, no sidebar) and `guest=1&hud=0` flags (auto guest-login, no bevy HUD). COOP/COEP for the iframe are set per-route in `vercel.json` for `/places` and `/places/:path*` — which covers Vercel previews only; production headers come from the `sites-deployer` worker (see Deployment below), so check them with `curl -sI` rather than trusting this file.
 - **Cast** (LiveKit streaming, absorbed from `decentraland/cast2`): `/cast/s/:token`, `/cast/s/streaming`, `/cast/w/:worldName/parcel/:parcel`, `/cast/w/:location`, plus `/cast` index and `/cast/*` catch-all rendering `CastNotFoundPage`. Cast adds an extra `<CastLayout />` that provides LiveKit + Notification contexts and renders the toast stack.
 - **Storage** (storage-service-site): `/storage`, `/storage/select`, `/storage/env`, `/storage/scene`, `/storage/players`, `/storage/players/:address`, plus `/storage/*` not-found.
+- **Account** (account-settings, absorbed from the standalone `account` dapp): `/account` (redirects to `/account/wallets`), `/account/wallets`, `/account/notifications`, `/account/credits`, `/account/delete`, plus `/account/*` not-found. Shares an `AccountLayout` sidebar. The Wallets "Send" action and the Delete flow need a Web3 signer, so they mount the lazy **`BlockchainShell`** (see below) — the rest of the account pages are signer-free.
 
 These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query middleware, and the heaviest deps (contentful rich-text renderer, dompurify, `livekit-client` + `@livekit/components-react` for cast) only when one of these routes is navigated to.
 
-**No Web3 providers.** Authentication on heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. No wagmi, magic-sdk, core-web3, or thirdweb — ~580-780KB saved vs. the federated predecessor.
+**No Web3 providers on the main/lightweight tiers, nor in the base `DappsShell` chunk.** Authentication on most heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — events / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. The one exception is the account Wallets "Send" and Delete actions, gated behind the lazy `BlockchainShell` (below). The homepage and every lightweight route stay Web3-free (~580-780KB saved vs. the federated predecessor).
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/cast/*`, `src/pages/storage/*`. The same applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell itself is the `lazy()` import in `src/App.tsx`.
+### Third tier: `BlockchainShell` (on-demand Web3, `src/shells/BlockchainShell.tsx`)
+
+A lazy, opt-in shell for the few account actions that need a connected signer (Wallets Send; Delete). It wraps children in `@dcl/core-web3`'s `WalletStateProvider` + `Web3LazyProvider`, which dynamically import the heavy Web3 stack (`wagmi` / `viem` / `magic-sdk` / `@magic-ext/oauth2`) only when an action mounts the shell, then calls `injectWeb3Reducers()` to append core-web3's `wallet` / `network` / `transactions` slices to the already-running `DappsShell` store (`createLazyStoreEnhancer` in `store.ts`). Children are withheld behind a readiness gate until the providers are mounted, so wagmi hooks never run without a `WagmiProvider`. The base `DappsShell` store only statically imports the lightweight `@dcl/core-web3/lazy` facade (the enhancer + provider shells) — the wagmi/viem bundle is code-split and never loads on a non-account heavy route.
+
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/events/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/places/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
 
 ## Directory map (top-level)
 
-| Path                            | Purpose                                                                                |
-| ------------------------------- | -------------------------------------------------------------------------------------- |
-| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                          |
-| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).               |
-| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                     |
-| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listener middleware). Lazy-loaded Redux.              |
-| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                           |
-| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                   |
-| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).        |
-| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                               |
-| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                          |
-| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                             |
-| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.       |
-| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                   |
-| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.       |
-| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`. |
-| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.           |
-| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                    |
-| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).            |
-| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                |
-| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                  |
-| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                              |
-| `api/seo.ts`                    | Vercel serverless function for `/blog/*` OG meta. Skill `seo-worker`.                  |
-| `vercel.json`                   | Rewrites `/blog/*` to `/api/seo?path=...`, everything else to `/index.html`.           |
+| Path                            | Purpose                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                                    |
+| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).                         |
+| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                               |
+| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listeners) + `BlockchainShell.tsx`/`web3Config.ts` (lazy Web3). |
+| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                                     |
+| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                             |
+| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).                  |
+| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                                         |
+| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                                    |
+| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                                       |
+| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.                 |
+| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                             |
+| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.                 |
+| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`.           |
+| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.                     |
+| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                              |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by events, social, storage mutations).                        |
+| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
+| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
+| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
+| `api/seo.ts`                    | **Preview-only** Vercel function for `/blog/*` OG meta. Skill `seo-worker`.                      |
+| `vercel.json`                   | **Preview-only** Vercel config: rewrites + per-route headers. Never runs in prd/stg/dev.         |
 
 ### Per-dapp directory details
 
 Each absorbed dapp's feature client, base client, components, and pages live under per-dapp docs. Load the one matching your task:
 
-- `docs/domains/whats-on.md` — `src/features/events/`, components/whats-on, pages/whats-on. Events API + admin + lightweight discovery.
+- `docs/domains/events.md` — `src/features/events/`, components/events, pages/events. Events API + admin + lightweight discovery.
 - `docs/domains/blog.md` — `src/features/cms/`, `src/services/cmsClient.ts`, `src/shared/blog/`. Contentful + cms-server search.
 - `docs/domains/jump.md` — `src/features/places/`, `src/services/placesClient.ts`. Launcher deep-link resolution.
 - `docs/domains/social.md` — `src/features/communities/`, `src/services/socialClient.ts`. Communities API.
@@ -74,6 +81,7 @@ Each absorbed dapp's feature client, base client, components, and pages live und
 - `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
 - `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
 - `docs/domains/profile.md` — `src/features/profile/`, components/profile, pages/profile. Profile route group + modal surfaces + social RPC.
+- `docs/domains/places.md` — `src/features/discover/`, components/places, pages/places. Destinations feed + live presence + bevy scene preview.
 
 ### Skill + hook governance
 
@@ -85,19 +93,51 @@ Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logi
 
 ## Auth flow
 
-No Web3 providers (no wagmi, magic-sdk, core-web3, thirdweb). Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`). Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
+Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`) on every tier. Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Web3 (`wagmi`, `viem`, `magic-sdk`, `thirdweb`, `@dcl/core-web3`) is declared and loads only behind the lazy `BlockchainShell`, never on a lightweight route nor in the base `DappsShell` chunk. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
 
 ## Performance
 
 Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics. Manual chunks in `vite.config.ts` with a render-blocking CSS gotcha for packages like `@livekit/components-styles`. Full setup, manualChunks rules, verification command → skill `perf-tier`.
 
-## Blog SEO
+## Deployment: where production actually comes from
 
-`api/seo.ts` is a Vercel serverless function that rewrites OG/Twitter meta at the edge for `/blog/*` (crawlers don't run JS so Helmet titles are invisible to them). HTML escaping + origin allowlist + path sanitization. Full flow, CMS_BASE_URL coherence, security checklist for new template paths → skill `seo-worker`.
+**Vercel is preview-only.** `npm run build` publishes `@dcl/sites` to npm, a GitLab job mirrors it to
+`cdn.decentraland.org/@dcl/sites/<version>`, and `set-rollout-action` points an environment at that
+version (`zone` + `today` automatic, `org` manual + release tag). At request time every environment is
+served by the **`sites-deployer` Cloudflare Worker** (`dcl.tools:ops/sites-deployer`, GitLab), which
+pulls the CDN bundle and rewrites the HTML on the way out. `server: cloudflare`, no Vercel headers.
+
+Consequence, and the reason this section exists: **anything configured in `vercel.json` or `api/seo.ts`
+affects previews only.** Two things that live there are therefore NOT what production does:
+
+- **OG meta / `<title>`.** Production titles come from the worker's handlers in
+  `workers/sites-worker/rollouts/routes/handlers/` — `OpenGraphWhatsOnRoute` (events + `/jump`),
+  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community. The route
+  _path patterns_ are not even in that repo: they come from the sites DSL in `@decentraland/definitions`,
+  so making a new path emit OG cards is a two-repo change.
+- **Per-route headers**, including the COOP/COEP pair the bevy iframe needs. Verify a header claim with
+  `curl -sI https://decentraland.org/<path>`, never by reading `vercel.json`.
+
+A route renamed in the SPA keeps serving the old section's OG card until the worker is updated, and the
+new path serves the bare shell (`<title>Decentraland</title>`) until it is added there.
+
+### Blog SEO (preview tier)
+
+`api/seo.ts` rewrites OG/Twitter meta for `/blog/*` in Vercel previews (crawlers don't run JS so Helmet
+titles are invisible to them). HTML escaping + origin allowlist + path sanitization. Its production
+counterpart is the worker's `OpenGraphBlogRoute`. Full flow, CMS_BASE_URL coherence, security checklist
+for new template paths → skill `seo-worker`.
+
+### Titles the SPA owns
+
+Because the worker only stamps a title on the paths it knows, and a client-side redirect never rewrites
+the served `<head>`, any page that matters should set its own Helmet title. A page with no Helmet title
+inherits whatever the worker served for the URL the user _entered_ — which is how `/whats-on` → `/events`
+kept showing "What's On" in the tab.
 
 ## Environment config
 
-All env vars live in `src/config/env/{dev,stg,prd}.json`. Access via `getEnv('KEY')` from `src/config/env.ts`. The `@dcl/ui-env` package auto-selects the right file based on the hostname. Override at runtime with `?env=dev|stg|prd` query param.
+All env vars live in `src/config/env/{dev,stg,prd}.json`. Access via `getEnv('KEY')` from `src/config/env.ts`. The `@dcl/ui-env` package auto-selects the right file based on the hostname. Override at runtime with the `?env=dev|stg|prod` query param (note: `prod`, not `prd` — an invalid value silently falls back to dev).
 
 Unified CMS origin: all three env files point at `cms-api.decentraland.org` (matches `api/seo.ts` fallback and the vite dev proxy target in `vite.config.ts`). Single origin = shared HTTP cache + ETag revalidation, obsoletes the old redux-persist cache that was removed.
 
@@ -111,6 +151,7 @@ npm test             # Jest, co-located *.spec.ts(x) suites
 npm run format       # Prettier
 npm run lint:fix     # ESLint
 npm run lint:pkg     # package.json lint (silent on success — easy to skip; do not skip)
+npm run lint:i18n    # strict JSON + locale parity vs src/intl/parity-baseline.json (rule 9)
 ```
 
 ## Adding a route
@@ -125,8 +166,13 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
 - **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
 - **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
-- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,cast,storage}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
+- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{events,blog,jump,social,places,cast,storage,account}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
+
+### Naming
+
+- **Name reusable code for what it does, not for the first feature that used it.** If a hook / util / component is used (or is meant to be used) beyond one domain, its name must be domain-neutral and describe its behavior. A domain prefix (`blog`, `cast`, `storage`, …) is only allowed when the code is genuinely specific to that domain.
+- **Signal you're naming it wrong**: a generic helper carries a feature prefix while callers from other domains import it. Example: a per-page Segment `page()` hook was named `useBlogPageTracking` but blog, storage, cast, social and the 404 page all use it — the correct name is the behavior (`usePageViewTracking`). Rename it rather than propagating the misnomer to new callers.
 
 ### Styled components
 
@@ -143,6 +189,8 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - `describe("when ...")` / `it("should ...")` pattern.
 - `beforeEach` for setup, `afterEach` with `jest.resetAllMocks()`.
 - React Testing Library: `getByRole` > `getByLabelText` > `getByText`.
+- `npm run build` runs `tsc -b`, which **typechecks `*.spec.ts(x)` too** — ts-jest is more lenient, so a green `npm test` can still fail the build. Run `tsc -b` before treating specs as done (strictly-typed mock helpers like `React.createElement` are the usual culprit).
+- Inline `jest.mock` factories must not use `require()` (banned by `@typescript-eslint/no-require-imports`). Use the repo pattern: `import React from 'react'` at the top, then reference `React.createElement` inside the factory (see `LiveNowCard.spec.tsx`).
 
 ## Pre-PR review
 
@@ -154,13 +202,15 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 2. Architectural boundary check (P1 failures)
 
-Enforce the boundary rule from Architecture > Dual Shell. Grep diff:
+Enforce the boundary rule from Architecture > Dual Shell:
 
 ```bash
-git diff master...HEAD --name-only | xargs grep -l "from ['\"].*shells/" 2>/dev/null
+npm run lint:shells
 ```
 
-Hits outside `src/App.tsx` and `src/shells/` itself = violation.
+It walks the import graph from every lightweight entry point (`src/main.tsx`, `src/pages/*` outside the heavy route groups, `components/Layout`, `components/LandingNavbar`, `components/LandingFooter`) and fails if any of them can reach `src/shells/*` at runtime, printing the full chain. Indirect paths through a helper or a barrel count; `import type` does not, because it leaves nothing in the bundle.
+
+Do NOT grep for `from '.*shells/'` instead. It misses the indirect paths and flags the heavy route trees (`src/pages/{events,blog,jump,social,places,cast,storage,account,profile}/*` and the components they own), which are explicitly allowed to import the shell.
 
 ### 3. YAGNI check
 
@@ -194,14 +244,13 @@ Hits outside `src/App.tsx` and `src/shells/` itself = violation.
 
 ### 9. JSON merges + i18n parity
 
-- When merging two JSON files (e.g. `intl/en.json`), verify no duplicate top-level keys:
+- Adding a translation key to `en.json` MUST add it to all five sibling locales (`es`, `fr`, `ja`, `ko`, `zh`) in the same commit. A missing key renders the English copy (`LocaleContext` sets `fallbackLocale="en"`), so the gap is invisible in the UI and only the check below catches it.
+- Run the check; it is the same command CI (`lint.yml`) and lint-staged run:
   ```bash
-  node -e 'const j=require("./src/intl/en.json");const k=Object.keys(j);if(new Set(k).size!==k.length)throw new Error("dupe keys")'
+  npm run lint:i18n
   ```
-- Adding a translation key to `en.json` MUST add it to all five sibling locales (`es`, `fr`, `ja`, `ko`, `zh`) in the same commit. Missing locales fall back to the raw key, which the Jarvis review bot will flag as P2. Verify with:
-  ```bash
-  for f in en es fr ja ko zh; do node -e "const j=require('./src/intl/${f}.json'); const v=j.path?.to?.your_key; if(!v) throw new Error('${f}: missing'); console.log('${f}:', v)"; done
-  ```
+  It parses the raw text with `jsonc-parser` in strict mode (duplicate members at any depth, comments, trailing commas, wrong root) and compares leaf key paths against `en.json`. Never check duplicates with `Object.keys` after `JSON.parse`: the parser has already collapsed them and the check passes on `{"key":1,"key":2}`.
+- Known parity debt lives in `src/intl/parity-baseline.json` as exact `(locale, type, key)` sets. New debt fails; a resolved key still listed there also fails. Regenerate with `npm run lint:i18n -- --write-baseline` only after fixing keys, or, for new debt, with a reason in the PR. The diff of that file is the review surface.
 
 ### 10. Error handling
 

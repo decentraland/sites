@@ -4,6 +4,7 @@ export {
   buildMarketplaceWearableUrl,
   buildPlaceUrl,
   buildProfileUrl,
+  buildReelUrl,
   buildTwitterShareUrl,
   formatPhotoDate
 } from './reels.helpers'

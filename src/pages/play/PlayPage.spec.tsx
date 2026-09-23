@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { useAdvancedUserAgentData } from '@dcl/hooks'
+import { useAdvancedUserAgentData, useAnalytics } from '@dcl/hooks'
 import { useDesktopMediaQuery } from 'decentraland-ui2'
 import { useTrackClick } from '../../hooks/adapters/useTrackLinkContext'
-import { useAnonUserId } from '../../hooks/useAnonUserId'
+import { useDownloadSuccessHref } from '../../hooks/useDownloadSuccessHref'
 import { useHangOutAction } from '../../hooks/useHangOutAction'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { SegmentEvent } from '../../modules/segment'
 import { PlayPage } from '.'
 
 jest.mock('decentraland-ui2', () => {
@@ -29,7 +30,8 @@ jest.mock('../../components/Icon/VerifiedIcon', () => ({
 }))
 
 jest.mock('@dcl/hooks', () => ({
-  useAdvancedUserAgentData: jest.fn()
+  useAdvancedUserAgentData: jest.fn(),
+  useAnalytics: jest.fn()
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -56,24 +58,31 @@ jest.mock('../../hooks/adapters/useTrackLinkContext', () => ({
   useTrackClick: jest.fn()
 }))
 
-jest.mock('../../hooks/useAnonUserId', () => ({
-  ANON_USER_ID_PARAM: 'anon_user_id',
-  useAnonUserId: jest.fn()
-}))
-
 jest.mock('../../hooks/useHangOutAction', () => ({
   useHangOutAction: jest.fn()
 }))
 
+// The hook's own UTM-forwarding / anon_user_id behavior is covered by
+// useDownloadSuccessHref.spec.ts — mock it here as a plain (os, place) => href
+// builder so this spec only asserts PlayPage's wiring (which CTAs call it,
+// what data-* attributes they carry).
+jest.mock('../../hooks/useDownloadSuccessHref', () => ({ useDownloadSuccessHref: jest.fn() }))
+
 const mockUserAgent = jest.mocked(useAdvancedUserAgentData)
+const mockUseAnalytics = jest.mocked(useAnalytics)
 const mockTrackClick = jest.mocked(useTrackClick)
-const mockAnonUserId = jest.mocked(useAnonUserId)
+const mockDownloadSuccessHref = jest.mocked(useDownloadSuccessHref)
 const mockHangOut = jest.mocked(useHangOutAction)
 const mockDesktop = jest.mocked(useDesktopMediaQuery)
 
 const trackClick = jest.fn()
+const downloadSuccessHref = jest.fn()
+let analyticsTrack: jest.Mock
+let mockSendBeacon: jest.Mock
 
 const originalLocation = window.location
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const originalSendBeacon = navigator.sendBeacon
 
 const setLocationMock = () => {
   Object.defineProperty(window, 'location', {
@@ -85,19 +94,28 @@ const setLocationMock = () => {
 
 describe('PlayPage', () => {
   beforeEach(() => {
+    analyticsTrack = jest.fn()
+    mockSendBeacon = jest.fn(() => true)
+    mockUseAnalytics.mockReturnValue({ isInitialized: true, track: analyticsTrack } as unknown as ReturnType<typeof useAnalytics>)
     mockTrackClick.mockReturnValue(trackClick)
     mockDesktop.mockReturnValue(true)
-    mockAnonUserId.mockReturnValue('anon-123')
+    // Re-armed every test: jest.resetAllMocks() in afterEach wipes the
+    // implementation, not just the return value.
+    downloadSuccessHref.mockImplementation((os: string, place: string) => `/download_success?os=${os}&place=${place}`)
+    mockDownloadSuccessHref.mockReturnValue(downloadSuccessHref)
     mockHangOut.mockReturnValue({ totalDownloads: '+250K' } as unknown as ReturnType<typeof useHangOutAction>)
     mockUserAgent.mockReturnValue([false, { os: { name: 'Windows' }, mobile: false }] as unknown as ReturnType<
       typeof useAdvancedUserAgentData
     >)
     setLocationMock()
+    Object.defineProperty(navigator, 'sendBeacon', { value: mockSendBeacon, configurable: true, writable: true })
   })
 
   afterEach(() => {
     jest.resetAllMocks()
     Object.defineProperty(window, 'location', { configurable: true, writable: true, value: originalLocation })
+    Object.defineProperty(navigator, 'sendBeacon', { value: originalSendBeacon, configurable: true, writable: true })
+    localStorage.clear()
   })
 
   describe('when it renders on a Windows desktop', () => {
@@ -124,14 +142,27 @@ describe('PlayPage', () => {
       expect(screen.queryByAltText('Windows')).not.toBeInTheDocument()
     })
 
-    it('should track and navigate to /download_success with the os and anon id on download click', () => {
+    it('should track and navigate to the href built by the shared useDownloadSuccessHref hook', () => {
+      // UTM/anon_user_id forwarding is a useDownloadSuccessHref concern, covered
+      // in useDownloadSuccessHref.spec.ts — this asserts PlayPage wires
+      // os/place through to it and navigates to whatever it returns.
       render(<PlayPage />)
       fireEvent.click(screen.getByText('page.download.download_for_short'))
-      expect(trackClick).toHaveBeenCalledTimes(1)
-      expect(window.location.href).toContain('/download_success?')
-      expect(window.location.href).toContain('os=Windows')
-      expect(window.location.href).toContain('place=play-hero')
-      expect(window.location.href).toContain('anon_user_id=anon-123')
+      expect(analyticsTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ event: SegmentEvent.DOWNLOAD, place: 'play-hero' })
+      )
+      expect(downloadSuccessHref).toHaveBeenCalledWith('Windows', 'play-hero')
+      expect(window.location.href).toBe('/download_success?os=Windows&place=play-hero')
+    })
+
+    it('should beacon the download Click when Segment is cold', () => {
+      mockUseAnalytics.mockReturnValue({ isInitialized: false, track: analyticsTrack } as unknown as ReturnType<typeof useAnalytics>)
+
+      render(<PlayPage />)
+      fireEvent.click(screen.getByText('page.download.download_for_short'))
+
+      expect(mockSendBeacon).toHaveBeenCalledTimes(1)
     })
 
     it('should link the jump-in CTA to the launcher protocol and track the click', () => {
@@ -155,9 +186,29 @@ describe('PlayPage', () => {
       render(<PlayPage />)
       const epic = screen.getByText('page.download.download_on')
       expect(epic).toHaveAttribute('href', DOWNLOAD_URLS.epic)
+      // Epic redirects to the Epic Games Store, never reaching download_started —
+      // its own target keeps it out of the desktop activation funnel.
+      expect(epic).toHaveAttribute('data-download-target', 'epic')
       expect(screen.getByAltText('Epic Games')).toBeInTheDocument()
       fireEvent.click(epic)
-      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(analyticsTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ event: SegmentEvent.DOWNLOAD, place: 'play-hero-epic' })
+      )
+    })
+
+    it('should tag the desktop CTA as desktop_installer, Epic as epic, and store badges with their store targets', () => {
+      render(<PlayPage />)
+      const downloadButton = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      const epicButton = screen.getByText('page.download.download_on').closest('a') as HTMLAnchorElement
+      const appStoreBadge = screen.getByAltText('Download on the App Store').closest('a') as HTMLAnchorElement
+      const googlePlayBadgeLink = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
+
+      expect(downloadButton).toHaveAttribute('data-download-target', 'desktop_installer')
+      // Epic redirects to the Epic Games Store, never reaching download_started.
+      expect(epicButton).toHaveAttribute('data-download-target', 'epic')
+      expect(appStoreBadge).toHaveAttribute('data-download-target', 'app_store')
+      expect(googlePlayBadgeLink).toHaveAttribute('data-download-target', 'google_play')
     })
   })
 
@@ -171,21 +222,24 @@ describe('PlayPage', () => {
       const cta = screen.getByText('page.download.download_for_short').closest('a')
       expect(cta).toHaveAttribute('href', '/download')
       fireEvent.click(cta as HTMLElement)
-      expect(trackClick).toHaveBeenCalledTimes(1)
+      expect(analyticsTrack).toHaveBeenCalledWith(
+        SegmentEvent.CLICK,
+        expect.objectContaining({ event: SegmentEvent.DOWNLOAD, place: 'play-hero' })
+      )
       expect(window.location.href).toBe('')
     })
-  })
 
-  describe('when the anon user id is unavailable', () => {
-    beforeEach(() => {
-      mockAnonUserId.mockReturnValue(undefined)
-    })
-
-    it('should omit the anon_user_id query param', () => {
+    it('should preserve campaign params on the /download fallback href', () => {
+      // Extend the location stub with a utm-bearing search so the real
+      // withCampaignParams (not mocked here) reads it at render time.
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: { href: '', search: '?utm_source=shefi' }
+      })
       render(<PlayPage />)
-      fireEvent.click(screen.getByText('page.download.download_for_short'))
-      expect(window.location.href).toContain('os=Windows')
-      expect(window.location.href).not.toContain('anon_user_id')
+      const cta = screen.getByText('page.download.download_for_short').closest('a')
+      expect(cta).toHaveAttribute('href', '/download?utm_source=shefi')
     })
   })
 
@@ -206,6 +260,15 @@ describe('PlayPage', () => {
       expect(screen.queryByText('page.play.also_available_on')).not.toBeInTheDocument()
     })
 
+    it('should tag the mobile App Store CTA as app_store', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'iOS' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<PlayPage />)
+      const cta = screen.getByAltText('Download on the App Store').closest('a') as HTMLAnchorElement
+      expect(cta).toHaveAttribute('data-download-target', 'app_store')
+    })
+
     it('should show the Google Play CTA on an Android device', () => {
       mockUserAgent.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
         typeof useAdvancedUserAgentData
@@ -213,6 +276,15 @@ describe('PlayPage', () => {
       render(<PlayPage />)
       expect(screen.getByAltText('Get it on Google Play')).toBeInTheDocument()
       expect(screen.queryByAltText('Download on the App Store')).not.toBeInTheDocument()
+    })
+
+    it('should tag the mobile Google Play CTA as google_play', () => {
+      mockUserAgent.mockReturnValue([false, { os: { name: 'Android' }, mobile: true }] as unknown as ReturnType<
+        typeof useAdvancedUserAgentData
+      >)
+      render(<PlayPage />)
+      const cta = screen.getByAltText('Get it on Google Play').closest('a') as HTMLAnchorElement
+      expect(cta).toHaveAttribute('data-download-target', 'google_play')
     })
 
     it('should not show the experimental web link on mobile', () => {

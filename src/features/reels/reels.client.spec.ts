@@ -1,8 +1,9 @@
+const fetchWithIdentityMock = jest.fn()
 jest.mock('../../utils/signedFetch', () => ({
-  fetchWithIdentity: jest.fn(),
-  fetchWithOptionalIdentity: jest.fn()
+  fetchWithIdentity: (...args: unknown[]) => fetchWithIdentityMock(...args)
 }))
 
+import type { AuthIdentity } from '@dcl/crypto'
 import { clearImageCache, enrichWearables, fetchImageById, fetchImagesByUser, fetchProfileFaces, isMaticUrn } from './reels.client'
 
 const envMock = jest.fn<string | undefined, [string]>((key: string) => {
@@ -32,6 +33,7 @@ afterAll(() => {
 
 beforeEach(() => {
   fetchMock.mockReset()
+  fetchWithIdentityMock.mockReset()
   clearImageCache()
 })
 
@@ -73,6 +75,24 @@ describe('reels.client', () => {
     it('should throw when the response is not ok', async () => {
       fetchMock.mockResolvedValue({ ok: false })
       await expect(fetchImagesByUser('0xabc', { limit: 24, offset: 0 })).rejects.toThrow()
+    })
+
+    it('should sign the request with the identity when one is provided (owner gallery)', async () => {
+      const identity = { authChain: [] } as unknown as AuthIdentity
+      fetchWithIdentityMock.mockResolvedValue({ ok: true, json: async () => ({ images: [], currentImages: 0, maxImages: 0 }) })
+      const signal = new AbortController().signal
+
+      await fetchImagesByUser('0xabc', { limit: 24, offset: 0 }, signal, identity)
+
+      expect(fetchWithIdentityMock).toHaveBeenCalledWith(
+        'https://reels-test.local/api/users/0xabc/images?limit=24&offset=0',
+        identity,
+        'GET',
+        undefined,
+        undefined,
+        signal
+      )
+      expect(fetchMock).not.toHaveBeenCalled()
     })
   })
 

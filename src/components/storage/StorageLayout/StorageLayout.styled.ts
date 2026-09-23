@@ -52,4 +52,11 @@ const StorageTabsRoot = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`
 }))
 
-export { BackButton, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot }
+const LoaderBox = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: 200
+}))
+
+export { BackButton, LoaderBox, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot }

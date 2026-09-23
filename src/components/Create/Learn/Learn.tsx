@@ -1,7 +1,10 @@
 import { memo, useCallback } from 'react'
 import { Button } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { AnimatedSection } from '../AnimatedSection'
+import { LightCtaButton } from '../CreateButtons.styled'
 import { learnCards } from '../data'
 import { PlayIcon } from './PlayIcon'
 import {
@@ -23,19 +26,29 @@ import {
 
 const CreatorsLearn = memo(() => {
   const l = useFormatMessage()
+  const trackClick = useTrackClick()
   const handleCardClick = useCallback((url: string) => {
     window.open(url, '_blank')
   }, [])
 
   return (
-    <AnimatedSection>
+    <AnimatedSection trackPlace={SectionViewedTrack.CREATORS_LEARN}>
       <LearnSection>
         <LearnTitle>
           <span>{l('component.creators_landing.learn.title_highlight')}</span> {l('component.creators_landing.learn.title')}
         </LearnTitle>
         <LearnCardsContainer>
           {learnCards.map(card => (
-            <LearnCard key={card.id} onClick={() => handleCardClick(card.url)}>
+            <LearnCard
+              key={card.id}
+              onClick={event => {
+                trackClick(event)
+                handleCardClick(card.url)
+              }}
+              data-place={SectionViewedTrack.CREATORS_LEARN}
+              data-event={SegmentEvent.CLICK}
+              data-title={card.title}
+            >
               <LearnCardVideoImage>
                 <img src={card.image} alt={card.title} />
                 <PlayIcon />
@@ -64,22 +77,29 @@ const CreatorsLearn = memo(() => {
               href={l('component.creators_landing.learn.watch_more_target')}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={trackClick}
+              data-place={SectionViewedTrack.CREATORS_LEARN}
+              data-event={SegmentEvent.CLICK}
+              data-title="watch-more"
             >
               {l('component.creators_landing.learn.watch_more_button')}
             </Button>
           </LearnExtraBlock>
           <LearnExtraBlock sx={{ marginTop: { xs: '33px', md: 0 } }}>
             {l('component.creators_landing.learn.your_tutorial')}
-            <Button
+            <LightCtaButton
               variant="outlined"
               component="a"
               href={l('component.creators_landing.learn.your_tutorial_target')}
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ backgroundColor: '#fff', color: '#43404a', ['&:hover']: { backgroundColor: '#e0e0e0' } }}
+              onClick={trackClick}
+              data-place={SectionViewedTrack.CREATORS_LEARN}
+              data-event={SegmentEvent.CLICK}
+              data-title="submit-tutorial"
             >
               {l('component.creators_landing.learn.your_tutorial_button')}
-            </Button>
+            </LightCtaButton>
           </LearnExtraBlock>
         </LearnExtraContainer>
       </LearnSection>

@@ -629,7 +629,7 @@ describe('eventsClient', () => {
   })
 
   describe('when getUpcomingEvents is dispatched twice with the same identity', () => {
-    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+    const mockIdentity = { authChain: [{ payload: '0xabc' }], ephemeralIdentity: {} } as unknown as AuthIdentity
 
     beforeEach(() => {
       mockFetchWithOptionalIdentity.mockClear()
@@ -812,12 +812,12 @@ describe('eventsClient', () => {
         })
       })
 
-      it('should call /v1/communities with roles filter and return only active items', async () => {
+      it('should call /v2/communities with roles filter and return only active items', async () => {
         const store = createTestStore()
         const result = await store.dispatch(eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity }))
 
         expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(
-          'https://social.test/v1/communities?roles=owner&roles=moderator',
+          'https://social.test/v2/communities?roles=owner&roles=moderator',
           mockIdentity,
           expect.any(AbortSignal)
         )
@@ -925,5 +925,123 @@ describe('eventsClient', () => {
       const result = await store.dispatch(eventsClient.endpoints.getCommunities.initiate({ identity: mockIdentity }))
       expect(result.data).toEqual([])
     })
+  })
+
+  describe('when a mutation receives a non-ok response whose body is not valid JSON', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test')
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    it('should fall back to null data for getEventById when response.json() rejects', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.getEventById.initiate({ eventId: 'ev-1', identity: mockIdentity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+
+    it('should fall back to null data for createEvent when response.json() rejects', async () => {
+      mockFetchWithIdentity.mockResolvedValue({
+        ok: false,
+        status: 502,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.createEvent.initiate({ payload: {} as never, identity: mockIdentity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 502, data: null }))
+    })
+
+    it('should fall back to null data for updateEvent when response.json() rejects', async () => {
+      mockFetchWithIdentity.mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(
+        eventsClient.endpoints.updateEvent.initiate({ eventId: 'ev-1', payload: {} as never, identity: mockIdentity })
+      )
+      expect(result.error).toEqual(expect.objectContaining({ status: 503, data: null }))
+    })
+
+    it('should fall back to null data for deleteEvent when response.json() rejects', async () => {
+      mockFetchWithIdentity.mockResolvedValue({
+        ok: false,
+        status: 504,
+        json: () => Promise.reject(new Error('invalid json'))
+      })
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.deleteEvent.initiate({ eventId: 'ev-1', identity: mockIdentity }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 504, data: null }))
+    })
+  })
+
+  describe('when getUpcomingEvents is fetched successfully with an identity', () => {
+    const mockIdentity = { ephemeralIdentity: {} } as unknown as AuthIdentity
+
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://events.test')
+      mockFetchWithOptionalIdentity.mockClear()
+      mockFetchWithOptionalIdentity.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: [{ id: 'up-1' }] })
+      })
+    })
+
+    it('should request a 24h window with from/to bounds and forward the identity', async () => {
+      const store = createTestStore()
+      const result = await store.dispatch(eventsClient.endpoints.getUpcomingEvents.initiate({ identity: mockIdentity }))
+
+      expect(result.data).toEqual([{ id: 'up-1' }])
+      const requestedUrl = mockFetchWithOptionalIdentity.mock.calls[0][0] as string
+      expect(requestedUrl).toContain('list=upcoming')
+      expect(requestedUrl).toContain('from=')
+      expect(requestedUrl).toContain('to=')
+      expect(mockFetchWithOptionalIdentity).toHaveBeenCalledWith(expect.any(String), mockIdentity, expect.any(AbortSignal))
+    })
+  })
+})
+
+describe('when events have account-specific fields', () => {
+  let store: ReturnType<typeof createTestStore>
+  let identityA: AuthIdentity
+  let identityB: AuthIdentity
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+    store = createTestStore()
+    identityA = { authChain: [{ payload: '0xaaa' }] } as AuthIdentity
+    identityB = { authChain: [{ payload: '0xbbb' }] } as AuthIdentity
+    mockGetEnv.mockReturnValue('https://events.test')
+    mockFetchWithOptionalIdentity
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: 'event', attending: true }] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: 'event', attending: false }] }) })
+  })
+
+  afterEach(() => {
+    store.dispatch(eventsClient.util.resetApiState())
+    jest.resetAllMocks()
+  })
+
+  it('should fetch the next signed-in account instead of reusing the authenticated boolean key', async () => {
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all', identity: identityA })).unwrap()
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all', identity: identityB })).unwrap()
+    expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
+    expect(eventsClient.endpoints.getEvents.select({ list: 'all', identity: identityB })(store.getState()).data).toEqual([
+      { id: 'event', attending: false }
+    ])
+  })
+
+  it('should keep anonymous reads available in their own cache entry', async () => {
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all', identity: identityA })).unwrap()
+    await store.dispatch(eventsClient.endpoints.getEvents.initiate({ list: 'all' })).unwrap()
+    expect(mockFetchWithOptionalIdentity).toHaveBeenLastCalledWith(expect.any(String), undefined, expect.any(AbortSignal))
+    expect(mockFetchWithOptionalIdentity).toHaveBeenCalledTimes(2)
   })
 })

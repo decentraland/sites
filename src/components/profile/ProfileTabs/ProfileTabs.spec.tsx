@@ -124,4 +124,42 @@ describe('ProfileTabs', () => {
 
     expect(onTabSelectMock).toHaveBeenCalledWith('creations')
   })
+
+  describe('when some tabs are hidden', () => {
+    it('should filter out the hidden tabs from the nav', () => {
+      render(
+        <MemoryRouter>
+          <ProfileTabs activeTab="overview" isOwnProfile={false} onTabSelect={onTabSelectMock} hiddenTabs={new Set(['places', 'photos'])} />
+        </MemoryRouter>
+      )
+
+      const tabs = screen.getAllByRole('tab')
+      expect(tabs.map(tab => tab.getAttribute('data-value'))).toEqual(['overview', 'creations', 'communities'])
+    })
+
+    it('should keep every tab when the hidden set is empty', () => {
+      render(
+        <MemoryRouter>
+          <ProfileTabs activeTab="overview" isOwnProfile={false} onTabSelect={onTabSelectMock} hiddenTabs={new Set()} />
+        </MemoryRouter>
+      )
+
+      const tabs = screen.getAllByRole('tab')
+      expect(tabs.map(tab => tab.getAttribute('data-value'))).toEqual(['overview', 'creations', 'communities', 'places', 'photos'])
+    })
+  })
+
+  describe('when the active tab is not visible for the viewer', () => {
+    it('should fall back to highlighting overview instead of going out of range', () => {
+      // A Member visitor deep-linking to /assets (an owner-only tab) must not crash MUI's
+      // value-out-of-range guard — the highlight falls back to overview.
+      render(
+        <MemoryRouter>
+          <ProfileTabs activeTab="assets" isOwnProfile={false} onTabSelect={onTabSelectMock} />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByRole('tablist')).toHaveAttribute('data-active', 'overview')
+    })
+  })
 })

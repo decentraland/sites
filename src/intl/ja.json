@@ -5,7 +5,7 @@
   "page": {
     "download": {
       "title": "Decentralandをダウンロード",
-      "description": "Decentralandをダウンロードしてメタバースの探検を始めましょう",
+      "description": "Decentralandをダウンロードして一緒に遊ぼう",
       "download_onboarding_title": "Decentralandをダウンロード\n一緒に遊ぼう！",
       "not_available": "お使いのOSではご利用いただけません",
       "not_available_subtitle": "Decentralandは<span>Windows</span>と<span>macOS</span>でご利用いただけます。",
@@ -118,6 +118,9 @@
         "view_all": "すべて見る"
       }
     },
+    "events": {
+      "page_title": "イベント — Decentraland"
+    },
     "cast": {
       "app": {
         "title": "Decentraland Cast 2.0",
@@ -206,13 +209,16 @@
         "messages_count": "{count}件のメッセージ",
         "messages_count_plural": "{count}件のメッセージ",
         "no_messages": "まだメッセージはありません。{action}",
-        "no_messages_yet": "まだメッセージはありません",
+        "no_messages_yet": "まだメッセージはありません。",
         "start_conversation": "会話を始めましょう！",
         "sign_in_to_participate": "参加するにはサインインしてください。",
         "type_message": "メッセージを入力...",
         "sign_in_prompt": "チャットにメッセージを送るにはサインインしてください",
         "connect_wallet_prompt": "メッセージを送るにはDecentralandウォレットを接続してください",
-        "footer_text": "チャットに参加するにはDecentralandの{sceneName}に入ってください。"
+        "footer_text": "チャットに参加するにはDecentralandの{sceneName}に入ってください。",
+        "footer_jump_prefix": "チャットに参加するには、Decentralandで",
+        "footer_jump_suffix": "にジャンプしてください。",
+        "unavailable": "チャットは現在利用できません。"
       },
       "people": {
         "title": "参加者",
@@ -348,6 +354,27 @@
       "title": "プレイヤーを報告する – Decentraland",
       "success_title": "報告が送信されました – Decentraland"
     },
+    "confirm_email": {
+      "title": "メールの確認 – Decentraland",
+      "logo_alt": "Decentraland",
+      "heading": "メールを確認",
+      "heading_confirmed": "メールを確認しました！",
+      "description_account": "下のセキュリティチャレンジを完了し、「メールを確認」をクリックしてアカウントの通知を有効にしてください。",
+      "description_credits": "下のセキュリティチャレンジを完了し、「メールを確認」をクリックして Marketplace Credits の獲得を始めましょう。",
+      "confirmed_account": "準備完了です。Decentraland アプリに戻ってアカウントの利用を始めましょう。",
+      "confirmed_credits": "準備完了です。Decentraland アプリに戻って Marketplace Credits を獲得しましょう。",
+      "confirm_button": "メールを確認",
+      "confirming_button": "確認中...",
+      "go_to_marketplace": "マーケットプレイスへ",
+      "go_to_account": "アカウントに戻る",
+      "error_generic": "メールを確認できませんでした。もう一度お試しいただくか、新しい確認リンクをリクエストしてください。",
+      "invalid_link_title": "無効なリンク",
+      "invalid_link_description": "この確認リンクは無効か、有効期限が切れています。",
+      "invalid_source_title": "無効なソース",
+      "invalid_source_description": "確認元が無効です。メールのリンクをご確認ください。",
+      "missing_address_title": "アドレスがありません",
+      "missing_address_description": "URL にアドレスのパラメータが必要です。メールのリンクをご確認ください。"
+    },
     "play": {
       "title": "ウェブ版は提供を終了しました。",
       "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
@@ -356,12 +383,19 @@
       "jump_in": "入場する！",
       "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
       "here": "こちら"
+    },
+    "not_found": {
+      "title_oops": "おっと！",
+      "title_rest": "このページはワールドから消えました。",
+      "description": "リンクが古くなっている可能性がありますが、Decentraland は今もライブ中です。コミュニティイベント、DJ セット、クリエイター制作のゲーム、ワールド内の新しい体験を見つけましょう。",
+      "cta": "開催中のイベントを見る"
     }
   },
   "page_invite": {
     "social": {
       "title": "Decentralandに参加しよう - コミュニティが作るバーチャルワールド",
-      "description": "アバターをカスタマイズして、世界中の人々と交流し、Decentralandを発見しましょう。ブラウザから始めて、アプリをダウンロードして入場しましょう。"
+      "description": "Decentralandは、オンラインで過ごす場所です。映画上映、ライブ音楽、クイズ、その他のコミュニティイベントに参加しましょう。いつでも訪れて、誰がいるか見てみましょう。",
+      "title_with_name": "{name}があなたをDecentralandに招待しました"
     },
     "hero": {
       "title": "があなたをDecentralandに招待しました",
@@ -432,7 +466,7 @@
         "subtitle": "Decentralandについて詳しく見る",
         "cta": {
           "label": "もっと見る",
-          "link": "https://docs.decentraland.org/player/general/faq/"
+          "link": "https://docs.decentraland.org/faqs/"
         }
       },
       "marketplace": {
@@ -476,7 +510,7 @@
         "menu": "メニュー",
         "getting_started": {
           "title": "はじめに",
-          "what_is": "Decentralandとは？",
+          "what_is": "Decentralandについて",
           "download": "Decentralandをダウンロード",
           "system_requirements": "システム要件",
           "faqs": "よくある質問",
@@ -562,17 +596,13 @@
         },
         "support_updates_section": {
           "title": "サポートアップデート",
-          "item_count": "5",
-          "item_0_question": "Explorer リリース - v0.141.0 (22/4/2026)",
-          "item_0_answer": "クライアント：\n\n新機能：\n- 新規ユーザー向けに「アカウント切り替え」ボタンを無効化\n- AVPro を拡張して YouTube と公開 Google Drive 動画に対応 (v2)\n- 太陽と月のレンズフレア\n\n修正：\n- 現在のシーンのストリーム設定のみを有効化\n- コミュニティからメンバーを削除する際のエラー\n- 複数の LSD およびアセット読み込みの問題\n- 新規アカウントでのログイン画面の重なり\n- 発信通話中のマイクボタンを削除\n\n詳細については PR をご確認ください。",
-          "item_1_question": "新しいCreator Hub (v0.35.0) リリース",
-          "item_1_answer": "新機能：\n- Spawn Areas：シーンエディターでスポーンエリアの視覚的な表示を直接確認でき、ランダムオフセット範囲を含めてスポーンエリアを視覚的に調整できるようになりました。\n- SDK互換の動的アセットカタログ：アセットカタログが実行時にCDNから最新バージョンを読み込むようになり、完全なアプリアップデートを待たずに新しいアセットが自動的に表示されます。\n- Worldアクセス権限：「アクセス」タブがWorlds設定で利用可能になり、Creator Hubから直接誰があなたのworldに入れるかを管理できます。\n\n修正：\n- アドバンスモードのシーンレイアウト：アドバンスモードで編集する際にシーンレイアウトが正しく更新されるようになりました。\n- シーンの重複した地面：シーンを開いても重複した地面平面がレンダリングされなくなりました。\n- 管理プロジェクトの取得：管理プロジェクトの読み込み時の失敗を修正しました。\n- Windowsコード署名：Windowsビルドパイプラインが、署名されていない実行ファイルをサイレントに生成する代わりに、コード署名エラー時に正しく失敗するようになりました。\n- レガシー依存関係の削除：廃止されたdecentraland-connectライブラリをviemを使用したより軽量なvendored実装に置き換え、バンドルサイズを削減しました。\n\n改善：\n- UIの改善：より良い編集体験のために、色、コンポーネントスタイル、トランスフォーム配置、エンティティインスペクターヘッダー、エンティティのリネーム、アセットタブのスタイルが更新されました。\n- コラボレータータブの文言：コラボレータータブのテキストがより明確なガイダンスに更新されました。",
-          "item_2_question": "クリエイターの皆様へ：Backface Cullingの更新",
-          "item_2_answer": "Backface Cullingがエンジンのすべてのモデルマテリアルでデフォルトで有効になりました。\n\n理由：大幅なパフォーマンス最適化。\n方法：エンジンの最適化であるため、すでに公開されているマテリアルにも影響します。\n\nアクションポイント：\nドキュメントのトラブルシューティングセクションに従ってシーンを確認することをお勧めします。\n\nまず確認すべきシナリオ：\n- 平面で作られた旗、カーテン、壁：片面マテリアルの平面で作られた壁は、反対側から見えません。\n- 片面マテリアルの平面で作られた草/木の葉：上記と同じケースです。\n- 部屋として機能するキューブやその他の形状の内部：キューブのマテリアルが外側を向いている場合、内側から見えません。",
-          "item_3_question": "Visual Studio拡張機能 - サポート終了",
-          "item_3_answer": "Creator Hubに注力するため、Visual Studio拡張機能のサポートは終了しました。\n\n拡張機能はVS Marketplaceから削除されました。",
-          "item_4_question": "Player.logs - 取得方法",
-          "item_4_answer": "以下はPlayer.logファイルを見つけて生成する方法のガイドです。これらのファイルは報告された問題のトラブルシューティングに役立ちます。\n\nDecentralandデスクトップアプリでチャットを開き、次のように入力します：/logs\n\nまたは：\n\nWindows の場合：\n次の場所に移動：C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nPlayer.logという名前のファイルを見つけてください\n\nMac の場合：\nFinderを開き、Cmd + Shift + Gを押して「フォルダへ移動」ダイアログを開きます。\nパスを入力：/Users/UserName/Library/Logs/Decentraland/Explorer/\nPlayer.logという名前のファイルを見つけてください\n\nPlayer.logファイルは現在/アクティブなセッションの問題を表示します。\nPlayer-prev.logファイルは前のセッションの問題を表示します。\n\nLauncherログ（output.log）：\nWindows：C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac：/Users/UserName/Library/Logs/DecentralandLauncherLight"
+          "item_count": "3",
+          "item_0_question": "クリエイターの皆様へ：Backface Cullingの更新",
+          "item_0_answer": "Backface Cullingがエンジンのすべてのモデルマテリアルでデフォルトで有効になりました。\n\n理由：大幅なパフォーマンス最適化。\n方法：エンジンの最適化であるため、すでに公開されているマテリアルにも影響します。\n\nアクションポイント：\nドキュメントのトラブルシューティングセクションに従ってシーンを確認することをお勧めします。\n\nまず確認すべきシナリオ：\n- 平面で作られた旗、カーテン、壁：片面マテリアルの平面で作られた壁は、反対側から見えません。\n- 片面マテリアルの平面で作られた草/木の葉：上記と同じケースです。\n- 部屋として機能するキューブやその他の形状の内部：キューブのマテリアルが外側を向いている場合、内側から見えません。",
+          "item_1_question": "Visual Studio拡張機能 - サポート終了",
+          "item_1_answer": "Creator Hubに注力するため、Visual Studio拡張機能のサポートは終了しました。\n\n拡張機能はVS Marketplaceから削除されました。",
+          "item_2_question": "Player.logs - 取得方法",
+          "item_2_answer": "以下はPlayer.logファイルを見つけて生成する方法のガイドです。これらのファイルは報告された問題のトラブルシューティングに役立ちます。\n\nDecentralandデスクトップアプリでチャットを開き、次のように入力します：/logs\n\nまたは：\n\nWindows の場合：\n次の場所に移動：C:\\Users\\{YourUserName}\\AppData\\LocalLow\\Decentraland\\Explorer\nPlayer.logという名前のファイルを見つけてください\n\nMac の場合：\nFinderを開き、Cmd + Shift + Gを押して「フォルダへ移動」ダイアログを開きます。\nパスを入力：/Users/UserName/Library/Logs/Decentraland/Explorer/\nPlayer.logという名前のファイルを見つけてください\n\nPlayer.logファイルは現在/アクティブなセッションの問題を表示します。\nPlayer-prev.logファイルは前のセッションの問題を表示します。\n\nLauncherログ（output.log）：\nWindows：C:\\Users\\username\\AppData\\Roaming\\DecentralandLauncherLight\nMac：/Users/UserName/Library/Logs/DecentralandLauncherLight"
         },
         "dropdown": {
           "title": "システムステータス",
@@ -610,6 +640,9 @@
         "shop": "ショップ",
         "create": "作成",
         "learn": "学ぶ",
+        "discover": "見つける",
+        "events": "イベント",
+        "places": "プレイス",
         "jump_in": "入場",
         "sign_in": "ログイン",
         "signing_in": "ログイン中...",
@@ -631,6 +664,7 @@
         "create_in_decentraland": "Decentralandで作成",
         "publish_wearables_emotes": "ウェアラブル＆エモートを公開",
         "publish_land": "ランドを公開",
+        "creator_documentation": "クリエイター向けドキュメント",
         "get_started": "始める",
         "start_creating": "作成を始める",
         "see_whats_new": "最新情報を見る",
@@ -638,7 +672,7 @@
         "my_assets": "マイアセット",
         "account_settings": "アカウント設定",
         "marketplace_authorizations": "マーケットプレイス認証",
-        "whats_on": "イベント情報"
+        "credits_balance": "{count} クレジット"
       }
     },
     "reels": {
@@ -838,7 +872,8 @@
         "not_found": "このワールドまたはシーンはストレージサービスに見つかりませんでした。",
         "payload_too_large": "値がこのストレージ領域には大きすぎます。",
         "rate_limited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
-        "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。"
+        "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。",
+        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。"
       }
     },
     "report": {
@@ -899,16 +934,52 @@
     },
     "jump": {
       "events_page": {
-        "deleted_notice_prefix": "このハングアウトは利用できなくなりました。",
-        "deleted_notice_link": "All Hangouts",
+        "deleted_notice_prefix": "このイベントは利用できなくなりました。",
+        "deleted_notice_link": "すべてのイベント",
         "deleted_notice_suffix": "でさらに探してみましょう。"
       }
+    },
+    "creators_landing": {
+      "hero": {
+        "mobile_docs_cta": "クリエイタードキュメントを見る",
+        "scroll_label": "次のセクションへスクロール"
+      },
+      "live_scenes": {
+        "title": "をライブで探索",
+        "title_highlight": "クリエイターが今つくる世界",
+        "online": "{count}人がオンライン",
+        "view_all": "ライブシーンをすべて見る"
+      },
+      "blog": {
+        "title": "の最新記事",
+        "title_highlight": "ブログ",
+        "view_all": "ブログを読む"
+      }
+    },
+    "error_boundary": {
+      "title": "問題が発生しました",
+      "message": "このページを読み込めませんでした。接続を確認して、もう一度お試しください。",
+      "reload": "再読み込み"
     }
   },
   "create_event": {
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
+    "approved_edit_warning": "承認済みイベントの名前、説明、画像、場所を変更すると、再審査に戻ります。",
+    "featured_item_label": "注目のウェアラブル（任意）",
+    "featured_item_placeholder": "アイテムやコレクションを検索、またはURNを貼り付け",
+    "featured_item_by": "作成者: {creator}",
+    "featured_item_group_items": "アイテム",
+    "featured_item_group_collections": "コレクション",
+    "featured_item_searching": "検索中…",
+    "featured_item_no_results": "アイテムまたはコレクションが見つかりません",
+    "featured_item_min_length": "{count}文字以上入力してください",
+    "featured_item_error": "マーケットプレイスに接続できませんでした。もう一度お試しください。",
+    "featured_item_clear": "注目アイテムを削除",
+    "error_invalid_featured_item": "有効なコレクションまたはアイテムのURNを入力してください",
     "error_image_too_large": "この画像を500 KB以下に圧縮できませんでした。より小さいファイルを選択してください。",
+    "recommended_size": "（推奨サイズ：1920 × 1080、セーフエリア：1080 × 1080）",
+    "image_helper": "PNG、JPG、またはGIFをアップロードしてください（1920×1080px、最大500kb）。すべての画面解像度に対応できるよう、主要なビジュアルとテキストは中央の1080×1080のセーフエリア内に収めてください。",
     "vertical_recommended_size": "推奨サイズ：716 × 1814 px",
     "recurrence": "繰り返し",
     "every_day": "毎日",
@@ -933,7 +1004,6 @@
       "decentraland_community": "Decentraland コミュニティ",
       "members": "メンバー",
       "by": "作成者:",
-      "unknown": "不明",
       "joined": "参加済み",
       "sign_in_to_join": "サインインして参加",
       "request_to_join": "参加をリクエスト",
@@ -1094,6 +1164,7 @@
       "filter_favorites": "お気に入り",
       "empty_owner_title": "まだ何もありません。でも、簡単に変えられます",
       "empty_owner_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。まずはNAMEを取得するのが一番簡単で、自分だけのWorldを使えるようになります。",
+      "empty_owner_has_name_subtitle": "「マイプレイス」には、Decentralandで所有または管理しているスペースが表示されます。すでにNAMEをお持ちなので、そこにWorldを公開するとここに表示されます。",
       "empty_owner_cta": "NAMEを取得",
       "empty_favorites_title": "保存済みのものはまだありません",
       "empty_favorites_subtitle": "プレイスカードやDecentralandのマップでハートをタップして、お気に入りのプレイスを追加しましょう。ここですべて見つけられます。",
@@ -1104,7 +1175,11 @@
       "empty_member": "このメンバーはまだ写真を撮影していません。",
       "count": "{count} 枚の写真",
       "empty_owner_subtitle": "入って思い出を集めましょう！「C」キーでカメラを開き、「スペースキー」で写真を撮影できます。",
-      "empty_owner_cta": "参加する"
+      "empty_owner_cta": "参加する",
+      "filter_all": "すべて",
+      "filter_public": "公開",
+      "filter_private": "非公開",
+      "empty_filter": "このフィルターに一致する写真はありません。"
     },
     "referral_rewards": {
       "anonymous": "サインインして友達を招待し、報酬を獲得しましょう。",
@@ -1154,13 +1229,13 @@
   "event_detail": {
     "delete": "削除",
     "delete_modal": {
-      "title": "このハングアウトを削除してもよろしいですか？",
-      "subtitle": "このハングアウトはハングアウト一覧から完全に削除されます。この操作は元に戻せません。",
+      "title": "このイベントを削除してもよろしいですか？",
+      "subtitle": "このイベントはイベント一覧から完全に削除されます。この操作は元に戻せません。",
       "cancel": "キャンセル",
-      "confirm": "ハングアウトを削除",
-      "toast_title": "ハングアウトを削除しました",
-      "toast_description": "ハングアウト「{name}」を削除しました！",
-      "error": "ハングアウトを削除できませんでした。もう一度お試しください。"
+      "confirm": "イベントを削除",
+      "toast_title": "イベントを削除しました",
+      "toast_description": "イベント「{name}」を削除しました！",
+      "error": "イベントを削除できませんでした。もう一度お試しください。"
     },
     "recurrent_daily": "毎日繰り返し",
     "recurrent_weekly": "毎週繰り返し",
@@ -1179,7 +1254,8 @@
     "hero_every_days": "毎{days}",
     "location_with_coords": "{place} ({x},{y})",
     "location_coords": "({x},{y})",
-    "schedule_starting": "{schedule} から"
+    "schedule_starting": "{schedule} から",
+    "featured_item": "注目アイテム"
   },
   "event_time": {
     "utc_same_day": "{time} UTC",
@@ -1194,5 +1270,439 @@
   "upcoming": {
     "today_at": "今日 {time}",
     "tomorrow_at": "明日 {time}"
+  },
+  "discover": {
+    "home": {
+      "page_title": "プレイス — Decentraland"
+    },
+    "card": {
+      "jump_in": "参加",
+      "by": "作成者",
+      "featured": "注目"
+    },
+    "live": {
+      "heading": "ライブ中",
+      "scroll_previous": "前のライブ中の場所",
+      "scroll_next": "ライブ中の場所をもっと見る"
+    },
+    "explore": {
+      "search_placeholder": "場所を検索",
+      "empty": "条件に一致するプレイスがありません。",
+      "filters": "フィルター",
+      "remove_filter": "フィルターを削除",
+      "category": {
+        "label": "カテゴリー",
+        "all": "すべてのカテゴリ",
+        "social": "ソーシャル",
+        "music": "ミュージック",
+        "art": "アート",
+        "game": "ゲーム",
+        "fashion": "ファッション",
+        "education": "教育",
+        "shop": "ショップ",
+        "sports": "スポーツ",
+        "business": "ビジネス"
+      },
+      "section": {
+        "featured": "注目の場所"
+      },
+      "tab": {
+        "explore_all": "すべて見る",
+        "favourites": "お気に入り",
+        "my_places": "マイプレイス"
+      },
+      "signin_favourites": "サインインして場所をお気に入りに追加すると、ここに表示されます。",
+      "empty_favourites": "お気に入りの場所はまだありません。",
+      "signin_my_places": "サインインすると、作成した場所が表示されます。",
+      "sign_in": "サインイン",
+      "empty_my_places": "公開した場所はまだありません。",
+      "error": "場所の読み込み中に問題が発生しました。",
+      "retry": "再試行"
+    },
+    "communities": {
+      "page_title": "コミュニティ — Decentraland",
+      "heading": "コミュニティ",
+      "search_placeholder": "コミュニティを検索",
+      "empty": "コミュニティが見つかりませんでした。",
+      "members_count": "メンバー{count}人",
+      "error": "コミュニティの読み込み中に問題が発生しました。"
+    },
+    "scene": {
+      "people_count": "ワールドに{count}人",
+      "people_empty": "まだ誰もいません。",
+      "tab_video": "Stream",
+      "tab_streaming": "DCL Web",
+      "resume_cta": "ライブを視聴",
+      "close_media": "停止",
+      "fullscreen": "フルスクリーン",
+      "exit_fullscreen": "解除",
+      "scene_picker": "シーン",
+      "connecting": "シーンに接続中…",
+      "waiting": {
+        "title": "シーンのアクティビティ",
+        "hint": "{count, plural, =0 {まだ誰もいません — 最初に参加しよう。} other {このシーンに {count} 人います。右側でチャットがライブ表示されています。}}"
+      },
+      "not_found": {
+        "title": "シーンが見つかりません",
+        "description": "このプレイスまたはワールドを読み込めませんでした。削除された可能性があります。"
+      },
+      "mobile_unsupported": {
+        "title": "Decentraland Web",
+        "hint": "このエクスペリエンスはモバイルブラウザでは利用できません。アプリをダウンロードしてください:"
+      },
+      "what_to_expect": "見どころ",
+      "copy_link": "リンクをコピー",
+      "close": "閉じる",
+      "explore_scene": "シーンを探索",
+      "copied": "コピーしました！"
+    },
+    "featured": {
+      "view_all": "注目の場所をすべて見る",
+      "view_less": "表示を減らす"
+    }
+  },
+  "account": {
+    "meta": {
+      "title": "アカウント設定"
+    },
+    "nav": {
+      "section_label": "アカウント設定",
+      "wallets": "ウォレット",
+      "notifications": "通知",
+      "credits": "クレジット設定",
+      "security": "セキュリティ",
+      "delete": "アカウントを削除",
+      "logout": "ログアウト",
+      "close": "閉じる"
+    },
+    "sign_in": {
+      "title": "アカウントを管理するにはサインインしてください",
+      "cta": "サインイン"
+    },
+    "coming_soon": "近日公開",
+    "pages": {
+      "wallets": {
+        "title": "ウォレット"
+      },
+      "notifications": {
+        "title": "通知"
+      },
+      "credits": {
+        "title": "クレジット設定"
+      },
+      "security": {
+        "title": "セキュリティ"
+      },
+      "delete": {
+        "title": "アカウントの削除"
+      }
+    },
+    "not_found": {
+      "title": "ページが見つかりません",
+      "description": "お探しのアカウントページは存在しません。",
+      "cta": "ウォレットへ移動"
+    },
+    "wallets": {
+      "eth_label": "Ethereum MANA",
+      "polygon_label": "Polygon MANA",
+      "actions": {
+        "buy": "購入",
+        "swap": "スワップ",
+        "send": "送信",
+        "receive": "受取",
+        "more": "その他"
+      },
+      "receive": {
+        "title": "MANAを受け取る",
+        "description": "ウォレットアドレスを共有して、MANAやその他の資産を受け取りましょう。",
+        "copy": "アドレスをコピー",
+        "copied": "コピーしました！",
+        "close": "閉じる"
+      },
+      "send": {
+        "title": "MANAを送る",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAを送るにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットを正しいネットワークに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "to_label": "送信先アドレス",
+        "amount_label": "金額",
+        "invalid_address": "有効なウォレットアドレスを入力してください",
+        "insufficient_balance": "残高が不足しています",
+        "send_button": "送信",
+        "confirm_in_wallet": "ウォレットで承認してください…",
+        "sending": "送信中…",
+        "success": "MANAを送信しました。",
+        "close": "閉じる",
+        "rejected": "トランザクションを拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "swap": {
+        "title": "MANAをスワップ",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAをPolygonに移動するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをEthereumに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "EthereumのMANAをPolygonに移動します。承認とデポジットの2つのトランザクションが必要です。",
+        "amount_label": "金額",
+        "submit": "Polygonに移動",
+        "approving": "ウォレットで承認してください…",
+        "depositing": "デポジット中…",
+        "success": "MANAはPolygonに送信中です。到着まで数分かかる場合があります。",
+        "close": "閉じる",
+        "rejected": "トランザクションを拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "transactions": {
+        "title": "取引",
+        "empty": "まだ取引はありません。",
+        "type": {
+          "send": "送信",
+          "swap": "スワップ",
+          "received": "受取",
+          "withdraw": "出金"
+        },
+        "status": {
+          "pending": "保留中",
+          "confirmed": "確認済み",
+          "failed": "失敗",
+          "bridging": "ブリッジ中",
+          "checkpoint": "請求可能"
+        },
+        "pending_title": "保留中の取引",
+        "latest_title": "最新の取引",
+        "load_more": "もっと見る",
+        "claim": "請求"
+      },
+      "withdraw": {
+        "title": "MANAを引き出す",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "MANAをEthereumに移動するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをPolygonに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "PolygonのMANAをEthereumに移動します。今すぐPolygonでバーンされ、チェックポイントが完了したらEthereumで請求できます（数時間かかる場合があります）。",
+        "amount_label": "金額",
+        "submit": "Ethereumに引き出す",
+        "withdrawing": "引き出し中…",
+        "success": "引き出しを開始しました。チェックポイントが完了したら（数時間）、Ethereumで請求しに戻ってきてください。",
+        "close": "閉じる",
+        "rejected": "取引を拒否しました。",
+        "error": "問題が発生しました。もう一度お試しください。"
+      },
+      "claim": {
+        "title": "引き出しを請求",
+        "loading": "ウォレットを読み込み中…",
+        "connect_description": "EthereumでMANAを請求するにはウォレットを接続してください。",
+        "switch_description": "続行するにはウォレットをEthereumに切り替えてください。",
+        "switch_button": "ネットワークを切り替える",
+        "description": "{amount} MANAの引き出しの準備ができました。EthereumでMANAを受け取るには請求してください。",
+        "submit": "Ethereumで請求",
+        "claiming": "請求中…",
+        "success": "MANAがEthereumで解放されました。",
+        "close": "閉じる",
+        "rejected": "取引を拒否しました。",
+        "error": "引き出しを請求できませんでした。もう一度お試しください。",
+        "not_ready": "この引き出しはまだ請求できません。チェックポイントには数時間かかる場合があります。後でもう一度お試しください。"
+      },
+      "buy": {
+        "title": "MANAを購入",
+        "subtitle": "購入するMANAを選択してください：",
+        "close": "閉じる",
+        "error": "プロバイダーを開けませんでした。もう一度お試しください。",
+        "network": {
+          "ethereum": {
+            "label": "Ethereum MANA",
+            "name": "Ethereum",
+            "description": "Ethereumで LAND、名前、特定のウェアラブルの購入に使用できます。"
+          },
+          "polygon": {
+            "label": "Polygon MANA",
+            "name": "Polygon",
+            "description": "Polygonでほとんどのウェアラブルとエモートの購入に使用できます。"
+          }
+        },
+        "provider_title": "{provider}で{network} MANAを購入",
+        "provider_subtitle": "デビットカード、クレジットカード、Apple Pay、Google Pay、または銀行振込で購入できます。",
+        "continue": "{provider}で続行",
+        "learn_more": "{provider}について詳しく見る",
+        "provider": {
+          "moonpay": "MoonPay",
+          "transak": "Transak"
+        },
+        "loading": "開いています…"
+      }
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "離席中もDecentralandの通知を見逃さないようにしましょう！メール通知に登録し、受け取りたい通知を以下から選んでください。",
+      "loading": "通知設定を読み込んでいます…",
+      "load_error": "通知設定を読み込めませんでした。しばらくしてからもう一度お試しください。",
+      "groups": {
+        "marketplace": "マーケットプレイス",
+        "worlds": "ワールド",
+        "credits": "マーケットプレイスクレジット",
+        "streaming": "ワールド内ストリーミング",
+        "events": "イベント",
+        "rewards": "プレゼントと報酬",
+        "dao": "DAO",
+        "tips": "チップ",
+        "referral": "紹介"
+      },
+      "email": {
+        "title": "メール通知",
+        "placeholder": "example@decentraland.org",
+        "invalid": "無効なメールアドレス",
+        "error": "メールアドレスを保存できませんでした。もう一度お試しください。",
+        "description": {
+          "without_email": "メールアドレスを入力し、受信トレイで確認リンク付きのメールを確認してください。確認後、以下の通知をカスタマイズできます。",
+          "with_email": "メールアドレスを変更したい場合は、以下で編集してください。その後、受信トレイで確認メールを必ずチェックしてください。",
+          "pending_approval": "確認メールを送信しました。受信トレイをご確認ください。",
+          "confirmed": "メールアドレスが確認されました。"
+        },
+        "status": {
+          "confirmed": "確認済み",
+          "pending": "承認待ち"
+        },
+        "button": {
+          "submit": "送信",
+          "resend": "再送信",
+          "save": "保存"
+        },
+        "master_label": "すべてのメール通知を切り替える"
+      },
+      "types": {
+        "item_sold": "アイテムが売れました",
+        "bid_accepted": "入札が承認されました",
+        "bid_received": "入札を受け取りました",
+        "royalties_earned": "ロイヤルティを獲得",
+        "rental_ended": "LANDのレンタル期間が終了",
+        "rental_started": "LANDが貸し出されました",
+        "worlds_access_restored": "Worldへのアクセスが復元されました",
+        "worlds_access_restricted": "ストレージ不足によりWorldへのアクセスが制限されました",
+        "worlds_missing_resources": "Worldのストレージ不足の警告",
+        "worlds_permission_granted": "Worldの訪問/デプロイ/配信の権限が付与されました",
+        "worlds_permission_revoked": "Worldの訪問/デプロイ/配信の権限が取り消されました",
+        "credits_reminder_complete_goals": "目標が未完了",
+        "credits_reminder_claim_credits": "未請求のクレジット",
+        "credits_reminder_usage": "まもなく失効するクレジット",
+        "credits_reminder_do_not_miss_out": "未開始の目標",
+        "streaming_key_expired": "ストリームキーの有効期限切れ",
+        "streaming_key_reset": "ストリームキーがリセットされました",
+        "streaming_key_revoke": "ストリームキーが無効化されました",
+        "streaming_place_updated": "ストリームのシーンが変更されました",
+        "streaming_time_exceeded": "ストリームがタイムアウトしました",
+        "events_started": "イベントが開始しました",
+        "events_starts_soon": "イベントがまもなく開始",
+        "reward_assignment": "無料アイテムを受け取りました",
+        "reward_campaign_out_of_funds": "プレゼントキャンペーンの資金不足",
+        "reward_campaign_out_of_stock": "プレゼントキャンペーンの在庫切れ",
+        "governance_announcement": "新しいDAOのお知らせ",
+        "governance_authored_proposal_finished": "あなたの提案への投票が終了しました",
+        "governance_coauthor_requested": "提案の共同執筆リクエストを受け取りました",
+        "governance_new_comment_on_project_update": "プロジェクト更新に新しいコメント",
+        "governance_new_comment_on_proposal": "あなたの提案に新しいコメント",
+        "governance_proposal_enacted": "提案が施行されました",
+        "governance_voting_ended_voter": "あなたが投票した提案の投票が終了しました",
+        "tip_received": "チップを受け取りました",
+        "referral_invited_users_accepted": "紹介が完了しました",
+        "referral_new_tier_reached": "紹介報酬がアンロックされました"
+      }
+    },
+    "credits": {
+      "title": "マーケットプレイス クレジット プログラム",
+      "description": "ワールド内の目標を達成して毎週クレジットを獲得しましょう。",
+      "status_label": "ステータス：",
+      "status": {
+        "enrolled": "登録済み",
+        "opted_out": "退会済み",
+        "not_registered": "未登録"
+      },
+      "learn_more": "詳細はこちら",
+      "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
+      "join_button": "プログラムに参加",
+      "leave_button": "プログラムを退会",
+      "leave_modal": {
+        "warning": "マーケットプレイス クレジットを退会しますか？",
+        "description": "毎週のクレジット獲得が停止します。いつでも再参加できます。",
+        "cancel": "キャンセル",
+        "confirm": "プログラムを退会",
+        "errors": {
+          "generic": "現在プログラムを退会できませんでした。もう一度お試しください。",
+          "already_claimed": "今週はすでにクレジットを請求しているため退会できません。来週もう一度お試しください。"
+        }
+      },
+      "join_errors": {
+        "generic": "現在プログラムに参加できませんでした。もう一度お試しください。",
+        "email_required": "クレジットプログラムに参加する前に、通知でメールを追加して確認してください。"
+      }
+    },
+    "delete": {
+      "title": "アカウントを削除",
+      "danger_description": "この操作は取り消せません。すべてのデータが永久に削除されます。",
+      "warning": "以下の情報は永久に失われます：",
+      "consequences": {
+        "profile": {
+          "title": "プロフィール",
+          "description": "ユーザー名、アバター、自己紹介、表示名"
+        },
+        "social": {
+          "title": "ソーシャルのつながり",
+          "description": "フレンドリストとブロックしたユーザー"
+        },
+        "marketplace": {
+          "title": "マーケットプレイスの活動",
+          "description": "出品中のリスト、購入履歴、オファー"
+        },
+        "credits": {
+          "title": "プラットフォーム内クレジット",
+          "description": "未使用の残高や報酬"
+        },
+        "favorites": {
+          "title": "お気に入りと履歴",
+          "description": "保存した場所、最近の活動、イベントの参加予定"
+        },
+        "notifications": {
+          "title": "通知と設定",
+          "description": "すべての設定と通知履歴"
+        }
+      },
+      "asset_warning_title": "オンチェーン資産のリスク",
+      "asset_warning_description": "アカウントを削除すると、オンチェーン資産（ウェアラブル、エモート、LANDなど）へのアクセスを永久に失う可能性があります。続行する前に必ず秘密鍵をエクスポートしてください。",
+      "export_key_description": "Walletsタブに移動し、アドレスの下にあるウォレットマネージャーを使用して秘密鍵をエクスポートしてください。",
+      "export_key_link": "Walletsへ移動",
+      "export_key_description_magic": "アカウントを削除する前に、セキュリティタブに移動して秘密鍵を確認・バックアップしてください。",
+      "export_key_link_magic": "セキュリティへ移動",
+      "acknowledge": "秘密鍵をバックアップし、アカウントの削除は取り消せないことを理解しました。",
+      "delete_button": "アカウントを削除",
+      "modal": {
+        "title": "本当にアカウントを削除しますか？",
+        "description": "この操作は取り消せません。すべてのデータが永久に削除されます。確認するには、下のフィールドに DELETE と入力して確定してください。",
+        "input_label": "DELETE と入力",
+        "deleting": "削除中...",
+        "delete": "アカウントを削除",
+        "cancel": "キャンセル",
+        "generic_error": "アカウントの削除に失敗しました。後でもう一度お試しください。"
+      },
+      "unavailable_title": "このウォレットではアカウントの削除を利用できません",
+      "unavailable_description": "アカウントの削除は、メールまたはソーシャルログインで作成されたアカウントにのみ適用されます。セルフカストディウォレット（MetaMaskやWalletConnectなど）は自分でキーを管理するため、ここで削除するものはありません。ログアウトするには切断してください。"
+    },
+    "security": {
+      "title": "秘密鍵",
+      "intro": "Decentralandのアカウントは、セルフカストディウォレットによって管理されています。秘密鍵は、このウォレットとそこに保管されているすべて（MANA、NAME、LAND、ウェアラブル、エモート）を管理するマスター認証情報です。",
+      "responsibility_title": "すべてをあなたが管理します",
+      "responsibility_description": "秘密鍵をバックアップしておくと、互換性のある任意のアプリからウォレットにアクセスでき、万が一ログイン情報へのアクセスを失っても資産を安全に保てます。セルフカストディでは、この責任はあなただけにあります。",
+      "warning_title": "秘密鍵は絶対に共有しないでください",
+      "warning_description": "秘密鍵を持つ人は誰でも、あなたのアカウントを完全かつ取り消し不能な形で管理でき、すべての資産を移動できます。Decentralandのチームメンバーが秘密鍵を尋ねることは決してありません。オフラインで、あなただけがアクセスできる場所に保管してください。",
+      "reveal_description": "新しいタブでMagicの安全な公開ページが開き、秘密鍵の確認とバックアップができます。Decentralandへのログインに使用したものと同じ方法で、Magicのサイトでログインを完了する必要があります。",
+      "reveal_button": "秘密鍵を表示",
+      "unavailable_title": "このウォレットではセキュリティ設定を利用できません",
+      "unavailable_description": "秘密鍵の表示は、メールまたはソーシャルログインで作成されたアカウントにのみ適用されます。セルフカストディウォレット（MetaMaskやWalletConnectなど）は自分でキーを管理するため、ここで表示するものはありません。"
+    },
+    "copy": "コピー",
+    "copied": "コピーしました"
+  },
+  "live_now": {
+    "navigate_previous": "前のライブシーンを表示",
+    "navigate_next": "次のライブシーンを表示"
   }
 }

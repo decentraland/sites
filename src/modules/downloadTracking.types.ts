@@ -1,5 +1,5 @@
 import type { Architecture, OperativeSystem } from '../types/download.types'
-import type { DownloadPlace, SegmentEvent } from './segment'
+import type { DownloadPlace } from './segment'
 
 type AuthState = 'authenticated' | 'anonymous'
 
@@ -21,12 +21,15 @@ interface DownloadTrackerContext {
   extra?: Record<string, unknown>
 }
 
-type DownloadTrackFn = (event: SegmentEvent, payload: Record<string, unknown>) => void
-
 interface DownloadTracker {
   started: () => void
-  success: (filename: string, bytesTransferred?: number) => void
-  failed: (reason: string) => void
+  /**
+   * `extra` carries event-level fields known only at resolution time (e.g.
+   * `delivery_mode`, `gateway_request_id`). Merged before the core schema so
+   * core fields win on any collision, matching `ctx.extra` in `buildBasePayload`.
+   */
+  success: (filename: string, bytesTransferred?: number, extra?: Record<string, unknown>) => void
+  failed: (reason: string, extra?: Record<string, unknown>) => void
 }
 
-export type { AuthState, DownloadTrackFn, DownloadTracker, DownloadTrackerContext }
+export type { AuthState, DownloadTracker, DownloadTrackerContext }

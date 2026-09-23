@@ -25,7 +25,7 @@ const PLACE_WORLD_PARAM = 'world'
 
 function buildEventShareUrl(eventId: string, isLive: boolean, href: string = window.location.href): string {
   const current = new URL(href)
-  const url = new URL(isLive ? '/jump/events' : '/whats-on', current.origin)
+  const url = new URL(isLive ? '/jump/events' : '/events', current.origin)
   const env = current.searchParams.get('env')
   if (env) url.searchParams.set('env', env)
   url.searchParams.set(EVENT_ID_PARAM, eventId)
@@ -39,7 +39,7 @@ interface PlaceShareUrlArgs {
 
 function buildPlaceShareUrl({ position, world }: PlaceShareUrlArgs, href: string = window.location.href): string {
   const current = new URL(href)
-  const url = new URL('/whats-on', current.origin)
+  const url = new URL('/events', current.origin)
   const env = current.searchParams.get('env')
   if (env) url.searchParams.set('env', env)
   if (world) url.searchParams.set(PLACE_WORLD_PARAM, world)
@@ -123,6 +123,7 @@ interface CalendarEventParams {
   finishAt?: string | null
   x: number
   y: number
+  realm?: string | null
   url: string
   recurrent?: boolean
   recurrentFrequency?: RecurrentFrequency | null
@@ -146,7 +147,7 @@ function buildCalendarUrl(event: CalendarEventParams): string | null {
     text: event.name,
     dates: `${start}/${end}`,
     details: `${event.description || ''}\n\n${event.url}`,
-    location: `Decentraland ${event.x},${event.y}`
+    location: event.realm ? `Decentraland World (${event.realm})` : `Decentraland In-World (${event.x},${event.y})`
   })
   if (event.recurrent && event.recurrentFrequency) {
     const normalized = normalizeRecurrence(event.recurrentFrequency, event.recurrentInterval)

@@ -3,12 +3,17 @@ import { createMockEvent } from '../__test-utils__/factories'
 import { useEventDetailModal } from './useEventDetailModal'
 
 const mockNavigate = jest.fn()
+const mockAuth = jest.fn()
+jest.mock('./useAuthIdentity', () => ({ useAuthIdentity: () => mockAuth() }))
 
 jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }))
 
-describe('useEventDetailModal', () => {
+describe('when using the event detail modal', () => {
+  beforeEach(() => {
+    mockAuth.mockReturnValue({ address: '0xaaa', hasValidIdentity: true })
+  })
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -19,6 +24,31 @@ describe('useEventDetailModal', () => {
 
       expect(result.current.activeEvent).toBeNull()
       expect(result.current.modalData).toBeNull()
+    })
+  })
+
+  describe('and the account changes with a modal open', () => {
+    let hook: ReturnType<typeof renderUseEventDetailModal>
+
+    beforeEach(() => {
+      hook = renderUseEventDetailModal()
+      act(() => {
+        hook.result.current.openEventDetailModal(createMockEvent({ id: 'private-event' }))
+      })
+    })
+
+    it('should clear the event immediately and not resurrect it when the first wallet returns', () => {
+      mockAuth.mockReturnValue({ address: '0xbbb', hasValidIdentity: true })
+      hook.rerender()
+      expect(hook.result.current.activeEvent).toBeNull()
+      expect(hook.result.current.modalData).toBeNull()
+      mockAuth.mockReturnValue({ address: '0xaaa', hasValidIdentity: true })
+      hook.rerender()
+      expect(hook.result.current.activeEvent).toBeNull()
+      act(() => {
+        hook.result.current.editActiveEvent()
+      })
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
   })
 
@@ -46,7 +76,9 @@ describe('useEventDetailModal', () => {
       })
 
       it('should navigate to the edit route with the original event in location state', () => {
-        expect(mockNavigate).toHaveBeenCalledWith('/whats-on/edit-hangout/ev-42', { state: { event } })
+        expect(mockNavigate).toHaveBeenCalledWith('/events/edit-event/ev-42', {
+          state: { event, account: '0xaaa', session: expect.any(Number) }
+        })
       })
     })
 

@@ -31,7 +31,7 @@ function useLegacyRedirectTracking({ origin, source, destination, preservedParam
 
   // Snapshot the legacy URL at mount. <Navigate> drives location.search to the
   // new path before this component unmounts, so a deps-based effect would
-  // re-run with source='/whats-on' and either fire the track late with the
+  // re-run with source='/events' and either fire the track late with the
   // wrong source, or — if the timer branch released ready without setting
   // fired — emit a duplicate event for the destination instead of the origin.
   const argsRef = useRef({ origin, source, destination, preservedParams })
@@ -52,7 +52,7 @@ function useLegacyRedirectTracking({ origin, source, destination, preservedParam
         })
       } catch {
         // Analytics is best-effort; never block the redirect on a Segment failure
-        // (adblocker shim, plugin error, etc.) — the user lands on /whats-on regardless.
+        // (adblocker shim, plugin error, etc.) — the user lands on the new path regardless.
       }
       fired.current = true
       setReady(true)

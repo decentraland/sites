@@ -1,7 +1,7 @@
 import { CircularProgress } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useInfiniteScrollSentinel } from '../../../../hooks/useInfiniteScrollSentinel'
-import { UpcomingCard } from '../../../whats-on/Upcoming/UpcomingCard'
+import { UpcomingCard } from '../../../events/Upcoming/UpcomingCard'
 import { EmptyEventsIcon } from './EmptyEventsIcon'
 import type { EventsListProps } from './EventsList.types'
 import {

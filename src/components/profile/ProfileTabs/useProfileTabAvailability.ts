@@ -17,16 +17,23 @@ interface TabAvailability {
 const PROBE_OPTIONS = { limit: 1, offset: 0 } as const
 
 function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabAvailability {
-  const { identity } = useAuthIdentity()
-
+  const { address: activeAddress, hasValidIdentity } = useAuthIdentity()
   const places = useGetProfilePlacesQuery({ address, limit: 1, offset: 0 })
   const wearables = useGetProfileCreationsQuery({ address, category: 'wearable', limit: 1, offset: 0 }, { skip: isOwnProfile })
   const emotes = useGetProfileCreationsQuery({ address, category: 'emote', limit: 1, offset: 0 }, { skip: isOwnProfile })
   const assets = useGetProfileAssetsQuery({ address, limit: 1, offset: 0 }, { skip: !isOwnProfile })
   // Member view gets the target user's publicly visible communities (public + listed) — the
   // endpoint only returns the full list (incl. private/unlisted) for the member themselves.
-  const communities = useGetProfileCommunitiesQuery({ address, limit: 1, offset: 0 })
-  const photos = useReelImagesByUser(address, PROBE_OPTIONS, isOwnProfile ? identity : undefined)
+  const communities = useGetProfileCommunitiesQuery({
+    address,
+    account: hasValidIdentity ? activeAddress?.toLowerCase() : undefined,
+    limit: 1,
+    offset: 0
+  })
+  // Probe public photos only (unsigned) so the photos tab is revealed on a member profile solely
+  // when the user has public snapshots — matching what the gallery actually renders. On the own
+  // profile the tab is always shown (see below), so this probe's result is unused there.
+  const photos = useReelImagesByUser(address, PROBE_OPTIONS)
 
   return useMemo(() => {
     // Reveal-on-data model: on a MEMBER profile every data-driven tab starts hidden and only
@@ -49,7 +56,7 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
       if (total > 0) hidden.delete('photos')
     }
     if (!isOwnProfile && communities.isSuccess) {
-      const total = communities.data?.data?.total ?? communities.data?.data?.results?.length ?? 0
+      const total = communities.currentData?.data?.total ?? communities.currentData?.data?.results?.length ?? 0
       if (total > 0) hidden.delete('communities')
     }
     // `assets` is only visible for own profile (see `ProfileTabs.types`), and on own profile it
@@ -80,7 +87,7 @@ function useProfileTabAvailability(address: string, isOwnProfile: boolean): TabA
     assets.data,
     communities.isSuccess,
     communities.isLoading,
-    communities.data,
+    communities.currentData,
     photos.images.length,
     photos.total,
     photos.isLoading,

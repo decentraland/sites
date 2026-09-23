@@ -1,23 +1,33 @@
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { ReelsImagePage } from './ReelsImagePage'
 
 const useReelImageByIdMock = jest.fn()
+const metadataVisibleSpy = jest.fn()
 
 jest.mock('../../hooks/useReelImageById', () => ({
   useReelImageById: (id: string | undefined) => useReelImageByIdMock(id)
 }))
 
 jest.mock('../../components/Reels/ImageViewer', () => ({
-  ImageViewer: () => <div data-testid="reels-image-viewer" />
+  ImageViewer: ({ onToggleMetadata }: { onToggleMetadata: () => void }) => (
+    <button data-testid="reels-image-viewer" onClick={onToggleMetadata} />
+  )
 }))
 
 jest.mock('../../components/Reels/Metadata', () => ({
-  Metadata: () => <div data-testid="reels-metadata-panel" />
+  Metadata: ({ visible }: { visible: boolean }) => {
+    metadataVisibleSpy(visible)
+    return <div data-testid="reels-metadata-panel" />
+  }
 }))
 
 jest.mock('../../components/Reels/NotPhoto', () => ({
   NotPhoto: () => <div data-testid="reels-not-photo" />
+}))
+
+jest.mock('../../hooks/usePageView', () => ({
+  usePageView: () => {}
 }))
 
 const renderWithRouter = (path: string) =>
@@ -66,6 +76,17 @@ describe('ReelsImagePage', () => {
       useReelImageByIdMock.mockReturnValue({ image: fakeImage, isLoading: false, error: null })
       renderWithRouter('/reels/abc')
       expect(document.title).toBe('alice took this photo in Plaza')
+    })
+
+    it('should toggle metadata visibility when the viewer requests it', () => {
+      useReelImageByIdMock.mockReturnValue({ image: fakeImage, isLoading: false, error: null })
+      renderWithRouter('/reels/abc')
+
+      expect(metadataVisibleSpy).toHaveBeenLastCalledWith(true)
+
+      fireEvent.click(screen.getByTestId('reels-image-viewer'))
+
+      expect(metadataVisibleSpy).toHaveBeenLastCalledWith(false)
     })
   })
 

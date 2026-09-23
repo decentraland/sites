@@ -48,4 +48,20 @@ const PhotoImage = styled('img')({
   display: 'block'
 })
 
-export { PhotoCard, PhotoImage, PhotosGrid }
+const PrivateBadge = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(1),
+  right: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 28,
+  height: 28,
+  borderRadius: '50%',
+  color: '#FCFCFC',
+  backgroundColor: 'rgba(0, 0, 0, 0.55)',
+  fontSize: 16,
+  pointerEvents: 'none'
+}))
+
+export { PhotoCard, PhotoImage, PhotosGrid, PrivateBadge }

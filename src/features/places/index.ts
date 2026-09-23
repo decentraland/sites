@@ -1,4 +1,5 @@
 export {
+  isWorldNotFoundError,
   placesEndpoints,
   useGetJumpEventByIdQuery,
   useGetJumpEventsQuery,
@@ -14,9 +15,10 @@ export {
   eventHasEnded,
   formatDateForGoogleCalendar,
   formatLocation,
-  isEns,
-  parsePosition
+  parsePosition,
+  resolvePlacesPosition
 } from './places.helpers'
+export { isEns } from '../../utils/ens'
 export type {
   CardData,
   Creator,

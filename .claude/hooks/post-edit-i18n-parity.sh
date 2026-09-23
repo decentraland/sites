@@ -16,19 +16,13 @@ file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev
 [ -z "$file_path" ] && exit 0
 
 case "$file_path" in
-  */src/intl/en.json)
+  */src/intl/*.json)
+    # Run the real check (strict JSON, duplicate members, exact-set parity vs the committed
+    # baseline). Its output goes to Claude's context; exit 0 so the edit itself is never blocked.
     {
-      echo "REMINDER: en.json changed. Mirror the new/edited keys in:"
-      echo "  src/intl/es.json"
-      echo "  src/intl/fr.json"
-      echo "  src/intl/ja.json"
-      echo "  src/intl/ko.json"
-      echo "  src/intl/zh.json"
-      echo "The review-bot CI flags missing locales as P2. Skill: 'add-i18n-key'."
+      echo "i18n check after editing ${file_path##*/src/intl/}:"
+      (cd "${CLAUDE_PROJECT_DIR:-.}" && node scripts/check-i18n.mjs 2>&1) || echo "Fix the findings above before committing (CLAUDE.md rule 9, skill 'add-i18n-key'). New debt is only accepted through 'npm run lint:i18n -- --write-baseline' with a reason in the PR."
     } >&2
-    ;;
-  */src/intl/es.json|*/src/intl/fr.json|*/src/intl/ja.json|*/src/intl/ko.json|*/src/intl/zh.json)
-    echo "REMINDER: also verify en.json has the same keys (en.json is the source of truth)." >&2
     ;;
 esac
 

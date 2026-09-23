@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { getEnv } from '../../config/env'
+import { identityAddress } from '../../utils/identityScope'
 import { fetchWithIdentity, fetchWithOptionalIdentity } from '../../utils/signedFetch'
 import { buildLiveNowCards, enrichPlaceCards } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
@@ -44,7 +45,7 @@ const eventsClient = createApi({
   keepUnusedDataFor: 60,
   endpoints: build => ({
     getEvents: build.query<EventEntry[], GetEventsParams>({
-      serializeQueryArgs: ({ queryArgs: { identity, ...rest } }) => ({ ...rest, authenticated: Boolean(identity) }),
+      serializeQueryArgs: ({ queryArgs: { identity, ...rest } }) => ({ ...rest, account: identityAddress(identity) ?? 'anon' }),
       queryFn: async (params, { signal }) => {
         try {
           const { identity, ...queryParams } = params
@@ -98,9 +99,9 @@ const eventsClient = createApi({
       serializeQueryArgs: ({ queryArgs }) => {
         if (queryArgs && 'identity' in queryArgs) {
           const { identity, ...rest } = queryArgs
-          return { ...rest, authenticated: Boolean(identity) }
+          return { ...rest, account: identityAddress(identity) ?? 'anon' }
         }
-        return { authenticated: false }
+        return { account: 'anon' }
       },
       queryFn: async (params, { signal }) => {
         try {
@@ -131,7 +132,7 @@ const eventsClient = createApi({
       providesTags: ['Events']
     }),
     getEventById: build.query<EventEntry, GetEventByIdParams>({
-      serializeQueryArgs: ({ queryArgs: { eventId, identity } }) => ({ eventId, authenticated: Boolean(identity) }),
+      serializeQueryArgs: ({ queryArgs: { eventId, identity } }) => ({ eventId, account: identityAddress(identity) ?? 'anon' }),
       queryFn: async ({ eventId, identity }, { signal }) => {
         try {
           const baseUrl = getEnv('EVENTS_API_URL')!
@@ -243,7 +244,7 @@ const eventsClient = createApi({
       queryFn: async ({ identity }, { signal }) => {
         try {
           const baseUrl = getEnv('SOCIAL_API_URL')!
-          const url = `${baseUrl}/v1/communities?roles=owner&roles=moderator`
+          const url = `${baseUrl}/v2/communities?roles=owner&roles=moderator`
           const response = await fetchWithOptionalIdentity(url, identity, signal)
           if (!response.ok) {
             throw new Error(`communities error: ${response.status}`)

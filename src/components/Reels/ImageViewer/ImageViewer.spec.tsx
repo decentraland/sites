@@ -18,6 +18,7 @@ const fakeImage = {
   id: 'img-1',
   url: 'https://image.url/foo.jpg',
   thumbnailUrl: '',
+  isPublic: true,
   metadata: {
     userName: 'alice',
     userAddress: '0xa',

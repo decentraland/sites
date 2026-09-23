@@ -8,7 +8,9 @@ import {
   DEFAULT_REALM,
   buildGenericPlace,
   fromPlace,
+  isWorldNotFoundError,
   parsePosition,
+  resolvePlacesPosition,
   useGetJumpPlacesQuery,
   useGetSceneMetadataQuery
 } from '../../features/places'
@@ -19,7 +21,8 @@ const PlacesPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const positionParam = searchParams.get('position') ?? DEFAULT_POSITION
+  const rawPositionParam = searchParams.get('position')
+  const positionParam = rawPositionParam ?? DEFAULT_POSITION
   // Accept `?world=` as an alias of `?realm=` so legacy share links emitted by
   // older clients keep resolving to the same world.
   const realmParam = searchParams.get('realm') ?? searchParams.get('world') ?? DEFAULT_REALM
@@ -27,14 +30,23 @@ const PlacesPage = () => {
 
   const realm = realmParam === DEFAULT_REALM ? undefined : realmParam
 
-  const placesQuery = useGetJumpPlacesQuery({ position: parsedPosition.coordinates, realm })
-  const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(',') })
+  const placesPosition = resolvePlacesPosition(rawPositionParam, realm, parsedPosition.coordinates)
+
+  const placesQuery = useGetJumpPlacesQuery({ position: placesPosition, realm })
+  const sceneMetadataQuery = useGetSceneMetadataQuery({ position: parsedPosition.coordinates.join(','), realm })
+
+  // A World realm that the Worlds Content Server doesn't know about resolves to
+  // no real scene — the Places API may still serve a stale record, so the WCS is
+  // the source of truth. Treat it as an invalid jump rather than rendering the
+  // stale card. A generic WCS error (outage) is NOT WORLD_NOT_FOUND, so it does
+  // not redirect.
+  const worldNotFound = isWorldNotFoundError(sceneMetadataQuery.error)
 
   useEffect(() => {
-    if (!parsedPosition.isValid || placesQuery.isError) {
+    if (!parsedPosition.isValid || placesQuery.isError || worldNotFound) {
       navigate('/jump/places/invalid')
     }
-  }, [parsedPosition.isValid, placesQuery.isError, navigate])
+  }, [parsedPosition.isValid, placesQuery.isError, worldNotFound, navigate])
 
   const cardData = useMemo(() => {
     if (!placesQuery.data) return undefined

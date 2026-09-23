@@ -1,4 +1,5 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { CreateSectionTitle } from '../SectionTitle.styled'
 
 const CreateSection = styled('section')(({ theme }) => ({
   display: 'flex',
@@ -16,34 +17,15 @@ const CreateSection = styled('section')(({ theme }) => ({
   }
 }))
 
-const CreateTitle = styled(Typography)(({ theme }) => ({
-  textAlign: 'center',
-  fontSize: 48,
-  fontWeight: 600,
-  lineHeight: '77px',
-  color: '#fcfcfc',
+const CreateTitle = styled(CreateSectionTitle)({
   marginTop: 0,
-  marginBottom: 32,
-  maxWidth: '80vw',
-  marginLeft: 'auto',
-  marginRight: 'auto',
-  ['& span']: {
-    background: 'linear-gradient(244deg, #ff2d55 -11.67%, #ffbc5b 88.23%)',
-    backgroundClip: 'text',
-    ['WebkitBackgroundClip' as string]: 'text',
-    ['WebkitTextFillColor' as string]: 'transparent'
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: 32,
-    lineHeight: '40px',
-    letterSpacing: '-0.64px'
-  }
-}))
+  marginBottom: 32
+})
 
 const CreateCardContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
-  background: '#242129',
+  background: dclColors.neutral.softBlack2,
   borderRadius: 24,
   width: '100%',
   height: '100%',
@@ -125,7 +107,7 @@ const CreateCardTitle = styled(Typography)(({ theme }) => ({
 }))
 
 const CreateCardDescription = styled(Typography)(({ theme }) => ({
-  color: '#a09ba8',
+  color: dclColors.neutral.gray3,
   fontSize: 18,
   fontWeight: 400,
   lineHeight: '24px',
@@ -157,8 +139,8 @@ const TabButton = styled('button', {
 })<{ isActive: boolean }>(({ theme, isActive }) => ({
   background: 'none',
   border: 'none',
-  borderBottom: isActive ? '2px solid #fff' : '2px solid transparent',
-  color: isActive ? '#fff' : '#716b7c',
+  borderBottom: isActive ? `2px solid ${dclColors.neutral.white}` : '2px solid transparent',
+  color: isActive ? dclColors.neutral.white : dclColors.neutral.gray2,
   textTransform: 'uppercase',
   fontSize: 14,
   lineHeight: '16px',
@@ -180,7 +162,7 @@ const TabButton = styled('button', {
 
 const TabInfoBlock = styled(Box)({
   borderRadius: 16,
-  background: '#43404a80',
+  background: `${dclColors.neutral.gray0}80`,
   padding: '16px 24px',
   marginBottom: 8,
   ['&:last-child']: {
@@ -196,7 +178,7 @@ const TabInfoTitle = styled(Typography)({
 })
 
 const TabInfoSubtitle = styled(Typography)({
-  color: '#cfcdd4',
+  color: dclColors.neutral.gray4,
   fontSize: 18,
   fontWeight: 400,
   lineHeight: '24px',
@@ -213,7 +195,7 @@ const SkillBadge = styled(Box)({
   borderRadius: 16,
   marginRight: 8,
   marginBottom: 8,
-  background: '#43404a',
+  background: dclColors.neutral.gray0,
   fontSize: 13,
   fontWeight: 600,
   lineHeight: 'normal',

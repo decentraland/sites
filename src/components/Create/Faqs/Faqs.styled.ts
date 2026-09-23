@@ -1,4 +1,5 @@
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { CreateSectionTitle } from '../SectionTitle.styled'
 
 const FaqsSection = styled('section')(({ theme }) => ({
   width: '100%',
@@ -63,21 +64,9 @@ const FaqsSubtitle = styled(Typography)(({ theme }) => ({
   margin: 0
 }))
 
-const FaqsTitle = styled(Typography)(({ theme }) => ({
-  textAlign: 'center',
-  fontSize: 60,
-  lineHeight: '72px',
-  fontWeight: 700,
-  letterSpacing: '-0.01em',
-  paddingBottom: '0.5em',
-  [theme.breakpoints.down('sm')]: {
-    fontWeight: 700,
-    fontSize: 36,
-    lineHeight: '36px',
-    textAlign: 'center',
-    letterSpacing: '-0.01em'
-  }
-}))
+const FaqsTitle = styled(CreateSectionTitle)({
+  paddingBottom: '0.5em'
+})
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const FaqAccordionItem = styled(Box, {
@@ -91,7 +80,7 @@ const FaqAccordionItem = styled(Box, {
   position: 'relative',
   overflow: 'hidden',
   zIndex: 1,
-  backgroundColor: '#242129',
+  backgroundColor: dclColors.neutral.softBlack2,
   marginBottom: theme.spacing(1.5),
   cursor: 'pointer',
   outline: 'none',

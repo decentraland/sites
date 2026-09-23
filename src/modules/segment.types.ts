@@ -23,6 +23,10 @@ enum SegmentEvent {
   DOWNLOAD_STARTED = 'download_started',
   DOWNLOAD_SUCCESS = 'download_success',
   DOWNLOAD_FAILED = 'download_failed',
+  DOWNLOAD_FUNNEL_EXIT = 'download_funnel_exit',
+  DOWNLOAD_PAGE_EXIT = 'download_page_exit',
+  DOWNLOAD_SUCCESS_ARRIVED = 'download_success_arrived',
+  DOWNLOAD_REDIRECT_FAILED = 'download_redirect_failed',
   LEGACY_EVENTS_REDIRECTED = 'Legacy Events Redirected',
   LEGACY_PLACES_REDIRECTED = 'Legacy Places Redirected',
   REELS_SHARE = 'Reels Share',
@@ -72,7 +76,17 @@ enum SegmentEvent {
   COMMUNITY_CLICK_SIGN_IN_TO_JOIN = 'Click on Sign In to Join',
   REPORT_PLAYER_SUBMIT_STARTED = 'Report Player Submit Started',
   REPORT_PLAYER_SUBMITTED = 'Report Player Submitted',
-  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed'
+  REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed',
+  SECTION_VIEWED = 'Section Viewed',
+  // /discover surfaces. Card clicks navigate to the scene preview; JUMP_IN is
+  // the decentraland:// deep-link (its `place` payload key says which surface
+  // fired it); LAUNCH_SCENE is the in-browser bevy iframe boot.
+  DISCOVER_CLICK_LIVE_CARD = 'Discover Click Live Card',
+  DISCOVER_CLICK_PLACE_CARD = 'Discover Click Place Card',
+  DISCOVER_CLICK_FEATURED_CARD = 'Discover Click Featured Card',
+  DISCOVER_JUMP_IN = 'Discover Jump In',
+  DISCOVER_FILTER_CATEGORY = 'Discover Filter Category',
+  DISCOVER_LAUNCH_SCENE = 'Discover Launch Scene'
 }
 
 enum DownloadPlace {
@@ -80,6 +94,7 @@ enum DownloadPlace {
   LANDING_HERO_EPIC = 'landing-hero-epic',
   LANDING_HERO_PLATFORM_SWITCH = 'landing-hero-platform-switch',
   COME_HANG_OUT = 'come-hang-out',
+  COME_HANG_OUT_PLATFORM_SWITCH = 'come-hang-out-platform-switch',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
   PLAY_HERO = 'play-hero',
   PLAY_HERO_EPIC = 'play-hero-epic',
@@ -88,18 +103,40 @@ enum DownloadPlace {
   PLAY_EXPERIMENTAL_WEB = 'play-experimental-web',
   DOWNLOAD_PAGE = 'download-page',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
+  CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
+  CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
+  CREATORS_HERO = 'creators-hero',
+  LETS_PLAY_LANDING = 'lets-play-landing',
   UNKNOWN = 'unknown'
+}
+
+// Which download surface a download CTA click targets. Sent as the snake_case
+// `download_target` dimension on `Click` events (including `event=Download`
+// sub-typed ones) and on `download_*` funnel events so the warehouse can split
+// the direct desktop-installer flow from surfaces that never reach
+// `/download_success` and so must not pollute the desktop activation metric:
+// the mobile store exits (App Store / Google Play) and Epic, which delivers the
+// same desktop client but redirects to the Epic Games Store instead of the
+// in-app download. Only `desktop_installer` clicks are expected to produce a
+// `download_started` — filter the Click → download_started funnel on it.
+enum DownloadTarget {
+  DESKTOP_INSTALLER = 'desktop_installer',
+  APP_STORE = 'app_store',
+  GOOGLE_PLAY = 'google_play',
+  EPIC = 'epic',
+  CREATOR_HUB = 'creator_hub'
 }
 
 enum SectionViewedTrack {
   CREATORS_CONNECT = 'Creators Connect',
   CREATORS_CREATE = 'Creators Create',
-  CREATORS_EARN = 'Creators Earn',
   CREATORS_HERO = 'Creators Hero',
   CREATORS_JUMP_IN = 'Creators Jump In',
   CREATORS_LEARN = 'Creators Learn',
   CREATORS_WHY = 'Creators Why',
   CREATORS_FAQS = 'Creators Faqs',
+  CREATORS_LIVE_SCENES = 'Creators Live Scenes',
+  CREATORS_BLOG = 'Creators Blog',
   LANDING_HERO = 'Landing Hero',
   LANDING_EVENTS_PLACES_FEED = 'Landing Events Places Feed',
   LANDING_BLOG_FEED = 'Landing Blog Feed',
@@ -129,4 +166,4 @@ enum SectionViewedTrack {
   REELS_NOT_FOUND = 'Reels Not Found'
 }
 
-export { DownloadPlace, SectionViewedTrack, SegmentEvent }
+export { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent }

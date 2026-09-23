@@ -218,8 +218,8 @@ const heroHtml = `<div id="hero-shell-nav">
   <div class="gradient-top"></div>
   <div class="gradient-bottom"></div>
   <div class="hero-content">
-    <h3 class="hero-title hero-title-mobile">Hang Out From Anywhere</h3>
-    <h3 class="hero-title hero-title-desktop">Close the Feed. Come Hang Out.</h3>
+    <h1 class="hero-title hero-title-mobile">Hang Out From Anywhere</h1>
+    <h1 class="hero-title hero-title-desktop">Close the Feed. Come Hang Out.</h1>
     <p class="hero-subtitle">Decentraland now on mobile.</p>
     <div class="hero-mobile-download"><div class="hero-mobile-download-btn"></div></div>
     <div class="hero-cta-wrapper">

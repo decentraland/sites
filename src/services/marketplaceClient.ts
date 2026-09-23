@@ -39,7 +39,7 @@ const marketplaceBaseQuery: BaseQueryFn<string | (FetchArgs & { baseUrl?: string
 const marketplaceClient = createApi({
   reducerPath: 'marketplaceClient',
   baseQuery: marketplaceBaseQuery,
-  tagTypes: ['Items', 'Nfts'],
+  tagTypes: ['Collections', 'Items', 'Nfts'],
   keepUnusedDataFor: 120,
   refetchOnFocus: false,
   refetchOnReconnect: true,
