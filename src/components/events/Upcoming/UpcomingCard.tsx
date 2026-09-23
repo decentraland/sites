@@ -9,7 +9,7 @@ import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { optimizedImageUrl } from '../../../utils/imageUrl'
-import { getFirstOccurrenceFinishAt } from '../../../utils/recurrence'
+import { getNextOccurrence } from '../../../utils/recurrence'
 import { getRelativeTimeLabel } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import { CalendarAddIcon } from '../common/CalendarAddIcon'
@@ -33,8 +33,7 @@ const UpcomingCard = memo(function UpcomingCard({
   const { copied, calendarAdded, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,
-    startAt: event.start_at,
-    finishAt: getFirstOccurrenceFinishAt(event),
+    ...getNextOccurrence(event),
     x: event.x,
     y: event.y,
     realm: resolveEventRealm(event.world, event.server)

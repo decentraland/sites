@@ -23,14 +23,18 @@ jest.mock('../../../utils/whatsOnTime', () => ({
 
 const mockHandleCopy = jest.fn()
 const mockHandleCalendar = jest.fn()
+const mockUseCardActions = jest.fn()
 jest.mock('../../../hooks/useCardActions', () => ({
-  useCardActions: () => ({
-    eventUrl: 'https://decentraland.org/jump/event?position=10,20',
-    copied: false,
-    calendarAdded: false,
-    handleCopy: mockHandleCopy,
-    handleAddToCalendar: mockHandleCalendar
-  })
+  useCardActions: (...args: unknown[]) => {
+    mockUseCardActions(...args)
+    return {
+      eventUrl: 'https://decentraland.org/jump/event?position=10,20',
+      copied: false,
+      calendarAdded: false,
+      handleCopy: mockHandleCopy,
+      handleAddToCalendar: mockHandleCalendar
+    }
+  }
 }))
 
 const mockHandleRemindToggle = jest.fn()
@@ -198,6 +202,22 @@ describe('UpcomingCard', () => {
       fireEvent.click(calendarButton)
 
       expect(mockHandleCalendar).toHaveBeenCalled()
+    })
+  })
+
+  describe('when the event is a recurrent series that started in the past', () => {
+    it('should book the upcoming occurrence instead of the series start', () => {
+      const event = createMockEvent({
+        start_at: '2026-04-01T10:00:00Z',
+        finish_at: '2026-06-24T12:00:00Z',
+        next_start_at: '2026-04-08T10:00:00Z',
+        next_finish_at: '2026-04-08T12:00:00Z'
+      })
+      render(<UpcomingCard event={event} onClick={mockOnClick} />)
+
+      expect(mockUseCardActions).toHaveBeenCalledWith(
+        expect.objectContaining({ startAt: '2026-04-08T10:00:00Z', finishAt: '2026-04-08T12:00:00Z' })
+      )
     })
   })
 

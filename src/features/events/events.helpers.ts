@@ -1,6 +1,6 @@
 import { assetUrl } from '../../utils/assetUrl'
 import { isValidEthAddress } from '../../utils/avatar'
-import { getFirstOccurrenceFinishAt } from '../../utils/recurrence'
+import { getOccurrenceFinishAt } from '../../utils/recurrence'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
 import { placeCreatorAddress } from '../discover/discover.helpers'
 import { DCL_FOUNDATION_NAME, coordsKey } from './events.discovery.helpers'
@@ -308,7 +308,7 @@ function buildLiveNowCards(liveEvents: EventEntry[], hotScenes: HotScene[], minU
         description: matchedEvent.description,
         categories: matchedEvent.categories,
         startAt: matchedEvent.start_at,
-        finishAt: getFirstOccurrenceFinishAt(matchedEvent),
+        finishAt: getOccurrenceFinishAt(matchedEvent),
         recurrent: matchedEvent.recurrent,
         recurrentFrequency: matchedEvent.recurrent_frequency,
         recurrentInterval: matchedEvent.recurrent_interval,
