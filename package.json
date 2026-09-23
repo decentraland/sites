@@ -22,7 +22,7 @@
     "lint:routes": "node scripts/build-route-manifest.mjs --check"
   },
   "dependencies": {
-    "@contentful/rich-text-react-renderer": "16.1.6",
+    "@contentful/rich-text-react-renderer": "16.2.1",
     "@contentful/rich-text-types": "17.2.5",
     "@dcl/core-web3": "^0.12.0",
     "@dcl/crypto": "^3.6.0",
