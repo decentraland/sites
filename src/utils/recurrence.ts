@@ -1,3 +1,5 @@
+import type { OccurrenceTimes } from '../types/recurrence.types'
+
 // Recurrence helpers shared by the create-event form, the event detail modal,
 // the live-now mapper, and the Google Calendar URL builder. Lives in `utils/`
 // (not `hooks/useCreateEventForm.helpers.ts`) because consumers outside the form
@@ -56,10 +58,21 @@ function localizedWeekdayLong(dayIndex: number, locale?: string): string {
   return getWeekdayFormatter(locale, 'long').format(new Date(SUNDAY_EPOCH_MS + dayIndex * ONE_DAY_MS))
 }
 
+// For a recurrent event the API's `finish_at` is the end of the LAST occurrence, so pairing it with
+// `start_at` spans the whole series. The length of one occurrence comes from the `next_*` pair
+// (not `duration`, whose unit differs between the events API and mapped community events).
+function getFirstOccurrenceFinishAt(event: OccurrenceTimes): string {
+  const occurrenceMs = Date.parse(event.next_finish_at) - Date.parse(event.next_start_at)
+  const startMs = Date.parse(event.start_at)
+  if (!Number.isFinite(occurrenceMs) || !Number.isFinite(startMs) || occurrenceMs < 0) return event.finish_at
+  return new Date(startMs + occurrenceMs).toISOString()
+}
+
 export {
   ALL_WEEKDAYS,
   WEEKDAY_INDICES,
   dayIndicesToWeekdayMask,
+  getFirstOccurrenceFinishAt,
   localizedWeekdayLong,
   localizedWeekdayShort,
   normalizeDayIndices,

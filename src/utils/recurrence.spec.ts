@@ -2,6 +2,7 @@ import {
   ALL_WEEKDAYS,
   WEEKDAY_INDICES,
   dayIndicesToWeekdayMask,
+  getFirstOccurrenceFinishAt,
   localizedWeekdayLong,
   localizedWeekdayShort,
   normalizeDayIndices,
@@ -115,6 +116,60 @@ describe('recurrence helpers', () => {
     it('should format the day index as a long weekday name', () => {
       expect(localizedWeekdayLong(0, 'en-US')).toBe('Sunday')
       expect(localizedWeekdayLong(5, 'en-US')).toBe('Friday')
+    })
+  })
+
+  describe('getFirstOccurrenceFinishAt', () => {
+    describe('when the event is recurrent and finish_at is the end of the last occurrence', () => {
+      it('should return the start plus the length of one occurrence', () => {
+        expect(
+          getFirstOccurrenceFinishAt({
+            start_at: '2026-09-23T19:00:00.000Z',
+            finish_at: '2027-01-27T20:00:00.000Z',
+            next_start_at: '2026-10-07T19:00:00.000Z',
+            next_finish_at: '2026-10-07T20:00:00.000Z'
+          })
+        ).toBe('2026-09-23T20:00:00.000Z')
+      })
+    })
+
+    describe('when the event is not recurrent', () => {
+      it('should return the finish_at', () => {
+        expect(
+          getFirstOccurrenceFinishAt({
+            start_at: '2026-09-23T19:00:00.000Z',
+            finish_at: '2026-09-23T21:30:00.000Z',
+            next_start_at: '2026-09-23T19:00:00.000Z',
+            next_finish_at: '2026-09-23T21:30:00.000Z'
+          })
+        ).toBe('2026-09-23T21:30:00.000Z')
+      })
+    })
+
+    describe('when a date is unparseable', () => {
+      it('should fall back to finish_at', () => {
+        expect(
+          getFirstOccurrenceFinishAt({
+            start_at: '2026-09-23T19:00:00.000Z',
+            finish_at: '2027-01-27T20:00:00.000Z',
+            next_start_at: 'not-a-date',
+            next_finish_at: '2026-10-07T20:00:00.000Z'
+          })
+        ).toBe('2027-01-27T20:00:00.000Z')
+      })
+    })
+
+    describe('when next_finish_at is before next_start_at', () => {
+      it('should fall back to finish_at', () => {
+        expect(
+          getFirstOccurrenceFinishAt({
+            start_at: '2026-09-23T19:00:00.000Z',
+            finish_at: '2027-01-27T20:00:00.000Z',
+            next_start_at: '2026-10-07T20:00:00.000Z',
+            next_finish_at: '2026-10-07T19:00:00.000Z'
+          })
+        ).toBe('2027-01-27T20:00:00.000Z')
+      })
     })
   })
 })
