@@ -152,11 +152,28 @@ npm run format       # Prettier
 npm run lint:fix     # ESLint
 npm run lint:pkg     # package.json lint (silent on success — easy to skip; do not skip)
 npm run lint:i18n    # strict JSON + locale parity vs src/intl/parity-baseline.json (rule 9)
+npm run lint:routes  # route manifest emitted into dist/routes.json for the edge 404
 ```
 
 ## Adding a route
 
 Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clearance, and the repo sync checklist (README + SEO worker `PAGES` + GitHub issue templates) → skill `add-route`.
+
+**Wildcard routes need a marker.** `scripts/build-route-manifest.mjs` reads `src/App.tsx` and emits `dist/routes.json`, the list the edge uses to answer 404 for a path this SPA does not serve. It cannot tell a redirect wildcard from a not-found one, and guessing from the component name would be wrong the day someone renames a page, so each `path="*"` or `path="/x/*"` carries a comment above it:
+
+```tsx
+{
+  /* route-manifest: not-found */
+}
+;<Route path="*" element={<NotFoundPage />} />
+
+{
+  /* route-manifest: redirect */
+}
+;<Route path="/whats-on/*" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+```
+
+A wildcard without one fails the build, as does a `path` that is not a string literal. That is deliberate: an incomplete manifest would turn a live route into a 404 in production. Run `npm run lint:routes` to print what the extractor sees.
 
 ## Coding conventions
 
