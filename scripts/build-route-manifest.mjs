@@ -12,18 +12,26 @@
 //
 // Usage: node scripts/build-route-manifest.mjs [--src src/App.tsx] [--out dist/routes.json] [--check]
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 import { mkdirSync } from 'node:fs'
 
 const require = createRequire(import.meta.url)
 const ts = require('typescript')
 
 const MANIFEST_VERSION = 1
-// Enforcement starts here. The manifest lists the whole site so the worker can widen scope
-// without a rebuild, but only paths under these prefixes are allowed to 404 today.
-const ENFORCED_SCOPE = ['/events']
+// Which paths the edge may answer 404 for. `/` is the whole site: any path that matches no route
+// gets a 404 instead of the shell with a 200.
+//
+// This only reaches paths whose route does not exist. It cannot reach a path whose route exists but
+// whose ENTITY does not: `/blog/pepe` matches `/blog/:categorySlug` and still answers 200, because
+// knowing the category is missing means asking the CMS, which is tracked separately.
+//
+// Note this is shipped INSIDE the manifest, so narrowing it needs a sites rebuild and rollout. The
+// worker can override it (see `rollouts/route-manifest.ts`), which is the switch to use in an
+// incident.
+const ENFORCED_SCOPE = ['/']
 
 class BuildError extends Error {}
 
@@ -181,7 +189,18 @@ function collectRoutes(sourceFile) {
           }
           nextParent = resolved
         } else if (isIndex) {
-          valid.add(parentPath)
+          // An index can BE the section's not-found screen, as `/cast` does. Without reading the
+          // marker here the parent path is recorded as a live route and the edge answers 200 for a
+          // URL the router sends to a not-found page.
+          if (readMarker(node, siblings, sourceFile) === 'not-found') {
+            // The parent <Route path="..."> already recorded this path as live on the way in.
+            // Drop it: what renders here is the not-found screen, and leaving both entries makes
+            // the edge tie-break in favour of the live route and answer 200.
+            valid.delete(parentPath)
+            notFound.push(parentPath)
+          } else {
+            valid.add(parentPath)
+          }
         }
       }
     }
@@ -220,7 +239,42 @@ function assertSupportedPattern(pattern) {
   }
 }
 
-function buildManifest(srcPath) {
+/**
+ * The manifest is built from ONE file. If a second router ever appears, every route it declares is
+ * missing from the manifest, and the edge answers 404 for pages that work — the exact failure this
+ * whole mechanism is supposed to prevent, arriving silently. So the build refuses to emit until the
+ * new router is either folded into App.tsx or the extractor learns to read it.
+ */
+const ROUTING_DECLARATION = /<Routes[\s>]|<Route[\s/>]|createBrowserRouter|createRoutesFromElements|useRoutes\s*\(/
+
+function assertSingleRouter(srcPath, srcDir) {
+  const offenders = []
+
+  const walk = directory => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const full = join(directory, entry.name)
+      if (entry.isDirectory()) {
+        if (entry.name !== 'node_modules') walk(full)
+        continue
+      }
+      if (!/\.tsx?$/.test(entry.name) || /\.spec\.tsx?$/.test(entry.name)) continue
+      if (resolve(full) === resolve(srcPath)) continue
+      if (ROUTING_DECLARATION.test(readFileSync(full, 'utf8'))) offenders.push(full)
+    }
+  }
+  walk(srcDir)
+
+  if (offenders.length) {
+    throw new BuildError(
+      `routing is declared outside ${srcPath}, so the manifest would omit it and the edge would 404 ` +
+        `those paths:\n  ${offenders.join('\n  ')}`
+    )
+  }
+}
+
+function buildManifest(srcPath, srcDir) {
+  if (srcDir) assertSingleRouter(srcPath, srcDir)
+
   const source = readFileSync(srcPath, 'utf8')
   const sourceFile = ts.createSourceFile(srcPath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   const { valid, notFound } = collectRoutes(sourceFile)
@@ -234,7 +288,9 @@ function buildManifest(srcPath) {
 
 function run(argv, io) {
   const { src, out, check } = parseArgs(argv)
-  const manifest = buildManifest(resolve(src))
+  // Only scanned for the repo's own router: a fixture in a temp dir has no tree to walk.
+  const srcDir = resolve(src).endsWith(`${sep}src${sep}App.tsx`) ? dirname(resolve(src)) : null
+  const manifest = buildManifest(resolve(src), srcDir)
   const serialized = `${JSON.stringify(manifest, null, 2)}\n`
 
   if (check) {

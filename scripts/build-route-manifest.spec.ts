@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -290,6 +290,27 @@ describe('when extracting the route manifest from a router', () => {
       expect(result.status).toBe(1)
       expect(result.stderr).toContain('empty manifest')
     })
+  })
+})
+
+describe('when routing is declared outside the router file', () => {
+  it('should refuse to emit, since the manifest would omit those routes', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'route-manifest-repo-'))
+    const srcDir = join(dir, 'src')
+    mkdirSync(srcDir)
+    writeFileSync(
+      join(srcDir, 'App.tsx'),
+      `export function App() {\n  return (\n    <Routes>\n      <Route path="/events" element={<X />} />\n    </Routes>\n  )\n}\n`
+    )
+    writeFileSync(join(srcDir, 'Other.tsx'), `export const Other = () => <Route path="/sneaky" element={<X />} />\n`)
+
+    const result = runCheck(join(srcDir, 'App.tsx'))
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('routing is declared outside')
+    expect(result.stderr).toContain('Other.tsx')
+
+    rmSync(dir, { recursive: true, force: true })
   })
 })
 
