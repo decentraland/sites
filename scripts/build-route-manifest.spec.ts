@@ -237,6 +237,42 @@ describe('when extracting the route manifest from a router', () => {
     })
   })
 
+  describe('and an index route is the section not-found screen', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/cast" element={<Layout />}>
+        {/* route-manifest: not-found */}
+        <Route index element={<CastNotFoundPage />} />
+        <Route path="s/:token" element={<Streamer />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should not record the parent as a live route, which would answer 200 for it', () => {
+      const result = runCheck(srcPath)
+
+      expect(result.status).toBe(0)
+      expect(routesOf(result.stdout)).toEqual(['/cast/s/:token'])
+    })
+  })
+
+  describe('and an index route is a real page', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/account" element={<Layout />}>
+        <Route index element={<Wallets />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should keep the parent path, since that is what renders', () => {
+      const result = runCheck(srcPath)
+
+      expect(result.status).toBe(0)
+      expect(routesOf(result.stdout)).toEqual(['/account'])
+    })
+  })
+
   describe('and a route opts into case-sensitive matching', () => {
     beforeEach(() => {
       writeRouter(`    <Routes>
@@ -311,6 +347,56 @@ describe('when routing is declared outside the router file', () => {
     expect(result.stderr).toContain('Other.tsx')
 
     rmSync(dir, { recursive: true, force: true })
+  })
+})
+
+describe('when a file merely looks like it declares routing', () => {
+  let dir: string
+  let srcDir: string
+
+  const writeSibling = (contents: string) => {
+    writeFileSync(join(srcDir, 'Other.tsx'), contents)
+    return runCheck(join(srcDir, 'App.tsx'))
+  }
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'route-manifest-ast-'))
+    srcDir = join(dir, 'src')
+    mkdirSync(srcDir)
+    writeFileSync(
+      join(srcDir, 'App.tsx'),
+      `export function App() {\n  return (\n    <Routes>\n      <Route path="/events" element={<X />} />\n    </Routes>\n  )\n}\n`
+    )
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('should not flag a component whose name merely starts with Route', () => {
+    expect(writeSibling(`export const X = () => <RouteCard path="/a" />\n`).status).toBe(0)
+  })
+
+  it('should not flag a commented-out route', () => {
+    expect(writeSibling(`// <Route path="/sneaky" />\nexport const X = () => <div />\n`).status).toBe(0)
+  })
+
+  it('should not flag the API name inside a string', () => {
+    expect(writeSibling(`export const doc = 'use createBrowserRouter here'\n`).status).toBe(0)
+  })
+
+  it('should flag a route reached through a namespace import', () => {
+    const result = writeSibling(`export const X = () => <RR.Route path="/sneaky" element={<Y />} />\n`)
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('<Route>')
+  })
+
+  it('should flag a router built from a factory', () => {
+    const result = writeSibling(`export const r = createBrowserRouter([{ path: '/sneaky' }])\n`)
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('createBrowserRouter()')
   })
 })
 

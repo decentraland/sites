@@ -12,10 +12,9 @@
 //
 // Usage: node scripts/build-route-manifest.mjs [--src src/App.tsx] [--out dist/routes.json] [--check]
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve, sep } from 'node:path'
-import { mkdirSync } from 'node:fs'
 
 const require = createRequire(import.meta.url)
 const ts = require('typescript')
@@ -66,7 +65,7 @@ function readPathAttribute(element, sourceFile) {
     const initializer = attribute.initializer
     if (initializer && ts.isStringLiteral(initializer)) return initializer.text
     const { line } = sourceFile.getLineAndCharacterOfPosition(attribute.getStart(sourceFile))
-    throw new BuildError(`src/App.tsx:${line + 1} — a Route path must be a string literal for the manifest to resolve it`)
+    throw new BuildError(`${sourceFile.fileName}:${line + 1} — a Route path must be a string literal for the manifest to resolve it`)
   }
   return null
 }
@@ -124,7 +123,7 @@ function assertNoComputedRoutes(node, sourceFile) {
     if (!ts.isJsxExpression(child) || isCommentOnly(child, sourceFile)) continue
     const { line } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile))
     throw new BuildError(
-      `src/App.tsx:${line + 1} — <${node.openingElement?.tagName?.getText(sourceFile) ?? 'fragment'}> has a ` +
+      `${sourceFile.fileName}:${line + 1} — <${node.openingElement?.tagName?.getText(sourceFile) ?? 'fragment'}> has a ` +
         `computed child; every route must be a literal <Route> element or the manifest silently omits it`
     )
   }
@@ -132,12 +131,12 @@ function assertNoComputedRoutes(node, sourceFile) {
 
 function collectRoutes(sourceFile) {
   const valid = new Set()
-  const notFound = []
+  const notFound = new Set()
 
   const visit = (node, parentPath, siblings) => {
     let nextParent = parentPath
 
-    if ((ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) && !ts.isJsxText(node)) {
+    if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
       const opening = ts.isJsxElement(node) ? node.openingElement : node
       const tagName = opening.tagName.getText(sourceFile)
 
@@ -154,7 +153,7 @@ function collectRoutes(sourceFile) {
       if (tagName === 'Route' && hasAttribute(opening, 'caseSensitive', sourceFile)) {
         const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
         throw new BuildError(
-          `src/App.tsx:${line + 1} — <Route> sets caseSensitive, which the manifest cannot express ` +
+          `${sourceFile.fileName}:${line + 1} — <Route> sets caseSensitive, which the manifest cannot express ` +
             `and the edge matcher does not implement; add support on both sides first`
         )
       }
@@ -162,7 +161,7 @@ function collectRoutes(sourceFile) {
       if (tagName === 'Route' && opening.attributes.properties.some(ts.isJsxSpreadAttribute)) {
         const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
         throw new BuildError(
-          `src/App.tsx:${line + 1} — <Route> uses a spread attribute; its path cannot be read, so the ` +
+          `${sourceFile.fileName}:${line + 1} — <Route> uses a spread attribute; its path cannot be read, so the ` +
             `manifest would silently omit this route`
         )
       }
@@ -178,11 +177,11 @@ function collectRoutes(sourceFile) {
             if (!marker) {
               const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
               throw new BuildError(
-                `src/App.tsx:${line + 1} — wildcard route "${resolved}" needs a marker comment above it: ` +
+                `${sourceFile.fileName}:${line + 1} — wildcard route "${resolved}" needs a marker comment above it: ` +
                   `{/* route-manifest: not-found */} or {/* route-manifest: redirect */}`
               )
             }
-            if (marker === 'not-found') notFound.push(resolved)
+            if (marker === 'not-found') notFound.add(resolved)
             else valid.add(resolved)
           } else {
             valid.add(resolved)
@@ -197,7 +196,7 @@ function collectRoutes(sourceFile) {
             // Drop it: what renders here is the not-found screen, and leaving both entries makes
             // the edge tie-break in favour of the live route and answer 200.
             valid.delete(parentPath)
-            notFound.push(parentPath)
+            notFound.add(parentPath)
           } else {
             valid.add(parentPath)
           }
@@ -213,7 +212,7 @@ function collectRoutes(sourceFile) {
   }
 
   visit(sourceFile, '/', [])
-  return { valid: [...valid].sort(), notFound: notFound.sort() }
+  return { valid: [...valid].sort(), notFound: [...notFound].sort() }
 }
 
 /**
@@ -239,14 +238,50 @@ function assertSupportedPattern(pattern) {
   }
 }
 
+/** Routing APIs that declare routes. `Link`, `Navigate` and the hooks are fine: they only navigate. */
+const ROUTING_COMPONENTS = new Set(['Route', 'Routes'])
+const ROUTING_FACTORIES = new Set([
+  'createBrowserRouter',
+  'createHashRouter',
+  'createMemoryRouter',
+  'createRoutesFromElements',
+  'useRoutes'
+])
+
+/**
+ * Parses each file rather than grepping it, so `<RouteCard>`, a commented-out `<Route />` and the
+ * string "createBrowserRouter" in a doc block do not fail the build. A regex flagged all three.
+ */
+function findRoutingDeclaration(filePath) {
+  const sourceFile = ts.createSourceFile(filePath, readFileSync(filePath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+  let found = null
+
+  const visit = node => {
+    if (found) return
+    if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
+      const opening = ts.isJsxElement(node) ? node.openingElement : node
+      // `RR.Route` counts too: the property name is what identifies the component.
+      const tagName = opening.tagName.getText(sourceFile).split('.').pop()
+      if (ROUTING_COMPONENTS.has(tagName)) found = { node: opening, name: `<${tagName}>` }
+    } else if (ts.isCallExpression(node)) {
+      const callee = node.expression.getText(sourceFile).split('.').pop()
+      if (ROUTING_FACTORIES.has(callee)) found = { node, name: `${callee}()` }
+    }
+    if (!found) ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+
+  if (!found) return null
+  const { line } = sourceFile.getLineAndCharacterOfPosition(found.node.getStart(sourceFile))
+  return `${filePath}:${line + 1} — ${found.name}`
+}
+
 /**
  * The manifest is built from ONE file. If a second router ever appears, every route it declares is
  * missing from the manifest, and the edge answers 404 for pages that work — the exact failure this
  * whole mechanism is supposed to prevent, arriving silently. So the build refuses to emit until the
  * new router is either folded into App.tsx or the extractor learns to read it.
  */
-const ROUTING_DECLARATION = /<Routes[\s>]|<Route[\s/>]|createBrowserRouter|createRoutesFromElements|useRoutes\s*\(/
-
 function assertSingleRouter(srcPath, srcDir) {
   const offenders = []
 
@@ -259,7 +294,8 @@ function assertSingleRouter(srcPath, srcDir) {
       }
       if (!/\.tsx?$/.test(entry.name) || /\.spec\.tsx?$/.test(entry.name)) continue
       if (resolve(full) === resolve(srcPath)) continue
-      if (ROUTING_DECLARATION.test(readFileSync(full, 'utf8'))) offenders.push(full)
+      const offender = findRoutingDeclaration(full)
+      if (offender) offenders.push(offender)
     }
   }
   walk(srcDir)
@@ -291,7 +327,6 @@ function run(argv, io) {
   // Only scanned for the repo's own router: a fixture in a temp dir has no tree to walk.
   const srcDir = resolve(src).endsWith(`${sep}src${sep}App.tsx`) ? dirname(resolve(src)) : null
   const manifest = buildManifest(resolve(src), srcDir)
-  const serialized = `${JSON.stringify(manifest, null, 2)}\n`
 
   if (check) {
     io.log(`route manifest: ${manifest.routes.length} routes, ${manifest.notFoundRoutes.length} not-found wildcards`)
@@ -300,7 +335,7 @@ function run(argv, io) {
   }
 
   mkdirSync(dirname(resolve(out)), { recursive: true })
-  writeFileSync(resolve(out), serialized)
+  writeFileSync(resolve(out), `${JSON.stringify(manifest, null, 2)}\n`)
   io.log(`route manifest: ${manifest.routes.length} routes written to ${out}`)
   return 0
 }
