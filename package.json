@@ -53,7 +53,7 @@
     "react-intersection-observer": "10.0.3",
     "react-redux": "9.2.0",
     "react-router-dom": "7.15.1",
-    "thirdweb": "5.120.1",
+    "thirdweb": "5.121.4",
     "viem": "2.50.4",
     "wagmi": "2.19.5"
   },
