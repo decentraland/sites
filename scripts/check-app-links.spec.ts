@@ -23,9 +23,18 @@ describe('apple-app-site-association', () => {
     expect(aasa.applinks.details[0].appIDs).toEqual([APP_ID])
   })
 
-  it('should claim the jump and mobile paths', () => {
+  it('should claim only exact jump paths and the mobile prefix', () => {
     const paths = aasa.applinks.details[0].components.map(component => component['/'])
-    expect(paths).toEqual(['/jump*', '/mobile*'])
+    expect(paths).toEqual(['/jump', '/jump/', '/mobile*'])
+    expect(paths).not.toContain('/jump*')
+  })
+
+  it('should leave query and fragment matching unrestricted for jump links', () => {
+    expect(aasa.applinks.details[0].components).toEqual([
+      { '/': '/jump', comment: expect.any(String) },
+      { '/': '/jump/', comment: expect.any(String) },
+      { '/': '/mobile*', comment: expect.any(String) }
+    ])
   })
 
   // The SPA owns these: /places/place/:position and /events have real pages, and

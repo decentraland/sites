@@ -5,8 +5,12 @@
         "appIDs": ["8T73XM973P.org.decentraland.godotexplorer"],
         "components": [
           {
-            "/": "/jump*",
-            "comment": "Jump-in deep links. Covers /jump, /jump/places and /jump/events; the app routes on the path and teleports from ?position / ?realm."
+            "/": "/jump",
+            "comment": "Exact jump path; any query is allowed, including position and realm. Subpaths stay on the web until compatible store builds are the minimum supported version."
+          },
+          {
+            "/": "/jump/",
+            "comment": "Trailing-slash variant of /jump; the app normalizes the path before routing."
           },
           {
             "/": "/mobile*",

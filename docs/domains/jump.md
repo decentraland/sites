@@ -40,11 +40,12 @@ Two mechanics worth knowing before touching this:
 Once the association file is served at the origin and a compatible app is installed, an external
 `https://decentraland.org/jump?position=0,0&realm=raft.dcl.eth` link can open the iOS app directly.
 The explorer declares `applinks:decentraland.org` in `export_presets.cfg`, and `lib/src/deep_link.rs`
-accepts the host. Same-domain navigation within Safari can stay in the browser.
+accepts the host. Safari keeps links tapped on the same domain in the browser: these associations
+cover external links, not the in-site Jump In button, which still uses the launch flow above.
 
 | File                                            | Platform | Claims                                           |
 | ----------------------------------------------- | -------- | ------------------------------------------------ |
-| `public/.well-known/apple-app-site-association` | iOS      | `/jump*`, `/mobile*`                             |
+| `public/.well-known/apple-app-site-association` | iOS      | `/jump`, `/jump/`, `/mobile*`                    |
 | `public/.well-known/assetlinks.json`            | Android  | None — empty statement list pending safe routing |
 
 Four things to know before touching them:
@@ -65,13 +66,18 @@ Four things to know before touching them:
   not update their manifests. Android 15+ supports server-side exclusions through
   [Dynamic App Links](https://developer.android.com/training/app-links/configure-assetlinks), but
   older Android versions ignore those rules, so they cannot make a broad association safe on their own.
-- **The app's router matches exact paths, and the website uses subpaths.**
-  `deep_link_router.gd` matches `/jump`, `/open`, `/events` and `/places` literally; anything else
-  falls to a default that teleports, which silently does nothing when the URL carries no position
-  or realm. So `/jump?position=&realm=` works, `/jump/places?position=` works by accident (it
-  teleports through the default), and `/jump/events?id=<uuid>` — the shape the app's own
-  notifications and share links use — opens the app and does nothing. That needs a godot-explorer
-  fix before activating the iOS `/jump*` claim, including a rollout plan for older installed builds.
+- **iOS deliberately claims exact `/jump` and `/jump/` paths, not `/jump*`.** Omitting the AASA
+  `?` component accepts any query, so `/jump?position=0,0&realm=raft.dcl.eth` still opens the app.
+  The existing router strips trailing slashes before matching `/jump`, so both forms teleport.
+  Config-only links without a destination may intentionally apply settings without navigating.
+  `/jump/events`, `/jump/event` and `/jump/places` stay on the web: older routers fall through to
+  teleport, which does nothing for an event URL containing only `?id=`. Re-broaden the claim only
+  when [godot-explorer#2961](https://github.com/decentraland/godot-explorer/pull/2961) is included in
+  the minimum supported store build and older installed versions are accounted for; a merge or a
+  QA build is insufficient. At that point update the AASA components and the exact-path/query
+  assertions in `scripts/check-app-links.spec.ts` together, after verifying each subpath on devices.
+  Ship this narrowed association before the worker exposes it; cached broader claims are not
+  immediately revoked by changing the file.
 - **`decentraland.zone` gets both files from the same bundle.** Android delegation remains disabled
   there too. The app declares `applinks:decentraland.zone`, and `deep_link.rs` infers `dclenv=zone`
   from the host for iOS app links.
