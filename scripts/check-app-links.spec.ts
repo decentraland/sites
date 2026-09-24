@@ -1,20 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-// The two files that make decentraland.org an app-link host for the mobile
-// explorer. Nothing downstream fails loudly when one of them breaks — Apple and
-// Google just stop verifying the domain and every /jump link silently reverts to
-// opening the browser — so the shape is asserted here instead.
+// Guard the iOS association and keep Android delegation disabled until the app
+// can safely handle every path its manifest claims. See docs/domains/jump.md.
 const WELL_KNOWN_DIR = join(__dirname, '..', 'public', '.well-known')
 
-/** iOS `appID`, and the Android package it wraps. Declared in godot-explorer's `export_presets.cfg`. */
+/** iOS `appID`, declared in godot-explorer's `export_presets.cfg`. */
 const APP_ID = '8T73XM973P.org.decentraland.godotexplorer'
-const ANDROID_PACKAGE = 'org.decentraland.godotexplorer'
-
-// Upper-case hex pairs separated by colons, as `keytool`/Play Console print them.
-// Android rejects a fingerprint in any other casing or separator.
-const SHA256_FINGERPRINT = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/
-
 const readWellKnown = (name: string) => JSON.parse(readFileSync(join(WELL_KNOWN_DIR, name), 'utf8'))
 
 describe('apple-app-site-association', () => {
@@ -38,8 +30,8 @@ describe('apple-app-site-association', () => {
 
   // The SPA owns these: /places/place/:position and /events have real pages, and
   // the app's router has no handler for the SPA's shapes — it would drop the user
-  // in Discover. Android claims them from its manifest and we cannot scope that
-  // from here, but iOS is ours to scope, so keep it scoped.
+  // in Discover. Keep them out of the iOS association; Android delegation is
+  // disabled below because older Android versions only use the manifest paths.
   it('should not claim the paths the website renders itself', () => {
     const paths = aasa.applinks.details[0].components.map(component => component['/'])
     expect(paths).not.toContain('/places*')
@@ -47,26 +39,14 @@ describe('apple-app-site-association', () => {
   })
 })
 
-describe('assetlinks.json', () => {
-  let assetLinks: Array<{
-    relation: string[]
-    target: { namespace: string; package_name: string; sha256_cert_fingerprints: string[] }
-  }>
+describe('when Android app-link delegation is deferred', () => {
+  let assetLinks: unknown
 
   beforeEach(() => {
     assetLinks = readWellKnown('assetlinks.json')
   })
 
-  it('should delegate URL handling to the mobile explorer package', () => {
-    expect(assetLinks).toHaveLength(1)
-    expect(assetLinks[0].relation).toEqual(['delegate_permission/common.handle_all_urls'])
-    expect(assetLinks[0].target.namespace).toBe('android_app')
-    expect(assetLinks[0].target.package_name).toBe(ANDROID_PACKAGE)
-  })
-
-  it('should list signing fingerprints Android can parse', () => {
-    const fingerprints = assetLinks[0].target.sha256_cert_fingerprints
-    expect(fingerprints.length).toBeGreaterThan(0)
-    fingerprints.forEach(fingerprint => expect(fingerprint).toMatch(SHA256_FINGERPRINT))
+  it('should publish an empty statement list so unsupported web routes stay in the browser', () => {
+    expect(assetLinks).toEqual([])
   })
 })

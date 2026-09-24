@@ -37,37 +37,44 @@ Two mechanics worth knowing before touching this:
 
 ## App links on /jump
 
-`https://decentraland.org/jump?position=0,0&realm=raft.dcl.eth` opens the installed app directly,
-without the page loading first. The explorer has always declared the domain — `applinks:decentraland.org`
-in godot-explorer's `export_presets.cfg`, an `autoVerify` intent-filter in its `AndroidManifest.xml` —
-and `lib/src/deep_link.rs` accepts `decentraland.org` as a host, so what was missing was only the
-website's half of the handshake. It now ships as two static files:
+Once the association file is served at the origin and a compatible app is installed, an external
+`https://decentraland.org/jump?position=0,0&realm=raft.dcl.eth` link can open the iOS app directly.
+The explorer declares `applinks:decentraland.org` in `export_presets.cfg`, and `lib/src/deep_link.rs`
+accepts the host. Same-domain navigation within Safari can stay in the browser.
 
-| File                                            | Platform | Claims                     |
-| ----------------------------------------------- | -------- | -------------------------- |
-| `public/.well-known/apple-app-site-association` | iOS      | `/jump*`, `/mobile*`       |
-| `public/.well-known/assetlinks.json`            | Android  | the whole host (see below) |
+| File                                            | Platform | Claims                                           |
+| ----------------------------------------------- | -------- | ------------------------------------------------ |
+| `public/.well-known/apple-app-site-association` | iOS      | `/jump*`, `/mobile*`                             |
+| `public/.well-known/assetlinks.json`            | Android  | None — empty statement list pending safe routing |
 
 Four things to know before touching them:
 
 - **The OS forwards the whole URL, so the app's parser is the allowlist.** An app link hands
   `deep_link.rs` the untouched query string, and it types the params it knows and ignores the rest.
   The in-page fallback above is narrower on purpose — it is not a bug that the two differ.
-- **Android verifies the HOST, not the path.** `assetlinks.json` has no per-path opt-in; the paths
-  come from the app manifest's `pathPrefix` entries, today `/mobile`, `/jump`, `/events` and
-  `/places`. So shipping the file activates all four on Android. iOS is ours to scope and is
-  scoped to `/jump*` + `/mobile*`. Narrowing Android to match is a change in the
-  `decentraland/godotengine` fork (`platform/android/java/app/src/main/AndroidManifest.xml`), which
-  is where the intent-filters live — godot-explorer's `godot/android/` is generated and untracked.
+- **Android delegation is deliberately disabled.** The empty `assetlinks.json` keeps a valid JSON
+  endpoint without authorizing the app to handle this host. The manifest currently claims `/mobile`,
+  `/jump`, `/events` and `/places`; enabling verification would intercept web links such as
+  `/places/place/-9,-9`, `/places/world/raft.dcl.eth` and `/events/new-event` without equivalent app
+  destinations. The in-page Android `intent://` launch and store fallback do not require this association.
+  [godot-explorer#2961](https://github.com/decentraland/godot-explorer/pull/2961) fixes jump subpaths,
+  but still sends path-based place/world links to Discover rather than the requested destination.
+  Before restoring delegation, support the claimed destinations or narrow the manifest in
+  `decentraland/godotengine` (`platform/android/java/app/src/main/AndroidManifest.xml`), with a
+  rollout that also accounts for older installed app versions. Merely publishing a new build does
+  not update their manifests. Android 15+ supports server-side exclusions through
+  [Dynamic App Links](https://developer.android.com/training/app-links/configure-assetlinks), but
+  older Android versions ignore those rules, so they cannot make a broad association safe on their own.
 - **The app's router matches exact paths, and the website uses subpaths.**
   `deep_link_router.gd` matches `/jump`, `/open`, `/events` and `/places` literally; anything else
   falls to a default that teleports, which silently does nothing when the URL carries no position
   or realm. So `/jump?position=&realm=` works, `/jump/places?position=` works by accident (it
   teleports through the default), and `/jump/events?id=<uuid>` — the shape the app's own
   notifications and share links use — opens the app and does nothing. That needs a godot-explorer
-  fix before the iOS `/jump*` claim is a net win; see the checklist in the PR.
-- **`decentraland.zone` gets both files from the same bundle**, which is what we want: the app
-  declares `applinks:decentraland.zone` too, and `deep_link.rs` infers `dclenv=zone` from the host.
+  fix before activating the iOS `/jump*` claim, including a rollout plan for older installed builds.
+- **`decentraland.zone` gets both files from the same bundle.** Android delegation remains disabled
+  there too. The app declares `applinks:decentraland.zone`, and `deep_link.rs` infers `dclenv=zone`
+  from the host for iOS app links.
 
 ### Shipping them takes two repos
 
@@ -100,10 +107,13 @@ Verify after both sides deploy:
 ```bash
 curl -sI https://decentraland.org/.well-known/apple-app-site-association   # want application/json
 curl -sI https://decentraland.org/.well-known/assetlinks.json              # want application/json
+curl -s https://decentraland.org/.well-known/assetlinks.json               # want []
 ```
 
-`scripts/check-app-links.spec.ts` guards the contents — a broken association file fails nothing at
-build or request time, it just silently stops the domain from verifying.
+`scripts/check-app-links.spec.ts` guards the iOS association and requires Android's statement list to
+stay empty. If a nonempty Android association was already served, cached verification on devices may
+persist; publishing `[]` is not an immediate revocation. Coordinate the worker rollout and verify on
+fresh installs as well as previously verified devices before relying on browser routing.
 
 ## Auth
 

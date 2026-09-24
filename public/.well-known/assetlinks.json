@@ -1,15 +1,1 @@
-[
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "org.decentraland.godotexplorer",
-      "sha256_cert_fingerprints": [
-        "33:11:78:3A:3B:3E:FB:0D:1F:2D:4A:A7:06:9A:0A:1B:CF:36:BC:5E:58:81:37:EF:E0:FE:FA:5C:18:CE:28:ED",
-        "2E:C8:F5:D7:FB:9D:AC:B6:B5:1E:CA:F1:E3:3E:B6:3D:51:B3:0C:B1:3F:71:16:8D:64:CA:59:FF:12:B6:3D:3D",
-        "F8:99:44:0B:5B:B4:39:18:FD:04:C6:D0:B1:10:FB:24:91:E6:CA:6F:4D:EC:7D:9D:9F:E3:B6:7D:6A:5C:98:A6",
-        "8E:75:D2:3A:86:D4:B5:11:C7:CF:22:20:B9:83:05:74:17:8D:28:51:7F:C9:A7:30:B6:A7:F4:EA:CA:4C:47:84"
-      ]
-    }
-  }
-]
+[]
