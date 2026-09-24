@@ -65,6 +65,7 @@ A lazy, opt-in shell for the few account actions that need a connected signer (W
 | `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
 | `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
 | `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
+| `public/.well-known/`           | iOS/Android app-link association files. Make `/jump` open the explorer. `docs/domains/jump.md`.  |
 | `api/seo.ts`                    | **Preview-only** Vercel function for `/blog/*` OG meta. Skill `seo-worker`.                      |
 | `vercel.json`                   | **Preview-only** Vercel config: rewrites + per-route headers. Never runs in prd/stg/dev.         |
 
