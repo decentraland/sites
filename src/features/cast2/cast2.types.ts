@@ -60,6 +60,14 @@ interface SlideVideoInfo {
   geometry: { x: number; y: number; width: number; height: number }
 }
 
+type OverlaySize = 'small' | 'large'
+
+interface OverlayLayout {
+  x: number
+  y: number
+  size: OverlaySize
+}
+
 interface AnonymousIdentity {
   id: string
   name: string
@@ -104,6 +112,8 @@ export type {
   AnonymousIdentity,
   CastMessage,
   LiveKitCredentials,
+  OverlayLayout,
+  OverlaySize,
   PresentationBotToken,
   PresentationInfo,
   SlideVideoInfo,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useConnectionState, useLocalParticipant } from '@livekit/components-react'
 import { ConnectionState } from 'livekit-client'
+import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { useLocalVideoTracks } from '../../../hooks/useLocalVideoTracks'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
@@ -13,6 +14,7 @@ export function StreamerViewContent() {
   const { localParticipant } = useLocalParticipant()
   const connectionState = useConnectionState()
   const { hasLocalCamera, hasLocalScreenShare } = useLocalVideoTracks()
+  const presentation = usePresentationOptional()
   const [isInitializing, setIsInitializing] = useState(true)
 
   const isConnected = connectionState === ConnectionState.Connected
@@ -60,11 +62,10 @@ export function StreamerViewContent() {
     )
   }
 
-  // Always show the LiveStreamCounter when connected as streamer
   return (
     <ContentWrapper>
       <LiveStreamCounter />
-      {hasAnyVideo ? (
+      {hasAnyVideo || presentation?.isPresentationActive ? (
         <ParticipantGrid localParticipantVisible={true} />
       ) : (
         <EmptyStreamState
