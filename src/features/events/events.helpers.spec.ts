@@ -212,7 +212,9 @@ describe('buildLiveNowCards', () => {
           description: 'Live jam',
           categories: ['music'],
           start_at: '2026-04-22T17:00:00Z',
-          finish_at: '2026-04-22T18:00:00Z',
+          finish_at: '2026-06-03T18:00:00Z',
+          next_start_at: '2026-04-22T17:00:00Z',
+          next_finish_at: '2026-04-22T18:00:00Z',
           recurrent: true,
           recurrent_frequency: 'WEEKLY',
           recurrent_interval: 2,
@@ -231,9 +233,9 @@ describe('buildLiveNowCards', () => {
         expect(result[0].categories).toEqual(['music'])
       })
 
-      it('should propagate the schedule', () => {
+      it('should propagate the schedule, ending at the first occurrence instead of the series end', () => {
         expect(result[0].startAt).toBe('2026-04-22T17:00:00Z')
-        expect(result[0].finishAt).toBe('2026-04-22T18:00:00Z')
+        expect(result[0].finishAt).toBe('2026-04-22T18:00:00.000Z')
       })
 
       it('should propagate the recurrence fields', () => {
