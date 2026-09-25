@@ -12,9 +12,10 @@
 # prefix and writes the Cloudflare KV record.
 # See https://github.com/decentraland/actions/tree/main/cdn-deploy
 #
-# NO CLOUDFLARE TOKEN AND NO IAM ROLE LIVE HERE. The broker holds both, and
-# authorises this repository against @decentraland/definitions, which records
-# that decentraland/sites owns @dcl/sites. All this job needs is
+# NO SECRETS LIVE HERE AT ALL. The broker holds the Cloudflare token, the
+# right to write the CDN bucket, and the Slack webhook it announces rollouts
+# with; it authorises this repository against @decentraland/definitions, which
+# records that decentraland/sites owns @dcl/sites. All these jobs need is
 # `permissions: { id-token: write }`.
 #
 # To adopt:
@@ -33,8 +34,11 @@
 #
 # What the broker enforces, which shapes the jobs below:
 #   - `zone` is open: any version, no approval. It is the dev channel.
-#   - `today` and `org` need (a) the job to declare a matching `environment:`,
-#     and (b) a RELEASE version — anything ending `-commit-<sha7>` is refused.
+#   - `today` needs the job to declare a matching `environment:`. A commit
+#     build is fine — staging one is how a candidate is looked at before
+#     anyone cuts a release.
+#   - `org` needs that approval AND a RELEASE version: anything ending
+#     `-commit-<sha7>` is refused, because production serves releases.
 #   - Where the job runs is deliberately not constrained, so a promotion is
 #     dispatched by hand and names the release to put live. A rollback is the
 #     same operation with an older version.
@@ -56,7 +60,7 @@ on:
         default: "today"
         options: [today, org]
       version:
-        description: "Released version to put live, e.g. 1.4.0. Must be a release — a commit build is refused for today/org."
+        description: "Version to put live. For org it must be a release, e.g. 1.4.0; today also takes a commit build such as 1.4.0-commit-abc1234."
         required: true
       percentage:
         description: "Rollout percentage"
@@ -89,7 +93,6 @@ jobs:
       - uses: decentraland/actions/cdn-deploy@main
         with:
           dist-path: ./dist
-          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
 
   # release -> STAGE the tag's bytes in S3, with no KV write.
   #
@@ -117,7 +120,6 @@ jobs:
           version: ${{ github.event.release.tag_name }}
           copy-from-commit: "true"
           deployment-environments: "[]" # stage only — no KV write
-          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
 
   # manual -> promote an already-staged RELEASE to today or org.
   #
@@ -145,4 +147,3 @@ jobs:
           version: ${{ inputs.version }}
           deployment-environment: ${{ inputs.environment }}
           percentage: ${{ fromJSON(inputs.percentage) }}
-          slack-webhook: ${{ secrets.ROLLOUTS_SLACK_WEBHOOK }}
