@@ -75,45 +75,24 @@ function toCatalogAsset(entry: AssetEntry) {
   }
 }
 
-/**
- * Probe each individual category with `limit:1` so we can hide filter chips for
- * categories that have zero items for this owner. Mirrors the pattern used by
- * `useProfileTabAvailability` for top-level profile tabs. RTK Query dedupes the
- * 5 requests across renders.
- */
-function useAvailableCategories(address: string): Set<AssetCategory> {
-  // We MUST call hooks in a stable order — list each probe explicitly.
-  const wearable = useGetProfileAssetsQuery({ address, category: 'wearable', limit: 1 })
-  const emote = useGetProfileAssetsQuery({ address, category: 'emote', limit: 1 })
-  const ens = useGetProfileAssetsQuery({ address, category: 'ens', limit: 1 })
-  const parcel = useGetProfileAssetsQuery({ address, category: 'parcel', limit: 1 })
-  const estate = useGetProfileAssetsQuery({ address, category: 'estate', limit: 1 })
-  return useMemo(() => {
-    const set = new Set<AssetCategory>()
-    if ((wearable.data?.total ?? 0) > 0) set.add('wearable')
-    if ((emote.data?.total ?? 0) > 0) set.add('emote')
-    if ((ens.data?.total ?? 0) > 0) set.add('ens')
-    if ((parcel.data?.total ?? 0) > 0) set.add('parcel')
-    if ((estate.data?.total ?? 0) > 0) set.add('estate')
-    return set
-  }, [wearable.data?.total, emote.data?.total, ens.data?.total, parcel.data?.total, estate.data?.total])
-}
-
 function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) {
   const t = useFormatMessage()
-  const availableCategories = useAvailableCategories(address)
-  // Default to the first category that actually has items, in canonical order
-  // (wearable → emote → ens → parcel → estate). Avoids landing on an empty filter.
-  const firstAvailable = useMemo<AssetCategory | null>(() => {
-    const order: AssetCategory[] = ['wearable', 'emote', 'ens', 'parcel', 'estate']
-    return order.find(c => availableCategories.has(c)) ?? null
-  }, [availableCategories])
-  const [category, setCategory] = useState<AssetCategory | null>(null)
-  const effectiveCategory = category ?? firstAvailable
+  // NOTE: Show all categories by default. The previous category-availability gate
+  // issued five owner-filtered requests on every visit (SITES-2SE). The marketplace
+  // API has no category-count aggregation, so one unfiltered page is the only
+  // accurate way to start without an N+1 request burst.
+  const [selectedAddress, setSelectedAddress] = useState(address)
+  const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null)
+  const category = selectedAddress === address ? selectedCategory : null
+  const selectCategory = (value: AssetCategory | null) => {
+    setSelectedAddress(address)
+    setSelectedCategory(value)
+  }
   const [offset, setOffset] = useState(0)
   const [accumulated, setAccumulated] = useState<AssetEntry[]>([])
-  const cacheKey = `${address.toLowerCase()}|${effectiveCategory ?? 'none'}`
+  const cacheKey = `${address.toLowerCase()}|${category ?? 'all'}`
   const [activeKey, setActiveKey] = useState(cacheKey)
+  const queryOffset = cacheKey === activeKey ? offset : 0
 
   useEffect(() => {
     if (cacheKey !== activeKey) {
@@ -123,38 +102,30 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
     }
   }, [cacheKey, activeKey])
 
-  // If the currently selected category drops to zero (e.g. data refreshes),
-  // clear the local pick so we fall back to the next available one.
-  useEffect(() => {
-    if (category && !availableCategories.has(category)) {
-      setCategory(null)
-    }
-  }, [category, availableCategories])
-
-  const { data, isFetching, isLoading } = useGetProfileAssetsQuery(
-    {
-      address,
-      category: effectiveCategory ?? 'wearable',
-      limit: PAGE_SIZE,
-      offset
-    },
-    { skip: !effectiveCategory }
-  )
+  const { currentData, isFetching, isLoading } = useGetProfileAssetsQuery({
+    address,
+    category: category ?? undefined,
+    limit: PAGE_SIZE,
+    offset: queryOffset
+  })
 
   useEffect(() => {
-    if (!data?.data) return
+    if (!currentData?.data) return
     setAccumulated(prev => {
       const seen = new Set(prev.map(e => e.nft.id))
-      const next = data.data.filter(e => !seen.has(e.nft.id))
+      const next = currentData.data.filter(e => !seen.has(e.nft.id))
       return next.length === 0 ? prev : [...prev, ...next]
     })
-  }, [data])
+  }, [currentData])
 
-  const items = useMemo(() => (offset === 0 && !data ? [] : accumulated), [accumulated, data, offset])
-  const total = data?.total ?? 0
+  const items = useMemo(
+    () => (cacheKey !== activeKey || (queryOffset === 0 && !currentData) ? [] : accumulated),
+    [cacheKey, activeKey, accumulated, currentData, queryOffset]
+  )
+  const total = currentData?.total ?? 0
   const canLoadMore = items.length < total && !isFetching
-
-  const visibleFilters = useMemo(() => CATEGORY_FILTERS.filter(option => availableCategories.has(option.value)), [availableCategories])
+  const showNameRows =
+    category === 'ens' || (category === null && items.length === total && items.every(entry => entry.nft.category === 'ens'))
 
   // Live previews on hover (ui2 AssetPreviewPlayer, one shared iframe): the avatar plays
   // hovered emotes and wears hovered wearables. Names / LAND have nothing to preview, so
@@ -162,20 +133,30 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
   const peerUrl = getEnv('PEER_URL') ?? undefined
   const marketplaceServerUrl = (getEnv('MARKETPLACE_API_URL') ?? '').replace(/\/v2\/?$/, '') || undefined
   const isPreviewDev = Boolean(peerUrl?.includes('.zone'))
-  const canHoverPreview = effectiveCategory === 'wearable' || effectiveCategory === 'emote'
+  const canHoverPreview =
+    category === 'wearable' ||
+    category === 'emote' ||
+    (category === null && items.some(entry => entry.nft.category === 'wearable' || entry.nft.category === 'emote'))
 
   const header = (
     <AssetsHeader>
       <AssetsFilters>
-        {visibleFilters.map(option => {
-          const active = effectiveCategory === option.value
+        <FilterChip
+          label={t('profile.assets.filter_all')}
+          $active={category === null}
+          onClick={() => selectCategory(null)}
+          clickable
+          aria-pressed={category === null}
+        />
+        {CATEGORY_FILTERS.map(option => {
+          const active = category === option.value
           return (
             <FilterChip
               key={option.value}
               label={t(option.labelKey)}
               icon={option.icon as React.ReactElement}
               $active={active}
-              onClick={() => setCategory(option.value)}
+              onClick={() => selectCategory(option.value)}
               clickable
               aria-pressed={active}
             />
@@ -201,7 +182,9 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
     return (
       <>
         {header}
-        {isOwnProfile ? (
+        {category !== null ? (
+          <EmptyBio sx={{ mt: 1 }}>{t('profile.assets.count', { count: 0 })}</EmptyBio>
+        ) : isOwnProfile ? (
           <ProfileEmptyState
             icon={<CheckroomOutlinedIcon />}
             title={t('profile.assets.empty_title')}
@@ -230,7 +213,7 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t('profile.assets.count', { count: total })}
       </Typography>
-      {effectiveCategory === 'ens' ? (
+      {showNameRows ? (
         <NameRow>
           {items.map(entry => {
             const { nft } = entry
@@ -269,7 +252,7 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
               <Box key={nft.id}>
                 <CatalogCard
                   asset={toCatalogAsset(entry)}
-                  hoverPreviewUrn={canHoverPreview ? nft.urn : undefined}
+                  hoverPreviewUrn={canHoverPreview && (nft.category === 'wearable' || nft.category === 'emote') ? nft.urn : undefined}
                   imageSrc={nft.image}
                   action={null}
                   extraInformation={null}
