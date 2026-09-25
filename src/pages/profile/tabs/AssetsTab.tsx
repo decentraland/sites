@@ -124,8 +124,6 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
   )
   const total = currentData?.total ?? 0
   const canLoadMore = items.length < total && !isFetching
-  const showNameRows =
-    category === 'ens' || (category === null && items.length === total && items.every(entry => entry.nft.category === 'ens'))
 
   // Live previews on hover (ui2 AssetPreviewPlayer, one shared iframe): the avatar plays
   // hovered emotes and wears hovered wearables. Names / LAND have nothing to preview, so
@@ -213,7 +211,7 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t('profile.assets.count', { count: total })}
       </Typography>
-      {showNameRows ? (
+      {category === 'ens' ? (
         <NameRow>
           {items.map(entry => {
             const { nft } = entry
@@ -268,9 +266,34 @@ function AssetsTab({ address, isOwnProfile, embedded = false }: AssetsTabProps) 
                     />
                   }
                   bottomAction={
-                    <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
-                      {t('profile.assets.view')}
-                    </Button>
+                    category === null && nft.category === 'ens' ? (
+                      <NameActions>
+                        <Button
+                          variant="outlined"
+                          color="inherit"
+                          size="small"
+                          href={buildBuilderNameUrl(nameStem(nft.name))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('profile.assets.edit')}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          href={buildMarketplaceTransferUrl(entry)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('profile.assets.transfer')}
+                        </Button>
+                      </NameActions>
+                    ) : (
+                      <Button fullWidth variant="contained" color="primary" href={marketplaceUrl} target="_blank" rel="noopener noreferrer">
+                        {t('profile.assets.view')}
+                      </Button>
+                    )
                   }
                 />
               </Box>

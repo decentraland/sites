@@ -210,6 +210,29 @@ describe('when viewing profile assets', () => {
     })
   })
 
+  describe('and the owner has names across multiple pages', () => {
+    let firstName: ReturnType<typeof makeEnsEntry>
+    let secondName: ReturnType<typeof makeEnsEntry>
+
+    beforeEach(() => {
+      firstName = makeEnsEntry('n1', 'Brai.dcl.eth')
+      secondName = makeEnsEntry('n2', 'Second.dcl.eth')
+      mockedQuery.mockImplementation(arg => {
+        const query = arg as AssetsQuery
+        const page = { total: 2, data: query.offset === 0 ? [firstName] : [secondName] }
+        return { currentData: page, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
+      })
+    })
+
+    it('should keep direct Edit actions visible after loading another page', async () => {
+      render(<AssetsTab address={ADDRESS} isOwnProfile={true} />)
+
+      await user.click(screen.getByText('profile.creations.load_more'))
+
+      expect(screen.getAllByText('profile.assets.edit')).toHaveLength(2)
+    })
+  })
+
   describe('and more items are available than the first page', () => {
     beforeEach(() => {
       installQuery({ page: { total: 50, data: [makeWearableEntry('w1')] } })
