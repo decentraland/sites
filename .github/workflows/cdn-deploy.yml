@@ -43,6 +43,19 @@ jobs:
       - run: npm ci
         env:
           HUSKY: 0
+      # scripts/prebuild.cjs derives both VITE_BASE_URL — the CDN path every
+      # built asset is requested from — and the Sentry release name from
+      # package.json's version. So it has to be the version this build will be
+      # deployed under BEFORE `npm run build` runs, or the HTML points at a
+      # prefix the bytes were never uploaded to. `<base>-commit-<sha7>` is the
+      # version the action computes, passed back to it explicitly below so it
+      # does not suffix an already-suffixed base.
+      - id: version
+        run: |
+          BASE=$(node -p "require('./package.json').version")
+          VERSION="${BASE}-commit-$(printf '%s' "$GITHUB_SHA" | cut -c1-7)"
+          node -e 'const fs=require("fs"),p=JSON.parse(fs.readFileSync("package.json"));p.version=process.argv[1];fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")' "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - run: npm run build
         env:
           # Lets @sentry/vite-plugin upload source maps, so Sentry stack traces
@@ -52,6 +65,7 @@ jobs:
       - uses: decentraland/actions/cdn-deploy@main
         with:
           dist-path: ./dist
+          version: ${{ steps.version.outputs.version }}
 
   stage-release:
     if: github.event_name == 'release'
