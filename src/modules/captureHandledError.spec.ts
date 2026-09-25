@@ -1,12 +1,20 @@
-const captureExceptionMock = jest.fn()
-const flushMock = jest.fn()
+let captureExceptionMock: jest.Mock
+let flushMock: jest.Mock
 
 jest.mock('./sentry', () => ({}))
-jest.mock('@sentry/browser', () => ({ captureException: captureExceptionMock, flush: flushMock }))
+jest.mock('@sentry/browser', () => ({
+  captureException: (...args: unknown[]) => captureExceptionMock(...args),
+  flush: (...args: unknown[]) => flushMock(...args)
+}))
 
 import { captureHandledError } from './captureHandledError'
 
 describe('when capturing a handled error', () => {
+  beforeEach(() => {
+    captureExceptionMock = jest.fn()
+    flushMock = jest.fn()
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -45,8 +53,14 @@ describe('when capturing a handled error', () => {
   })
 
   describe('and navigation will follow the report', () => {
+    let error: Error
+
+    beforeEach(() => {
+      error = new Error('chunk failed')
+    })
+
     it('should flush the captured event before returning', async () => {
-      await captureHandledError(new Error('chunk failed'), { flushTimeoutMs: 1000 })
+      await captureHandledError(error, { flushTimeoutMs: 1000 })
 
       expect(flushMock).toHaveBeenCalledWith(1000)
     })

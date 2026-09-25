@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { LandingNavbar } from './LandingNavbar'
 
 // decentraland-ui2 ships ESM that jest does not transform, so the styled layer is stubbed with the
@@ -13,19 +14,28 @@ jest.mock('decentraland-ui2', () => ({
     neutral: { gray: '#716b7c', softWhite: '#ecebed', white: '#ffffff' }
   }
 }))
+jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ NotificationComponentByType: {} }))
 
-jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn(() => ({ track: jest.fn() })) }))
-jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn(() => ({ locale: 'en' })) }))
+jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn() }))
+jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn() }))
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: jest.fn(() => (key: string) => key)
+  useFormatMessage: jest.fn()
 }))
 
-const props = {
-  onClickSignIn: jest.fn(),
-  onClickSignOut: jest.fn()
-}
+let props: Pick<NavbarProps, 'onClickSignIn' | 'onClickSignOut'>
 
 type NavbarProps = ComponentProps<typeof LandingNavbar>
+
+beforeEach(() => {
+  props = { onClickSignIn: jest.fn(), onClickSignOut: jest.fn() }
+  ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ track: jest.fn() })
+  ;(jest.requireMock('../../intl/LocaleContext').useLocale as jest.Mock).mockReturnValue({ locale: 'en' })
+  ;(jest.requireMock('../../hooks/adapters/useFormatMessage').useFormatMessage as jest.Mock).mockReturnValue((key: string) => key)
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
+})
 
 const renderAt = (pathname: string, extra: Partial<NavbarProps> = {}) =>
   render(
@@ -90,145 +100,281 @@ describe('when the visitor is on a page the Discover dropdown owns', () => {
 })
 
 describe('when a visitor uses the mobile navigation', () => {
-  afterEach(() => {
-    jest.clearAllMocks()
+  let user: ReturnType<typeof userEvent.setup>
+  let pathname: string
+
+  beforeEach(() => {
+    user = userEvent.setup()
+    pathname = '/events'
   })
 
-  it('should open and close the menu with the hamburger button', () => {
-    renderAt('/events')
+  it('should open the menu with the hamburger button', async () => {
+    renderAt(pathname)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+
     expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute('aria-expanded', 'true')
+  })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Close menu' }))
+  it('should close the menu with the hamburger button', async () => {
+    renderAt(pathname)
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+
+    await user.click(screen.getByRole('button', { name: 'Close menu' }))
+
     expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('should expand and collapse a section', () => {
-    renderAt('/events')
-    const discover = screen.getAllByRole('button', { name: /navbar\.discover/i }).find(button => button.hasAttribute('aria-expanded'))
-    expect(discover).toBeDefined()
+  describe('and a section is expanded', () => {
+    let discover: HTMLElement
 
-    fireEvent.click(discover!)
-    expect(discover).toHaveAttribute('aria-expanded', 'true')
+    beforeEach(() => {
+      renderAt(pathname)
+      discover = screen.getAllByRole('button', { name: /navbar\.discover/i }).find(button => button.hasAttribute('aria-expanded'))!
+    })
 
-    fireEvent.click(discover!)
-    expect(discover).toHaveAttribute('aria-expanded', 'false')
+    it('should expose the expanded state', async () => {
+      await user.click(discover)
+
+      expect(discover).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    it('should collapse after a second click', async () => {
+      await user.click(discover)
+      await user.click(discover)
+
+      expect(discover).toHaveAttribute('aria-expanded', 'false')
+    })
   })
 
-  it('should close the open menu on Escape', () => {
-    renderAt('/events')
-    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+  describe('and the menu is open', () => {
+    beforeEach(async () => {
+      renderAt(pathname)
+      await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    })
 
-    fireEvent.keyDown(document, { key: 'Escape' })
+    it('should close on Escape', async () => {
+      await user.keyboard('{Escape}')
 
-    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false')
+    })
   })
 })
 
 describe('when the signed-in visitor opens the user card', () => {
-  const address = '0x1234567890123456789012345678901234567890'
+  let address: string
+  let user: ReturnType<typeof userEvent.setup>
 
-  afterEach(() => {
-    jest.clearAllMocks()
+  beforeEach(() => {
+    address = '0x1234567890123456789012345678901234567890'
+    user = userEvent.setup()
   })
 
-  it('should show the shortened wallet address and account links', () => {
+  it('should show the shortened wallet address', async () => {
     renderAt('/events', { isSignedIn: true, address })
 
-    fireEvent.click(screen.getByRole('button', { name: 'User menu' }))
+    await user.click(screen.getByRole('button', { name: 'User menu' }))
 
     expect(screen.getAllByText('0x1234...7890').length).toBeGreaterThan(0)
   })
 
-  it('should close the user card when clicking outside navigation', () => {
+  it('should close when clicking outside navigation', async () => {
     renderAt('/events', { isSignedIn: true, address })
-    fireEvent.click(screen.getByRole('button', { name: 'User menu' }))
+    await user.click(screen.getByRole('button', { name: 'User menu' }))
 
-    fireEvent.mouseDown(document.body)
+    await user.click(document.body)
 
     expect(screen.getByRole('button', { name: 'User menu' })).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('should send sign-out clicks to the supplied handler', () => {
+  it('should invoke the sign-out handler', async () => {
     renderAt('/events', { isSignedIn: true, address })
-    fireEvent.click(screen.getByRole('button', { name: 'User menu' }))
+    await user.click(screen.getByRole('button', { name: 'User menu' }))
 
-    fireEvent.click(screen.getAllByText('component.landing.navbar.logout')[0])
+    await user.click(screen.getAllByText('component.landing.navbar.logout')[0])
 
     expect(props.onClickSignOut).toHaveBeenCalledTimes(1)
+  })
+
+  describe('and the visitor copies the wallet address', () => {
+    let writeText: jest.Mock
+
+    beforeEach(() => {
+      writeText = jest.fn().mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+    })
+
+    it('should copy the full address', async () => {
+      renderAt('/events', { isSignedIn: true, address })
+      await user.click(screen.getByRole('button', { name: 'User menu' }))
+
+      await user.click(screen.getAllByRole('button', { name: 'Copy address' })[0])
+
+      expect(writeText).toHaveBeenCalledWith(address)
+    })
+
+    it('should confirm a successful copy', async () => {
+      renderAt('/events', { isSignedIn: true, address })
+      await user.click(screen.getByRole('button', { name: 'User menu' }))
+
+      await user.click(screen.getAllByRole('button', { name: 'Copy address' })[0])
+
+      await waitFor(() => expect(screen.getAllByText('component.landing.navbar.address_copied').length).toBeGreaterThan(0))
+    })
+
+    describe('and the clipboard rejects the request', () => {
+      beforeEach(() => {
+        writeText.mockRejectedValueOnce(new Error('clipboard unavailable'))
+      })
+
+      it('should keep the address visible', async () => {
+        renderAt('/events', { isSignedIn: true, address })
+        await user.click(screen.getByRole('button', { name: 'User menu' }))
+
+        await user.click(screen.getAllByRole('button', { name: 'Copy address' })[0])
+
+        expect(screen.getAllByText('0x1234...7890').length).toBeGreaterThan(0)
+      })
+    })
   })
 })
 
 describe('when the visitor has not signed in', () => {
-  afterEach(() => {
-    jest.clearAllMocks()
+  let user: ReturnType<typeof userEvent.setup>
+
+  beforeEach(() => {
+    user = userEvent.setup()
   })
 
-  it('should call sign-in when the sign-in button is pressed', () => {
+  it('should invoke the sign-in handler', async () => {
     renderAt('/events')
 
-    fireEvent.click(screen.getByRole('button', { name: 'component.landing.navbar.sign_in' }))
+    await user.click(screen.getByRole('button', { name: 'component.landing.navbar.sign_in' }))
 
     expect(props.onClickSignIn).toHaveBeenCalledTimes(1)
   })
 })
 
 describe('when the visitor opens a desktop section', () => {
-  it('should reveal its destination links on hover', () => {
-    renderAt('/events')
+  let user: ReturnType<typeof userEvent.setup>
+  let desktopTab: HTMLElement
 
-    const desktopTab = screen
+  beforeEach(() => {
+    user = userEvent.setup()
+    renderAt('/events')
+    desktopTab = screen
       .getAllByRole('button', { name: /navbar\.discover/i, hidden: true })
       .find(button => button.getAttribute('aria-haspopup') === 'true')!
-    fireEvent.mouseEnter(desktopTab.parentElement!)
+  })
+
+  it('should reveal its destination links on hover', async () => {
+    await user.hover(desktopTab.parentElement!)
 
     expect(desktopTab).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('should close the section after the pointer leaves', async () => {
+    await user.hover(desktopTab.parentElement!)
+
+    await user.unhover(desktopTab.parentElement!)
+
+    await waitFor(() => expect(desktopTab).toHaveAttribute('aria-expanded', 'false'))
   })
 })
 
 describe('when the landing navbar is minimal', () => {
-  it('should show the jump-in action after scrolling', () => {
-    const onClickJumpIn = jest.fn()
-    renderAt('/', { isLandingPage: true, onClickJumpIn })
+  let onClickJumpIn: jest.Mock
+  let user: ReturnType<typeof userEvent.setup>
 
+  beforeEach(() => {
+    onClickJumpIn = jest.fn()
+    user = userEvent.setup()
     Object.defineProperty(window, 'scrollY', { configurable: true, value: 100 })
+  })
+
+  it('should invoke jump-in after scrolling', async () => {
+    renderAt('/', { isLandingPage: true, onClickJumpIn })
     fireEvent.scroll(window)
-    fireEvent.click(screen.getByRole('button', { name: /jump_in/i }))
+
+    await user.click(screen.getByRole('button', { name: /jump_in/i }))
 
     expect(onClickJumpIn).toHaveBeenCalledTimes(1)
   })
 })
 
 describe('when the notification list is open', () => {
-  it('should show a fallback title and time for an unknown notification type', () => {
-    const notifications: NonNullable<NavbarProps['notifications']> = {
-      items: [{ id: 'one', read: false, type: 'new_event', timestamp: Date.now() - 120000, metadata: { message: 'New event nearby' } }],
-      isLoading: false,
-      isOpen: true,
-      activeTab: 'newest',
-      onClick: jest.fn(),
-      onClose: jest.fn(),
-      onChangeTab: jest.fn()
-    }
-    renderAt('/events', { isSignedIn: true, notifications })
+  let notifications: NonNullable<NavbarProps['notifications']>
 
-    expect(screen.getByText('New Event')).toBeInTheDocument()
-    expect(screen.getByText('2m ago')).toBeInTheDocument()
+  describe('and the bell is clicked', () => {
+    let onClick: jest.Mock
+    let user: ReturnType<typeof userEvent.setup>
+
+    beforeEach(() => {
+      onClick = jest.fn()
+      user = userEvent.setup()
+      notifications = {
+        items: [],
+        isLoading: false,
+        isOpen: false,
+        activeTab: 'newest',
+        onClick,
+        onClose: jest.fn(),
+        onChangeTab: jest.fn()
+      }
+    })
+
+    it('should invoke the notification handler', async () => {
+      renderAt('/events', { isSignedIn: true, notifications })
+
+      await user.click(screen.getByRole('button', { name: 'Notifications' }))
+
+      expect(onClick).toHaveBeenCalledTimes(1)
+    })
   })
 
-  it('should show the empty state when no notifications exist', () => {
-    const notifications: NonNullable<NavbarProps['notifications']> = {
-      items: [],
-      isLoading: false,
-      isOpen: true,
-      activeTab: 'newest',
-      onClick: jest.fn(),
-      onClose: jest.fn(),
-      onChangeTab: jest.fn()
-    }
-    renderAt('/events', { isSignedIn: true, notifications })
+  describe('and an unrecognized notification is present', () => {
+    beforeEach(() => {
+      notifications = {
+        items: [{ id: 'one', read: false, type: 'new_event', timestamp: Date.now() - 120000, metadata: { message: 'New event nearby' } }],
+        isLoading: false,
+        isOpen: true,
+        activeTab: 'newest',
+        onClick: jest.fn(),
+        onClose: jest.fn(),
+        onChangeTab: jest.fn()
+      }
+    })
 
-    expect(screen.getByText('component.landing.navbar.notifications_empty_new')).toBeInTheDocument()
+    it('should show a fallback title', () => {
+      renderAt('/events', { isSignedIn: true, notifications })
+
+      expect(screen.getByText('New Event')).toBeInTheDocument()
+    })
+
+    it('should show the relative time', () => {
+      renderAt('/events', { isSignedIn: true, notifications })
+
+      expect(screen.getByText('2m ago')).toBeInTheDocument()
+    })
+  })
+
+  describe('and no notifications exist', () => {
+    beforeEach(() => {
+      notifications = {
+        items: [],
+        isLoading: false,
+        isOpen: true,
+        activeTab: 'newest',
+        onClick: jest.fn(),
+        onClose: jest.fn(),
+        onChangeTab: jest.fn()
+      }
+    })
+
+    it('should show the empty state', () => {
+      renderAt('/events', { isSignedIn: true, notifications })
+
+      expect(screen.getByText('component.landing.navbar.notifications_empty_new')).toBeInTheDocument()
+    })
   })
 })

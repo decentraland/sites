@@ -96,66 +96,90 @@ describe('when a child throws', () => {
     )
   })
 
-  it('should reload once after a failed dynamic import', async () => {
-    render(
-      <ErrorBoundary fallback={<span>fallback</span>}>
-        <Boom message="Importing a module script failed." />
-      </ErrorBoundary>
-    )
+  describe('and a route chunk fails', () => {
+    let chunkMessage: string
 
-    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
-  })
-
-  it('should wait for the diagnostic to finish before reloading', async () => {
-    mockedCapture.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 20)))
-
-    render(
-      <ErrorBoundary fallback={<span>fallback</span>}>
-        <Boom message="Importing a module script failed." />
-      </ErrorBoundary>
-    )
-
-    expect(reloadMock).not.toHaveBeenCalled()
-    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
-  })
-
-  it('should reload when reporting does not finish', async () => {
-    mockedCapture.mockImplementationOnce(() => new Promise(() => undefined))
-
-    render(
-      <ErrorBoundary fallback={<span>fallback</span>}>
-        <Boom message="Importing a module script failed." />
-      </ErrorBoundary>
-    )
-
-    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1), { timeout: 2000 })
-  })
-
-  it('should keep the fallback after another chunk failure in the same minute', async () => {
-    sessionStorage.setItem('dcl:chunk-reload-at', String(Date.now()))
-
-    render(
-      <ErrorBoundary fallback={<span>fallback</span>}>
-        <Boom message="Importing a module script failed." />
-      </ErrorBoundary>
-    )
-
-    await act(async () => {
-      await Promise.resolve()
+    beforeEach(() => {
+      chunkMessage = 'Importing a module script failed.'
     })
-    expect(reloadMock).not.toHaveBeenCalled()
-  })
 
-  it('should retry after the reload cooldown expires', async () => {
-    sessionStorage.setItem('dcl:chunk-reload-at', String(Date.now() - 61_000))
+    it('should reload the page once', async () => {
+      render(
+        <ErrorBoundary fallback={<span>fallback</span>}>
+          <Boom message={chunkMessage} />
+        </ErrorBoundary>
+      )
 
-    render(
-      <ErrorBoundary fallback={<span>fallback</span>}>
-        <Boom message="Importing a module script failed." />
-      </ErrorBoundary>
-    )
+      await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
+    })
 
-    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
+    describe('and the diagnostic is still pending', () => {
+      beforeEach(() => {
+        mockedCapture.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 20)))
+      })
+
+      it('should wait before reloading', async () => {
+        render(
+          <ErrorBoundary fallback={<span>fallback</span>}>
+            <Boom message={chunkMessage} />
+          </ErrorBoundary>
+        )
+
+        expect(reloadMock).not.toHaveBeenCalled()
+        await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
+      })
+    })
+
+    describe('and reporting never finishes', () => {
+      beforeEach(() => {
+        mockedCapture.mockImplementationOnce(() => new Promise(() => undefined))
+      })
+
+      it('should reload after the reporting timeout', async () => {
+        render(
+          <ErrorBoundary fallback={<span>fallback</span>}>
+            <Boom message={chunkMessage} />
+          </ErrorBoundary>
+        )
+
+        await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1), { timeout: 2000 })
+      })
+    })
+
+    describe('and the page already reloaded this minute', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('dcl:chunk-reload-at', String(Date.now()))
+      })
+
+      it('should keep the fallback instead of reloading again', async () => {
+        render(
+          <ErrorBoundary fallback={<span>fallback</span>}>
+            <Boom message={chunkMessage} />
+          </ErrorBoundary>
+        )
+
+        await act(async () => {
+          await Promise.resolve()
+        })
+        expect(reloadMock).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and the reload cooldown has expired', () => {
+      beforeEach(() => {
+        sessionStorage.setItem('dcl:chunk-reload-at', String(Date.now() - 61_000))
+      })
+
+      it('should permit another recovery reload', async () => {
+        render(
+          <ErrorBoundary fallback={<span>fallback</span>}>
+            <Boom message={chunkMessage} />
+          </ErrorBoundary>
+        )
+
+        await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
+      })
+    })
   })
 
   it('should include the component stack as extra context', () => {
