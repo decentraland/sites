@@ -102,9 +102,11 @@ Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics.
 
 ## Deployment: where production actually comes from
 
-**Vercel is preview-only.** `npm run build` publishes `@dcl/sites` to npm, a GitLab job mirrors it to
-`cdn.decentraland.org/@dcl/sites/<version>`, and `set-rollout-action` points an environment at that
-version (`zone` + `today` automatic, `org` manual + release tag). At request time every environment is
+**Vercel is preview-only.** `.github/workflows/cdn-deploy.yml` builds the site and uploads it straight
+to `cdn.decentraland.org/@dcl/sites/<version>`, then points an environment at that version — `zone` on
+every merge to master, `today` and `org` by manual dispatch, with `org` requiring a released version
+and an approval on the GitHub environment. No npm publish and no GitLab hop. At request time every
+environment is
 served by the **`sites-deployer` Cloudflare Worker** (`dcl.tools:ops/sites-deployer`, GitLab), which
 pulls the CDN bundle and rewrites the HTML on the way out. `server: cloudflare`, no Vercel headers.
 
