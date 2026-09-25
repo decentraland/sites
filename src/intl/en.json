@@ -222,7 +222,8 @@
           "top_left": "Top left",
           "top_right": "Top right",
           "bottom_left": "Bottom left",
-          "bottom_right": "Bottom right"
+          "bottom_right": "Bottom right",
+          "drag_hint": "Drag to move your camera"
         },
         "mute_mic": "Mute Mic",
         "unmute_mic": "Unmute Mic",

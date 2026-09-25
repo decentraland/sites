@@ -4,6 +4,7 @@ import { ConnectionState } from 'livekit-client'
 import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { useLocalVideoTracks } from '../../../hooks/useLocalVideoTracks'
+import { CameraOverlayHandle } from '../CameraOverlayHandle/CameraOverlayHandle'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
@@ -66,7 +67,10 @@ export function StreamerViewContent() {
     <ContentWrapper>
       <LiveStreamCounter />
       {hasAnyVideo || presentation?.isPresentationActive ? (
-        <ParticipantGrid localParticipantVisible={true} />
+        <ParticipantGrid
+          localParticipantVisible={true}
+          presentationOverlay={presentation?.isPresentationActive && hasLocalCamera ? <CameraOverlayHandle /> : undefined}
+        />
       ) : (
         <EmptyStreamState
           type="streamer"

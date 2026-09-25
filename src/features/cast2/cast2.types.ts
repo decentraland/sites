@@ -68,6 +68,24 @@ interface OverlayLayout {
   size: OverlaySize
 }
 
+interface OverlayRect {
+  left: number
+  top: number
+  d: number
+}
+
+interface MediaRect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+interface MeasuredMedia extends MediaRect {
+  videoWidth: number
+  videoHeight: number
+}
+
 interface AnonymousIdentity {
   id: string
   name: string
@@ -112,7 +130,10 @@ export type {
   AnonymousIdentity,
   CastMessage,
   LiveKitCredentials,
+  MeasuredMedia,
+  MediaRect,
   OverlayLayout,
+  OverlayRect,
   OverlaySize,
   PresentationBotToken,
   PresentationInfo,

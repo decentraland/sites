@@ -172,7 +172,8 @@
           "top_left": "왼쪽 위",
           "top_right": "오른쪽 위",
           "bottom_left": "왼쪽 아래",
-          "bottom_right": "오른쪽 아래"
+          "bottom_right": "오른쪽 아래",
+          "drag_hint": "드래그하여 카메라 이동"
         },
         "mute_mic": "마이크 음소거",
         "unmute_mic": "마이크 켜기",

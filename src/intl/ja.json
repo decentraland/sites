@@ -172,7 +172,8 @@
           "top_left": "左上",
           "top_right": "右上",
           "bottom_left": "左下",
-          "bottom_right": "右下"
+          "bottom_right": "右下",
+          "drag_hint": "ドラッグしてカメラを移動"
         },
         "mute_mic": "マイクをミュート",
         "unmute_mic": "マイクをオン",

@@ -172,7 +172,8 @@
           "top_left": "左上",
           "top_right": "右上",
           "bottom_left": "左下",
-          "bottom_right": "右下"
+          "bottom_right": "右下",
+          "drag_hint": "拖动以移动摄像头"
         },
         "mute_mic": "静音麦克风",
         "unmute_mic": "取消静音",

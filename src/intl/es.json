@@ -172,7 +172,8 @@
           "top_left": "Arriba a la izquierda",
           "top_right": "Arriba a la derecha",
           "bottom_left": "Abajo a la izquierda",
-          "bottom_right": "Abajo a la derecha"
+          "bottom_right": "Abajo a la derecha",
+          "drag_hint": "Arrastra para mover tu cámara"
         },
         "mute_mic": "Silenciar Micrófono",
         "unmute_mic": "Activar Micrófono",
