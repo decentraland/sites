@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { captureHandledError } from '../../modules/captureHandledError'
 import { ErrorBoundary, ErrorFallback, RouteErrorBoundary } from './ErrorBoundary'
@@ -28,10 +28,15 @@ const Boom = ({ message }: { message: string }): null => {
 // React logs every boundary-caught error to console.error; silence it so the spec
 // output stays readable without hiding genuine failures.
 let consoleErrorSpy: jest.SpyInstance
+let reloadMock: jest.Mock
 
 beforeEach(() => {
   consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
   mockedPathname.value = '/places'
+  sessionStorage.clear()
+  reloadMock = jest.fn()
+  Object.defineProperty(window, 'location', { configurable: true, value: { reload: reloadMock }, writable: true })
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
 })
 
 afterEach(() => {
@@ -89,6 +94,68 @@ describe('when a child throws', () => {
       expect.anything(),
       expect.objectContaining({ tags: expect.objectContaining({ chunk_load_error: 'true' }) })
     )
+  })
+
+  it('should reload once after a failed dynamic import', async () => {
+    render(
+      <ErrorBoundary fallback={<span>fallback</span>}>
+        <Boom message="Importing a module script failed." />
+      </ErrorBoundary>
+    )
+
+    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
+  })
+
+  it('should wait for the diagnostic to finish before reloading', async () => {
+    mockedCapture.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 20)))
+
+    render(
+      <ErrorBoundary fallback={<span>fallback</span>}>
+        <Boom message="Importing a module script failed." />
+      </ErrorBoundary>
+    )
+
+    expect(reloadMock).not.toHaveBeenCalled()
+    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
+  })
+
+  it('should reload when reporting does not finish', async () => {
+    mockedCapture.mockImplementationOnce(() => new Promise(() => undefined))
+
+    render(
+      <ErrorBoundary fallback={<span>fallback</span>}>
+        <Boom message="Importing a module script failed." />
+      </ErrorBoundary>
+    )
+
+    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1), { timeout: 2000 })
+  })
+
+  it('should keep the fallback after another chunk failure in the same minute', async () => {
+    sessionStorage.setItem('dcl:chunk-reload-at', String(Date.now()))
+
+    render(
+      <ErrorBoundary fallback={<span>fallback</span>}>
+        <Boom message="Importing a module script failed." />
+      </ErrorBoundary>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(reloadMock).not.toHaveBeenCalled()
+  })
+
+  it('should retry after the reload cooldown expires', async () => {
+    sessionStorage.setItem('dcl:chunk-reload-at', String(Date.now() - 61_000))
+
+    render(
+      <ErrorBoundary fallback={<span>fallback</span>}>
+        <Boom message="Importing a module script failed." />
+      </ErrorBoundary>
+    )
+
+    await waitFor(() => expect(reloadMock).toHaveBeenCalledTimes(1))
   })
 
   it('should include the component stack as extra context', () => {
