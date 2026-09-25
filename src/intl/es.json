@@ -165,6 +165,15 @@
         "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "menu_button": "Burbuja de cámara",
+          "size_small": "Pequeña",
+          "size_large": "Grande",
+          "top_left": "Arriba a la izquierda",
+          "top_right": "Arriba a la derecha",
+          "bottom_left": "Abajo a la izquierda",
+          "bottom_right": "Abajo a la derecha"
+        },
         "mute_mic": "Silenciar Micrófono",
         "unmute_mic": "Activar Micrófono",
         "stop_cam": "Detener Cámara",

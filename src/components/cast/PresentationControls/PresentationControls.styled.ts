@@ -98,4 +98,21 @@ const UploadingOverlay = styled('div')({
   fontSize: 14
 })
 
-export { Divider, NavButton, PresentationControlsOverlay, SlideInfo, UploadingOverlay, VideoButton }
+const OverlayMenuButton = styled(VideoButton)(({ theme }) => ({
+  '&:focus-visible': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: 2
+  },
+  '&:active': {
+    transform: 'scale(0.95)'
+  }
+}))
+
+const OverlayMenuDivider = styled('li')(({ theme }) => ({
+  height: 1,
+  margin: theme.spacing(0.5, 0),
+  backgroundColor: theme.palette.divider,
+  listStyle: 'none'
+}))
+
+export { Divider, NavButton, OverlayMenuButton, OverlayMenuDivider, PresentationControlsOverlay, SlideInfo, UploadingOverlay, VideoButton }

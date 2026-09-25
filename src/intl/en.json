@@ -215,6 +215,15 @@
         "connect_wallet_prompt": "Connect your Decentraland wallet to send messages"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "menu_button": "Camera bubble",
+          "size_small": "Small",
+          "size_large": "Large",
+          "top_left": "Top left",
+          "top_right": "Top right",
+          "bottom_left": "Bottom left",
+          "bottom_right": "Bottom right"
+        },
         "mute_mic": "Mute Mic",
         "unmute_mic": "Unmute Mic",
         "stop_cam": "Stop Cam",

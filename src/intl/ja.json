@@ -165,6 +165,15 @@
         "connect_wallet_prompt": "メッセージを送るにはDecentralandウォレットを接続してください"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "menu_button": "カメラバブル",
+          "size_small": "小",
+          "size_large": "大",
+          "top_left": "左上",
+          "top_right": "右上",
+          "bottom_left": "左下",
+          "bottom_right": "右下"
+        },
         "mute_mic": "マイクをミュート",
         "unmute_mic": "マイクをオン",
         "stop_cam": "カメラを停止",

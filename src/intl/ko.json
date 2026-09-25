@@ -165,6 +165,15 @@
         "connect_wallet_prompt": "메시지를 보내려면 Decentraland 지갑을 연결하세요"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "menu_button": "카메라 버블",
+          "size_small": "작게",
+          "size_large": "크게",
+          "top_left": "왼쪽 위",
+          "top_right": "오른쪽 위",
+          "bottom_left": "왼쪽 아래",
+          "bottom_right": "오른쪽 아래"
+        },
         "mute_mic": "마이크 음소거",
         "unmute_mic": "마이크 켜기",
         "stop_cam": "카메라 끄기",
