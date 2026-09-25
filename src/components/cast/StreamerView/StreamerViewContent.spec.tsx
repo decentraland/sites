@@ -14,7 +14,11 @@ jest.mock('../../../features/cast2/useCastTranslation', () => ({
   useCastTranslation: () => ({ t: (key: string) => key })
 }))
 jest.mock('../ParticipantGrid/ParticipantGrid', () => ({
-  ParticipantGrid: () => React.createElement('div', { 'data-testid': 'participant-grid' })
+  ParticipantGrid: ({ presentationOverlay }: { presentationOverlay?: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'participant-grid' }, presentationOverlay)
+}))
+jest.mock('../CameraOverlayHandle/CameraOverlayHandle', () => ({
+  CameraOverlayHandle: () => React.createElement('div', { 'data-testid': 'camera-overlay-handle' })
 }))
 jest.mock('../LiveKitEnhancements/EmptyStreamState', () => ({
   EmptyStreamState: ({ message }: { message: string }) => React.createElement('div', { 'data-testid': 'empty-stream-state' }, message)
@@ -77,6 +81,22 @@ describe('StreamerViewContent', () => {
     it('should not render the empty stream state', () => {
       expect(screen.queryByTestId('empty-stream-state')).not.toBeInTheDocument()
     })
+
+    it('should not pass the camera overlay handle to the grid', () => {
+      expect(screen.queryByTestId('camera-overlay-handle')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the camera is on and a presentation is active', () => {
+    beforeEach(() => {
+      mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: true, hasLocalScreenShare: false })
+      mockUsePresentationOptional.mockReturnValue({ isPresentationActive: true })
+      renderPastInitGrace()
+    })
+
+    it('should pass the camera overlay handle to the grid', () => {
+      expect(screen.getByTestId('participant-grid')).toContainElement(screen.getByTestId('camera-overlay-handle'))
+    })
   })
 
   describe('when the camera is on', () => {
@@ -87,6 +107,10 @@ describe('StreamerViewContent', () => {
 
     it('should render the participant grid', () => {
       expect(screen.getByTestId('participant-grid')).toBeInTheDocument()
+    })
+
+    it('should not pass the camera overlay handle without a presentation', () => {
+      expect(screen.queryByTestId('camera-overlay-handle')).not.toBeInTheDocument()
     })
   })
 
