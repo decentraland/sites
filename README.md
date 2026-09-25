@@ -73,6 +73,7 @@ npm run lint:fix       # ESLint
 npm run lint:pkg       # package.json lint
 npm run lint:i18n      # locale parity + strict JSON (duplicate members) for src/intl/*.json
 npm run lint:shells    # no lightweight route reaches src/shells (rule 2)
+npm run lint:routes    # prints the route manifest the edge uses to answer 404
 ```
 
 ## Testing
