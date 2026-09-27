@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useRef } from 'react'
 import { Button } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
@@ -17,18 +17,32 @@ import {
   LearnCardUserName,
   LearnCardUserRow,
   LearnCardVideoImage,
+  LearnCardsArea,
   LearnCardsContainer,
   LearnExtraBlock,
   LearnExtraContainer,
+  LearnNavNext,
+  LearnNavPrev,
   LearnSection,
   LearnTitle
 } from './Learn.styled'
 
+const CARD_GAP = 20
+
 const CreatorsLearn = memo(() => {
   const l = useFormatMessage()
   const trackClick = useTrackClick()
+  const stripRef = useRef<HTMLDivElement>(null)
   const handleCardClick = useCallback((url: string) => {
     window.open(url, '_blank')
+  }, [])
+
+  const scrollByCard = useCallback((direction: 1 | -1) => {
+    const strip = stripRef.current
+    if (!strip) return
+    const cardWidth = strip.firstElementChild?.getBoundingClientRect().width ?? 0
+    const step = cardWidth > 0 ? cardWidth + CARD_GAP : strip.clientWidth
+    strip.scrollBy({ left: direction * step, behavior: 'smooth' })
   }, [])
 
   return (
@@ -37,37 +51,45 @@ const CreatorsLearn = memo(() => {
         <LearnTitle>
           <span>{l('component.creators_landing.learn.title_highlight')}</span> {l('component.creators_landing.learn.title')}
         </LearnTitle>
-        <LearnCardsContainer>
-          {learnCards.map(card => (
-            <LearnCard
-              key={card.id}
-              onClick={event => {
-                trackClick(event)
-                handleCardClick(card.url)
-              }}
-              data-place={SectionViewedTrack.CREATORS_LEARN}
-              data-event={SegmentEvent.CLICK}
-              data-title={card.title}
-            >
-              <LearnCardVideoImage>
-                <img src={card.image} alt={card.title} />
-                <PlayIcon />
-              </LearnCardVideoImage>
-              <LearnCardInfo>
-                <LearnCardUserRow>
-                  <LearnCardUser>
-                    <LearnCardUserImage>
-                      <img src={card.userImage} alt={card.name} />
-                    </LearnCardUserImage>
-                    <LearnCardUserName>{card.name}</LearnCardUserName>
-                  </LearnCardUser>
-                  <LearnCardDate>{card.date}</LearnCardDate>
-                </LearnCardUserRow>
-                <LearnCardTitle>{card.title}</LearnCardTitle>
-              </LearnCardInfo>
-            </LearnCard>
-          ))}
-        </LearnCardsContainer>
+        <LearnCardsArea>
+          <LearnCardsContainer ref={stripRef}>
+            {learnCards.map(card => (
+              <LearnCard
+                key={card.id}
+                onClick={event => {
+                  trackClick(event)
+                  handleCardClick(card.url)
+                }}
+                data-place={SectionViewedTrack.CREATORS_LEARN}
+                data-event={SegmentEvent.CLICK}
+                data-title={card.title}
+              >
+                <LearnCardVideoImage>
+                  <img src={card.image} alt={card.title} />
+                  <PlayIcon />
+                </LearnCardVideoImage>
+                <LearnCardInfo>
+                  <LearnCardUserRow>
+                    <LearnCardUser>
+                      <LearnCardUserImage>
+                        <img src={card.userImage} alt={card.name} />
+                      </LearnCardUserImage>
+                      <LearnCardUserName>{card.name}</LearnCardUserName>
+                    </LearnCardUser>
+                    <LearnCardDate>{card.date}</LearnCardDate>
+                  </LearnCardUserRow>
+                  <LearnCardTitle>{card.title}</LearnCardTitle>
+                </LearnCardInfo>
+              </LearnCard>
+            ))}
+          </LearnCardsContainer>
+          <LearnNavPrev aria-label="Previous videos" onClick={() => scrollByCard(-1)}>
+            &#8249;
+          </LearnNavPrev>
+          <LearnNavNext aria-label="Next videos" onClick={() => scrollByCard(1)}>
+            &#8250;
+          </LearnNavNext>
+        </LearnCardsArea>
         <LearnExtraContainer>
           <LearnExtraBlock sx={{ marginRight: { xs: 0, md: '80px' } }}>
             {l('component.creators_landing.learn.watch_more')}

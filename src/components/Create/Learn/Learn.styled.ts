@@ -1,4 +1,5 @@
 import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { NavButtonNext, NavButtonPrev } from '../../Carousel/Carousel.styled'
 import { CreateSectionTitle } from '../SectionTitle.styled'
 
 const LearnSection = styled('section')({
@@ -14,6 +15,22 @@ const LearnSection = styled('section')({
 const LearnTitle = styled(CreateSectionTitle)({
   marginTop: 97,
   marginBottom: 62
+})
+
+const LearnCardsArea = styled(Box)({
+  position: 'relative'
+})
+
+// The strip hides its scrollbar, so these arrows are the only affordance a
+// mouse-only user has — keep them visible without hover, unlike the carousel's.
+const LearnNavPrev = styled(NavButtonPrev)({
+  opacity: 1,
+  top: '50%'
+})
+
+const LearnNavNext = styled(NavButtonNext)({
+  opacity: 1,
+  top: '50%'
 })
 
 const LearnCardsContainer = styled(Box)(({ theme }) => ({
@@ -203,9 +220,12 @@ export {
   LearnCardUserName,
   LearnCardUserRow,
   LearnCardVideoImage,
+  LearnCardsArea,
   LearnCardsContainer,
   LearnExtraBlock,
   LearnExtraContainer,
+  LearnNavNext,
+  LearnNavPrev,
   LearnSection,
   LearnTitle
 }

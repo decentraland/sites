@@ -60,6 +60,7 @@ function Carousel<T>({
   const dragOffsetRef = useRef(0)
   const isDraggingRef = useRef(false)
   const wasDragRef = useRef(false)
+  const wheelDeltaRef = useRef(0)
 
   // ── Measure wrapper ─────────────────────────────────────────────────
   useEffect(() => {
@@ -242,6 +243,42 @@ function Carousel<T>({
       wasDragRef.current = false
     }
   }, [])
+
+  // ── Wheel / trackpad ────────────────────────────────────────────────
+  // Horizontal wheel deltas (trackpad swipes) page between slides so the
+  // carousel answers the same scroll gesture as the plain overflow strips.
+  // Vertical deltas are left alone — the page keeps the scroll. Attached
+  // manually because the gesture must preventDefault (React's onWheel is
+  // passive) or macOS would treat the leftover delta as a history swipe.
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
+      e.preventDefault()
+      if (isMovingRef.current) {
+        // Swallow momentum while a slide transition runs: one gesture, one step.
+        wheelDeltaRef.current = 0
+        return
+      }
+      wheelDeltaRef.current += e.deltaX
+      if (Math.abs(wheelDeltaRef.current) < SWIPE_THRESHOLD) return
+      const forward = wheelDeltaRef.current > 0
+      wheelDeltaRef.current = 0
+      if (forward) {
+        goNext()
+      } else {
+        goPrev()
+      }
+      startAutoplay()
+    },
+    [goNext, goPrev, startAutoplay]
+  )
+
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
+  }, [handleWheel])
 
   // ── Render ──────────────────────────────────────────────────────────
   return (
