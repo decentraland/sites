@@ -8,7 +8,7 @@
     "dev": "vite",
     "start": "vite",
     "prebuild": "node scripts/prebuild.cjs",
-    "build": "tsc -b && vite build && node scripts/prerender-hero.mjs && node scripts/prerender-legal.mjs && node scripts/build-route-manifest.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender-hero.mjs && node scripts/prerender-legal.mjs && node scripts/build-route-manifest.mjs && node scripts/build-llms-txt.mjs",
     "preview": "vite preview",
     "test": "jest",
     "test:coverage": "npm run test -- --coverage",
@@ -19,7 +19,8 @@
     "lint:pkg": "npmPkgJsonLint .",
     "lint:i18n": "node scripts/check-i18n.mjs",
     "lint:shells": "node scripts/check-shell-boundary.mjs --verify-heavy-dirs",
-    "lint:routes": "node scripts/build-route-manifest.mjs --check"
+    "lint:routes": "node scripts/build-route-manifest.mjs --check",
+    "check:llms-links": "node scripts/check-llms-links.mjs"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "16.1.6",

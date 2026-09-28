@@ -1,7 +1,9 @@
+import publicLinks from '../../config/publicLinks.json'
+
 const socialLinks = [
-  { name: 'Discord', url: 'https://dcl.gg/discord' },
+  { name: 'Discord', url: publicLinks.social.discord },
   { name: 'GitHub', url: 'https://github.com/decentraland' },
-  { name: 'X', url: 'https://x.com/decentraland' },
+  { name: 'X', url: publicLinks.social.x },
   { name: 'Instagram', url: 'https://instagram.com/decentraland_foundation/' },
   { name: 'YouTube', url: 'https://youtube.com/@decentraland_foundation' },
   { name: 'TikTok', url: 'https://tiktok.com/@decentraland_fdn' },
@@ -15,8 +17,8 @@ const gettingStartedLinks = [
     labelKey: 'component.landing.footer.getting_started.system_requirements',
     url: 'https://docs.decentraland.org/in-world/settings-and-performance'
   },
-  { labelKey: 'component.landing.footer.getting_started.faqs', url: 'https://docs.decentraland.org/faqs/decentraland-101' },
-  { labelKey: 'component.landing.footer.getting_started.contact_support', url: 'https://decentraland.org/help/' }
+  { labelKey: 'component.landing.footer.getting_started.faqs', url: publicLinks.support.faq },
+  { labelKey: 'component.landing.footer.getting_started.contact_support', url: publicLinks.support.help }
 ] as const
 
 const resourceLinks = [
