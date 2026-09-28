@@ -32,6 +32,10 @@ process.stdout.write(JSON.stringify(output))`
 const validate = evaluate('llms.validateLinks(input.text, input.manifest, new Map(input.otherSiteUrls ?? []))')
 const fill = evaluate('llms.fillTemplate(input.template, input.links)')
 const structure = evaluate('llms.validateStructure(input.text)')
+const build = evaluate('llms.buildLlmsTxt({ template: input.template, links: {}, manifest: input.manifest })')
+
+const buildWith = (body: string, manifest = MANIFEST) =>
+  build({ template: `# T\n\n> s\n\n${body}\n\n## Links\n\n- [Events](https://decentraland.org/events): note\n`, manifest })
 
 const errorsFor = (text: string, otherSiteUrls?: Array<[string, string]>) =>
   validate({ text, manifest: MANIFEST, otherSiteUrls }).value as string[]
@@ -81,6 +85,58 @@ describe('when validating the links of an llms.txt', () => {
 
   it('should reject an unfilled placeholder', () => {
     expect(errorsFor('- [Epic]({{download.epic}})')[0]).toContain('unfilled')
+  })
+})
+
+describe('when building with link syntax other than inline links', () => {
+  it('should build the plain fixture', () => {
+    expect(buildWith('Prose.').error).toBeUndefined()
+  })
+
+  it('should reject a reference link and its definition before the first H2', () => {
+    expect(buildWith('See [Bad][bad].\n\n[bad]: http://invalid.example/missing').error).toContain('brackets outside')
+  })
+
+  it('should reject a raw HTML anchor', () => {
+    expect(buildWith('<a href="https://invalid.example">Bad</a>').error).toContain('raw HTML anchors')
+  })
+
+  it('should reject an autolink', () => {
+    expect(buildWith('See <https://invalid.example>.').error).toContain('bare or autolinked URL')
+  })
+
+  it('should reject a bare URL in a note', () => {
+    const template = '# T\n\n> s\n\n## Links\n\n- [Events](https://decentraland.org/events): also http://invalid.example\n'
+    expect(build({ template, manifest: MANIFEST }).error).toContain('bare or autolinked URL')
+  })
+
+  it('should reject an image', () => {
+    expect(buildWith('![logo](https://decentraland.org/events)').error).toContain('images are not supported')
+  })
+
+  it('should reject an inline link with a title', () => {
+    expect(buildWith('[Bad](https://invalid.example "title")').error).toContain('brackets outside')
+  })
+})
+
+describe('when a not-found route matches the Genesis Plaza link', () => {
+  const genesis = '- [Genesis Plaza](https://decentraland.org/places/place/-3,-2)'
+
+  it('should fail when an exact not-found entry outranks the param route', () => {
+    const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/places/place/-3,-2'] }
+    expect(validate({ text: genesis, manifest }).value).toEqual([
+      '[Genesis Plaza](https://decentraland.org/places/place/-3,-2): not-found route /places/place/-3,-2 outranks /places/place/:position'
+    ])
+  })
+
+  it('should pass when only the catch-all not-found routes match', () => {
+    const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/*', '/places/*'] }
+    expect(validate({ text: genesis, manifest }).value).toEqual([])
+  })
+
+  it('should pass on a tie, which goes to the valid route', () => {
+    const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/places/place/:other'] }
+    expect(validate({ text: genesis, manifest }).value).toEqual([])
   })
 })
 

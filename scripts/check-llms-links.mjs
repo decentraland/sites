@@ -17,17 +17,22 @@ const SITE_HOST = 'decentraland.org'
 const TEXT_DOCUMENT = /\.(md|txt)$/i
 
 /**
- * `ok`, `inconclusive` or `fail` for one response. A `.md`/`.txt` URL answering 200 with an HTML
- * page is a fail: that is a docs site serving its generic shell for a document that does not exist.
+ * `ok`, `inconclusive` or `fail` for one response. The document expectation comes from the REQUESTED
+ * URL: a `.md`/`.txt` link must answer text/markdown or text/plain, even when a redirect moved it
+ * somewhere else (a docs site redirecting a missing document to an HTML 404 page answers 200).
  */
-function classify(url, status, contentType, body) {
-  if (status === 403 || status === 429) return { result: 'inconclusive', reason: `HTTP ${status}, check manually` }
-  if (status < 200 || status >= 300) return { result: 'fail', reason: `HTTP ${status}` }
-  const looksLikeHtml = /text\/html/i.test(contentType ?? '') || /^\s*(<!doctype html|<html)/i.test(body)
-  if (TEXT_DOCUMENT.test(new URL(url).pathname) && looksLikeHtml) {
-    return { result: 'fail', reason: `HTTP ${status} but an HTML page where a text document was expected` }
+function classify(requestedUrl, finalUrl, status, contentType, body) {
+  const via = finalUrl && finalUrl !== requestedUrl ? ` via ${finalUrl}` : ''
+  if (status === 403 || status === 429) return { result: 'inconclusive', reason: `HTTP ${status}${via}, check manually` }
+  if (status < 200 || status >= 300) return { result: 'fail', reason: `HTTP ${status}${via}` }
+  if (TEXT_DOCUMENT.test(new URL(requestedUrl).pathname)) {
+    const isText = /^text\/(markdown|plain)\b/i.test(contentType ?? '')
+    const looksLikeHtml = /^\s*(<!doctype html|<html)/i.test(body)
+    if (!isText || looksLikeHtml) {
+      return { result: 'fail', reason: `HTTP ${status}${via} is ${contentType ?? 'untyped'}, not a text document` }
+    }
   }
-  return { result: 'ok', reason: `HTTP ${status}` }
+  return { result: 'ok', reason: `HTTP ${status}${via}` }
 }
 
 async function check(url, timeout) {
@@ -38,7 +43,7 @@ async function check(url, timeout) {
       headers: { 'user-agent': 'Mozilla/5.0 (compatible; decentraland-llms-link-check)' }
     })
     const body = (await response.text()).slice(0, 512)
-    return classify(response.url || url, response.status, response.headers.get('content-type'), body)
+    return classify(url, response.url || url, response.status, response.headers.get('content-type'), body)
   } catch (error) {
     return { result: 'fail', reason: error instanceof Error ? error.message : String(error) }
   }

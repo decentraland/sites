@@ -4,13 +4,13 @@ import { pathToFileURL } from 'node:url'
 
 const SCRIPT = join(__dirname, 'check-llms-links.mjs')
 
-const classify = (url: string, status: number, contentType: string | null, body: string) => {
+const classify = (url: string, status: number, contentType: string | null, body: string, finalUrl = url) => {
   const code = `import { classify } from ${JSON.stringify(pathToFileURL(SCRIPT).href)}
-const [url, status, contentType, body] = JSON.parse(process.env.INPUT)
-process.stdout.write(classify(url, status, contentType, body).result)`
+const [url, finalUrl, status, contentType, body] = JSON.parse(process.env.INPUT)
+process.stdout.write(classify(url, finalUrl, status, contentType, body).result)`
   const result = spawnSync(process.execPath, ['--input-type=module', '-e', code], {
     encoding: 'utf8',
-    env: { ...process.env, INPUT: JSON.stringify([url, status, contentType, body]) }
+    env: { ...process.env, INPUT: JSON.stringify([url, finalUrl, status, contentType, body]) }
   })
   return result.stdout
 }
@@ -31,6 +31,22 @@ describe('when classifying a link check response', () => {
 
   it('should pass a text document served as text', () => {
     expect(classify('https://docs.decentraland.org/llms.txt', 200, 'text/plain', '# Decentraland')).toBe('ok')
+  })
+
+  it('should fail a text document redirected to an HTML page that answers 200', () => {
+    expect(
+      classify('https://docs.decentraland.org/missing.md', 200, 'text/html', '<!doctype html>', 'https://docs.decentraland.org/404')
+    ).toBe('fail')
+  })
+
+  it('should fail a text document served with a non-text content type', () => {
+    expect(classify('https://docs.decentraland.org/llms.txt', 200, 'application/octet-stream', '# Decentraland')).toBe('fail')
+  })
+
+  it('should pass a text document redirected to another text document', () => {
+    expect(
+      classify('https://docs.decentraland.org/old.md', 200, 'text/markdown; charset=utf-8', '# Doc', 'https://docs.decentraland.org/new.md')
+    ).toBe('ok')
   })
 
   it('should pass an HTML page at a non-document URL', () => {

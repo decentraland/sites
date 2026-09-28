@@ -71,6 +71,29 @@ function fillTemplate(template, links) {
 
 const normalizePath = path => (path.length > 1 ? path.replace(/\/$/, '') : path)
 
+// React Router's route ranking (`computeScore` in react-router's matchRoutes), for non-index routes.
+const PARAM_SEGMENT = /^:[\w-]+$/
+function computeScore(pattern) {
+  const segments = pattern.split('/')
+  const initial = segments.length + (segments.includes('*') ? -2 : 0)
+  return segments
+    .filter(segment => segment !== '*')
+    .reduce((score, segment) => score + (PARAM_SEGMENT.test(segment) ? 3 : segment === '' ? 1 : 10), initial)
+}
+
+/** Whether a manifest pattern (static, `:param` or trailing `*` segments) matches `path`. */
+function matchesRoute(pattern, path) {
+  const patternSegments = pattern.split('/').filter(Boolean)
+  const pathSegments = path.split('/').filter(Boolean)
+  for (const [index, segment] of patternSegments.entries()) {
+    if (segment === '*') return true
+    const value = pathSegments[index]
+    if (value === undefined) return false
+    if (!PARAM_SEGMENT.test(segment) && segment.toLowerCase() !== decodeURIComponent(value).toLowerCase()) return false
+  }
+  return patternSegments.length === pathSegments.length
+}
+
 function validateSitePath(url, manifest, otherSiteUrls) {
   if (otherSiteUrls.has(url.href)) return null
   const path = normalizePath(url.pathname)
@@ -78,7 +101,13 @@ function validateSitePath(url, manifest, otherSiteUrls) {
   if (manifest.routes.includes(path) && isStatic(path) && !manifest.notFoundRoutes.includes(path)) return null
   const dynamic = DYNAMIC_SPA_LINKS.find(link => link.path.test(path))
   if (dynamic) {
-    return manifest.routes.includes(dynamic.pattern) ? null : `route ${dynamic.pattern} is not in the route manifest`
+    if (!manifest.routes.includes(dynamic.pattern)) return `route ${dynamic.pattern} is not in the route manifest`
+    // A not-found route matching the same path wins only if it outranks the pattern (higher score
+    // wins, tie goes to valid), so `/*` and `/places/*` never fail this but an exact entry does.
+    const winner = manifest.notFoundRoutes.find(
+      route => matchesRoute(route, path) && computeScore(route) > computeScore(dynamic.pattern)
+    )
+    return winner ? `not-found route ${winner} outranks ${dynamic.pattern}` : null
   }
   return `${path} is not a route of this SPA nor an allowlisted URL of another decentraland.org site`
 }
@@ -87,6 +116,14 @@ function validateSitePath(url, manifest, otherSiteUrls) {
 function validateLinks(text, manifest, otherSiteUrls = OTHER_SITE_URLS) {
   const errors = []
   if (text.includes('{{')) errors.push('output still contains an unfilled {{ placeholder')
+  // Inline `[text](url)` is the only link syntax the output may use, so every link goes through the
+  // checks below. Anything else that reads as a link (reference links and their definitions, images,
+  // raw HTML anchors, autolinks, bare URLs) is rejected rather than parsed.
+  if (/!\[/.test(text)) errors.push('images are not supported; use an inline [text](url) link')
+  const rest = text.replace(MARKDOWN_LINK, '')
+  if (/[[\]]/.test(rest)) errors.push('brackets outside an inline [text](url) link (reference link or definition?)')
+  if (/<a[\s>]/i.test(rest)) errors.push('raw HTML anchors are not supported; use an inline [text](url) link')
+  if (/https?:\/\/|<[a-z][a-z0-9+.-]*:/i.test(rest)) errors.push('bare or autolinked URL; use an inline [text](url) link')
   for (const [, name, raw] of text.matchAll(MARKDOWN_LINK)) {
     const label = `[${name}](${raw})`
     if (!/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
