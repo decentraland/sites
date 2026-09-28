@@ -115,7 +115,17 @@ jobs:
       statuses: write
     steps:
       # No checkout: nothing is built and the bytes are already in S3, so the
-      # package name cannot be read from package.json.
+      # package name cannot be read from package.json, and there is no base
+      # version to compute a commit version from — the action only demands one
+      # when it has to compute it.
+      #
+      # This is NOT a complete rollback. Records are stored sorted descending by
+      # semver and the worker serves the first one above zero percent, so naming
+      # an older version here leaves the newer one still serving every user while
+      # this job reports success. Rolling back also needs the abandoned version
+      # set to 0%, which this single-version dispatch cannot express — use
+      # set-rollout-manual.yml for that until the broker zeroes superseded
+      # records.
       - uses: decentraland/actions/cdn-deploy@main
         with:
           package-name: "@dcl/sites"
