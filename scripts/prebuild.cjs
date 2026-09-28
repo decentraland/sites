@@ -41,10 +41,12 @@ fs.writeFileSync(
     .map((e) => e[0] + "=" + JSON.stringify(e[1]))
     .join("\n") + "\n"
 )
-fs.writeFileSync("./package.json", JSON.stringify(packageJson, null, 2))
+// Trailing newline on purpose: without it every build leaves both manifests dirty in git,
+// and that noise gets staged into unrelated commits.
+fs.writeFileSync("./package.json", JSON.stringify(packageJson, null, 2) + "\n")
 fs.writeFileSync(
   "./public/package.json",
-  JSON.stringify(publicPackageJson, null, 2)
+  JSON.stringify(publicPackageJson, null, 2) + "\n"
 )
 
 // public url logic

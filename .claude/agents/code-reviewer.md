@@ -20,7 +20,7 @@ Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" (rule
 
 High-leverage areas to always check:
 
-1. **Architectural boundary** — `src/shells/*` must not be imported outside `src/App.tsx`'s `lazy()` and `src/shells/` itself (rule 2).
+1. **Architectural boundary** — no lightweight entry point may reach `src/shells/*` at runtime, directly or through a helper or barrel. Heavy route trees may. Check with `npm run lint:shells`, never with a grep for the import string (rule 2).
 2. **YAGNI** — exported helpers with zero consumers in this PR; placeholder reducers; props no caller uses (rule 3).
 3. **DRY** — duplicate styled components, near-duplicates of existing `features/`, helpers that re-implement something already in `decentraland-ui2` or `src/components/`.
 4. **i18n parity** — every new key in `en.json` mirrored in es/fr/ja/ko/zh (rule 9).

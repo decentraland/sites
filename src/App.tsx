@@ -77,19 +77,22 @@ const BlogSignInRedirect = lazyWithRetry(() => import('./pages/blog/SignInRedire
 // No Web3 providers — auth uses localStorage identity via useAuthIdentity.
 const DappsShell = lazyWithRetry(() => import('./shells/DappsShell').then(m => ({ default: m.DappsShell })))
 
-const WhatsOnHomePage = lazyWithRetry(() => import('./pages/whats-on/HomePage').then(m => ({ default: m.HomePage })))
-const CreateEventPage = lazyWithRetry(() => import('./pages/whats-on/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
-const WhatsOnLayout = lazyWithRetry(() => import('./pages/whats-on/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
-const PendingEventsPage = lazyWithRetry(() => import('./pages/whats-on/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
-const UsersAdminPage = lazyWithRetry(() => import('./pages/whats-on/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
+const WhatsOnHomePage = lazyWithRetry(() => import('./pages/events/HomePage').then(m => ({ default: m.HomePage })))
+const CreateEventPage = lazyWithRetry(() => import('./pages/events/CreateEventPage').then(m => ({ default: m.CreateEventPage })))
+const WhatsOnLayout = lazyWithRetry(() => import('./pages/events/WhatsOnLayout').then(m => ({ default: m.WhatsOnLayout })))
+const PendingEventsPage = lazyWithRetry(() => import('./pages/events/PendingEventsPage').then(m => ({ default: m.PendingEventsPage })))
+const UsersAdminPage = lazyWithRetry(() => import('./pages/events/UsersAdminPage').then(m => ({ default: m.UsersAdminPage })))
 const LegacyHangoutRedirect = lazyWithRetry(() =>
-  import('./pages/whats-on/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect }))
+  import('./pages/events/LegacyHangoutRedirect').then(m => ({ default: m.LegacyHangoutRedirect }))
+)
+const CreateEventAliasRedirect = lazyWithRetry(() =>
+  import('./pages/events/CreateEventAliasRedirect').then(m => ({ default: m.CreateEventAliasRedirect }))
 )
 const LegacyWhatsOnRedirect = lazyWithRetry(() =>
-  import('./pages/whats-on/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect }))
+  import('./pages/events/LegacyWhatsOnRedirect').then(m => ({ default: m.LegacyWhatsOnRedirect }))
 )
 const LegacyWorldRedirect = lazyWithRetry(() =>
-  import('./pages/whats-on/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect }))
+  import('./pages/events/LegacyWorldRedirect').then(m => ({ default: m.LegacyWorldRedirect }))
 )
 const RenamedSectionRedirect = lazyWithRetry(() =>
   import('./pages/RenamedSectionRedirect').then(m => ({ default: m.RenamedSectionRedirect }))
@@ -106,12 +109,12 @@ const SocialNotFoundPage = lazyWithRetry(() => import('./pages/social/SocialNotF
 // decentraland.social experience: a unified DISCOVER landing (LIVE NOW + Featured
 // + Explore grid with search and category filters), the COMMUNITIES list tab, and
 // SCENE detail (place / world deep link with the bevy preview).
-const DiscoverLayout = lazyWithRetry(() => import('./components/discover/DiscoverLayout').then(m => ({ default: m.DiscoverLayout })))
-const DiscoverHomePage = lazyWithRetry(() => import('./pages/discover/DiscoverHomePage').then(m => ({ default: m.DiscoverHomePage })))
+const DiscoverLayout = lazyWithRetry(() => import('./components/places/DiscoverLayout').then(m => ({ default: m.DiscoverLayout })))
+const DiscoverHomePage = lazyWithRetry(() => import('./pages/places/DiscoverHomePage').then(m => ({ default: m.DiscoverHomePage })))
 const DiscoverCommunitiesPage = lazyWithRetry(() =>
-  import('./pages/discover/DiscoverCommunitiesPage').then(m => ({ default: m.DiscoverCommunitiesPage }))
+  import('./pages/places/DiscoverCommunitiesPage').then(m => ({ default: m.DiscoverCommunitiesPage }))
 )
-const DiscoverScenePage = lazyWithRetry(() => import('./pages/discover/DiscoverScenePage').then(m => ({ default: m.DiscoverScenePage })))
+const DiscoverScenePage = lazyWithRetry(() => import('./pages/places/DiscoverScenePage').then(m => ({ default: m.DiscoverScenePage })))
 
 // Jump pages — deep-link handler for decentraland:// launcher. Heavy route (Redux).
 const JumpPlacesPage = lazyWithRetry(() => import('./pages/jump/PlacesPage').then(m => ({ default: m.PlacesPage })))
@@ -231,8 +234,10 @@ const App = () => {
                 prefixes redirect with their subpath and query intact, so shared links, bookmarks and
                 indexed pages keep resolving. Each redirect fires a Segment event so these routes can
                 be sunset once the traffic dries up. */}
+              {/* route-manifest: redirect */}
               <Route path="/whats-on/*" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
               <Route path="/whats-on" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+              {/* route-manifest: redirect */}
               <Route path="/discover/*" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
               <Route path="/discover" element={<RenamedSectionRedirect from="/discover" to="/places" origin="places" />} />
               {/* Deep links from the standalone events/places sites, which carried their target in the
@@ -254,6 +259,10 @@ const App = () => {
                   <Route path="/events" element={<WhatsOnHomePage />} />
                   <Route path="/events/new-event" element={<CreateEventPage />} />
                   <Route path="/events/edit-event/:eventId" element={<CreateEventPage />} />
+                  {/* What an assistant guesses when asked to link to event creation. */}
+                  <Route path="/events/submit" element={<CreateEventAliasRedirect />} />
+                  <Route path="/events/create" element={<CreateEventAliasRedirect />} />
+                  <Route path="/events/new" element={<CreateEventAliasRedirect />} />
                   {/* Legacy aliases — preserve query string + location state. */}
                   <Route path="/events/new-hangout" element={<LegacyHangoutRedirect />} />
                   <Route path="/events/edit-hangout/:eventId" element={<LegacyHangoutRedirect />} />
@@ -279,11 +288,13 @@ const App = () => {
                   {/* `/cast` (no trailing path) is not a deep link from gatekeeper, so
                     treat it as not-found rather than a landing. The catch-all below
                     only matches non-empty children, so we need an explicit index. */}
+                  {/* route-manifest: not-found */}
                   <Route index element={<CastNotFoundPage />} />
                   <Route path="s/:token" element={<StreamerPage />} />
                   <Route path="s/streaming" element={<StreamerPage />} />
                   <Route path="w/:worldName/parcel/:parcel" element={<WatcherPage />} />
                   <Route path="w/:location" element={<WatcherPage />} />
+                  {/* route-manifest: not-found */}
                   <Route path="*" element={<CastNotFoundPage />} />
                 </Route>
                 <Route path="/storage" element={<StorageRedirectPage />} />
@@ -292,6 +303,7 @@ const App = () => {
                 <Route path="/storage/scene" element={<StorageScenePage />} />
                 <Route path="/storage/players" element={<StoragePlayersPage />} />
                 <Route path="/storage/players/:address" element={<StoragePlayerDetailPage />} />
+                {/* route-manifest: not-found */}
                 <Route path="/storage/*" element={<StorageNotFoundPage />} />
                 {/* Discover — the new explore section (Live Now + Featured + Explore grid,
                   scene preview). Communities LIST is a Discover tab; community DETAIL is
@@ -303,8 +315,10 @@ const App = () => {
                   <Route path="/places/world/:name" element={<DiscoverScenePage kind="world" />} />
                 </Route>
                 {/* Same generic not-found page serves both section catch-alls. */}
+                {/* route-manifest: not-found */}
                 <Route path="/places/*" element={<SocialNotFoundPage />} />
                 <Route path="/social/communities/:id" element={<CommunityDetailPage />} />
+                {/* route-manifest: not-found */}
                 <Route path="/social/*" element={<SocialNotFoundPage />} />
                 {/* Profile routes — absorbed from decentraland/profile + decentraland/account dapps.
                   ORDER MATTERS in react-router v7: literal `me` and `accounts` segments come before
@@ -329,6 +343,7 @@ const App = () => {
                   <Route path="credits" element={<AccountCreditsPage />} />
                   <Route path="security" element={<AccountSecurityPage />} />
                   <Route path="delete" element={<AccountDeletePage />} />
+                  {/* route-manifest: not-found */}
                   <Route path="*" element={<AccountNotFoundPage />} />
                 </Route>
               </Route>
@@ -339,6 +354,7 @@ const App = () => {
               immersive UX) and `*` ranks below every explicit route, so real
               pages, legacy redirects (/events/*, /places/*) and area-scoped
               catch-alls (/cast/*, /storage/*, /social/*, /account/*) still win. */}
+            {/* route-manifest: not-found */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>

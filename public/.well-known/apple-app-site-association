@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["8T73XM973P.org.decentraland.godotexplorer"],
+        "components": [
+          {
+            "/": "/jump*",
+            "comment": "Jump-in deep links. Covers /jump, /jump/places and /jump/events; the app routes on the path and teleports from ?position / ?realm."
+          },
+          {
+            "/": "/mobile*",
+            "comment": "App-only teleport path. The SPA serves no page here, so it exists purely as an app link."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -32,7 +32,7 @@ jest.mock('../../hooks/useDeleteHangout', () => ({
   }
 }))
 
-jest.mock('../../components/whats-on/DeleteEventModal', () => ({
+jest.mock('../../components/events/DeleteEventModal', () => ({
   DeleteEventModal: () => <div data-testid="delete-event-modal" />
 }))
 
@@ -80,7 +80,7 @@ jest.mock('./CreateEventPage.styled', () => ({
   PageTitle: ({ children }: { children: React.ReactNode }) => <h1 data-testid="page-title">{children}</h1>
 }))
 
-jest.mock('../../components/whats-on/CreateEvent/EventForm', () => ({
+jest.mock('../../components/events/CreateEvent/EventForm', () => ({
   EventForm: ({
     initialEvent,
     initialCommunityId,
@@ -118,7 +118,7 @@ jest.mock('../../components/whats-on/CreateEvent/EventForm', () => ({
   )
 }))
 
-jest.mock('../../components/whats-on/CreateEvent/CreateEventSuccess', () => ({
+jest.mock('../../components/events/CreateEvent/CreateEventSuccess', () => ({
   CreateEventSuccess: () => <div data-testid="create-event-success" />
 }))
 

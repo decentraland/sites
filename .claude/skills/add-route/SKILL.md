@@ -46,7 +46,7 @@ If unsure, default to **lightweight (with Layout)**.
 
 ## Steps — heavy route
 
-1. Create page at `src/pages/<area>/<Route>.tsx` (e.g. under `src/pages/whats-on/`, `src/pages/blog/`, `src/pages/jump/`, `src/pages/social/`, `src/pages/cast/`, `src/pages/storage/`, `src/pages/profile/`).
+1. Create page at `src/pages/<area>/<Route>.tsx` (e.g. under `src/pages/events/`, `src/pages/blog/`, `src/pages/jump/`, `src/pages/social/`, `src/pages/cast/`, `src/pages/storage/`, `src/pages/profile/`).
 2. In `src/App.tsx`, add `const MyPage = lazy(() => import('./pages/<area>/<route>'))`.
 3. Place `<Route>` **inside** `<Route element={<DappsShell />}>` block. If the area needs an extra Outlet wrapper (LiveKit + Notification contexts for cast, layout chrome for whats-on), add a per-area Layout component and nest the routes under it (see `WhatsOnLayout`, `CastLayout`).
 4. RTK Query: prefer injecting endpoints into an existing base client (`cmsClient`, `placesClient`, `socialClient`, `cast2Client`, `storageClient`, `subgraphClient`, `eventsClient`, `adminClient`). Only add a new base client under `src/services/<name>Client.ts` (and register the reducer + middleware in `src/shells/store.ts`) when the new domain genuinely doesn't fit any existing one.

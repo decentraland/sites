@@ -25,29 +25,29 @@ jest.mock('../../hooks/usePlaceDeepLink', () => ({
   usePlaceDeepLink: () => mockUsePlaceDeepLink()
 }))
 
-jest.mock('../../components/whats-on/EventDetailModal', () => ({
+jest.mock('../../components/events/EventDetailModal', () => ({
   EventDetailModal: (props: { open: boolean }) => {
     mockEventDetailModal(props)
     return <div data-testid="event-detail-modal" data-open={props.open ? 'true' : 'false'} />
   }
 }))
 
-jest.mock('../../components/whats-on/PlaceDetailModal', () => ({
+jest.mock('../../components/events/PlaceDetailModal', () => ({
   PlaceDetailModal: (props: { open: boolean }) => {
     mockPlaceDetailModal(props)
     return <div data-testid="place-detail-modal" data-open={props.open ? 'true' : 'false'} />
   }
 }))
 
-jest.mock('../../components/whats-on/LiveNow', () => ({
+jest.mock('../../components/events/LiveNow', () => ({
   LiveNow: () => <div data-testid="live-now" />
 }))
 
-jest.mock('../../components/whats-on/Upcoming', () => ({
+jest.mock('../../components/events/Upcoming', () => ({
   Upcoming: () => <div data-testid="upcoming" />
 }))
 
-jest.mock('../../components/whats-on/AllExperiences', () => ({
+jest.mock('../../components/events/AllExperiences', () => ({
   AllExperiences: () => <div data-testid="all-experiences" />
 }))
 

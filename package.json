@@ -8,17 +8,18 @@
     "dev": "vite",
     "start": "vite",
     "prebuild": "node scripts/prebuild.cjs",
-    "build": "tsc -b && vite build && node scripts/prerender-hero.mjs && node scripts/prerender-legal.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender-hero.mjs && node scripts/prerender-legal.mjs && node scripts/build-route-manifest.mjs",
     "preview": "vite preview",
     "test": "jest",
     "test:coverage": "npm run test -- --coverage",
     "prepare": "husky",
-    "precommit": "lint-staged --config .husky/pre-commit.js",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,json,md,mdx,css}'",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src ./api",
     "lint:fix": "npm run lint -- --fix",
     "lint:pkg": "npmPkgJsonLint .",
-    "lint:i18n": "node scripts/check-i18n.mjs"
+    "lint:i18n": "node scripts/check-i18n.mjs",
+    "lint:shells": "node scripts/check-shell-boundary.mjs --verify-heavy-dirs",
+    "lint:routes": "node scripts/build-route-manifest.mjs --check"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "16.1.6",

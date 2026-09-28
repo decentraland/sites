@@ -32,7 +32,7 @@ If any of these is missing, ask — once, in a single block — before producing
 - LiveKit / `@livekit/components-react` (used by `/cast/*`).
 - Authenticated mutations via `signedFetch`.
 
-Existing heavy areas to mirror: `src/pages/{whats-on,blog,jump,social,cast,storage,profile}/`.
+Existing heavy areas to mirror: `src/pages/{events,blog,jump,social,cast,storage,profile}/`.
 
 **Layout-less** (a third small group): fullscreen UX that bypasses navbar+footer. Currently `/reels/*`, `/download`, `/download_success`, `/invite/:referrer`. Same lightweight rules (no Redux, no Web3) but the `<Route>` is placed BEFORE the `<Route element={<Layout />}>` block in `src/App.tsx`. Pick this only when the immersive UX is the whole point of the page.
 

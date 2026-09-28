@@ -20,7 +20,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 - `coverage-guard` — checks the 95% coverage floor (statements / lines / functions, rule 6) and dispatches `coverage-keeper` on the worst files when below.
 - `migrate-dapp` — playbook for absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels) into this SPA as a heavy `DappsShell` route.
 - `pre-pr-review` — runs the full pre-PR gate before `gh pr create`.
-- `auth-flow` — localStorage-based wallet/identity stack (`useWalletAddress`, `useAuthIdentity`, `signedFetch`); no Web3 providers.
+- `auth-flow` — localStorage-based wallet/identity stack (`useWalletAddress`, `useAuthIdentity`, `signedFetch`), and which tier may load Web3.
 - `perf-tier` — lazy boundaries, manual chunks, hero prerender, deferred analytics; anything that moves Lighthouse/LCP.
 - `rtk-query-split` — base clients in `services/` vs injected endpoints in `features/` (+ rules 17-18).
 - `seo-worker` — `api/seo.ts` OG/Twitter rewrite flow and CMS origin coherence.

@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention -- MUI icon default export
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { Box, Drawer, IconButton, Select, Typography, dclColors, styled } from 'decentraland-ui2'
-import { SearchField } from '../../components/discover/_shared'
+import { SearchField } from '../../components/places/_shared'
 
 // Track floor for both rails that render decentraland-ui2's EventSmallCard: the
 // card carries a 300px minimum, and a 4-up row spends three 24px gaps, so a
