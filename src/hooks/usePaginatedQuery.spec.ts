@@ -71,3 +71,29 @@ describe('usePaginatedQuery', () => {
     })
   })
 })
+
+describe('usePaginatedQuery error state', () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when the underlying query fails', () => {
+    it('should surface isError so callers can distinguish a failure from an empty page', () => {
+      const queryHook = jest.fn().mockReturnValue({ data: undefined, isLoading: false, isFetching: false, isError: true })
+
+      const { result } = renderHook(() =>
+        usePaginatedQuery<{ id: string; limit?: number; offset?: number }, FakeData, number[]>({
+          queryHook,
+          queryArg: { id: 'a' },
+          defaultLimit: 10,
+          extractItems: data => data.items,
+          extractTotal: data => data.total,
+          getHasMore: data => data.items.length < data.total
+        })
+      )
+
+      expect(result.current.isError).toBe(true)
+      expect(result.current.items).toEqual([])
+    })
+  })
+})
