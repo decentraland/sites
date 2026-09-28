@@ -117,23 +117,30 @@ affects previews only.** Two things that live there are therefore NOT what produ
 - **Per-route headers**, including the COOP/COEP pair the bevy iframe needs. Verify a header claim with
   `curl -sI https://decentraland.org/<path>`, never by reading `vercel.json`.
 
-### Which repo owns what (three repos, in this order)
+### Which repo owns what
 
-Emitting OG for a path is never one repo. Get the layer wrong and the fix lands somewhere that does not
-serve production.
+Emitting OG for a path is never only this repo. Get the layer wrong and the fix lands somewhere that does not
+serve production. Which repos a path needs depends on its handler:
 
-| Layer                              | Repo                                               | File                                             | Owns                                                                                                    |
-| ---------------------------------- | -------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| **Which paths get a handler**      | `decentraland/definitions` (GitHub, private)       | `src/sites/sites.ts`, `sites.config[env].routes` | The `path:` pattern per environment (dev/stg/prd). No pattern, no card: the page serves the bare shell. |
-| **What the card says**             | `dcl.tools:ops/sites-deployer` (GitLab, MR not PR) | `workers/sites-worker/rollouts/routes/handlers/` | Title, description, image, canonical, the API calls behind them.                                        |
-| **The tab title after navigation** | this repo                                          | Helmet in the page or its layout                 | What the browser tab shows once JS runs. Crawlers never see it.                                         |
+- **Static page** (a fixed title/description/image): matched by the `PAGES` map in
+  `OpenGraphStaticPageRoute.ts` in `sites-deployer`. Definitions registers that handler once with no `path:`,
+  so a new static page needs only a `PAGES` entry, no definitions change.
+- **Dedicated handler** (events, places, blog, profile, reels, communities...): needs a `path:` pattern in
+  definitions AND the handler in `sites-deployer`.
 
-**Merge order, and why it is that order:** definitions first (publishes `@next` on push to `main`) →
+| Layer                              | Repo                                               | File                                             | Owns                                                                                                                |
+| ---------------------------------- | -------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Which paths get a handler**      | `decentraland/definitions` (GitHub, private)       | `src/sites/sites.ts`, `sites.config[env].routes` | Dedicated handlers only: the `path:` pattern per environment (dev/stg/prd). No pattern, no card.                    |
+| **What the card says**             | `dcl.tools:ops/sites-deployer` (GitLab, MR not PR) | `workers/sites-worker/rollouts/routes/handlers/` | Title, description, image, canonical, the API calls behind them; for static pages also which paths match (`PAGES`). |
+| **The tab title after navigation** | this repo                                          | Helmet in the page or its layout                 | What the browser tab shows once JS runs. Crawlers never see it.                                                     |
+
+**Merge order for a dedicated handler, and why it is that order:** definitions first (publishes `@next` on push to `main`) →
 sites-deployer to `master` (deploys dev + stg, and its `.gitlab-ci.yml` runs
 `npm i @decentraland/definitions@next`, so one deploy picks up both) → `release` (prd) → only then the
-`org` rollout of sites. Rolling `org` first ships a live path with no card.
+`org` rollout of sites. Rolling `org` first ships a live path with no card. A static page skips the
+definitions step: sites-deployer (`master`, then `release`) → `org`.
 
-**Do not work around a missing pattern inside the handler.** The temptation is to widen `test()` in
+**Do not work around a missing pattern inside a dedicated handler.** The temptation is to widen its `test()` in
 sites-deployer so the new path matches without touching definitions. It buys nothing: the handler change
 needs a worker deploy anyway, and that same deploy installs `definitions@next`. Fix the layer that owns
 the problem.
@@ -347,17 +354,19 @@ One line each. Open the doc for code patterns and full rationale.
 - **24.** Props destructuring threshold — ≤3 in params, ≥4 in body.
 - **25.** No inline `sx` with hardcoded values — co-located `*.styled.ts` with theme tokens.
 
-### 26. Renaming or adding a public path is a three-repo change
+### 26. Renaming or adding a public path changes the OG layer too
 
 Any PR that adds a public path, renames one, or changes what a section is called must land the OG layer
-too, in the order in Deployment > Which repo owns what. Before opening it:
+too, in the order in Deployment > Which repo owns what (static pages skip definitions). Before opening it:
 
-- **New or renamed path** → add its `path:` pattern to `sites.config[env].routes` in
-  `decentraland/definitions` for all three environments, and keep the old prefix while its redirect
-  lives.
+- **New or renamed static page** → add its pathname to the `PAGES` map in `sites-deployer`. On a rename
+  keep the old `PAGES` key while its redirect lives. No definitions change.
+- **New or renamed path served by a dedicated handler** → add its `path:` pattern to
+  `sites.config[env].routes` in `decentraland/definitions` for all three environments, and keep the old
+  prefix while its redirect lives.
 - **Section renamed** → update the strings in that section's handler in `sites-deployer`, and
   canonicalize the legacy prefix onto the new one.
-- **Either** → give the destination page or layout a Helmet title. A client-side redirect never
+- **Any of these** → give the destination page or layout a Helmet title. A client-side redirect never
   rewrites the served `<head>`, so the tab inherits the title of the URL the visitor typed.
 
 Confirm the current behavior with `curl -sA Twitterbot https://decentraland.zone/<path> | grep '<title>'`

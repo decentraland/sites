@@ -45,8 +45,9 @@ High-leverage areas to always check:
 23. **Commit hygiene** — single-line commits, `<type>: <summary>`, no `Co-Authored-By`, branch matches `<type>/<description>`.
 24. **Props destructuring** — function components / hooks / option-bag helpers with 4+ props take `props` as a single arg and destructure inside the body. Inline parameter-list destructuring only for ≤3 keys (rule 24).
 25. **No inline `sx`** — flag every `sx={{ ... }}` with hardcoded dimensions/colors or more than one property. Move to a `*.styled.ts` styled component (or extend an existing one). Exception: a single dynamic theme/responsive value that genuinely cannot live in a styled component (rule 25).
+26. **Public path + OG layer** — a PR that adds or renames a public path, or renames a section, lands the OG change too: a static page needs a `PAGES` entry in `sites-deployer` (no definitions change); a dedicated handler needs a `path:` pattern in `decentraland/definitions` plus the handler. Keep old keys/prefixes while redirects live, and give the destination a Helmet title (rule 26).
 
-**Security checklist (separate from the 25 rules)** — `src/config/env/*.json` must contain no secrets, API keys, tokens, or webhook URLs (these files ship in the client bundle); CSS interpolation of URLs uses `safeCssUrl()`; SEO worker keeps HTML escaping on every interpolated value.
+**Security checklist (separate from the numbered Pre-PR rules)** — `src/config/env/*.json` must contain no secrets, API keys, tokens, or webhook URLs (these files ship in the client bundle); CSS interpolation of URLs uses `safeCssUrl()`; SEO worker keeps HTML escaping on every interpolated value.
 
 ## Output format
 
