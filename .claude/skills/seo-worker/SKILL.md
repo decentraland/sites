@@ -14,13 +14,13 @@ Confirm with `curl -sI`: production answers `server: cloudflare` with no Vercel 
 
 So a title/OG bug reported against a live URL is **almost never fixed in this repo**. Map it first:
 
-| Symptom on a live URL                                  | Where the fix lands                                                                              |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| Wrong OG strings for a section                         | that section's handler in `sites-deployer` (e.g. `OpenGraphWhatsOnRoute`)                        |
-| New path serves the bare `<title>Decentraland</title>` | route pattern in `@decentraland/definitions` (sites DSL) **+** the handler's `test()`            |
-| Static page has no OG card                             | `PAGES` map in `OpenGraphStaticPageRoute` (`sites-deployer`)                                     |
-| Tab title wrong after a client-side redirect           | Helmet in the destination page, in this repo — the served `<head>` is never rewritten by the SPA |
-| Wrong OG in a Vercel preview only                      | `api/seo.ts` / `vercel.json`, here                                                               |
+| Symptom on a live URL                                  | Where the fix lands                                                                                                                                                                                                                                       |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wrong OG strings for a section                         | that section's handler in `sites-deployer` (e.g. `OpenGraphWhatsOnRoute`)                                                                                                                                                                                 |
+| New path serves the bare `<title>Decentraland</title>` | `path:` pattern in `sites.config[env].routes`, `src/sites/sites.ts`, `decentraland/definitions`, all 3 envs. NOT the handler's `test()`: widening it there is a workaround, and the worker deploy that would ship it already installs `definitions@next`. |
+| Static page has no OG card                             | `PAGES` map in `OpenGraphStaticPageRoute` (`sites-deployer`)                                                                                                                                                                                              |
+| Tab title wrong after a client-side redirect           | Helmet in the destination page, in this repo — the served `<head>` is never rewritten by the SPA                                                                                                                                                          |
+| Wrong OG in a Vercel preview only                      | `api/seo.ts` / `vercel.json`, here                                                                                                                                                                                                                        |
 
 The same preview-only caveat applies to everything else in `vercel.json`, headers included: the COOP/COEP
 pair `/places` needs for the bevy iframe is configured there and does **not** reach production.

@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Use to review a diff in the sites repo against the 25 pre-PR rules and security checklist documented in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
+description: Use to review a diff in the sites repo against the numbered Pre-PR rules and the security checklist in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
 tools: Bash, Read, Grep, Glob
 ---
 
@@ -16,7 +16,7 @@ If not specified, review `git diff master...HEAD`.
 
 ## Rules to enforce
 
-Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" (rules 1-25) and the "Security checklist" are the authoritative source. Do not fabricate rules — only flag what those sections cover.
+Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" and the "Security checklist" are the authoritative source. Do not fabricate rules — only flag what those sections cover.
 
 High-leverage areas to always check:
 
