@@ -125,7 +125,7 @@ DOWNLOAD_FAILED → DOWNLOAD_STARTED's payload + {
 
 ### 5.4 `Click` upstream — where the data lands
 
-When the upstream `Click` (post-P0-1 fix: `'Download'` event name) is correctly fired with `place: 'Landing Hero'` (Title Case `SectionViewedTrack`), but `download_started` arrives with `place: 'landing-hero'` (kebab-case `DownloadPlace`). They're the same intent — different namespace. The data team must normalize to join them.
+When the upstream `Click` (with `payload.event: 'Download'`, from `data-event={SegmentEvent.DOWNLOAD}`) is correctly fired with `place: 'Landing Hero'` (Title Case `SectionViewedTrack`), but `download_started` arrives with `place: 'landing-hero'` (kebab-case `DownloadPlace`). They're the same intent — different namespace. The data team must normalize to join them.
 
 ### 5.5 Partner (UTM) attribution + `download_target`
 
@@ -172,7 +172,7 @@ Set via `data-download-target={DownloadTarget.X}` on every download CTA (Hero, C
 }
 ```
 
-Only `collectClientFingerprint()` is wrapped in try/catch. Campaign params, click correlation, and `download_target` are spread outside that catch so a fingerprint failure cannot drop attribution (P2-4 resolved).
+Only `collectClientFingerprint()` is wrapped in try/catch. Campaign params, click correlation, and `download_target` are spread outside that catch so a fingerprint failure cannot drop attribution.
 
 **`src/components/Layout/DownloadLayout.tsx`:** the mobile store badges (Google Play / App Store) call `useDownloadClick()` (aliased `trackStoreExit`) with their own `data-*` attributes (`data-download-target={DownloadTarget.GOOGLE_PLAY | APP_STORE}`, `data-os`, `data-place={DownloadPlace.DOWNLOAD_PAGE}`). This is the only attribution signal for these exits — they leave to the store and never reach `/download_success`, so there's no `download_started` for them; the beacon-backed `Click` event is the whole record.
 
