@@ -139,7 +139,9 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
                 {displayUserName}
               </UserProfileLink>
             ) : (
-              displayUserName
+              // Wrapped so React removes an element when the creator link replaces it: browser translators swap a
+              // bare text node for their own <font>, and React's removeChild on the original node then throws.
+              <span>{displayUserName}</span>
             )}
           </CardCreator>
           <MetaRow>
