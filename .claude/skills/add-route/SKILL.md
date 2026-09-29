@@ -69,7 +69,9 @@ Every time you **add, remove, or rename** a route in `src/App.tsx`:
 2. **SEO worker `PAGES` map** in `sites-deployer` (`workers/sites-worker/rollouts/routes/handlers/OpenGraphStaticPageRoute.ts`). Crawlers don't run JS — Helmet titles aren't visible; the worker rewrites OG meta at the edge based on this map. Skip if non-shareable or already covered by a dedicated handler (invite, reels).
 3. **GitHub issue templates.** `.github/ISSUE_TEMPLATE/bug_report.yml` has a `Page / Area` dropdown that explicitly says `Keep options in sync with the routes defined in src/App.tsx`. `.github/ISSUE_TEMPLATE/feature_request.yml` has a sibling `Area` dropdown. Missing the route here means bug reporters can't categorize their issue against the new page.
 
-Internal-only changes (component rename, lazy-import path, comment) where no public path changes — skip all three.
+4. **`scripts/llms.template.md`** when you remove or rename a path it links to (today `/events`, `/places`, `/download`, `/help` and `/places/place/:position`). The build validates every decentraland.org link in the generated `llms.txt` against `dist/routes.json`, so a dead link fails `npm run build`, not only `lint:routes`. Fix the template in the same PR.
+
+Internal-only changes (component rename, lazy-import path, comment) where no public path changes — skip all four.
 
 A `PostToolUse` hook fires on every edit to `src/App.tsx` to surface this reminder.
 

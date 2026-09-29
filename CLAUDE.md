@@ -176,6 +176,8 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 
 A wildcard without one fails the build, as does a `path` that is not a string literal. That is deliberate: an incomplete manifest would turn a live route into a 404 in production. Run `npm run lint:routes` to print what the extractor sees.
 
+**The manifest also gates `llms.txt`.** `scripts/build-llms-txt.mjs` validates every decentraland.org link in the generated `dist/llms.txt` against `dist/routes.json`, so removing or renaming a route that `scripts/llms.template.md` links to fails `npm run build`, not only `lint:routes`. Update the template in the same PR (skill `add-route`, repo sync checklist).
+
 ## Coding conventions
 
 ### File placement
