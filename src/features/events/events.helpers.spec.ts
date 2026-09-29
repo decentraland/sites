@@ -6,7 +6,8 @@ import {
   expandRecurrentDates,
   isDclFoundationCreator,
   isDeleted,
-  isPubliclyVisibleEvent
+  isPubliclyVisibleEvent,
+  toUpcomingOccurrence
 } from './events.helpers'
 import type { HotScene, LiveNowCard } from './events.helpers'
 import type { EventEntry } from './events.types'
@@ -1202,5 +1203,41 @@ describe('enrichPlaceCards peer deployer lookup', () => {
     const cards = [createMockPlaceCard()]
     const result = await enrichPlaceCards(cards, { peerUrl: 'https://peer.test' })
     expect(result[0].creatorAddress).toBeUndefined()
+  })
+})
+
+describe('toUpcomingOccurrence', () => {
+  describe('when the event is recurrent and has a next occurrence', () => {
+    it('should rewrite start_at and finish_at to the next occurrence', () => {
+      const event = createMockEvent({
+        recurrent: true,
+        start_at: '2026-01-07T19:00:00.000Z',
+        finish_at: '2027-01-06T20:00:00.000Z',
+        next_start_at: '2026-10-07T19:00:00.000Z',
+        next_finish_at: '2026-10-07T20:00:00.000Z'
+      })
+
+      expect(toUpcomingOccurrence(event)).toEqual({
+        ...event,
+        start_at: '2026-10-07T19:00:00.000Z',
+        finish_at: '2026-10-07T20:00:00.000Z'
+      })
+    })
+  })
+
+  describe('when the event is not recurrent', () => {
+    it('should return the same event', () => {
+      const event = createMockEvent({ recurrent: false, next_start_at: '2026-10-07T19:00:00.000Z' })
+
+      expect(toUpcomingOccurrence(event)).toBe(event)
+    })
+  })
+
+  describe('when a recurrent event has no next occurrence', () => {
+    it('should return the same event', () => {
+      const event = createMockEvent({ recurrent: true, next_start_at: '', next_finish_at: '' })
+
+      expect(toUpcomingOccurrence(event)).toBe(event)
+    })
   })
 })

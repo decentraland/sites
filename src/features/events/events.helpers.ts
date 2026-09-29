@@ -258,6 +258,16 @@ function bucketEventsByDay(events: EventEntry[], days: Date[], now: number = Dat
   return tagged.map(bucket => bucket.sort((a, b) => a[0] - b[0]).map(([, e]) => e))
 }
 
+// Rewrites a raw recurrent row so `start_at`/`finish_at` describe its upcoming occurrence. Raw rows keep
+// the series start (often months in the past) and the series end, which is what cards must not show or
+// book. Day-bucketed entries from `bucketEventsByDay` are already rewritten and must not go through this.
+function toUpcomingOccurrence(event: EventEntry): EventEntry {
+  if (!event.recurrent || !event.next_start_at || !event.next_finish_at) return event
+  /* eslint-disable @typescript-eslint/naming-convention */
+  return { ...event, start_at: event.next_start_at, finish_at: event.next_finish_at }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}
+
 function findEventInMap(eventsByCoord: Map<string, EventEntry>, parcels: Array<[number, number]>): EventEntry | undefined {
   for (const [px, py] of parcels) {
     const match = eventsByCoord.get(coordsKey(px, py))
@@ -463,6 +473,7 @@ export {
   expandRecurrentDates,
   isDclFoundationCreator,
   isDeleted,
-  isPubliclyVisibleEvent
+  isPubliclyVisibleEvent,
+  toUpcomingOccurrence
 }
 export type { EnrichmentConfig, HotScene, LiveNowCard }
