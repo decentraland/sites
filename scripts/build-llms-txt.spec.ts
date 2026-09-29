@@ -122,10 +122,10 @@ describe('when building with link syntax other than inline links', () => {
 describe('when a not-found route matches the Genesis Plaza link', () => {
   const genesis = '- [Genesis Plaza](https://decentraland.org/places/place/-3,-2)'
 
-  it('should fail when an exact not-found entry outranks the param route', () => {
+  it('should fail when an exact not-found entry matches the link', () => {
     const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/places/place/-3,-2'] }
     expect(validate({ text: genesis, manifest }).value).toEqual([
-      '[Genesis Plaza](https://decentraland.org/places/place/-3,-2): not-found route /places/place/-3,-2 outranks /places/place/:position'
+      '[Genesis Plaza](https://decentraland.org/places/place/-3,-2): not-found route /places/place/-3,-2 also matches /places/place/-3,-2'
     ])
   })
 
@@ -134,9 +134,11 @@ describe('when a not-found route matches the Genesis Plaza link', () => {
     expect(validate({ text: genesis, manifest }).value).toEqual([])
   })
 
-  it('should pass on a tie, which goes to the valid route', () => {
+  it('should fail on a same-shape not-found route, a conflicting config it does not try to rank', () => {
     const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/places/place/:other'] }
-    expect(validate({ text: genesis, manifest }).value).toEqual([])
+    expect(validate({ text: genesis, manifest }).value).toEqual([
+      '[Genesis Plaza](https://decentraland.org/places/place/-3,-2): not-found route /places/place/:other also matches /places/place/-3,-2'
+    ])
   })
 })
 

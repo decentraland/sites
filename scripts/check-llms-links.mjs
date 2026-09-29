@@ -51,11 +51,27 @@ async function check(url, timeout) {
 
 async function run(argv) {
   const options = { file: 'dist/llms.txt', timeout: '15000' }
-  for (let i = 0; i < argv.length; i += 2) options[argv[i].replace(/^--/, '')] = argv[i + 1]
+  for (let i = 0; i < argv.length; i += 2) {
+    const name = argv[i].replace(/^--/, '')
+    if (!(name in options) || argv[i + 1] === undefined) throw new Error(`unknown or incomplete option ${argv[i]}`)
+    options[name] = argv[i + 1]
+  }
+  const timeout = Number(options.timeout)
+  if (!Number.isFinite(timeout) || timeout <= 0) throw new Error(`--timeout must be a positive number, got ${options.timeout}`)
   const text = readFileSync(resolve(options.file), 'utf8')
-  const urls = [...new Set([...text.matchAll(MARKDOWN_LINK)].map(([, , url]) => url))].filter(url => new URL(url).hostname !== SITE_HOST)
+  const hostOf = url => {
+    try {
+      return new URL(url).hostname
+    } catch {
+      return null
+    }
+  }
+  const urls = [...new Set([...text.matchAll(MARKDOWN_LINK)].map(([, , url]) => url))].filter(url => hostOf(url) !== SITE_HOST)
 
-  const results = await Promise.all(urls.map(async url => ({ url, ...(await check(url, Number(options.timeout))) })))
+  // A malformed URL is a failed link, reported with the rest instead of aborting the run.
+  const results = await Promise.all(
+    urls.map(async url => ({ url, ...(hostOf(url) ? await check(url, timeout) : { result: 'fail', reason: 'not a valid URL' }) }))
+  )
   for (const { url, result, reason } of results) process.stdout.write(`${result.padEnd(12)} ${reason.padEnd(24)} ${url}\n`)
   const failed = results.filter(({ result }) => result === 'fail').length
   const inconclusive = results.filter(({ result }) => result === 'inconclusive').length

@@ -1,6 +1,9 @@
 // Plain ESM with no imports and no browser globals, so the site (through Vite) and
 // scripts/build-llms-txt.mjs (through Node, at build time) load this same file. Types live in the
 // sibling googlePlayUrl.d.ts.
+//
+// Keep it plain JavaScript. Node imports it directly during `npm run build` and cannot load
+// TypeScript, so converting it to .ts breaks the build. It is the reason jest and eslint allow JS.
 
 /**
  * Overlays `utmParams` onto the Play Store base URL, then mirrors the final utm_* set into a
