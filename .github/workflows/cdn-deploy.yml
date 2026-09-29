@@ -40,6 +40,12 @@ jobs:
   dev:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    env:
+      # Job level, not step level: the build now runs inside a composite action,
+      # and composite steps do not inherit `env:` from the step that calls them.
+      # Lets @sentry/vite-plugin upload source maps, so Sentry stack traces
+      # resolve to TS instead of minified chunks. Skipped when absent.
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     permissions:
       id-token: write
       contents: read
@@ -53,33 +59,32 @@ jobs:
       - run: npm ci
         env:
           HUSKY: 0
-      # scripts/prebuild.cjs derives both VITE_BASE_URL — the CDN path every
-      # built asset is requested from — and the Sentry release name from
-      # package.json's version. So it has to be the version this build will be
-      # deployed under BEFORE `npm run build` runs, or the HTML points at a
-      # prefix the bytes were never uploaded to. `<base>-commit-<sha7>` is the
-      # version the action computes, passed back to it explicitly below so it
-      # does not suffix an already-suffixed base.
-      - id: version
-        run: |
-          BASE=$(node -p "require('./package.json').version")
-          VERSION="${BASE}-commit-$(printf '%s' "$GITHUB_SHA" | cut -c1-7)"
-          node -e 'const fs=require("fs"),p=JSON.parse(fs.readFileSync("package.json"));p.version=process.argv[1];fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")' "$VERSION"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-      - run: npm run build
-        env:
-          # Lets @sentry/vite-plugin upload source maps, so Sentry stack traces
-          # resolve to TS instead of minified chunks. Skipped when absent.
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # The build runs INSIDE the action, which is what keeps the version the
+      # bytes were built for and the prefix they are uploaded to the same value.
+      # scripts/prebuild.cjs derives VITE_BASE_URL — the CDN path every asset is
+      # requested from — and the Sentry release name from the version, so a
+      # build that starts before it is settled emits HTML pointing at a prefix
+      # nothing was ever uploaded to.
+      #
+      # The action resolves it rather than this workflow because getting it
+      # right means anchoring on the newest GitHub release, not package.json:
+      # this repo's package.json said 0.0.1 while it served 0.69.x, so a commit
+      # build derived from it sorted below every record in the rollout and the
+      # deploy silently did nothing.
+      #
       # deployment-environments defaults to zone.
       - uses: decentraland/actions/cdn-deploy@feat/cdn-deploy-action
         with:
+          build-command: npm run build
           dist-path: ./dist
-          version: ${{ steps.version.outputs.version }}
 
   stage-release:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    env:
+      # Job level: the build runs inside a composite action, which does not see
+      # `env:` set on the step that calls it.
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     permissions:
       id-token: write
       contents: read
@@ -93,21 +98,17 @@ jobs:
       - run: npm ci
         env:
           HUSKY: 0
-      # Rebuilt rather than copied from the commit build, for the reason in the
-      # dev job: prebuild bakes VITE_BASE_URL from package.json's version, so a
-      # copy of the commit build would serve /1.2.3/index.html asking for its
-      # assets from /1.2.3-commit-<sha7>/. A release serves everything from its
-      # own path, which means building with the tag as the version.
-      - run: |
-          node -e 'const fs=require("fs"),p=JSON.parse(fs.readFileSync("package.json"));p.version=process.argv[1];fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")' "$TAG"
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-      - run: npm run build
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      # Empty list stages the bytes without touching any KV record.
+      # Rebuilt rather than copied from the commit build: prebuild bakes
+      # VITE_BASE_URL from the version, so a copy of the commit build would
+      # serve /1.2.3/index.html asking for its assets from
+      # /1.2.3-commit-<sha7>/. A release serves everything from its own path,
+      # which means building with the tag as the version — which is exactly
+      # what passing `version` alongside `build-command` does.
+      #
+      # Empty environment list stages the bytes without touching any KV record.
       - uses: decentraland/actions/cdn-deploy@feat/cdn-deploy-action
         with:
+          build-command: npm run build
           dist-path: ./dist
           version: ${{ github.event.release.tag_name }}
           deployment-environments: "[]"
