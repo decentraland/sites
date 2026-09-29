@@ -72,6 +72,8 @@ function fillTemplate(template, links) {
 const normalizePath = path => (path.length > 1 ? path.replace(/\/$/, '') : path)
 
 const PARAM_SEGMENT = /^:[\w-]+$/
+// Not-found catch-alls that React Router ranks below `/places/place/:position` for any path.
+const CATCH_ALLS_BELOW_DYNAMIC_LINKS = new Set(['*', '/*', '/places/*'])
 
 /** Whether a manifest pattern (static, `:param` or trailing `*` segments) matches `path`. */
 function matchesRoute(pattern, path) {
@@ -94,11 +96,13 @@ function validateSitePath(url, manifest, otherSiteUrls) {
   const dynamic = DYNAMIC_SPA_LINKS.find(link => link.path.test(path))
   if (dynamic) {
     if (!manifest.routes.includes(dynamic.pattern)) return `route ${dynamic.pattern} is not in the route manifest`
-    // Only one dynamic link is published, so this is not a general router. A catch-all not-found
-    // (`/*`, `/places/*`) always ranks below a full-length param route and is ignored. Any other
-    // not-found route matching the path is at least as specific as the param route, so it fails:
-    // conservative on a tie, which would be a conflicting route config anyway.
-    const blocker = manifest.notFoundRoutes.find(route => !route.endsWith('*') && matchesRoute(route, path))
+    // Only one dynamic link is published, so this is not a general router. The catch-alls listed in
+    // CATCH_ALLS_BELOW_DYNAMIC_LINKS are known to rank below a full-length param route and are
+    // ignored. Every other not-found route matching the path fails, whether or not the router would
+    // pick it: a splat such as `/places/place/-3,-2/*` can match zero segments and outrank the param,
+    // while `/:a/:b/:c` would not. Rejecting both is conservative: it can refuse a valid link, never
+    // accept one the router sends to not-found.
+    const blocker = manifest.notFoundRoutes.find(route => !CATCH_ALLS_BELOW_DYNAMIC_LINKS.has(route) && matchesRoute(route, path))
     return blocker ? `not-found route ${blocker} also matches ${path}` : null
   }
   return `${path} is not a route of this SPA nor an allowlisted URL of another decentraland.org site`

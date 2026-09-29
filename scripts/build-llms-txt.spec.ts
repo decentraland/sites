@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { matchRoutes } from 'react-router'
 
 const SCRIPT = join(__dirname, 'build-llms-txt.mjs')
 const LINKS = join(__dirname, '..', 'src', 'config', 'publicLinks.json')
@@ -133,6 +134,32 @@ describe('when a not-found route matches the Genesis Plaza link', () => {
     const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/*', '/places/*'] }
     expect(validate({ text: genesis, manifest }).value).toEqual([])
   })
+
+  it('should fail when a splat not-found matches zero segments and outranks the param route', () => {
+    const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/places/place/-3,-2/*'] }
+    expect(validate({ text: genesis, manifest }).value).toEqual([
+      '[Genesis Plaza](https://decentraland.org/places/place/-3,-2): not-found route /places/place/-3,-2/* also matches /places/place/-3,-2'
+    ])
+  })
+
+  // Soundness against the real router: whatever not-found React Router would pick over the param
+  // route, the guard must reject. It may reject more (it is conservative), never less.
+  it.each(['/places/place/-3,-2/*', '/places/place/-3,-2', '*', '/*', '/places/*', '/places/place/:other', '/:a/:b/:c', '/places/place/*'])(
+    'should never accept the link when the router sends it to not-found route %s',
+    notFound => {
+      const matches = matchRoutes(
+        [
+          { path: '/places/place/:position', id: 'valid' },
+          { path: notFound, id: 'not-found' }
+        ],
+        '/places/place/-3,-2'
+      )
+      const routerSendsToNotFound = matches?.[matches.length - 1].route.id === 'not-found'
+      const accepted =
+        validate({ text: genesis, manifest: { routes: ['/places/place/:position'], notFoundRoutes: [notFound] } }).value.length === 0
+      if (routerSendsToNotFound) expect(accepted).toBe(false)
+    }
+  )
 
   it('should fail on a same-shape not-found route, a conflicting config it does not try to rank', () => {
     const manifest = { routes: ['/places/place/:position'], notFoundRoutes: ['/places/place/:other'] }
