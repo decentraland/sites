@@ -62,7 +62,7 @@ Then read the actual files (not just agent summaries) for: source `*.client.ts`,
 | `.github/ISSUE_TEMPLATE/bug_report.yml`      | Add the new route to the `Page / Area` dropdown — the template explicitly says "Keep options in sync with the routes defined in src/App.tsx". Format: `<Dapp> — <Page> (/<path>)`. |
 | `.github/ISSUE_TEMPLATE/feature_request.yml` | Add a matching entry to the `Area` dropdown.                                                                                                                                       |
 
-## Design system — use `decentraland-ui2`, NOT custom assets/deps (paid in blood, cast2 PR #403)
+## Design system — use `decentraland-ui2`, NOT custom assets/deps
 
 Every cast2 source dependency below was a wasted install + extra cleanup commit when porting. Hit the design-system primitives FIRST, drop the source assets:
 
@@ -74,7 +74,7 @@ Every cast2 source dependency below was a wasted install + extra cleanup commit 
 - **Static avatar fallback PNG (`avatar.png`) → deterministic seeded background via `getAvatarBackgroundColor` + `getDisplayName` from `src/utils/avatarColor.ts`** (ADR-292 NameColorHelper). The cast `Avatar` component already does this — call sites pass `name`, `imageUrl?`, `ethAddress?` and the component picks the seeded colour + initial when there's no image. Same pattern as the in-world client, hue stays consistent across surfaces.
 - **Compress any source PNG > 500 KB to WebP** before importing. `cwebp -q 70 input.png -o output.webp` typically gives 95–98% reduction (`background_watcher.png` 2.5 MB → `.webp` 88 KB on cast2). Update the import extension and delete the PNG.
 
-## Gotchas (paid in blood)
+## Gotchas
 
 - **`decentraland-ui2` does NOT export `muiIcons` or a JumpIn `modalProps.title/description/buttonLabel` API** (current dep: `^3.13.0`). Source dapps using these need rewrites: `import CheckIcon from '@mui/icons-material/Check'`, and explorer launching goes through the shared `src/hooks/useLaunchExplorer.ts` hook (`launchDesktopApp` + ui2 `DownloadModal` fallback — `JumpInButton` and `EditProfileButton` both consume it).
 - **react-router v7 quirk**: a child `<Route path="*" />` does NOT match the parent's empty trailing path. If `/cast` (with no children) renders blank but `/cast/anything` shows the catch-all, add `<Route index element={<NotFoundPage />} />` alongside the wildcard inside the parent route block (cast2 PR #403, commit 306600c).

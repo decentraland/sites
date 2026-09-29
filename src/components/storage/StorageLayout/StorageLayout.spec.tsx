@@ -6,10 +6,11 @@ import { StorageLayout } from './StorageLayout'
 const mockUseStorageScope = jest.fn()
 const mockNavigate = jest.fn()
 let mockPathname = '/storage/env'
+let mockSearch = ''
 
 jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: mockPathname })
+  useLocation: () => ({ pathname: mockPathname, search: mockSearch })
 }))
 
 jest.mock('decentraland-ui2', () => {
@@ -81,6 +82,7 @@ jest.mock('../../../hooks/useStorageScope', () => ({
 describe('StorageLayout', () => {
   beforeEach(() => {
     mockPathname = '/storage/env'
+    mockSearch = ''
   })
   afterEach(() => jest.resetAllMocks())
 
@@ -164,6 +166,47 @@ describe('StorageLayout', () => {
       </StorageLayout>
     )
     expect(screen.getByText('child-content')).toBeInTheDocument()
+  })
+
+  it('hides the environment tab in collaborator access context', () => {
+    mockPathname = '/storage/scene'
+    mockSearch = '?realm=w.dcl.eth&position=5,5&access=collaborator'
+    mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+    render(
+      <StorageLayout>
+        <div>child-content</div>
+      </StorageLayout>
+    )
+    expect(screen.queryByText('component.storage.sidebar.environment')).not.toBeInTheDocument()
+    expect(screen.getByText('component.storage.sidebar.scene')).toBeInTheDocument()
+    expect(screen.getByText('component.storage.sidebar.player')).toBeInTheDocument()
+  })
+
+  it('shows the environment tab for owner and deployer access without the collaborator flag', () => {
+    mockPathname = '/storage/env'
+    mockSearch = '?realm=w.dcl.eth&position=5,5'
+    mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+    render(
+      <StorageLayout>
+        <div>child-content</div>
+      </StorageLayout>
+    )
+    expect(screen.getByText('component.storage.sidebar.environment')).toBeInTheDocument()
+  })
+
+  it('redirects a collaborator who lands on the env route to the scene tab', () => {
+    mockPathname = '/storage/env'
+    mockSearch = '?position=5,5&access=collaborator'
+    mockUseStorageScope.mockReturnValue({ realm: null, position: '5,5', isResolving: false, unresolved: false })
+    render(
+      <StorageLayout>
+        <div>child-content</div>
+      </StorageLayout>
+    )
+    expect(mockNavigate).toHaveBeenCalledWith(
+      { pathname: '/storage/scene', search: '?position=5,5&access=collaborator' },
+      { replace: true }
+    )
   })
 
   it('navigates back to the world list from the header', async () => {

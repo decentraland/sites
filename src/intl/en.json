@@ -903,7 +903,13 @@
         "scene_count_one": "1 scene",
         "edit": "Edit",
         "edit_scenes": "Edit Scenes",
-        "select_scene": "Select scene"
+        "select_scene": "Select scene",
+        "collaborations": "Collaborations",
+        "no_collaborations": "No collaborations found",
+        "collaborations_error": "Could not load your collaborations. Please try again.",
+        "collaborations_hint": "Recently granted scenes may take a moment to appear.",
+        "realm_world": "World",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Environment Variables",

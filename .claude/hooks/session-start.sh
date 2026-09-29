@@ -15,7 +15,7 @@ sites session — quick reminders:
   shells: lightweight routes MUST NOT import src/shells/* (rule 2)
   coverage floor: 95% stmts/lines/funcs (rule 6) — policy only, run /coverage-guard before PRs (no Stop hook)
   pre-PR: format -> lint:fix -> lint:pkg -> build -> test -> code-reviewer agent
-  see CLAUDE.md "Pre-PR review" rules 1-25 and "Security checklist"
+  see CLAUDE.md "Pre-PR review" rules and "Security checklist"
 EOF
 
 exit 0
