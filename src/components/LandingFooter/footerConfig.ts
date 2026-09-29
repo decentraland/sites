@@ -11,7 +11,7 @@ const socialLinks = [
 ] as const
 
 const gettingStartedLinks = [
-  { labelKey: 'component.landing.footer.getting_started.what_is', url: 'https://docs.decentraland.org/introduction/about-decentraland' },
+  { labelKey: 'component.landing.footer.getting_started.what_is', url: publicLinks.support.about },
   { labelKey: 'component.landing.footer.getting_started.download', url: '/download' },
   {
     labelKey: 'component.landing.footer.getting_started.system_requirements',
