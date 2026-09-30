@@ -15,7 +15,9 @@ const jestConfig: Config = {
     '<rootDir>/scripts/**/*.spec.ts'
   ],
   transform: {
-    ['^.+\\.tsx?$']: [
+    // `.js` too: src/modules/googlePlayUrl.js is plain ESM so Node build scripts can load it.
+    // One entry on purpose: ts-jest shares a single compiler config across entries.
+    ['^.+\\.(tsx?|js)$']: [
       'ts-jest',
       {
         tsconfig: {
@@ -25,6 +27,7 @@ const jestConfig: Config = {
           // (e.g. `10n ** 18n` in OverviewTab.helpers' `formatPriceMana`).
           target: 'ES2020',
           esModuleInterop: true,
+          allowJs: true,
           jsx: 'react-jsx'
         },
         diagnostics: false

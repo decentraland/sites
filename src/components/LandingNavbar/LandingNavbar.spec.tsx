@@ -5,10 +5,11 @@ import userEvent from '@testing-library/user-event'
 import { LandingNavbar } from './LandingNavbar'
 
 // decentraland-ui2 ships ESM that jest does not transform, so the styled layer is stubbed with the
-// emotion `styled` it wraps plus the handful of colour tokens this navbar reads. Layout is not what is
+// emotion `styled` and `keyframes` it wraps plus the handful of colour tokens this navbar reads. Layout is not what is
 // under test here; the chip's destination is.
 jest.mock('decentraland-ui2', () => ({
   styled: jest.requireActual('@emotion/styled').default,
+  keyframes: jest.requireActual('@emotion/react').keyframes,
   dclColors: {
     base: { primary: '#ff2d55', primaryDark: '#d3255f' },
     neutral: { gray: '#716b7c', softWhite: '#ecebed', white: '#ffffff' }

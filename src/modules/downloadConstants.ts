@@ -1,39 +1,21 @@
-import { withCampaignParamsOverlay } from './campaignParams'
+import publicLinks from '../config/publicLinks.json'
+import { collectCampaignParams } from './campaignParams'
+import { buildGooglePlayUrl } from './googlePlayUrl'
 
 /**
- * Default Play Store campaign tag (the site's own "QR code" attribution),
- * used when the visitor didn't arrive via a live campaign. See
- * `DOWNLOAD_URLS.googlePlay` below.
+ * Default Play Store campaign tag (the site's own "QR code" attribution), used when the visitor
+ * didn't arrive via a live campaign. The base URL in publicLinks.json carries no utm_* on purpose:
+ * llms.txt builds its own attribution on the same base.
  */
-const GOOGLE_PLAY_DEFAULT_URL =
-  'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_org=dclrgl&utm_source=fdn&utm_medium=qr&utm_campaign=dclpage&utm_content=android'
-
-/**
- * Builds the effective Play Store URL: incoming campaign params overlaid on
- * the default tag, plus a `referrer` param mirroring the final utm_* set.
- *
- * The bare utm_* params only tag the store-page visit (Play Console
- * acquisition reports). Campaign attribution for the INSTALL travels through
- * the Play Install Referrer API, which reads the `referrer` query param —
- * without it, no install can ever be joined back to a campaign, no matter
- * what the URL's utm_* say. The mobile client still has to read its install
- * referrer and forward it to analytics for the loop to close; this makes the
- * data available at the store handoff so that work is unblocked.
- */
-function buildGooglePlayUrl(): string {
-  const url = new URL(withCampaignParamsOverlay(GOOGLE_PLAY_DEFAULT_URL))
-  const referrer = new URLSearchParams()
-  for (const [key, value] of url.searchParams.entries()) {
-    if (key.startsWith('utm_')) {
-      referrer.append(key, value)
-    }
-  }
-  // URLSearchParams.set percent-encodes the nested query string on
-  // serialization (`utm_source%3D…%26utm_medium%3D…`), matching the format
-  // the Install Referrer API expects.
-  url.searchParams.set('referrer', referrer.toString())
-  return url.toString()
+/* eslint-disable @typescript-eslint/naming-convention -- utm_* are the query param names on the wire */
+const GOOGLE_PLAY_DEFAULT_UTM = {
+  utm_org: 'dclrgl',
+  utm_source: 'fdn',
+  utm_medium: 'qr',
+  utm_campaign: 'dclpage',
+  utm_content: 'android'
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Centralized download URLs.
@@ -41,9 +23,9 @@ function buildGooglePlayUrl(): string {
  * that break with module federation's shared scope.
  */
 const DOWNLOAD_URLS = {
-  windows: 'https://decentraland.org/download',
-  apple: 'https://decentraland.org/download',
-  epic: 'https://store.epicgames.com/en-US/p/decentraland-b692fb',
+  windows: publicLinks.download.desktop,
+  apple: publicLinks.download.desktop,
+  epic: publicLinks.download.epic,
   // Getter (not a plain string) so it's computed fresh on every read: overlays
   // the visitor's incoming campaign params onto the default QR-code
   // attribution, so a click that arrived via a live campaign carries that
@@ -53,9 +35,9 @@ const DOWNLOAD_URLS = {
   // static tag regardless of how the visitor actually landed. See
   // buildGooglePlayUrl for the `referrer` install-attribution mirror.
   get googlePlay(): string {
-    return buildGooglePlayUrl()
+    return buildGooglePlayUrl(publicLinks.download.googlePlay, { ...GOOGLE_PLAY_DEFAULT_UTM, ...collectCampaignParams() })
   },
-  appStore: 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=Decentraland%20Home%20iOS&mt=8'
+  appStore: publicLinks.download.appStore
 } as const
 
 type DownloadOS = 'apple' | 'windows' | 'android' | 'ios'

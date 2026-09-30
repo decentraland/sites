@@ -1,3 +1,16 @@
+# TEMPORARY, kept only for the cut-over to cdn-deploy.yml.
+#
+# The broker refuses to publish a version without a completion marker, and
+# `.deploy-complete.json` is introduced by that migration — so no version
+# currently in the CDN bucket has one, and none of them can be rolled out
+# through the new path. Until @dcl/sites has been deployed through the broker
+# often enough to have something to fall back to, this is the only way to
+# repoint an environment at an existing version.
+#
+# It still goes the old way: set-rollout-action -> webhooks-receiver -> KV.
+# That is the path cdn-deploy.yml replaces, which is exactly why this file has
+# to go once it is no longer needed. Delete it, and drop the deploymentPath
+# from here rather than trusting it, as definitions owns that now.
 name: Set rollout by path - Manual
 
 on:
