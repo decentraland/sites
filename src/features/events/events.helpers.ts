@@ -1,6 +1,6 @@
 import { assetUrl } from '../../utils/assetUrl'
 import { isValidEthAddress } from '../../utils/avatar'
-import { getOccurrenceFinishAt } from '../../utils/recurrence'
+import { getNextOccurrence, getOccurrenceFinishAt } from '../../utils/recurrence'
 import { isSameLocalDay } from '../../utils/whatsOnDate'
 import { placeCreatorAddress } from '../discover/discover.helpers'
 import { DCL_FOUNDATION_NAME, coordsKey } from './events.discovery.helpers'
@@ -260,11 +260,13 @@ function bucketEventsByDay(events: EventEntry[], days: Date[], now: number = Dat
 
 // Rewrites a raw recurrent row so `start_at`/`finish_at` describe its upcoming occurrence. Raw rows keep
 // the series start (often months in the past) and the series end, which is what cards must not show or
-// book. Day-bucketed entries from `bucketEventsByDay` are already rewritten and must not go through this.
+// book. Rows already resolved to one occurrence come back unchanged.
 function toUpcomingOccurrence(event: EventEntry): EventEntry {
-  if (!event.recurrent || !event.next_start_at || !event.next_finish_at) return event
+  if (!event.recurrent) return event
+  const { startAt, finishAt } = getNextOccurrence(event)
+  if (startAt === event.start_at && finishAt === event.finish_at) return event
   /* eslint-disable @typescript-eslint/naming-convention */
-  return { ...event, start_at: event.next_start_at, finish_at: event.next_finish_at }
+  return { ...event, start_at: startAt, finish_at: finishAt }
   /* eslint-enable @typescript-eslint/naming-convention */
 }
 

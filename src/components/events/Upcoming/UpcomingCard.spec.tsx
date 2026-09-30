@@ -205,6 +205,23 @@ describe('UpcomingCard', () => {
     })
   })
 
+  describe('when the event is a day-bucketed occurrence listed after the upcoming one', () => {
+    it('should book the occurrence it is listed under', () => {
+      const event = createMockEvent({
+        recurrent: true,
+        start_at: '2026-04-15T10:00:00.000Z',
+        finish_at: '2026-04-15T12:00:00.000Z',
+        next_start_at: '2026-04-08T10:00:00Z',
+        next_finish_at: '2026-04-08T12:00:00Z'
+      })
+      render(<UpcomingCard event={event} onClick={mockOnClick} />)
+
+      expect(mockUseCardActions).toHaveBeenCalledWith(
+        expect.objectContaining({ startAt: '2026-04-15T10:00:00.000Z', finishAt: '2026-04-15T12:00:00.000Z' })
+      )
+    })
+  })
+
   describe('when the event is a recurrent series that started in the past', () => {
     it('should book the upcoming occurrence instead of the series start', () => {
       const event = createMockEvent({

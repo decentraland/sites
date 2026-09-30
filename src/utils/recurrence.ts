@@ -69,10 +69,18 @@ function getOccurrenceFinishAt(event: OccurrenceTimes): string {
   return new Date(startMs + occurrenceMs).toISOString()
 }
 
-// The occurrence a card displays. For a recurrent series `start_at` can be months in the past, so a
-// calendar entry without an RRULE has to book the upcoming occurrence instead.
+// The occurrence a card displays. A raw recurrent row keeps the series start, often months in the past,
+// so a calendar entry without an RRULE has to book the upcoming occurrence instead. A row already resolved
+// to one occurrence (`bucketEventsByDay`, `toUpcomingOccurrence`) has `start_at` at or after
+// `next_start_at` and is returned as is, so each day's card keeps its own occurrence.
 function getNextOccurrence(event: OccurrenceTimes): { startAt: string; finishAt: string } {
-  return { startAt: event.next_start_at || event.start_at, finishAt: event.next_finish_at || getOccurrenceFinishAt(event) }
+  const startMs = Date.parse(event.start_at)
+  const nextStartMs = Date.parse(event.next_start_at)
+  const hasNextPair = Number.isFinite(nextStartMs) && Number.isFinite(Date.parse(event.next_finish_at))
+  if (!hasNextPair || (Number.isFinite(startMs) && startMs >= nextStartMs)) {
+    return { startAt: event.start_at, finishAt: getOccurrenceFinishAt(event) }
+  }
+  return { startAt: event.next_start_at, finishAt: event.next_finish_at }
 }
 
 export {

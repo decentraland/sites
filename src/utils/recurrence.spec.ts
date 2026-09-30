@@ -188,6 +188,32 @@ describe('recurrence helpers', () => {
       })
     })
 
+    describe('when the row is already resolved to a later occurrence of the series', () => {
+      it('should keep that occurrence instead of the upcoming one', () => {
+        expect(
+          getNextOccurrence({
+            start_at: '2026-10-14T19:00:00.000Z',
+            finish_at: '2026-10-14T20:00:00.000Z',
+            next_start_at: '2026-10-07T19:00:00.000Z',
+            next_finish_at: '2026-10-07T20:00:00.000Z'
+          })
+        ).toEqual({ startAt: '2026-10-14T19:00:00.000Z', finishAt: '2026-10-14T20:00:00.000Z' })
+      })
+    })
+
+    describe('when next_start_at is set but next_finish_at is empty', () => {
+      it('should not pair the upcoming start with the series end', () => {
+        expect(
+          getNextOccurrence({
+            start_at: '2026-09-23T19:00:00.000Z',
+            finish_at: '2027-01-27T20:00:00.000Z',
+            next_start_at: '2026-10-07T19:00:00.000Z',
+            next_finish_at: ''
+          })
+        ).toEqual({ startAt: '2026-09-23T19:00:00.000Z', finishAt: '2027-01-27T20:00:00.000Z' })
+      })
+    })
+
     describe('when the next_* pair is empty', () => {
       it('should fall back to start_at and finish_at', () => {
         expect(
