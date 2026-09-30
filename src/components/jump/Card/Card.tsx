@@ -97,14 +97,18 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
         <CardImage src={imageSrc} alt={formatMessage(altKey, { title: data.title })} />
         {isEvent && (
           <AttendeesBadge backgroundColor={data.live ? '#FF2D55' : '#FCFCFC'} style={{ color: data.live ? '#ffffff' : '#161518' }}>
+            {/* Text wrapped in <span> for the same translator reason as the creator name below. */}
             {data.live ? (
               <>
                 <LiveEventIcon />
-                {formatMessage('component.jump.card.event.live')} +{data.user_count || 0}
+                <span>
+                  {formatMessage('component.jump.card.event.live')} +{data.user_count || 0}
+                </span>
               </>
             ) : (
               <>
-                <NotificationsRoundedIcon sx={{ fontSize: 16, color: '#FF2D55' }} />+{data.total_attendees ?? 0}
+                <NotificationsRoundedIcon sx={{ fontSize: 16, color: '#FF2D55' }} />
+                <span>+{data.total_attendees ?? 0}</span>
               </>
             )}
           </AttendeesBadge>
