@@ -3,6 +3,7 @@ import type { AnonymousIdentity } from './cast2.types'
 
 const STREAMER_TOKEN_KEY = 'dcl_cast_streamer_token'
 const DEVICE_SETTINGS_KEY = 'dcl_cast_device_settings'
+const PRESENTATION_BOT_IDENTITY_PREFIX = 'presentation-bot:'
 
 interface DeviceSettings {
   audioInputId?: string
@@ -165,10 +166,8 @@ const parseParticipantMetadata = <T = Record<string, unknown>>(participant: Pick
   }
 }
 
-const isPresentationBot = (participant: Pick<Participant, 'metadata'>): boolean => {
-  const metadata = parseParticipantMetadata<{ role?: string }>(participant)
-  return metadata?.role === 'presentation'
-}
+const isPresentationBot = (participant: Pick<Participant, 'identity'>): boolean =>
+  participant.identity.startsWith(PRESENTATION_BOT_IDENTITY_PREFIX)
 
 type VideoErrorCode =
   | 'video-quota-exceeded'

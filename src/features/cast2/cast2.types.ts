@@ -60,6 +60,12 @@ interface SlideVideoInfo {
   geometry: { x: number; y: number; width: number; height: number }
 }
 
+interface SlideInfo {
+  url: string
+  width: number
+  height: number
+}
+
 type OverlaySize = 'small' | 'large'
 
 interface OverlayLayout {
@@ -137,6 +143,7 @@ export type {
   OverlaySize,
   PresentationBotToken,
   PresentationInfo,
+  SlideInfo,
   SlideVideoInfo,
   StreamInfo,
   TokenPayload,

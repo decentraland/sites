@@ -3,7 +3,7 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useM
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RemoteParticipant, RoomEvent } from 'livekit-client'
 import { useGetPresentationBotTokenMutation, useUploadPresentationFromUrlMutation, useUploadPresentationMutation } from '../cast2.client'
-import type { OverlayLayout, PresentationInfo, SlideVideoInfo } from '../cast2.types'
+import type { OverlayLayout, PresentationInfo, SlideInfo, SlideVideoInfo } from '../cast2.types'
 import { getStreamerToken as getStoredToken, isPresentationBot, isRetryableVideoErrorCode, parseParticipantMetadata } from '../cast2.utils'
 import { decodeCommsPacket, encodeCommsPacket } from '../commsProtocol'
 import { useCastTranslation } from '../useCastTranslation'
@@ -18,6 +18,9 @@ interface PresentationState {
   slideVideos: SlideVideoInfo[]
   videoState: 'idle' | 'loading' | 'playing' | 'paused'
   overlay: OverlayLayout
+  slide: SlideInfo | null
+  presenterIdentity: string | null
+  playingVideoIndex: number | null
 }
 
 interface PresentationContextValue {
@@ -48,6 +51,9 @@ interface PresentationBotMetadata {
   videoState?: PresentationState['videoState']
   slideVideos?: SlideVideoInfo[]
   overlay?: unknown
+  slide?: unknown
+  presenterIdentity?: unknown
+  playingVideoIndex?: unknown
 }
 
 const initialState: PresentationState = {
@@ -58,7 +64,10 @@ const initialState: PresentationState = {
   status: 'idle',
   slideVideos: [],
   videoState: 'idle',
-  overlay: DEFAULT_OVERLAY
+  overlay: DEFAULT_OVERLAY,
+  slide: null,
+  presenterIdentity: null,
+  playingVideoIndex: null
 }
 
 const isOverlayLayout = (value: unknown): value is OverlayLayout => {
@@ -66,6 +75,19 @@ const isOverlayLayout = (value: unknown): value is OverlayLayout => {
   const v = value as Record<string, unknown>
   return Number.isFinite(v.x) && Number.isFinite(v.y) && (v.size === 'small' || v.size === 'large')
 }
+
+const isPositiveFinite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0
+
+const toSlideInfo = (value: unknown): SlideInfo | null => {
+  if (typeof value !== 'object' || value === null) return null
+  const { url, width, height } = value as Record<string, unknown>
+  return typeof url === 'string' && url !== '' && isPositiveFinite(width) && isPositiveFinite(height) ? { url, width, height } : null
+}
+
+const toPresenterIdentity = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null)
+
+const toPlayingVideoIndex = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null
 
 const sameOverlay = (a: OverlayLayout, b: OverlayLayout): boolean =>
   Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
@@ -81,6 +103,9 @@ const isPresentationStateMessage = (
   slideVideos?: SlideVideoInfo[]
   videoState?: PresentationState['videoState']
   overlay?: unknown
+  slide?: unknown
+  presenterIdentity?: unknown
+  playingVideoIndex?: unknown
 } => {
   if (typeof data !== 'object' || data === null) return false
   const d = data as Record<string, unknown>
@@ -137,7 +162,7 @@ const isPresentationBotMetadata = (data: unknown): data is PresentationBotMetada
 
 const PresentationContext = createContext<PresentationContextValue | undefined>(undefined)
 
-const PresentationProvider = ({ children }: { children: ReactNode }) => {
+const PresentationProvider = ({ children, canControl = false }: { children: ReactNode; canControl?: boolean }) => {
   const [state, setState] = useState<PresentationState>(initialState)
   const remoteParticipants = useRemoteParticipants()
   const room = useRoomContext()
@@ -181,6 +206,7 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
     botMetadata: PresentationBotMetadata | null
   }>(() => {
     for (const p of remoteParticipants) {
+      if (!isPresentationBot(p)) continue
       const parsed = parseParticipantMetadata(p)
       if (isPresentationBotMetadata(parsed)) {
         return { presentationParticipantIdentity: p.identity, botMetadata: parsed }
@@ -194,6 +220,12 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
   const botCurrentSlide = botMetadata?.currentSlide ?? 0
   const botFileType = botMetadata?.fileType ?? null
   const botVideoState = botMetadata?.videoState ?? 'idle'
+  const botSlide = toSlideInfo(botMetadata?.slide)
+  const botSlideUrl = botSlide?.url ?? null
+  const botSlideWidth = botSlide?.width ?? null
+  const botSlideHeight = botSlide?.height ?? null
+  const botPresenterIdentity = toPresenterIdentity(botMetadata?.presenterIdentity)
+  const botPlayingVideoIndex = toPlayingVideoIndex(botMetadata?.playingVideoIndex)
   const {
     x: botOverlayX,
     y: botOverlayY,
@@ -215,7 +247,12 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
           prev.fileType === botFileType &&
           prev.videoState === botVideoState &&
           JSON.stringify(prev.slideVideos) === botSlideVideosJson &&
-          prev.overlay === overlay
+          prev.overlay === overlay &&
+          (prev.slide?.url ?? null) === botSlideUrl &&
+          (prev.slide?.width ?? null) === botSlideWidth &&
+          (prev.slide?.height ?? null) === botSlideHeight &&
+          prev.presenterIdentity === botPresenterIdentity &&
+          prev.playingVideoIndex === botPlayingVideoIndex
         ) {
           return prev
         }
@@ -227,7 +264,13 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
           status: 'active',
           slideVideos: JSON.parse(botSlideVideosJson),
           videoState: botVideoState,
-          overlay
+          overlay,
+          slide:
+            botSlideUrl !== null && botSlideWidth !== null && botSlideHeight !== null
+              ? { url: botSlideUrl, width: botSlideWidth, height: botSlideHeight }
+              : null,
+          presenterIdentity: botPresenterIdentity,
+          playingVideoIndex: botPlayingVideoIndex
         }
       })
       return
@@ -244,8 +287,28 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
     botOverlayX,
     botOverlayY,
     botOverlaySize,
+    botSlideUrl,
+    botSlideWidth,
+    botSlideHeight,
+    botPresenterIdentity,
+    botPlayingVideoIndex,
     sendCommand
   ])
+
+  const claimedForRef = useRef<string | null | undefined>(undefined)
+
+  const presenterIdentity = state.presenterIdentity
+  const hasSlide = state.slide !== null
+
+  useEffect(() => {
+    if (!canControl || !hasSlide) return
+    const isPresenterInRoom =
+      presenterIdentity !== null &&
+      (presenterIdentity === room?.localParticipant?.identity || remoteParticipants.some(p => p.identity === presenterIdentity))
+    if (isPresenterInRoom || claimedForRef.current === presenterIdentity) return
+    claimedForRef.current = presenterIdentity
+    sendCommand({ type: 'presentation:presenter:claim' })
+  }, [canControl, hasSlide, presenterIdentity, remoteParticipants, room, sendCommand])
 
   const showNotificationRef = useRef(notifications.show)
   showNotificationRef.current = notifications.show
@@ -271,7 +334,10 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
           status: 'active',
           slideVideos: stateMessage.slideVideos ?? [],
           videoState: stateMessage.videoState ?? 'idle',
-          overlay: resolveIncomingOverlay(prev.overlay, isOverlayLayout(stateMessage.overlay) ? stateMessage.overlay : DEFAULT_OVERLAY)
+          overlay: resolveIncomingOverlay(prev.overlay, isOverlayLayout(stateMessage.overlay) ? stateMessage.overlay : DEFAULT_OVERLAY),
+          slide: toSlideInfo(stateMessage.slide),
+          presenterIdentity: toPresenterIdentity(stateMessage.presenterIdentity),
+          playingVideoIndex: toPlayingVideoIndex(stateMessage.playingVideoIndex)
         }))
       } else if (isPresentationStoppedMessage(decoded.data)) {
         setState(initialState)
@@ -296,7 +362,10 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
   }, [room])
 
   const runPresentationUpload = useCallback(
-    async (upload: (livekitToken: string, livekitUrl: string) => Promise<PresentationInfo>, errorLabel: string) => {
+    async (
+      upload: (livekitToken: string, livekitUrl: string, presenterIdentity: string | undefined) => Promise<PresentationInfo>,
+      errorLabel: string
+    ) => {
       if (uploadingRef.current) return
       uploadingRef.current = true
       setState(prev => ({ ...prev, status: 'uploading' }))
@@ -307,7 +376,7 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
           throw new Error('No streaming key available')
         }
         const botToken = await getPresentationBotToken({ streamingKey }).unwrap()
-        const info = await upload(botToken.token, botToken.url)
+        const info = await upload(botToken.token, botToken.url, room?.localParticipant?.identity || undefined)
 
         setState(prev =>
           prev.status === 'active'
@@ -320,7 +389,10 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
                 status: 'starting',
                 slideVideos: [],
                 videoState: 'idle',
-                overlay: DEFAULT_OVERLAY
+                overlay: DEFAULT_OVERLAY,
+                slide: null,
+                presenterIdentity: null,
+                playingVideoIndex: null
               }
         )
       } catch (err) {
@@ -331,13 +403,14 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
         uploadingRef.current = false
       }
     },
-    [getPresentationBotToken]
+    [getPresentationBotToken, room]
   )
 
   const startPresentation = useCallback(
     (file: File) =>
       runPresentationUpload(
-        (livekitToken, livekitUrl) => uploadPresentationMutation({ file, livekitToken, livekitUrl }).unwrap(),
+        (livekitToken, livekitUrl, presenterIdentity) =>
+          uploadPresentationMutation({ file, livekitToken, livekitUrl, presenterIdentity }).unwrap(),
         'Failed to start presentation'
       ),
     [runPresentationUpload, uploadPresentationMutation]
@@ -346,7 +419,8 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
   const startPresentationFromUrl = useCallback(
     (url: string) =>
       runPresentationUpload(
-        (livekitToken, livekitUrl) => uploadPresentationFromUrlMutation({ url, livekitToken, livekitUrl }).unwrap(),
+        (livekitToken, livekitUrl, presenterIdentity) =>
+          uploadPresentationFromUrlMutation({ url, livekitToken, livekitUrl, presenterIdentity }).unwrap(),
         'Failed to start presentation from URL'
       ),
     [runPresentationUpload, uploadPresentationFromUrlMutation]
