@@ -97,18 +97,18 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
         <CardImage src={imageSrc} alt={formatMessage(altKey, { title: data.title })} />
         {isEvent && (
           <AttendeesBadge backgroundColor={data.live ? '#FF2D55' : '#FCFCFC'} style={{ color: data.live ? '#ffffff' : '#161518' }}>
-            {/* Text wrapped in <span> for the same translator reason as the creator name below. */}
+            {/* Keyed spans so React replaces the whole span on a live flip: same translator reason as the creator name below. */}
             {data.live ? (
               <>
                 <LiveEventIcon />
-                <span>
+                <span key="live">
                   {formatMessage('component.jump.card.event.live')} +{data.user_count || 0}
                 </span>
               </>
             ) : (
               <>
                 <NotificationsRoundedIcon sx={{ fontSize: 16, color: '#FF2D55' }} />
-                <span>+{data.total_attendees ?? 0}</span>
+                <span key="attendees">+{data.total_attendees ?? 0}</span>
               </>
             )}
           </AttendeesBadge>

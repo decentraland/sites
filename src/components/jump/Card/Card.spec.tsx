@@ -112,7 +112,17 @@ describe('Card', () => {
       translateTextNode('component.jump.card.event.live')
 
       expect(() => rerender(<Card data={{ ...eventData, live: false }} />)).not.toThrow()
-      expect(screen.getByTestId('NotificationsRoundedIcon')).toBeInTheDocument()
+      expect(screen.getByText('+12')).toBeInTheDocument()
+    })
+  })
+
+  describe('when a translator rewrote the live user count and the event stops being live', () => {
+    it('should swap in the attendees badge without a DOM error', () => {
+      const { rerender } = render(<Card data={eventData} />)
+      translateTextNode('5')
+
+      expect(() => rerender(<Card data={{ ...eventData, live: false }} />)).not.toThrow()
+      expect(screen.getByText('+12')).toBeInTheDocument()
     })
   })
 
