@@ -1,18 +1,8 @@
 name: CDN deploy
 
-# TWO TEMPORARY CHANGES FOR THE FIRST END-TO-END TEST. Revert both before merging:
-#   1. every `uses:` points at decentraland/actions/cdn-deploy@feat/cdn-deploy-action
-#      instead of a released ref, so the action can be exercised before it lands.
-#   2. this branch is in the push trigger below.
-# The action ref should end up a tag, not a branch and not @main: every other action
-# in this file is pinned to a SHA, and a moving ref is a supply-chain hole.
-
 on:
   push:
-    # TEMPORARY, revert before merging: ci/cdn-deploy-example is here so the dev job
-    # can run against zone from this branch. workflow_dispatch cannot stand in --
-    # GitHub only offers it for workflows that already exist on the default branch.
-    branches: [master, ci/cdn-deploy-example]
+    branches: [master]
   release:
     types: [published]
   workflow_dispatch:
@@ -73,7 +63,7 @@ jobs:
       # deploy silently did nothing.
       #
       # deployment-environments defaults to zone.
-      - uses: decentraland/actions/cdn-deploy@feat/cdn-deploy-action
+      - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           build-command: npm run build
           dist-path: ./dist
@@ -106,7 +96,7 @@ jobs:
       # what passing `version` alongside `build-command` does.
       #
       # Empty environment list stages the bytes without touching any KV record.
-      - uses: decentraland/actions/cdn-deploy@feat/cdn-deploy-action
+      - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           build-command: npm run build
           dist-path: ./dist
@@ -137,7 +127,7 @@ jobs:
       # set to 0%, which this single-version dispatch cannot express — use
       # set-rollout-manual.yml for that until the broker zeroes superseded
       # records.
-      - uses: decentraland/actions/cdn-deploy@feat/cdn-deploy-action
+      - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           package-name: "@dcl/sites"
           version: ${{ inputs.version }}
