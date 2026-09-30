@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { keyframes } from '@emotion/react'
-import { styled } from 'decentraland-ui2'
+import { keyframes, styled } from 'decentraland-ui2'
 
 const pulse = keyframes({
   '0%, 100%': {
