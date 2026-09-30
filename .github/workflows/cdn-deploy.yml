@@ -68,9 +68,15 @@ jobs:
           build-command: npm run build
           dist-path: ./dist
 
-  stage-release:
+  release:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    # GitHub issues the environment claim the broker requires for `today` only to a job
+    # that declares an environment, and evaluates today's protection rules before the job
+    # starts. `zone` needs no claim, so this one declaration covers both. `org` is absent
+    # deliberately: the broker would accept a tag version for it, but production is
+    # promoted by hand from `promote` below.
+    environment: today
     env:
       # Job level: the build runs inside a composite action, which does not see
       # `env:` set on the step that calls it.
@@ -94,14 +100,12 @@ jobs:
       # /1.2.3-commit-<sha7>/. A release serves everything from its own path,
       # which means building with the tag as the version — which is exactly
       # what passing `version` alongside `build-command` does.
-      #
-      # Empty environment list stages the bytes without touching any KV record.
       - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           build-command: npm run build
           dist-path: ./dist
           version: ${{ github.event.release.tag_name }}
-          deployment-environments: "[]"
+          deployment-environments: '["zone","today"]'
 
   promote:
     if: github.event_name == 'workflow_dispatch'
