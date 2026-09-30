@@ -70,15 +70,9 @@ jobs:
 
   release:
     # `release: published` fires for prereleases too. Without the guard an RC would
-    # publish to zone and today like any other release.
+    # publish to zone like any other release.
     if: github.event_name == 'release' && !github.event.release.prerelease
     runs-on: ubuntu-latest
-    # GitHub issues the environment claim the broker requires for `today` only to a job
-    # that declares an environment, and evaluates today's protection rules before the job
-    # starts. `zone` needs no claim, so this one declaration covers both. `org` is absent
-    # deliberately: the broker would accept a tag version for it, but production is
-    # promoted by hand from `promote` below.
-    environment: today
     env:
       # Job level: the build runs inside a composite action, which does not see
       # `env:` set on the step that calls it.
@@ -102,12 +96,20 @@ jobs:
       # /1.2.3-commit-<sha7>/. A release serves everything from its own path,
       # which means building with the tag as the version — which is exactly
       # what passing `version` alongside `build-command` does.
+      #
+      # zone only, and no `environment:` on the job. `today` and `org` need an
+      # environment claim, which GitHub issues only to a job that declares an
+      # environment -- but it evaluates that environment's deployment policy before the
+      # job starts, and `today` admits protected branches only, which a tag ref cannot
+      # satisfy. Declaring it here would stop the job before it uploaded anything.
+      # `zone` needs no claim, so a release serves there directly; `today` and `org` are
+      # promoted from `promote` below, which runs on master and does satisfy the policy.
       - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           build-command: npm run build
           dist-path: ./dist
           version: ${{ github.event.release.tag_name }}
-          deployment-environments: '["zone","today"]'
+          deployment-environments: '["zone"]'
 
   promote:
     if: github.event_name == 'workflow_dispatch'
