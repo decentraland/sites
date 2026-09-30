@@ -1,7 +1,4 @@
 jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/styledMock'))
-jest.mock('@emotion/react', () => ({
-  keyframes: (chunks: TemplateStringsArray | string) => (typeof chunks === 'string' ? chunks : chunks.join(''))
-}))
 
 import { render } from '@testing-library/react'
 import { LoadingBox } from './LoadingText.styled'

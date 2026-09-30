@@ -1,11 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { LoadingText } from './LoadingText'
 
-jest.mock('@emotion/react', () => ({
-  keyframes: () => ''
-}))
-
 jest.mock('decentraland-ui2', () => ({
+  keyframes: () => '',
   Box: ({ children, ...props }: { children?: React.ReactNode }) => <div {...props}>{children}</div>,
   styled: () => () => (props: { children?: React.ReactNode }) => <div {...(props as object)}>{props.children}</div>
 }))

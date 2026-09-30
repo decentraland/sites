@@ -226,7 +226,7 @@ A wildcard without one fails the build, as does a `path` that is not a string li
 
 ### Styled components
 
-- Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes`.
+- Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes` (exported since ui2 3.23.3). Source files never import them from `@emotion/*` directly (test mocks may).
 - Object syntax only: `styled(Box)(({ theme }) => ({ ... }))`.
 - Theme tokens: `theme.palette.*`, `theme.spacing()`, `theme.breakpoints.*`.
 - Separate `*.styled.ts` files. No hardcoded colors — use `dclColors` or theme palette.
