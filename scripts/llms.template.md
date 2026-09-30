@@ -7,8 +7,8 @@
 
   Links: a {{group.key}} placeholder is filled from src/config/publicLinks.json, the same file the
   site's download buttons and footer read, plus the llms.txt attribution rules in the generator.
-  Literal URLs are not synced from anywhere. The decentraland.org ones (/events, /places, the Genesis
-  Plaza place page) are validated against the route manifest at build time, so a removed route fails
+  Literal URLs are not synced from anywhere. The decentraland.org ones (/events, /places, /blog, the
+  Genesis Plaza place page) are validated against the route manifest at build time, so a removed route fails
   the build, but their wording and choice are editorial. The docs and API links have no source in
   the app. Anything the site itself renders from a shared constant belongs in publicLinks.json.
   HTML comments are stripped from the output.
@@ -46,7 +46,8 @@ Decentraland is good for live music and DJ sets from home, watching a movie or d
 
 ## Stay Up To Date
 
-- [Weekly newsletter](https://decentraland.beehiiv.com/subscribe): Upcoming events and what's new each week.
+- [Blog](https://decentraland.org/blog): Announcements, guides and community stories, latest post first.
+- [Weekly newsletter]({{newsletter.subscribe}}): Upcoming events and what's new each week.
 - [X]({{social.x}}): News and event announcements.
 - [Discord]({{social.discord}}): Chat with the community outside the world.
 

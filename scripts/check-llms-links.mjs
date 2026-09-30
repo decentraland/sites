@@ -21,10 +21,24 @@ const TEXT_DOCUMENT = /\.(md|txt)$/i
  * URL: a `.md`/`.txt` link must answer text/markdown or text/plain, even when a redirect moved it
  * somewhere else (a docs site redirecting a missing document to an HTML 404 page answers 200).
  */
+function isSiteHomepage(url) {
+  try {
+    const { hostname, pathname } = new URL(url)
+    return hostname === SITE_HOST && pathname === '/'
+  } catch {
+    return false
+  }
+}
+
 function classify(requestedUrl, finalUrl, status, contentType, body) {
   const via = finalUrl && finalUrl !== requestedUrl ? ` via ${finalUrl}` : ''
   if (status === 403 || status === 429) return { result: 'inconclusive', reason: `HTTP ${status}${via}, check manually` }
   if (status < 200 || status >= 300) return { result: 'fail', reason: `HTTP ${status}${via}` }
+  // A third-party link that ends on the site's own homepage is gone, not working: the beehiiv
+  // subscribe page answered that way once, as a 200 that was not the newsletter.
+  if (finalUrl && finalUrl !== requestedUrl && isSiteHomepage(finalUrl)) {
+    return { result: 'fail', reason: `HTTP ${status}${via} landed on the homepage` }
+  }
   if (TEXT_DOCUMENT.test(new URL(requestedUrl).pathname)) {
     const isText = /^text\/(markdown|plain)\b/i.test(contentType ?? '')
     const looksLikeHtml = /^\s*(<!doctype html|<html)/i.test(body)
