@@ -14,6 +14,7 @@ import { useAdminEventDeepLink } from '../../hooks/useAdminEventDeepLink'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../hooks/useEventDetailModal'
+import { useSeriesEventOpener } from '../../hooks/useSeriesEventOpener'
 import { buildRejectionReason } from './PendingEventsPage.helpers'
 import { AdminPageContainer } from './AdminLayout.styled'
 import { CardGrid, EmptyStateText, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
@@ -36,6 +37,7 @@ function PendingEventsPageContent() {
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
   const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
 
+  const openSeriesEvent = useSeriesEventOpener(events, openEventDetailModal)
   const { closeDeepLink } = useAdminEventDeepLink({ events, isLoaded: areEventsLoaded, onMatch: openEventDetailModal })
 
   const handleCloseModal = useCallback(() => {
@@ -109,7 +111,7 @@ function PendingEventsPageContent() {
           {pending.length === 0 ? (
             <EmptyStateText>{t('whats_on_admin.pending_events.empty')}</EmptyStateText>
           ) : (
-            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={openEventDetailModal} />)
+            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={openSeriesEvent} />)
           )}
         </CardGrid>
       </Section>
@@ -121,7 +123,7 @@ function PendingEventsPageContent() {
         </SectionTitle>
         <CardGrid>
           {recentlyApproved.map(event => (
-            <PendingEventCard key={event.id} event={event} onClick={openEventDetailModal} />
+            <PendingEventCard key={event.id} event={event} onClick={openSeriesEvent} />
           ))}
         </CardGrid>
       </Section>

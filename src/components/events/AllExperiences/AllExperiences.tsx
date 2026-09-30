@@ -5,6 +5,7 @@ import { bucketEventsByDay, isPubliclyVisibleEvent, toUpcomingOccurrence, useGet
 import type { EventEntry, EventListType } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
+import { useSeriesEventOpener } from '../../../hooks/useSeriesEventOpener'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
 import { redirectToAuth } from '../../../utils/authRedirect'
 import { addDays, formatDayHeaderAria } from '../../../utils/whatsOnDate'
@@ -161,6 +162,7 @@ function AllExperiences() {
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
   }, [address, allEvents, isMyTab])
 
+  const openMyEvent = useSeriesEventOpener(allEvents, openEventDetailModal)
   const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
 
   useEffect(() => {
@@ -232,7 +234,7 @@ function AllExperiences() {
           showMyEmptyState ? (
             <MyExperiencesEmptyState />
           ) : (
-            <MyExperiencesGrid events={sortedMyEvents} onCardClick={openEventDetailModal} />
+            <MyExperiencesGrid events={sortedMyEvents} onCardClick={openMyEvent} />
           )
         ) : (
           <>
