@@ -10,12 +10,8 @@ const HandleLayer = styled('div')({
 
 const HandleCircle = styled('button', {
   shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
-})<{ $left: number; $top: number; $size: number; $dragging: boolean }>(({ theme, $left, $top, $size, $dragging }) => ({
+})<{ $dragging: boolean }>(({ theme, $dragging }) => ({
   position: 'absolute',
-  left: $left,
-  top: $top,
-  width: $size,
-  height: $size,
   padding: 0,
   borderRadius: '50%',
   border: `2px dashed ${theme.palette.common.white}`,

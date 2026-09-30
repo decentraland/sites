@@ -84,6 +84,7 @@ function CameraOverlayHandle() {
 
   const hint = t('streaming_controls.camera_overlay.drag_hint')
   const scale = measured ? measured.width / measured.videoWidth : 0
+  const size = rect ? rect.d * scale : 0
 
   return (
     <HandleLayer ref={layerRef}>
@@ -92,9 +93,7 @@ function CameraOverlayHandle() {
           type="button"
           aria-label={hint}
           title={hint}
-          $left={measured.left + rect.left * scale}
-          $top={measured.top + rect.top * scale}
-          $size={rect.d * scale}
+          style={{ left: measured.left + rect.left * scale, top: measured.top + rect.top * scale, width: size, height: size }}
           $dragging={isDragging}
           onClick={stopClick}
           {...handlers}

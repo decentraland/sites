@@ -12,12 +12,12 @@ jest.mock('./CameraOverlayHandle.styled', () => ({
   HandleLayer: React.forwardRef<HTMLDivElement, { children?: React.ReactNode }>(({ children, ...rest }, ref) =>
     React.createElement('div', { ...rest, ref }, children)
   ),
-  HandleCircle: ({ $left, $dragging, style, ...rest }: { style?: React.CSSProperties; [key: string]: unknown }) =>
+  HandleCircle: ({ $left, $dragging, style, ...rest }: Record<string, unknown>) =>
     React.createElement('button', {
       ...rest,
-      'data-left': style?.left,
-      'data-top': style?.top,
-      'data-size': style?.width,
+      'data-left': (style as React.CSSProperties).left,
+      'data-top': (style as React.CSSProperties).top,
+      'data-size': (style as React.CSSProperties).width,
       'data-transient-left': $left,
       'data-dragging': String($dragging)
     })
