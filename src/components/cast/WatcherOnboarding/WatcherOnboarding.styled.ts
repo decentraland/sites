@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { keyframes } from '@emotion/react'
-import { Box, Typography, dclColors, styled } from 'decentraland-ui2'
+import { Box, Typography, dclColors, keyframes, styled } from 'decentraland-ui2'
 import backgroundWatcherImage from '../../../assets/images/cast/background_watcher.webp'
 import { DropdownItem, DropdownList } from '../common/DeviceSelector/DeviceSelector.styled'
 
