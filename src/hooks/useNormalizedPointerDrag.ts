@@ -1,11 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
+import { clamp } from '../features/cast2/cast2.overlay'
 import type { MediaRect } from '../features/cast2/cast2.types'
 import type { NormalizedPointerDrag, NormalizedPointerDragOptions } from './useNormalizedPointerDrag.types'
 
 const DRAG_THRESHOLD_PX = 3
-
-const clampUnit = (value: number): number => Math.min(Math.max(value, 0), 1)
 
 /**
  * Reports a pointer drag as `[0, 1]` fractions of a client-space rectangle.
@@ -22,8 +21,8 @@ function useNormalizedPointerDrag(getBounds: () => MediaRect | null, options: No
     const bounds = latest.current.getBounds()
     if (!bounds) return null
     return {
-      x: clampUnit((event.clientX - bounds.left) / bounds.width),
-      y: clampUnit((event.clientY - bounds.top) / bounds.height)
+      x: clamp((event.clientX - bounds.left) / bounds.width, 0, 1),
+      y: clamp((event.clientY - bounds.top) / bounds.height, 0, 1)
     }
   }, [])
 
