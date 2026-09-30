@@ -33,13 +33,13 @@ Data access on lightweight routes uses `useSyncExternalStore`-based clients (see
 
 These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell chunk is lazy-imported in `src/App.tsx` via `lazy(() => import('./shells/DappsShell'))` and boots the Redux store, the RTK Query middleware, and the heaviest deps (contentful rich-text renderer, dompurify, `livekit-client` + `@livekit/components-react` for cast) only when one of these routes is navigated to.
 
-**No Web3 providers on the main/lightweight tiers, nor in the base `DappsShell` chunk.** Authentication on most heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — whats-on / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. The one exception is the account Wallets "Send" and Delete actions, gated behind the lazy `BlockchainShell` (below). The homepage and every lightweight route stay Web3-free (~580-780KB saved vs. the federated predecessor).
+**No Web3 providers on the main/lightweight tiers, nor in the base `DappsShell` chunk.** Authentication on most heavy routes uses the same localStorage-based `useAuthIdentity` hook as the navbar — events / social / storage sign mutations with `signedFetch(identity)`, blog reads CMS public endpoints, jump/cast can run without identity. The one exception is the account Wallets "Send" and Delete actions, gated behind the lazy `BlockchainShell` (below). The homepage and every lightweight route stay Web3-free (~580-780KB saved vs. the federated predecessor).
 
 ### Third tier: `BlockchainShell` (on-demand Web3, `src/shells/BlockchainShell.tsx`)
 
 A lazy, opt-in shell for the few account actions that need a connected signer (Wallets Send; Delete). It wraps children in `@dcl/core-web3`'s `WalletStateProvider` + `Web3LazyProvider`, which dynamically import the heavy Web3 stack (`wagmi` / `viem` / `magic-sdk` / `@magic-ext/oauth2`) only when an action mounts the shell, then calls `injectWeb3Reducers()` to append core-web3's `wallet` / `network` / `transactions` slices to the already-running `DappsShell` store (`createLazyStoreEnhancer` in `store.ts`). Children are withheld behind a readiness gate until the providers are mounted, so wagmi hooks never run without a `WagmiProvider`. The base `DappsShell` store only statically imports the lightweight `@dcl/core-web3/lazy` facade (the enhancer + provider shells) — the wagmi/viem bundle is code-split and never loads on a non-account heavy route.
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/whats-on/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/discover/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/events/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/places/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
 
 ## Directory map (top-level)
 
@@ -61,10 +61,11 @@ A lazy, opt-in shell for the few account actions that need a connected signer (W
 | `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`.           |
 | `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.                     |
 | `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                              |
-| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by whats-on, social, storage mutations).                      |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by events, social, storage mutations).                        |
 | `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
 | `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
 | `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
+| `public/.well-known/`           | iOS/Android app-link association files. Make `/jump` open the explorer. `docs/domains/jump.md`.  |
 | `api/seo.ts`                    | **Preview-only** Vercel function for `/blog/*` OG meta. Skill `seo-worker`.                      |
 | `vercel.json`                   | **Preview-only** Vercel config: rewrites + per-route headers. Never runs in prd/stg/dev.         |
 
@@ -72,7 +73,7 @@ A lazy, opt-in shell for the few account actions that need a connected signer (W
 
 Each absorbed dapp's feature client, base client, components, and pages live under per-dapp docs. Load the one matching your task:
 
-- `docs/domains/whats-on.md` — `src/features/events/`, components/whats-on, pages/whats-on. Events API + admin + lightweight discovery.
+- `docs/domains/events.md` — `src/features/events/`, components/events, pages/events. Events API + admin + lightweight discovery.
 - `docs/domains/blog.md` — `src/features/cms/`, `src/services/cmsClient.ts`, `src/shared/blog/`. Contentful + cms-server search.
 - `docs/domains/jump.md` — `src/features/places/`, `src/services/placesClient.ts`. Launcher deep-link resolution.
 - `docs/domains/social.md` — `src/features/communities/`, `src/services/socialClient.ts`. Communities API.
@@ -81,7 +82,7 @@ Each absorbed dapp's feature client, base client, components, and pages live und
 - `docs/domains/reels.md` — `src/features/reels/`. Camera-screenshot client; Layout-less.
 - `docs/domains/report.md` — `src/features/report/`. Lightweight report form (no RTK Query).
 - `docs/domains/profile.md` — `src/features/profile/`, components/profile, pages/profile. Profile route group + modal surfaces + social RPC.
-- `docs/domains/discover.md` — `src/features/discover/`, components/discover, pages/discover. Destinations feed + live presence + bevy scene preview.
+- `docs/domains/places.md` — `src/features/discover/`, components/places, pages/places. Destinations feed + live presence + bevy scene preview.
 
 ### Skill + hook governance
 
@@ -93,7 +94,7 @@ Base clients (infra) in `src/services/<name>Client.ts`. Endpoints (business logi
 
 ## Auth flow
 
-No Web3 providers (no wagmi, magic-sdk, core-web3, thirdweb). Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`). Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
+Wallet + identity via localStorage (`useWalletAddress`, `useAuthIdentity`) on every tier. Mutations call `signedFetch(url, identity)` from `src/utils/signedFetch.ts`. Web3 (`wagmi`, `viem`, `magic-sdk`, `thirdweb`, `@dcl/core-web3`) is declared and loads only behind the lazy `BlockchainShell`, never on a lightweight route nor in the base `DappsShell` chunk. Full sign-in/out flow, hook details, OTP/Magic edge cases → skill `auth-flow`.
 
 ## Performance
 
@@ -101,9 +102,11 @@ Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics.
 
 ## Deployment: where production actually comes from
 
-**Vercel is preview-only.** `npm run build` publishes `@dcl/sites` to npm, a GitLab job mirrors it to
-`cdn.decentraland.org/@dcl/sites/<version>`, and `set-rollout-action` points an environment at that
-version (`zone` + `today` automatic, `org` manual + release tag). At request time every environment is
+**Vercel is preview-only.** `.github/workflows/cdn-deploy.yml` builds the site and uploads it straight
+to `cdn.decentraland.org/@dcl/sites/<version>`, then points an environment at that version — `zone` on
+every merge to master, `today` and `org` by manual dispatch, with `org` requiring a released version
+and an approval on the GitHub environment. No npm publish and no GitLab hop. At request time every
+environment is
 served by the **`sites-deployer` Cloudflare Worker** (`dcl.tools:ops/sites-deployer`, GitLab), which
 pulls the CDN bundle and rewrites the HTML on the way out. `server: cloudflare`, no Vercel headers.
 
@@ -112,14 +115,42 @@ affects previews only.** Two things that live there are therefore NOT what produ
 
 - **OG meta / `<title>`.** Production titles come from the worker's handlers in
   `workers/sites-worker/rollouts/routes/handlers/` — `OpenGraphWhatsOnRoute` (events + `/jump`),
-  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community. The route
-  _path patterns_ are not even in that repo: they come from the sites DSL in `@decentraland/definitions`,
-  so making a new path emit OG cards is a two-repo change.
+  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community.
 - **Per-route headers**, including the COOP/COEP pair the bevy iframe needs. Verify a header claim with
   `curl -sI https://decentraland.org/<path>`, never by reading `vercel.json`.
 
+### Which repo owns what
+
+Emitting OG for a path is never only this repo. Get the layer wrong and the fix lands somewhere that does not
+serve production. Which repos a path needs depends on its handler:
+
+- **Static page** (a fixed title/description/image): matched by the `PAGES` map in
+  `OpenGraphStaticPageRoute.ts` in `sites-deployer`. Definitions registers that handler once with no `path:`,
+  so a new static page needs only a `PAGES` entry, no definitions change.
+- **Dedicated handler** (events, places, blog, profile, reels, communities...): needs a `path:` pattern in
+  definitions AND the handler in `sites-deployer`.
+
+| Layer                              | Repo                                               | File                                             | Owns                                                                                                                |
+| ---------------------------------- | -------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Which paths get a handler**      | `decentraland/definitions` (GitHub, private)       | `src/sites/sites.ts`, `sites.config[env].routes` | Dedicated handlers only: the `path:` pattern per environment (dev/stg/prd). No pattern, no card.                    |
+| **What the card says**             | `dcl.tools:ops/sites-deployer` (GitLab, MR not PR) | `workers/sites-worker/rollouts/routes/handlers/` | Title, description, image, canonical, the API calls behind them; for static pages also which paths match (`PAGES`). |
+| **The tab title after navigation** | this repo                                          | Helmet in the page or its layout                 | What the browser tab shows once JS runs. Crawlers never see it.                                                     |
+
+**Merge order for a dedicated handler, and why it is that order:** definitions first (publishes `@next` on push to `main`) →
+sites-deployer to `master` (deploys dev + stg, and its `.gitlab-ci.yml` runs
+`npm i @decentraland/definitions@next`, so one deploy picks up both) → `release` (prd) → only then the
+`org` rollout of sites. Rolling `org` first ships a live path with no card. A static page skips the
+definitions step: sites-deployer (`master`, then `release`) → `org`.
+
+**Do not work around a missing pattern inside a dedicated handler.** The temptation is to widen its `test()` in
+sites-deployer so the new path matches without touching definitions. It buys nothing: the handler change
+needs a worker deploy anyway, and that same deploy installs `definitions@next`. Fix the layer that owns
+the problem.
+
 A route renamed in the SPA keeps serving the old section's OG card until the worker is updated, and the
-new path serves the bare shell (`<title>Decentraland</title>`) until it is added there.
+new path serves the bare shell (`<title>Decentraland</title>`) until it is added there. Keep BOTH
+prefixes configured while the redirect lives: shared and indexed links hit the worker before the SPA can
+redirect them.
 
 ### Blog SEO (preview tier)
 
@@ -152,11 +183,30 @@ npm run format       # Prettier
 npm run lint:fix     # ESLint
 npm run lint:pkg     # package.json lint (silent on success — easy to skip; do not skip)
 npm run lint:i18n    # strict JSON + locale parity vs src/intl/parity-baseline.json (rule 9)
+npm run lint:routes  # route manifest emitted into dist/routes.json for the edge 404
 ```
 
 ## Adding a route
 
 Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clearance, and the repo sync checklist (README + SEO worker `PAGES` + GitHub issue templates) → skill `add-route`.
+
+**Wildcard routes need a marker.** `scripts/build-route-manifest.mjs` reads `src/App.tsx` and emits `dist/routes.json`, the list the edge uses to answer 404 for a path this SPA does not serve. It cannot tell a redirect wildcard from a not-found one, and guessing from the component name would be wrong the day someone renames a page, so each `path="*"` or `path="/x/*"` carries a comment above it:
+
+```tsx
+{
+  /* route-manifest: not-found */
+}
+;<Route path="*" element={<NotFoundPage />} />
+
+{
+  /* route-manifest: redirect */
+}
+;<Route path="/whats-on/*" element={<RenamedSectionRedirect from="/whats-on" to="/events" origin="events" />} />
+```
+
+A wildcard without one fails the build, as does a `path` that is not a string literal. That is deliberate: an incomplete manifest would turn a live route into a 404 in production. Run `npm run lint:routes` to print what the extractor sees.
+
+**The manifest also gates `llms.txt`.** `scripts/build-llms-txt.mjs` validates every decentraland.org link in the generated `dist/llms.txt` against `dist/routes.json`, so removing or renaming a route that `scripts/llms.template.md` links to fails `npm run build`, not only `lint:routes`. Update the template in the same PR (skill `add-route`, repo sync checklist).
 
 ## Coding conventions
 
@@ -166,7 +216,7 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 - **Styled components**: `<Component>.styled.ts` co-located with `<Component>.tsx`. Inline `sx={...}` only for one-off micro-tweaks; conditional styling with props belongs in `.styled.ts`.
 - **Types / interfaces**: `<thing>.types.ts`. Never inline in `.client.ts`, `.helpers.ts`, or logic files.
 - **RTK Query**: base client → `src/services/<name>Client.ts` (infra only). Endpoints → `src/features/<domain>/<domain>.client.ts`. See "RTK Query split".
-- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{whats-on,blog,jump,social,discover,cast,storage,account}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
+- **Pages**: `src/pages/<route>/`. Heavy routes under `src/pages/{events,blog,jump,social,places,cast,storage,account}/`. Layout-less fullscreen routes use the same `src/pages/<area>/` shape but are placed before the `<Layout />` Route block in `src/App.tsx` (`reels`, `download`, `invite`).
 - **Signal you're placing a file wrong**: `src/features/<domain>/use<X>.ts`, inline styled bigger than a single `sx`, type inside `.client.ts`. Stop and move it.
 
 ### Naming
@@ -176,7 +226,7 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 
 ### Styled components
 
-- Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes`.
+- Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes` (exported since ui2 3.23.3). Source files never import them from `@emotion/*` directly (test mocks may).
 - Object syntax only: `styled(Box)(({ theme }) => ({ ... }))`.
 - Theme tokens: `theme.palette.*`, `theme.spacing()`, `theme.breakpoints.*`.
 - Separate `*.styled.ts` files. No hardcoded colors — use `dclColors` or theme palette.
@@ -202,13 +252,15 @@ Dispatch `pr-review-toolkit:code-reviewer` (or equivalent) on `git diff <base>..
 
 ### 2. Architectural boundary check (P1 failures)
 
-Enforce the boundary rule from Architecture > Dual Shell. Grep diff:
+Enforce the boundary rule from Architecture > Dual Shell:
 
 ```bash
-git diff master...HEAD --name-only | xargs grep -l "from ['\"].*shells/" 2>/dev/null
+npm run lint:shells
 ```
 
-Hits outside `src/App.tsx` and `src/shells/` itself = violation.
+It walks the import graph from every lightweight entry point (`src/main.tsx`, `src/pages/*` outside the heavy route groups, `components/Layout`, `components/LandingNavbar`, `components/LandingFooter`) and fails if any of them can reach `src/shells/*` at runtime, printing the full chain. Indirect paths through a helper or a barrel count; `import type` does not, because it leaves nothing in the bundle.
+
+Do NOT grep for `from '.*shells/'` instead. It misses the indirect paths and flags the heavy route trees (`src/pages/{events,blog,jump,social,places,cast,storage,account,profile}/*` and the components they own), which are explicitly allowed to import the shell.
 
 ### 3. YAGNI check
 
@@ -305,6 +357,24 @@ One line each. Open the doc for code patterns and full rationale.
 - **23.** Page tracking + Helmet — `useBlogPageTracking({ name, properties })` + `Layout.helpers.ts:isPageTrackingExempt`.
 - **24.** Props destructuring threshold — ≤3 in params, ≥4 in body.
 - **25.** No inline `sx` with hardcoded values — co-located `*.styled.ts` with theme tokens.
+
+### 26. Renaming or adding a public path changes the OG layer too
+
+Any PR that adds a public path, renames one, or changes what a section is called must land the OG layer
+too, in the order in Deployment > Which repo owns what (static pages skip definitions). Before opening it:
+
+- **New or renamed static page** → add its pathname to the `PAGES` map in `sites-deployer`. On a rename
+  keep the old `PAGES` key while its redirect lives. No definitions change.
+- **New or renamed path served by a dedicated handler** → add its `path:` pattern to
+  `sites.config[env].routes` in `decentraland/definitions` for all three environments, and keep the old
+  prefix while its redirect lives.
+- **Section renamed** → update the strings in that section's handler in `sites-deployer`, and
+  canonicalize the legacy prefix onto the new one.
+- **Any of these** → give the destination page or layout a Helmet title. A client-side redirect never
+  rewrites the served `<head>`, so the tab inherits the title of the URL the visitor typed.
+
+Confirm the current behavior with `curl -sA Twitterbot https://decentraland.zone/<path> | grep '<title>'`
+rather than reasoning about it. `zone` runs master, so it shows what `org` will do after the rollout.
 
 ## Security checklist
 

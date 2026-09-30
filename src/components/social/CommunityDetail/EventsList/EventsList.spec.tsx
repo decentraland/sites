@@ -22,7 +22,7 @@ jest.mock('../../../../hooks/useInfiniteScrollSentinel', () => ({
   useInfiniteScrollSentinel: () => ({ current: null })
 }))
 
-jest.mock('../../../whats-on/Upcoming/UpcomingCard', () => ({
+jest.mock('../../../events/Upcoming/UpcomingCard', () => ({
   UpcomingCard: ({ event, onClick }: { event: { id: string; name: string }; onClick: (event: { id: string; name: string }) => void }) => (
     <button data-testid={`upcoming-card-${event.id}`} onClick={() => onClick(event)}>
       {event.name}

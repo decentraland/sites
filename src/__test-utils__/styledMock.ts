@@ -16,7 +16,9 @@ const fakeTheme = {
   palette: {
     primary: { main: '#0f0', contrastText: '#000', dark: '#080' },
     secondary: { main: '#fff', contrastText: '#000' },
-    common: { white: '#fff', black: '#000' }
+    common: { white: '#fff', black: '#000' },
+    text: { primary: '#000', secondary: '#666' },
+    divider: '#ddd'
   },
   breakpoints: {
     down: () => '@media (max-width:1199.95px)',

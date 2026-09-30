@@ -4,13 +4,13 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 ## Layers
 
-| Layer           | Where                                      | What                                                                                                               |
-| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| 1. Memory       | `CLAUDE.md` (repo root)                    | Always-loaded constitution. Architecture, conventions, pre-PR rules (1-25), security checklist. **Authoritative**. |
-| 2. Knowledge    | `.claude/skills/`                          | On-demand workflows (auto-invoked by description match).                                                           |
-| 3. Guardrails   | `.claude/hooks/` + `.claude/settings.json` | Deterministic shell scripts on tool events.                                                                        |
-| 4. Delegation   | `.claude/agents/`                          | Subagents with isolated context.                                                                                   |
-| 5. Distribution | _not packaged_                             | See "Bundling later" below.                                                                                        |
+| Layer           | Where                                      | What                                                                                                                 |
+| --------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| 1. Memory       | `CLAUDE.md` (repo root)                    | Always-loaded constitution. Architecture, conventions, numbered pre-PR rules, security checklist. **Authoritative**. |
+| 2. Knowledge    | `.claude/skills/`                          | On-demand workflows (auto-invoked by description match).                                                             |
+| 3. Guardrails   | `.claude/hooks/` + `.claude/settings.json` | Deterministic shell scripts on tool events.                                                                          |
+| 4. Delegation   | `.claude/agents/`                          | Subagents with isolated context.                                                                                     |
+| 5. Distribution | _not packaged_                             | See "Bundling later" below.                                                                                          |
 
 ## Skills
 
@@ -20,7 +20,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 - `coverage-guard` — checks the 95% coverage floor (statements / lines / functions, rule 6) and dispatches `coverage-keeper` on the worst files when below.
 - `migrate-dapp` — playbook for absorbing a standalone Decentraland dapp (whats-on, blog, jump, social, cast, storage, reels) into this SPA as a heavy `DappsShell` route.
 - `pre-pr-review` — runs the full pre-PR gate before `gh pr create`.
-- `auth-flow` — localStorage-based wallet/identity stack (`useWalletAddress`, `useAuthIdentity`, `signedFetch`); no Web3 providers.
+- `auth-flow` — localStorage-based wallet/identity stack (`useWalletAddress`, `useAuthIdentity`, `signedFetch`), and which tier may load Web3.
 - `perf-tier` — lazy boundaries, manual chunks, hero prerender, deferred analytics; anything that moves Lighthouse/LCP.
 - `rtk-query-split` — base clients in `services/` vs injected endpoints in `features/` (+ rules 17-18).
 - `seo-worker` — `api/seo.ts` OG/Twitter rewrite flow and CMS origin coherence.
@@ -29,7 +29,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 ## Agents
 
-- `code-reviewer` — repo-aware diff review against rules 1-25 + security checklist.
+- `code-reviewer` — repo-aware diff review against the numbered Pre-PR rules + security checklist.
 - `coverage-keeper` — writes Jest specs to bring listed files above the 95% floor (rule 6) without violating rules 17 / 18 / 22.
 - `i18n-auditor` — verifies locale parity and detects duplicate keys.
 - `route-architect` — designs new routes respecting the dual-shell boundary.

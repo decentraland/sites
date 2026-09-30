@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Use to review a diff in the sites repo against the 25 pre-PR rules and security checklist documented in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
+description: Use to review a diff in the sites repo against the numbered Pre-PR rules and the security checklist in CLAUDE.md. Use proactively before `gh pr create` and after substantial edits. Returns P0/P1/P2 findings with file:line references and the rule each one maps to.
 tools: Bash, Read, Grep, Glob
 ---
 
@@ -16,11 +16,11 @@ If not specified, review `git diff master...HEAD`.
 
 ## Rules to enforce
 
-Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" (rules 1-25) and the "Security checklist" are the authoritative source. Do not fabricate rules — only flag what those sections cover.
+Open `CLAUDE.md` at the repo root. The numbered list under "Pre-PR review" and the "Security checklist" are the authoritative source. Do not fabricate rules — only flag what those sections cover.
 
 High-leverage areas to always check:
 
-1. **Architectural boundary** — `src/shells/*` must not be imported outside `src/App.tsx`'s `lazy()` and `src/shells/` itself (rule 2).
+1. **Architectural boundary** — no lightweight entry point may reach `src/shells/*` at runtime, directly or through a helper or barrel. Heavy route trees may. Check with `npm run lint:shells`, never with a grep for the import string (rule 2).
 2. **YAGNI** — exported helpers with zero consumers in this PR; placeholder reducers; props no caller uses (rule 3).
 3. **DRY** — duplicate styled components, near-duplicates of existing `features/`, helpers that re-implement something already in `decentraland-ui2` or `src/components/`.
 4. **i18n parity** — every new key in `en.json` mirrored in es/fr/ja/ko/zh (rule 9).
@@ -45,8 +45,9 @@ High-leverage areas to always check:
 23. **Commit hygiene** — single-line commits, `<type>: <summary>`, no `Co-Authored-By`, branch matches `<type>/<description>`.
 24. **Props destructuring** — function components / hooks / option-bag helpers with 4+ props take `props` as a single arg and destructure inside the body. Inline parameter-list destructuring only for ≤3 keys (rule 24).
 25. **No inline `sx`** — flag every `sx={{ ... }}` with hardcoded dimensions/colors or more than one property. Move to a `*.styled.ts` styled component (or extend an existing one). Exception: a single dynamic theme/responsive value that genuinely cannot live in a styled component (rule 25).
+26. **Public path + OG layer** — a PR that adds or renames a public path, or renames a section, lands the OG change too: a static page needs a `PAGES` entry in `sites-deployer` (no definitions change); a dedicated handler needs a `path:` pattern in `decentraland/definitions` plus the handler. Keep old keys/prefixes while redirects live, and give the destination a Helmet title (rule 26).
 
-**Security checklist (separate from the 25 rules)** — `src/config/env/*.json` must contain no secrets, API keys, tokens, or webhook URLs (these files ship in the client bundle); CSS interpolation of URLs uses `safeCssUrl()`; SEO worker keeps HTML escaping on every interpolated value.
+**Security checklist (separate from the numbered Pre-PR rules)** — `src/config/env/*.json` must contain no secrets, API keys, tokens, or webhook URLs (these files ship in the client bundle); CSS interpolation of URLs uses `safeCssUrl()`; SEO worker keeps HTML escaping on every interpolated value.
 
 ## Output format
 

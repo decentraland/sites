@@ -1,0 +1,143 @@
+name: CDN deploy
+
+on:
+  push:
+    branches: [master]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: "Environment to promote to"
+        required: true
+        default: "today"
+        options: [zone, today, org]
+      version:
+        description: "Version to put live. org requires a release (e.g. 1.4.0); zone and today also take a commit build (e.g. 1.4.1-36644372302.commit-1509d74 — copy it from the deploy run you want)."
+        required: true
+      percentage:
+        description: "Rollout percentage"
+        required: true
+        default: "100"
+
+# The KV update is read-modify-write, so one deploy at a time per repo.
+concurrency:
+  group: cdn-deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  dev:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      # Job level, not step level: the build now runs inside a composite action,
+      # and composite steps do not inherit `env:` from the step that calls them.
+      # Lets @sentry/vite-plugin upload source maps, so Sentry stack traces
+      # resolve to TS instead of minified chunks. Skipped when absent.
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+      - run: npm ci
+        env:
+          HUSKY: 0
+      # The build runs INSIDE the action, which is what keeps the version the
+      # bytes were built for and the prefix they are uploaded to the same value.
+      # scripts/prebuild.cjs derives VITE_BASE_URL — the CDN path every asset is
+      # requested from — and the Sentry release name from the version, so a
+      # build that starts before it is settled emits HTML pointing at a prefix
+      # nothing was ever uploaded to.
+      #
+      # The action resolves it rather than this workflow because getting it
+      # right means anchoring on the newest GitHub release, not package.json:
+      # this repo's package.json said 0.0.1 while it served 0.69.x, so a commit
+      # build derived from it sorted below every record in the rollout and the
+      # deploy silently did nothing.
+      #
+      # deployment-environments defaults to zone.
+      - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
+        with:
+          build-command: npm run build
+          dist-path: ./dist
+
+  release:
+    # `release: published` fires for prereleases too. Without the guard an RC would
+    # publish to zone like any other release.
+    if: github.event_name == 'release' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    env:
+      # Job level: the build runs inside a composite action, which does not see
+      # `env:` set on the step that calls it.
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+      - run: npm ci
+        env:
+          HUSKY: 0
+      # Rebuilt rather than copied from the commit build: prebuild bakes
+      # VITE_BASE_URL from the version, so a copy of the commit build would
+      # serve /1.2.3/index.html asking for its assets from
+      # /1.2.3-commit-<sha7>/. A release serves everything from its own path,
+      # which means building with the tag as the version — which is exactly
+      # what passing `version` alongside `build-command` does.
+      #
+      # zone only, and no `environment:` on the job. `today` and `org` need an
+      # environment claim, which GitHub issues only to a job that declares an
+      # environment -- but it evaluates that environment's deployment policy before the
+      # job starts, and `today` admits protected branches only, which a tag ref cannot
+      # satisfy. Declaring it here would stop the job before it uploaded anything.
+      # `zone` needs no claim, so a release serves there directly; `today` and `org` are
+      # promoted from `promote` below, which runs on master and does satisfy the policy.
+      - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
+        with:
+          build-command: npm run build
+          dist-path: ./dist
+          version: ${{ github.event.release.tag_name }}
+          deployment-environments: '["zone"]'
+
+  promote:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # Required: GitHub evaluates this before the job starts and only then issues
+    # the environment claim the broker checks for today and org.
+    environment: ${{ inputs.environment }}
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
+      statuses: write
+    steps:
+      # No checkout: nothing is built and the bytes are already in S3, so the
+      # package name cannot be read from package.json, and there is no base
+      # version to compute a commit version from — the action only demands one
+      # when it has to compute it.
+      #
+      # This is NOT a complete rollback. Records are stored sorted descending by
+      # semver and the worker serves the first one above zero percent, so naming
+      # an older version here leaves the newer one still serving every user while
+      # this job reports success. Rolling back also needs the abandoned version
+      # set to 0%, which this single-version dispatch cannot express — use
+      # set-rollout-manual.yml for that until the broker zeroes superseded
+      # records.
+      - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
+        with:
+          package-name: "@dcl/sites"
+          version: ${{ inputs.version }}
+          deployment-environments: ${{ inputs.environment }}
+          percentage: ${{ inputs.percentage }}
