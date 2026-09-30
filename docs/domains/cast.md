@@ -25,6 +25,17 @@ LiveKit browser streaming. Absorbed from `decentraland/cast2`. Mounted under `<D
 
 **CSS gotcha:** `@livekit/components-styles` ships CSS. It MUST NOT live inside `manualChunks` in `vite.config.ts` — Vite would inject the stylesheet as render-blocking on every page. See skill `perf-tier`.
 
+## Presentation composition
+
+A presentation renders in one of two ways, depending on whether the presentation state carries `slide`.
+
+- **v1 (no `slide`):** the `presentation-bot:*` participant publishes one composited tile. `ParticipantGrid` shows it, and the streamer's `CameraOverlayHandle` sits over that tile's `<video>` with no camera preview.
+- **v2 (`slide` present):** the streamer view, the `/cast` watcher, and Places `SceneLiveWatcher` (both modes; `SceneRoomMount` provides `NotificationProvider` + `PresentationProvider`) render `PresentationStage` instead. The watcher keeps showing it after the streamer leaves, because the bot outlives them.
+- **Stage layers:** the slide PNG as an `<img>`; the bot's `presentation-video` track over its `slideVideos[playingVideoIndex].geometry` rectangle while a video plays or is paused; the `presenterIdentity` camera in a circle at `overlay`, only while that camera is published and unmuted. `ParticipantGrid` never shows a `presentation-video` tile.
+- **Presenter handle:** only the `presenterIdentity` participant gets `CameraOverlayHandle`. It draws their local camera, mirrored, inside the dotted circle, so dragging has no server round-trip, and the stage leaves its own circle out for them.
+- **Slide origin:** the stage sets `<img src>` only when `isAllowedSlideUrl` (`src/features/cast2/cast2.slideUrl.ts`) accepts the URL: the `getPresenterServerUrl()` origin and a `/presentations/:id/slides/:hash.png` path.
+- **Protocol:** the field contract is "Shared protocol contract" in `cast-presenter-server/docs/specs/client-composition/plan.md`.
+
 ## Auth
 
 Cast can run anonymously OR with a token-in-URL. The `cast2Client` baseQuery handles both shapes. See skill `auth-flow` for the localStorage wallet hooks (only used when a logged-in user joins).

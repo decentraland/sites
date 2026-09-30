@@ -8,6 +8,7 @@ import { CameraOverlayHandle } from '../CameraOverlayHandle/CameraOverlayHandle'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
+import { PresentationStage } from '../PresentationStage/PresentationStage'
 import { ContentWrapper } from './StreamerViewContent.styled'
 
 export function StreamerViewContent() {
@@ -22,6 +23,7 @@ export function StreamerViewContent() {
   const isConnecting = connectionState === ConnectionState.Connecting
   const isDisconnected = connectionState === ConnectionState.Disconnected
   const hasAnyVideo = hasLocalCamera || hasLocalScreenShare
+  const isClientComposed = Boolean(presentation?.state.slide)
 
   // Track initialization state - wait a bit for tracks to initialize
   useEffect(() => {
@@ -59,6 +61,16 @@ export function StreamerViewContent() {
     return (
       <ContentWrapper>
         <EmptyStreamState type="watcher" message={t('empty_state.streamer_disconnected')} />
+      </ContentWrapper>
+    )
+  }
+
+  if (isClientComposed) {
+    const isLocalPresenter = presentation?.state.presenterIdentity === localParticipant.identity
+    return (
+      <ContentWrapper>
+        <LiveStreamCounter />
+        <PresentationStage overlay={hasLocalCamera && isLocalPresenter ? <CameraOverlayHandle /> : undefined} />
       </ContentWrapper>
     )
   }

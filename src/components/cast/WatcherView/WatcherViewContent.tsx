@@ -1,15 +1,18 @@
 import { useRemoteParticipants } from '@livekit/components-react'
 import { Track } from 'livekit-client'
 import { getDisplayName } from '../../../features/cast2/cast2.utils'
+import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
+import { PresentationStage } from '../PresentationStage/PresentationStage'
 import { ContentWrapper } from './WatcherViewContent.styled'
 
 export function WatcherViewContent() {
   const { t } = useCastTranslation()
   const remoteParticipants = useRemoteParticipants()
+  const presentation = usePresentationOptional()
 
   // Check if there are streamers connected
   const hasStreamers = remoteParticipants.some(p => {
@@ -31,6 +34,15 @@ export function WatcherViewContent() {
     )
     return hasCamera || hasScreenShare
   })
+
+  if (presentation?.state.slide) {
+    return (
+      <ContentWrapper>
+        <LiveStreamCounter />
+        <PresentationStage />
+      </ContentWrapper>
+    )
+  }
 
   // If no streamers at all, show watcher empty state
   if (!hasStreamers) {

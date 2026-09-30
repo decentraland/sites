@@ -1,7 +1,9 @@
 import { useRemoteParticipants, useTracks } from '@livekit/components-react'
 import { Track } from 'livekit-client'
+import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ParticipantGrid } from '../../cast/ParticipantGrid/ParticipantGrid'
+import { PresentationStage } from '../../cast/PresentationStage/PresentationStage'
 import { Placeholder, PlaceholderHint, PlaceholderTitle } from './SceneLiveWatcher.styled'
 
 // Permissive content renderer for the /get-scene-adapter path. Unlike
@@ -15,6 +17,11 @@ function SceneRoomContent() {
   const participants = useRemoteParticipants()
   const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], { updateOnlyOn: [] })
   const hasActiveVideo = tracks.some(track => track.publication && !track.publication.isMuted)
+  const presentation = usePresentationOptional()
+
+  if (presentation?.state.slide) {
+    return <PresentationStage />
+  }
 
   if (hasActiveVideo) {
     return <ParticipantGrid localParticipantVisible={false} />

@@ -31,6 +31,7 @@ import {
 
 const MAX_VISIBLE_PARTICIPANTS = 9
 const MAX_THUMBNAILS = 1
+const PRESENTATION_VIDEO_TRACK = 'presentation-video'
 
 function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }: ParticipantGridProps) {
   const { t } = useCastTranslation()
@@ -50,7 +51,10 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
   )
 
   const finalTracks = useMemo(
-    () => filteredTracks.filter((track: TrackReferenceOrPlaceholder) => track.publication !== undefined),
+    () =>
+      filteredTracks.filter(
+        (track: TrackReferenceOrPlaceholder) => track.publication !== undefined && track.publication.trackName !== PRESENTATION_VIDEO_TRACK
+      ),
     [filteredTracks]
   )
 
