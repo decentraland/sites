@@ -69,7 +69,9 @@ jobs:
           dist-path: ./dist
 
   release:
-    if: github.event_name == 'release'
+    # `release: published` fires for prereleases too. Without the guard an RC would
+    # publish to zone and today like any other release.
+    if: github.event_name == 'release' && !github.event.release.prerelease
     runs-on: ubuntu-latest
     # GitHub issues the environment claim the broker requires for `today` only to a job
     # that declares an environment, and evaluates today's protection rules before the job
