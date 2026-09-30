@@ -36,6 +36,8 @@ const trackRef = (identity: string, source: Track.Source) => ({
 const botTrack = trackRef('presentation-bot', Track.Source.ScreenShare)
 const cameraTrack = trackRef('0xabc', Track.Source.Camera)
 
+const namedBotTrack = (trackName: string) => ({ ...botTrack, publication: { isMuted: false, track: {}, trackName } })
+
 const slot = <span data-testid="slot" />
 
 describe('ParticipantGrid', () => {
@@ -84,6 +86,28 @@ describe('ParticipantGrid', () => {
     it('should render the presentation overlay once, on the expanded bot tile', () => {
       render(<ParticipantGrid presentationOverlay={slot} />)
       expect(screen.getAllByTestId('slot')).toHaveLength(1)
+    })
+  })
+
+  describe('when the bot publishes its client-composition video track', () => {
+    beforeEach(() => {
+      videoTracks = [namedBotTrack('presentation-video')]
+    })
+
+    it('should render no tile for it', () => {
+      render(<ParticipantGrid />)
+      expect(screen.queryByTestId('video-track')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the bot publishes its legacy composited track', () => {
+    beforeEach(() => {
+      videoTracks = [namedBotTrack('presentation')]
+    })
+
+    it('should render its tile', () => {
+      render(<ParticipantGrid />)
+      expect(screen.getByTestId('video-track')).toBeInTheDocument()
     })
   })
 

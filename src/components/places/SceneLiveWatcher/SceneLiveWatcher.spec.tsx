@@ -43,6 +43,14 @@ jest.mock('../../../features/cast2/contexts/ChatProvider', () => ({
   ChatProvider: ({ children }: { children?: React.ReactNode }) => <div data-testid="chat-provider">{children}</div>,
   useChatContext: () => mockChatContext
 }))
+const mockUsePresentationOptional = jest.fn()
+jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({
+  PresentationProvider: ({ children }: { children?: React.ReactNode }) => <div data-testid="presentation-provider">{children}</div>,
+  usePresentationOptional: () => mockUsePresentationOptional()
+}))
+jest.mock('../../../features/cast2/contexts/NotificationContext', () => ({
+  NotificationProvider: ({ children }: { children?: React.ReactNode }) => <>{children}</>
+}))
 jest.mock('../../../features/cast2/contexts/LiveKitContext', () => ({
   LiveKitProvider: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   useLiveKitCredentials: () => ({ streamMetadata: undefined })
@@ -124,6 +132,7 @@ describe('SceneLiveWatcher', () => {
   beforeEach(() => {
     mockUseTracks.mockReturnValue([])
     mockUseAdvancedUserAgentData.mockReturnValue([false, { mobile: false }])
+    mockUsePresentationOptional.mockReturnValue(null)
   })
 
   afterEach(() => {
@@ -141,6 +150,16 @@ describe('SceneLiveWatcher', () => {
 
         expect(screen.getByText('bare child')).toBeInTheDocument()
         expect(screen.queryByTestId('livekit-room')).not.toBeInTheDocument()
+      })
+
+      it('should not mount the presentation provider', () => {
+        render(
+          <SceneRoomMount credentials={null}>
+            <span>bare child</span>
+          </SceneRoomMount>
+        )
+
+        expect(screen.queryByTestId('presentation-provider')).not.toBeInTheDocument()
       })
     })
 
@@ -174,6 +193,17 @@ describe('SceneLiveWatcher', () => {
         expect(screen.getByTestId('livekit-room')).toBeInTheDocument()
         expect(screen.getByTestId('chat-provider')).toBeInTheDocument()
         expect(screen.getByText('roomed child')).toBeInTheDocument()
+      })
+
+      it('should render the children inside the presentation provider within the chat provider', () => {
+        render(
+          <SceneRoomMount credentials={credentials}>
+            <span>roomed child</span>
+          </SceneRoomMount>
+        )
+
+        expect(screen.getByTestId('presentation-provider')).toContainElement(screen.getByText('roomed child'))
+        expect(screen.getByTestId('chat-provider')).toContainElement(screen.getByTestId('presentation-provider'))
       })
     })
   })
@@ -364,6 +394,21 @@ describe('SceneLiveWatcher', () => {
 
         expect(screen.getByTitle('discover.scene.tab_streaming')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'discover.scene.close_media' })).toBeInTheDocument()
+      })
+
+      describe('and a client-composed presentation is live', () => {
+        beforeEach(() => {
+          mockUsePresentationOptional.mockReturnValue({
+            state: { slide: { url: 'https://presenter.test/presentations/p1/slides/ab12.png', width: 1920, height: 1080 } }
+          })
+        })
+
+        it('should surface the VIDEO tab and start on the presentation', () => {
+          render(<SceneWatcherCard {...props} />)
+
+          expect(screen.getByRole('button', { name: 'discover.scene.tab_video' })).toBeInTheDocument()
+          expect(screen.getByTestId('scene-room-content')).toBeInTheDocument()
+        })
       })
     })
 

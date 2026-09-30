@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { SceneRoomContent } from './SceneRoomContent'
 
 const mockUseTracks = jest.fn()
@@ -16,6 +17,11 @@ jest.mock('../../cast/ParticipantGrid/ParticipantGrid', () => ({
   ParticipantGrid: ({ localParticipantVisible }: { localParticipantVisible: boolean }) => (
     <div data-testid="participant-grid" data-local-visible={String(localParticipantVisible)} />
   )
+}))
+
+jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePresentationOptional: jest.fn() }))
+jest.mock('../../cast/PresentationStage/PresentationStage', () => ({
+  PresentationStage: () => <div data-testid="presentation-stage" />
 }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
@@ -40,10 +46,13 @@ jest.mock('decentraland-ui2', () => {
   }
 })
 
+const mockUsePresentationOptional = usePresentationOptional as jest.Mock
+
 describe('SceneRoomContent', () => {
   beforeEach(() => {
     mockUseTracks.mockReturnValue([])
     mockUseRemoteParticipants.mockReturnValue([])
+    mockUsePresentationOptional.mockReturnValue(null)
   })
 
   afterEach(() => {
@@ -59,6 +68,34 @@ describe('SceneRoomContent', () => {
       render(<SceneRoomContent />)
 
       expect(screen.getByTestId('participant-grid')).toHaveAttribute('data-local-visible', 'false')
+    })
+  })
+
+  describe('when a client-composed presentation is live without any track', () => {
+    beforeEach(() => {
+      mockUsePresentationOptional.mockReturnValue({
+        state: { slide: { url: 'https://presenter.test/presentations/p1/slides/ab12.png', width: 1920, height: 1080 } }
+      })
+    })
+
+    it('should render the presentation stage instead of the waiting placeholder', () => {
+      render(<SceneRoomContent />)
+
+      expect(screen.getByTestId('presentation-stage')).toBeInTheDocument()
+      expect(screen.queryByText('discover.scene.waiting.title')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when a legacy presentation is live with active video', () => {
+    beforeEach(() => {
+      mockUsePresentationOptional.mockReturnValue({ state: { slide: null } })
+      mockUseTracks.mockReturnValue([{ publication: { isMuted: false } }])
+    })
+
+    it('should render the participant grid', () => {
+      render(<SceneRoomContent />)
+
+      expect(screen.getByTestId('participant-grid')).toBeInTheDocument()
     })
   })
 

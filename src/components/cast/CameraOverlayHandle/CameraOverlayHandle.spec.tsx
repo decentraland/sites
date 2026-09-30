@@ -1,9 +1,11 @@
 import React from 'react'
+import { useLocalParticipant } from '@livekit/components-react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import type { OverlayLayout } from '../../../features/cast2/cast2.types'
+import type { OverlayLayout, SlideInfo } from '../../../features/cast2/cast2.types'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import { CameraOverlayHandle } from './CameraOverlayHandle'
 
+jest.mock('@livekit/components-react', () => ({ useLocalParticipant: jest.fn(), VideoTrack: () => null }))
 jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePresentation: jest.fn() }))
 jest.mock('../../../features/cast2/useCastTranslation', () => ({
   useCastTranslation: () => ({ t: (key: string) => key })
@@ -20,10 +22,19 @@ jest.mock('./CameraOverlayHandle.styled', () => ({
       'data-size': (style as React.CSSProperties).width,
       'data-transient-left': $left,
       'data-dragging': String($dragging)
+    }),
+  HandlePreview: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'handle-preview' }, children),
+  HandlePreviewVideo: ({ trackRef }: { trackRef: { source: string; participant: { identity: string } } }) =>
+    React.createElement('div', {
+      'data-testid': 'handle-preview-video',
+      'data-source': trackRef.source,
+      'data-identity': trackRef.participant.identity
     })
 }))
 
 const mockUsePresentation = usePresentation as jest.Mock
+const mockUseLocalParticipant = useLocalParticipant as jest.Mock
 
 const HINT = 'streaming_controls.camera_overlay.drag_hint'
 
@@ -76,7 +87,8 @@ describe('CameraOverlayHandle', () => {
     setOverlay = jest.fn(async (patch: Partial<OverlayLayout>) => {
       overlay = { ...overlay, ...patch }
     })
-    mockUsePresentation.mockImplementation(() => ({ state: { overlay }, setOverlay }))
+    mockUsePresentation.mockImplementation(() => ({ state: { overlay, slide: null, presenterIdentity: null }, setOverlay }))
+    mockUseLocalParticipant.mockReturnValue({ localParticipant: { identity: '0xabc' }, cameraTrack: undefined })
     now = 1000
     jest.spyOn(Date, 'now').mockImplementation(() => now)
     videoSize = { width: 960, height: 540 }
@@ -265,6 +277,138 @@ describe('CameraOverlayHandle', () => {
       const view = renderHandle()
       view.unmount()
       expect(disconnect).toHaveBeenCalled()
+    })
+  })
+
+  describe('when the video is too small for a bubble', () => {
+    beforeEach(() => {
+      videoSize = { width: 6, height: 4 }
+    })
+
+    it('should render no outline', () => {
+      renderHandle()
+      expect(screen.queryByRole('button', { name: HINT })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the local camera is on without a client-composed slide', () => {
+    beforeEach(() => {
+      mockUseLocalParticipant.mockReturnValue({ localParticipant: { identity: '0xabc' }, cameraTrack: { track: {}, isMuted: false } })
+    })
+
+    it('should not preview the camera inside the outline', () => {
+      renderHandle()
+      expect(screen.queryByTestId('handle-preview')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the presentation is client-composed', () => {
+    let slide: SlideInfo
+    let presenterIdentity: string | null
+
+    const slideTree = () => (
+      <div>
+        <CameraOverlayHandle />
+      </div>
+    )
+
+    const renderSlideHandle = () => render(slideTree())
+
+    beforeEach(() => {
+      slide = { url: 'https://presenter.test/presentations/p1/slides/ab12.png', width: 1920, height: 1080 }
+      presenterIdentity = '0xabc'
+      mockUsePresentation.mockImplementation(() => ({ state: { overlay, slide, presenterIdentity }, setOverlay }))
+    })
+
+    describe('and the layer has no video sibling', () => {
+      it('should place the outline from the slide size', () => {
+        renderSlideHandle()
+        expect(position()).toEqual({ left: '19', top: '377', size: '144' })
+      })
+
+      it('should not preview a camera that is absent', () => {
+        renderSlideHandle()
+        expect(screen.queryByTestId('handle-preview')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the layer resizes', () => {
+      it('should rescale the outline to the letterboxed slide', () => {
+        renderSlideHandle()
+        layerSize = { width: 480, height: 480 }
+        act(() => resizeCallback())
+        expect(position()).toEqual({ left: '9.5', top: '293.5', size: '72' })
+      })
+    })
+
+    describe('and it unmounts', () => {
+      it('should stop observing the layer', () => {
+        const view = renderSlideHandle()
+        view.unmount()
+        expect(disconnect).toHaveBeenCalled()
+      })
+    })
+
+    describe('and the slide is too small for a bubble', () => {
+      beforeEach(() => {
+        slide = { ...slide, width: 6, height: 4 }
+      })
+
+      it('should render no outline', () => {
+        renderSlideHandle()
+        expect(screen.queryByRole('button', { name: HINT })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the local participant presents with the camera on', () => {
+      beforeEach(() => {
+        mockUseLocalParticipant.mockReturnValue({ localParticipant: { identity: '0xabc' }, cameraTrack: { track: {}, isMuted: false } })
+      })
+
+      it('should preview the local camera inside the outline', () => {
+        renderSlideHandle()
+        expect(circle()).toContainElement(screen.getByTestId('handle-preview-video'))
+      })
+
+      it('should preview the camera source of the local participant', () => {
+        renderSlideHandle()
+        expect(screen.getByTestId('handle-preview-video')).toHaveAttribute('data-source', 'camera')
+        expect(screen.getByTestId('handle-preview-video')).toHaveAttribute('data-identity', '0xabc')
+      })
+    })
+
+    describe('and another participant presents', () => {
+      beforeEach(() => {
+        presenterIdentity = '0xdef'
+        mockUseLocalParticipant.mockReturnValue({ localParticipant: { identity: '0xabc' }, cameraTrack: { track: {}, isMuted: false } })
+      })
+
+      it('should not preview the local camera', () => {
+        renderSlideHandle()
+        expect(screen.queryByTestId('handle-preview')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the local camera is muted', () => {
+      beforeEach(() => {
+        mockUseLocalParticipant.mockReturnValue({ localParticipant: { identity: '0xabc' }, cameraTrack: { track: {}, isMuted: true } })
+      })
+
+      it('should not preview the local camera', () => {
+        renderSlideHandle()
+        expect(screen.queryByTestId('handle-preview')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the local camera publication has no track', () => {
+      beforeEach(() => {
+        mockUseLocalParticipant.mockReturnValue({ localParticipant: { identity: '0xabc' }, cameraTrack: { isMuted: false } })
+      })
+
+      it('should not preview the local camera', () => {
+        renderSlideHandle()
+        expect(screen.queryByTestId('handle-preview')).not.toBeInTheDocument()
+      })
     })
   })
 })

@@ -17,6 +17,10 @@ jest.mock('../ParticipantGrid/ParticipantGrid', () => ({
   ParticipantGrid: ({ presentationOverlay }: { presentationOverlay?: React.ReactNode }) =>
     React.createElement('div', { 'data-testid': 'participant-grid' }, presentationOverlay)
 }))
+jest.mock('../PresentationStage/PresentationStage', () => ({
+  PresentationStage: ({ overlay }: { overlay?: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'presentation-stage' }, overlay)
+}))
 jest.mock('../CameraOverlayHandle/CameraOverlayHandle', () => ({
   CameraOverlayHandle: () => React.createElement('div', { 'data-testid': 'camera-overlay-handle' })
 }))
@@ -70,7 +74,7 @@ describe('StreamerViewContent', () => {
 
   describe('when the camera is off and a presentation is active', () => {
     beforeEach(() => {
-      mockUsePresentationOptional.mockReturnValue({ isPresentationActive: true })
+      mockUsePresentationOptional.mockReturnValue({ isPresentationActive: true, state: { slide: null, presenterIdentity: null } })
       renderPastInitGrace()
     })
 
@@ -90,12 +94,78 @@ describe('StreamerViewContent', () => {
   describe('when the camera is on and a presentation is active', () => {
     beforeEach(() => {
       mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: true, hasLocalScreenShare: false })
-      mockUsePresentationOptional.mockReturnValue({ isPresentationActive: true })
+      mockUsePresentationOptional.mockReturnValue({ isPresentationActive: true, state: { slide: null, presenterIdentity: null } })
       renderPastInitGrace()
     })
 
     it('should pass the camera overlay handle to the grid', () => {
       expect(screen.getByTestId('participant-grid')).toContainElement(screen.getByTestId('camera-overlay-handle'))
+    })
+  })
+
+  describe('when the presentation is client-composed', () => {
+    let presenterIdentity: string | null
+
+    beforeEach(() => {
+      presenterIdentity = '0xabc'
+      mockUsePresentationOptional.mockImplementation(() => ({
+        isPresentationActive: true,
+        state: { slide: { url: 'https://presenter.test/presentations/p1/slides/ab12.png', width: 1920, height: 1080 }, presenterIdentity }
+      }))
+    })
+
+    describe('and the local participant presents with the camera on', () => {
+      beforeEach(() => {
+        mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: true, hasLocalScreenShare: false })
+        renderPastInitGrace()
+      })
+
+      it('should render the camera overlay handle on the presentation stage', () => {
+        expect(screen.getByTestId('presentation-stage')).toContainElement(screen.getByTestId('camera-overlay-handle'))
+      })
+
+      it('should not render the participant grid', () => {
+        expect(screen.queryByTestId('participant-grid')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and another participant presents', () => {
+      beforeEach(() => {
+        presenterIdentity = '0xdef'
+        mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: true, hasLocalScreenShare: false })
+        renderPastInitGrace()
+      })
+
+      it('should render the presentation stage without the camera overlay handle', () => {
+        expect(screen.getByTestId('presentation-stage')).toBeInTheDocument()
+        expect(screen.queryByTestId('camera-overlay-handle')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the local camera is off', () => {
+      beforeEach(() => {
+        renderPastInitGrace()
+      })
+
+      it('should render the presentation stage without the camera overlay handle', () => {
+        expect(screen.getByTestId('presentation-stage')).toBeInTheDocument()
+        expect(screen.queryByTestId('camera-overlay-handle')).not.toBeInTheDocument()
+      })
+
+      it('should not render the empty stream state', () => {
+        expect(screen.queryByTestId('empty-stream-state')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('when a legacy presentation is active', () => {
+    beforeEach(() => {
+      mockUsePresentationOptional.mockReturnValue({ isPresentationActive: true, state: { slide: null, presenterIdentity: '0xabc' } })
+      renderPastInitGrace()
+    })
+
+    it('should not render the presentation stage', () => {
+      expect(screen.queryByTestId('presentation-stage')).not.toBeInTheDocument()
     })
   })
 
