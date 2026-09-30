@@ -38,7 +38,7 @@ const mockUseRoomContext = useRoomContext as jest.Mock
 const mockIsPresentationBot = isPresentationBot as jest.Mock
 
 const makeBot = (extra: Record<string, unknown> = {}): FakeParticipant => ({
-  identity: 'presentation-bot',
+  identity: 'presentation-bot:room:1',
   metadata: JSON.stringify({ role: 'presentation', id: 'deck-1', slideCount: 3, currentSlide: 0, fileType: 'pdf', ...extra })
 })
 
@@ -68,6 +68,12 @@ const tree = () => (
   </PresentationProvider>
 )
 
+const controllerTree = () => (
+  <PresentationProvider canControl>
+    <Probe />
+  </PresentationProvider>
+)
+
 const renderProvider = () => render(tree())
 
 const deliver = (payload: Uint8Array, participant: FakeParticipant) => {
@@ -75,6 +81,23 @@ const deliver = (payload: Uint8Array, participant: FakeParticipant) => {
     dataHandler?.(payload, participant)
   })
 }
+
+const makeRoom = (identity: string) => ({
+  localParticipant: { identity, publishData },
+  on: jest.fn((_event: string, handler: DataHandler) => {
+    dataHandler = handler
+  }),
+  off: jest.fn()
+})
+
+const claimCount = (): number =>
+  publishData.mock.calls.filter(([payload]: [Uint8Array]) => {
+    const data = decodeCommsPacket(payload)?.data as { type?: string } | undefined
+    return data?.type === 'presentation:presenter:claim'
+  }).length
+
+const SLIDE = { url: 'https://presenter.test/presentations/deck-1/slides/0f3a.png', width: 1920, height: 1080 }
+const PRESENTATION_INFO = { id: 'deck-2', slideCount: 5, currentSlide: 0, fileType: 'pdf' }
 
 describe('PresentationProvider', () => {
   let bot: FakeParticipant
@@ -86,7 +109,7 @@ describe('PresentationProvider', () => {
     dataHandler = undefined
     publishData = jest.fn().mockResolvedValue(undefined)
     const room = {
-      localParticipant: { publishData },
+      localParticipant: { identity: 'stream:p:1', publishData },
       on: jest.fn((_event: string, handler: DataHandler) => {
         dataHandler = handler
       }),
@@ -94,7 +117,7 @@ describe('PresentationProvider', () => {
     }
     mockUseRoomContext.mockReturnValue(room)
     mockUseRemoteParticipants.mockReturnValue([])
-    mockIsPresentationBot.mockImplementation((participant: FakeParticipant) => participant.identity === 'presentation-bot')
+    mockIsPresentationBot.mockImplementation((participant: FakeParticipant) => participant.identity.startsWith('presentation-bot:'))
     ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([jest.fn()])
     ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([jest.fn()])
     ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([jest.fn()])
@@ -291,6 +314,364 @@ describe('PresentationProvider', () => {
 
     it('should start with the default overlay', () => {
       expect(current.state).toEqual(expect.objectContaining({ status: 'starting', overlay: DEFAULT_OVERLAY }))
+    })
+  })
+
+  describe('when the bot metadata carries the v2 composition fields', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([makeBot({ slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 })])
+      renderProvider()
+    })
+
+    it('should expose the slide, the presenter identity and the playing video index', () => {
+      const { slide, presenterIdentity, playingVideoIndex } = current.state
+      expect({ slide, presenterIdentity, playingVideoIndex }).toEqual({
+        slide: SLIDE,
+        presenterIdentity: 'stream:p:1',
+        playingVideoIndex: 0
+      })
+    })
+  })
+
+  describe('when a presentation:state packet carries the v2 composition fields', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }), bot)
+    })
+
+    it('should expose the slide, the presenter identity and the playing video index', () => {
+      const { slide, presenterIdentity, playingVideoIndex } = current.state
+      expect({ slide, presenterIdentity, playingVideoIndex }).toEqual({
+        slide: SLIDE,
+        presenterIdentity: 'stream:p:1',
+        playingVideoIndex: 0
+      })
+    })
+  })
+
+  describe('when a presentation:state packet carries a slide with an empty url', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ currentSlide: 2, slide: { ...SLIDE, url: '' } }), bot)
+    })
+
+    it('should drop the slide', () => {
+      expect(current.state.slide).toBeNull()
+    })
+
+    it('should still apply the rest of the packet', () => {
+      expect(current.state.currentSlide).toBe(2)
+    })
+  })
+
+  describe('when a presentation:state packet carries a slide with a zero width', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ slide: { ...SLIDE, width: 0 } }), bot)
+    })
+
+    it('should drop the slide', () => {
+      expect(current.state.slide).toBeNull()
+    })
+  })
+
+  describe('when a presentation:state packet carries a slide that is not an object', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ slide: 'slide.png' }), bot)
+    })
+
+    it('should drop the slide', () => {
+      expect(current.state.slide).toBeNull()
+    })
+  })
+
+  describe.each([-1, 1.5, '0'])('when a presentation:state packet carries the playing video index %p', index => {
+    let playingVideoIndex: unknown
+
+    beforeEach(() => {
+      playingVideoIndex = index
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ playingVideoIndex }), bot)
+    })
+
+    it('should expose no playing video index', () => {
+      expect(current.state.playingVideoIndex).toBeNull()
+    })
+  })
+
+  describe('when a presentation:state packet carries a numeric presenter identity', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ presenterIdentity: 42 }), bot)
+    })
+
+    it('should expose no presenter identity', () => {
+      expect(current.state.presenterIdentity).toBeNull()
+    })
+  })
+
+  describe('when a presentation:state packet comes from a legacy server', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket(), bot)
+    })
+
+    it('should expose the legacy state with every v2 field unset', () => {
+      expect(current.state).toEqual({
+        id: 'deck-1',
+        slideCount: 3,
+        currentSlide: 0,
+        fileType: 'pdf',
+        status: 'active',
+        slideVideos: [],
+        videoState: 'idle',
+        overlay: DEFAULT_OVERLAY,
+        slide: null,
+        presenterIdentity: null,
+        playingVideoIndex: null
+      })
+    })
+  })
+
+  describe('when the bot metadata is re-emitted during a local overlay hold', () => {
+    let fields: Record<string, unknown>
+    let previous: PresentationContextValue['state']
+
+    const reEmitDuringHold = async () => {
+      mockUseRemoteParticipants.mockReturnValue([makeBot(fields)])
+      const view = renderProvider()
+      await act(async () => {
+        await current.setOverlay({ x: 0.5, y: 0.5 })
+      })
+      previous = current.state
+      now = HOLD_START + 500
+      mockUseRemoteParticipants.mockReturnValue([makeBot({ ...fields, overlay: { x: 0.3, y: 0.3, size: 'small' } })])
+      view.rerender(tree())
+    }
+
+    describe('and it carries identical v2 composition fields', () => {
+      beforeEach(async () => {
+        fields = { slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }
+        await reEmitDuringHold()
+      })
+
+      it('should keep the same state object', () => {
+        expect(current.state).toBe(previous)
+      })
+    })
+
+    describe('and it carries no v2 composition fields', () => {
+      beforeEach(async () => {
+        fields = {}
+        await reEmitDuringHold()
+      })
+
+      it('should keep the same state object', () => {
+        expect(current.state).toBe(previous)
+      })
+    })
+  })
+
+  describe('when a streamer identity claims the presentation role in its metadata', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([
+        {
+          identity: 'stream:x:1',
+          metadata: JSON.stringify({
+            role: 'presentation',
+            id: 'deck-1',
+            slideCount: 3,
+            currentSlide: 0,
+            fileType: 'pdf',
+            slide: SLIDE,
+            presenterIdentity: 'stream:x:1'
+          })
+        }
+      ])
+      renderProvider()
+    })
+
+    it('should not treat it as the presentation bot', () => {
+      expect(current.presentationParticipantIdentity).toBeNull()
+    })
+  })
+
+  describe('when a presentation upload runs', () => {
+    let uploadPresentation: jest.Mock
+    let uploadPresentationFromUrl: jest.Mock
+
+    beforeEach(() => {
+      uploadPresentation = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
+      uploadPresentationFromUrl = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
+      ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([
+        () => ({ unwrap: () => Promise.resolve({ token: 'bot-token', url: 'wss://example.test' }) })
+      ])
+      ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([uploadPresentation])
+      ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([uploadPresentationFromUrl])
+    })
+
+    describe('and it uploads a file', () => {
+      beforeEach(async () => {
+        renderProvider()
+        await act(async () => {
+          await current.startPresentation(new File(['deck'], 'deck.pdf'))
+        })
+      })
+
+      it('should send the local participant identity as the presenter identity', () => {
+        expect(uploadPresentation).toHaveBeenCalledWith(expect.objectContaining({ presenterIdentity: 'stream:p:1' }))
+      })
+
+      it('should start with every v2 field unset', () => {
+        const { slide, presenterIdentity, playingVideoIndex } = current.state
+        expect({ slide, presenterIdentity, playingVideoIndex }).toEqual({ slide: null, presenterIdentity: null, playingVideoIndex: null })
+      })
+    })
+
+    describe('and it uploads from a URL', () => {
+      beforeEach(async () => {
+        renderProvider()
+        await act(async () => {
+          await current.startPresentationFromUrl('https://docs.test/deck.pdf')
+        })
+      })
+
+      it('should send the local participant identity as the presenter identity', () => {
+        expect(uploadPresentationFromUrl).toHaveBeenCalledWith(expect.objectContaining({ presenterIdentity: 'stream:p:1' }))
+      })
+    })
+
+    describe('and the local participant has no identity yet', () => {
+      beforeEach(async () => {
+        mockUseRoomContext.mockReturnValue(makeRoom(''))
+        renderProvider()
+        await act(async () => {
+          await current.startPresentation(new File(['deck'], 'deck.pdf'))
+        })
+      })
+
+      it('should omit the presenter identity', () => {
+        expect(uploadPresentation.mock.calls[0][0].presenterIdentity).toBeUndefined()
+      })
+    })
+  })
+
+  describe('when a presenter client sees an orphaned presenterIdentity', () => {
+    let view: ReturnType<typeof renderProvider>
+
+    beforeEach(() => {
+      mockUseRoomContext.mockReturnValue(makeRoom('stream:new'))
+    })
+
+    describe('and the presenter identity left the room', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        view = render(controllerTree())
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
+      })
+
+      it('should send exactly one presenter claim', () => {
+        expect(claimCount()).toBe(1)
+      })
+
+      describe('and the provider re-renders and the same packet repeats', () => {
+        beforeEach(() => {
+          view.rerender(controllerTree())
+          deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
+        })
+
+        it('should not send another claim', () => {
+          expect(claimCount()).toBe(1)
+        })
+      })
+
+      describe('and the server re-points it at the local identity', () => {
+        beforeEach(() => {
+          deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:new' }), bot)
+        })
+
+        it('should not send another claim', () => {
+          expect(claimCount()).toBe(1)
+        })
+      })
+
+      describe('and the server re-points it at another absent identity', () => {
+        beforeEach(() => {
+          deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
+        })
+
+        it('should send a second claim', () => {
+          expect(claimCount()).toBe(2)
+        })
+      })
+    })
+
+    describe('and the presenter identity is null', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        render(controllerTree())
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: null }), bot)
+      })
+
+      it('should send one presenter claim', () => {
+        expect(claimCount()).toBe(1)
+      })
+    })
+
+    describe('and the presenter identity is a remote participant', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([bot, { identity: 'stream:other', metadata: '' }])
+        render(controllerTree())
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
+      })
+
+      it('should not send a presenter claim', () => {
+        expect(claimCount()).toBe(0)
+      })
+    })
+
+    describe('and the presenter identity is the local participant', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        render(controllerTree())
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:new' }), bot)
+      })
+
+      it('should not send a presenter claim', () => {
+        expect(claimCount()).toBe(0)
+      })
+    })
+
+    describe('and the state has no slide', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        render(controllerTree())
+        deliver(statePacket({ presenterIdentity: null }), bot)
+      })
+
+      it('should not send a presenter claim', () => {
+        expect(claimCount()).toBe(0)
+      })
+    })
+
+    describe('and the provider is rendered without canControl', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        renderProvider()
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
+      })
+
+      it('should not send a presenter claim', () => {
+        expect(claimCount()).toBe(0)
+      })
     })
   })
 })
