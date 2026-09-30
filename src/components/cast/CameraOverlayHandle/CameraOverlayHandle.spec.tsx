@@ -12,12 +12,13 @@ jest.mock('./CameraOverlayHandle.styled', () => ({
   HandleLayer: React.forwardRef<HTMLDivElement, { children?: React.ReactNode }>(({ children, ...rest }, ref) =>
     React.createElement('div', { ...rest, ref }, children)
   ),
-  HandleCircle: ({ $left, $top, $size, $dragging, ...rest }: Record<string, unknown>) =>
+  HandleCircle: ({ $left, $dragging, style, ...rest }: { style?: React.CSSProperties; [key: string]: unknown }) =>
     React.createElement('button', {
       ...rest,
-      'data-left': $left,
-      'data-top': $top,
-      'data-size': $size,
+      'data-left': style?.left,
+      'data-top': style?.top,
+      'data-size': style?.width,
+      'data-transient-left': $left,
       'data-dragging': String($dragging)
     })
 }))
@@ -116,6 +117,11 @@ describe('CameraOverlayHandle', () => {
     it('should outline the bubble at its server position', () => {
       renderHandle()
       expect(position()).toEqual({ left: '18', top: '376', size: '144' })
+    })
+
+    it('should pass the geometry through the style prop instead of a styled prop', () => {
+      renderHandle()
+      expect(circle()).not.toHaveAttribute('data-transient-left')
     })
 
     it('should label the outline with the drag hint', () => {
