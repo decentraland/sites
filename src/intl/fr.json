@@ -166,7 +166,7 @@
       },
       "streaming_controls": {
         "camera_overlay": {
-          "menu_button": "Bulle caméra",
+          "title": "Bulle caméra",
           "size_small": "Petite",
           "size_large": "Grande",
           "top_left": "En haut à gauche",

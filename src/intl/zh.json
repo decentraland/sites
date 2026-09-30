@@ -166,7 +166,7 @@
       },
       "streaming_controls": {
         "camera_overlay": {
-          "menu_button": "摄像头气泡",
+          "title": "摄像头气泡",
           "size_small": "小",
           "size_large": "大",
           "top_left": "左上",

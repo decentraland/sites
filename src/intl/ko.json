@@ -166,7 +166,7 @@
       },
       "streaming_controls": {
         "camera_overlay": {
-          "menu_button": "카메라 버블",
+          "title": "카메라 버블",
           "size_small": "작게",
           "size_large": "크게",
           "top_left": "왼쪽 위",

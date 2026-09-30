@@ -216,7 +216,7 @@
       },
       "streaming_controls": {
         "camera_overlay": {
-          "menu_button": "Camera bubble",
+          "title": "Camera bubble",
           "size_small": "Small",
           "size_large": "Large",
           "top_left": "Top left",

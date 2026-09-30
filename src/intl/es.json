@@ -166,7 +166,7 @@
       },
       "streaming_controls": {
         "camera_overlay": {
-          "menu_button": "Burbuja de cámara",
+          "title": "Burbuja de cámara",
           "size_small": "Pequeña",
           "size_large": "Grande",
           "top_left": "Arriba a la izquierda",
