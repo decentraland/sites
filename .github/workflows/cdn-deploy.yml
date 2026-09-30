@@ -24,7 +24,7 @@ on:
         default: "today"
         options: [zone, today, org]
       version:
-        description: "Version to put live. org requires a release (e.g. 1.4.0); zone and today also take a commit build (e.g. 1.4.0-commit-abc1234)."
+        description: "Version to put live. org requires a release (e.g. 1.4.0); zone and today also take a commit build (e.g. 1.4.1-36644372302.commit-1509d74 — copy it from the deploy run you want)."
         required: true
       percentage:
         description: "Rollout percentage"
@@ -142,4 +142,4 @@ jobs:
           package-name: "@dcl/sites"
           version: ${{ inputs.version }}
           deployment-environments: ${{ inputs.environment }}
-          percentage: ${{ fromJSON(inputs.percentage) }}
+          percentage: ${{ inputs.percentage }}
