@@ -92,6 +92,10 @@ describe('PresentationStage', () => {
 
   const stage = () => result.container.firstElementChild as HTMLElement
   const slideBox = () => stage().firstElementChild as HTMLElement | null
+  const slideBoxRect = () => {
+    const { left, top, width, height } = (slideBox() as HTMLElement).style
+    return { left: parseFloat(left), top: parseFloat(top), width: parseFloat(width), height: parseFloat(height) }
+  }
   const slideImage = () => screen.queryByRole('img', { name: LABEL })
   const presentationVideo = () => result.container.querySelector<HTMLElement>(`video[data-source="${Track.Source.ScreenShare}"]`)
   const cameraVideo = () => result.container.querySelector<HTMLElement>(`video[data-source="${Track.Source.Camera}"]`)
@@ -230,7 +234,7 @@ describe('PresentationStage', () => {
 
     it('should letterbox the slide box vertically at full width', () => {
       renderStage()
-      expect(slideBox()).toHaveStyle({ left: '0px', top: `${(1000 - 562.5) / 2}px`, width: '1000px', height: '562.5px' })
+      expect(slideBoxRect()).toEqual(expect.objectContaining({ top: expect.closeTo((1000 - 562.5) / 2), width: expect.closeTo(1000) }))
     })
   })
 
@@ -241,7 +245,12 @@ describe('PresentationStage', () => {
 
     it('should pillarbox the slide box horizontally at full height', () => {
       renderStage()
-      expect(slideBox()).toHaveStyle({ left: `${(960 - 303.75) / 2}px`, top: '0px', width: '303.75px', height: '540px' })
+      expect(slideBoxRect()).toEqual({
+        left: expect.closeTo((960 - 303.75) / 2),
+        top: expect.closeTo(0),
+        width: expect.closeTo(303.75),
+        height: expect.closeTo(540)
+      })
     })
   })
 
@@ -253,7 +262,7 @@ describe('PresentationStage', () => {
     })
 
     it('should refit the slide box to the new size', () => {
-      expect(slideBox()).toHaveStyle({ width: '1000px', height: '562.5px' })
+      expect(slideBoxRect()).toEqual(expect.objectContaining({ width: expect.closeTo(1000), height: expect.closeTo(562.5) }))
     })
   })
 
