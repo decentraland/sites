@@ -12,7 +12,7 @@ jest.mock('@livekit/components-react', () => ({
   VideoTrack: () => React.createElement('video', { 'data-testid': 'video-track' })
 }))
 jest.mock('../../../features/cast2/cast2.utils', () => ({
-  isPresentationBot: (participant: { identity: string }) => participant.identity === 'presentation-bot',
+  isPresentationBot: (participant: { identity: string }) => participant.identity.startsWith('presentation-bot:'),
   getDisplayName: (participant: { identity: string }) => participant.identity
 }))
 jest.mock('../../../features/cast2/useCastTranslation', () => ({
@@ -33,7 +33,7 @@ const trackRef = (identity: string, source: Track.Source) => ({
   publication: { isMuted: false, track: {} }
 })
 
-const botTrack = trackRef('presentation-bot', Track.Source.ScreenShare)
+const botTrack = trackRef('presentation-bot:room:1', Track.Source.ScreenShare)
 const cameraTrack = trackRef('0xabc', Track.Source.Camera)
 
 const namedBotTrack = (trackName: string) => ({ ...botTrack, publication: { isMuted: false, track: {}, trackName } })
