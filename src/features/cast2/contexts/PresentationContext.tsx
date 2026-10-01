@@ -49,7 +49,7 @@ interface PresentationBotMetadata {
   currentSlide?: number
   fileType?: 'pdf' | 'pptx'
   videoState?: PresentationState['videoState']
-  slideVideos?: SlideVideoInfo[]
+  slideVideos?: unknown
   overlay?: unknown
   slide?: unknown
   presenterIdentity?: unknown
@@ -89,6 +89,16 @@ const toPresenterIdentity = (value: unknown): string | null => (typeof value ===
 const toPlayingVideoIndex = (value: unknown): number | null =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null
 
+const isSlideVideo = (value: unknown): value is SlideVideoInfo => {
+  if (typeof value !== 'object' || value === null) return false
+  const { url, geometry } = value as Record<string, unknown>
+  if (typeof url !== 'string' || typeof geometry !== 'object' || geometry === null) return false
+  const { x, y, width, height } = geometry as Record<string, unknown>
+  return [x, y, width, height].every(Number.isFinite)
+}
+
+const toSlideVideos = (value: unknown): SlideVideoInfo[] => (Array.isArray(value) && value.every(isSlideVideo) ? value : [])
+
 const sameOverlay = (a: OverlayLayout, b: OverlayLayout): boolean =>
   Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
 
@@ -100,7 +110,7 @@ const isPresentationStateMessage = (
   slideCount: number
   currentSlide: number
   fileType: 'pdf' | 'pptx'
-  slideVideos?: SlideVideoInfo[]
+  slideVideos?: unknown
   videoState?: PresentationState['videoState']
   overlay?: unknown
   slide?: unknown
@@ -189,13 +199,15 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
   }
 
   const sendCommand = useCallback(
-    async (command: Record<string, unknown>) => {
-      if (!room?.localParticipant) return
+    async (command: Record<string, unknown>): Promise<boolean> => {
+      if (!room?.localParticipant) return false
       const packet = encodeCommsPacket(PRESENTATION_TOPIC, command)
       try {
         await room.localParticipant.publishData(packet, { reliable: true })
+        return true
       } catch (err) {
         console.warn('[presentation] publishData failed', err)
+        return false
       }
     },
     [room]
@@ -231,7 +243,7 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
     y: botOverlayY,
     size: botOverlaySize
   } = isOverlayLayout(botMetadata?.overlay) ? botMetadata.overlay : DEFAULT_OVERLAY
-  const botSlideVideosJson = useMemo(() => JSON.stringify(botMetadata?.slideVideos ?? []), [botMetadata])
+  const botSlideVideosJson = useMemo(() => JSON.stringify(toSlideVideos(botMetadata?.slideVideos)), [botMetadata])
   const hasBotMetadata = botMetadata !== null
 
   useEffect(() => {
@@ -307,7 +319,9 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
       (presenterIdentity === room?.localParticipant?.identity || remoteParticipants.some(p => p.identity === presenterIdentity))
     if (isPresenterInRoom || claimedForRef.current === presenterIdentity) return
     claimedForRef.current = presenterIdentity
-    sendCommand({ type: 'presentation:presenter:claim' })
+    sendCommand({ type: 'presentation:presenter:claim' }).then(sent => {
+      if (!sent && claimedForRef.current === presenterIdentity) claimedForRef.current = undefined
+    })
   }, [canControl, hasSlide, presenterIdentity, remoteParticipants, room, sendCommand])
 
   const showNotificationRef = useRef(notifications.show)
@@ -332,7 +346,7 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
           currentSlide: stateMessage.currentSlide,
           fileType: stateMessage.fileType,
           status: 'active',
-          slideVideos: stateMessage.slideVideos ?? [],
+          slideVideos: toSlideVideos(stateMessage.slideVideos),
           videoState: stateMessage.videoState ?? 'idle',
           overlay: resolveIncomingOverlay(prev.overlay, isOverlayLayout(stateMessage.overlay) ? stateMessage.overlay : DEFAULT_OVERLAY),
           slide: toSlideInfo(stateMessage.slide),
