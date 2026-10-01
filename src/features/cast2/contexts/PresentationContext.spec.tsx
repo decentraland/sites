@@ -97,6 +97,7 @@ const claimCount = (): number =>
   }).length
 
 const SLIDE = { url: 'https://presenter.test/presentations/deck-1/slides/0f3a.png', width: 1920, height: 1080 }
+const SLIDE_VIDEO = { url: 'https://presenter.test/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }
 const PRESENTATION_INFO = { id: 'deck-2', slideCount: 5, currentSlide: 0, fileType: 'pdf' }
 
 describe('PresentationProvider', () => {
@@ -417,6 +418,65 @@ describe('PresentationProvider', () => {
     })
   })
 
+  describe('when a presentation:state packet carries valid slide videos', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ slideVideos: [SLIDE_VIDEO] }), bot)
+    })
+
+    it('should expose the slide videos', () => {
+      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO])
+    })
+  })
+
+  describe.each<[string, unknown]>([
+    ['a list of non-video values', [null, {}, 'x']],
+    ['a string', 'x'],
+    ['a valid video followed by one with no url', [SLIDE_VIDEO, {}]],
+    ['a valid video followed by one with a null geometry', [SLIDE_VIDEO, { url: 'u', geometry: null }]],
+    ['a valid video followed by one with a string geometry', [SLIDE_VIDEO, { url: 'u', geometry: 'g' }]],
+    [
+      'a valid video followed by one with a non-numeric width',
+      [SLIDE_VIDEO, { url: 'u', geometry: { ...SLIDE_VIDEO.geometry, width: '960' } }]
+    ]
+  ])('when a presentation:state packet carries slide videos that are %s', (_label, value) => {
+    let slideVideos: unknown
+
+    beforeEach(() => {
+      slideVideos = value
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ slideVideos }), bot)
+    })
+
+    it('should expose no slide videos', () => {
+      expect(current.state.slideVideos).toEqual([])
+    })
+  })
+
+  describe('when the bot metadata carries valid slide videos', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([makeBot({ slideVideos: [SLIDE_VIDEO] })])
+      renderProvider()
+    })
+
+    it('should expose the slide videos', () => {
+      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO])
+    })
+  })
+
+  describe('when the bot metadata carries a valid slide video followed by a malformed one', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([makeBot({ slideVideos: [SLIDE_VIDEO, { url: 'u' }] })])
+      renderProvider()
+    })
+
+    it('should expose no slide videos', () => {
+      expect(current.state.slideVideos).toEqual([])
+    })
+  })
+
   describe('when a presentation:state packet comes from a legacy server', () => {
     beforeEach(() => {
       mockUseRemoteParticipants.mockReturnValue([bot])
@@ -629,12 +689,72 @@ describe('PresentationProvider', () => {
     describe('and the presenter identity is a remote participant', () => {
       beforeEach(() => {
         mockUseRemoteParticipants.mockReturnValue([bot, { identity: 'stream:other', metadata: '' }])
-        render(controllerTree())
+        view = render(controllerTree())
         deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
       })
 
       it('should not send a presenter claim', () => {
         expect(claimCount()).toBe(0)
+      })
+
+      describe('and that participant then leaves the room', () => {
+        beforeEach(() => {
+          mockUseRemoteParticipants.mockReturnValue([bot])
+          view.rerender(controllerTree())
+        })
+
+        it('should send exactly one presenter claim', () => {
+          expect(claimCount()).toBe(1)
+        })
+      })
+    })
+
+    describe('and the claim fails to send', () => {
+      beforeEach(async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+        publishData.mockRejectedValueOnce(new Error('data channel closed'))
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        view = render(controllerTree())
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
+        await act(async () => {})
+      })
+
+      describe('and the provider re-renders with the same orphaned presenter identity', () => {
+        beforeEach(() => {
+          mockUseRemoteParticipants.mockReturnValue([bot])
+          view.rerender(controllerTree())
+        })
+
+        it('should send the claim again', () => {
+          expect(claimCount()).toBe(2)
+        })
+      })
+    })
+
+    describe('and a claim fails after the server re-pointed it at another absent identity', () => {
+      let rejectFirstClaim: (error: Error) => void
+
+      beforeEach(async () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+        publishData.mockImplementationOnce(
+          () =>
+            new Promise<void>((_resolve, reject) => {
+              rejectFirstClaim = reject
+            })
+        )
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        view = render(controllerTree())
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
+        await act(async () => {
+          rejectFirstClaim(new Error('data channel closed'))
+        })
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        view.rerender(controllerTree())
+      })
+
+      it('should not claim the current identity again', () => {
+        expect(claimCount()).toBe(2)
       })
     })
 
