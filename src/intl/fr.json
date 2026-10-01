@@ -1620,7 +1620,6 @@
       },
       "learn_more": "En savoir plus",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Rejoindre le programme",
       "leave_button": "Quitter le programme",
       "leave_modal": {
         "warning": "Quitter les Crédits du Marketplace ?",
@@ -1631,10 +1630,6 @@
           "generic": "Impossible de quitter le programme pour le moment. Veuillez réessayer.",
           "already_claimed": "Vous ne pouvez pas quitter cette semaine car vous avez déjà réclamé des crédits. Veuillez réessayer la semaine prochaine."
         }
-      },
-      "join_errors": {
-        "generic": "Impossible de rejoindre le programme pour le moment. Veuillez réessayer.",
-        "email_required": "Ajoutez et confirmez un e-mail dans Notifications avant de rejoindre le programme de crédits."
       }
     },
     "delete": {
