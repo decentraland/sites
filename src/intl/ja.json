@@ -1362,6 +1362,7 @@
       "copy_link": "リンクをコピー",
       "close": "閉じる",
       "explore_scene": "シーンを探索",
+      "jump_to_location": "{location}に入る（新しいタブで開きます）",
       "copied": "コピーしました！"
     },
     "featured": {

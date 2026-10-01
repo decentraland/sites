@@ -1594,6 +1594,7 @@
       "copy_link": "Copy link",
       "close": "Close",
       "explore_scene": "Explore the scene",
+      "jump_to_location": "Jump into {location} (opens in a new tab)",
       "copied": "Copied!"
     },
     "featured": {

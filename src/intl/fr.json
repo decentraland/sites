@@ -1357,6 +1357,7 @@
       "copy_link": "Copier le lien",
       "close": "Fermer",
       "explore_scene": "Explorer la scène",
+      "jump_to_location": "Rejoindre {location} (s’ouvre dans un nouvel onglet)",
       "copied": "Copié !"
     },
     "featured": {
