@@ -243,8 +243,6 @@ const heroHtml = `<div id="hero-shell-nav">
 (function(){var p=location.pathname;if(p.length>1&&p[p.length-1]==='/'){p=p.slice(0,-1);}if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
 </script>`
 
-const fontPreload = '<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" crossorigin />'
-
 let html = readFileSync(distPath, 'utf-8')
 
 // Extract CDN URLs from the <link rel="preload"> tags Vite already wrote.
@@ -263,6 +261,10 @@ const heroDesktopUrl = desktopImgMatch?.[1] ?? './hero_desktop.webp'
 const baseTagMatch = html.match(/<base[^>]*href="([^"]*)"/)
 const scriptSrcMatch = html.match(/<script[^>]*src="([^"]*?)assets\//)
 const cdnBase = baseTagMatch?.[1] ?? scriptSrcMatch?.[1] ?? '/'
+
+// Same URL the @font-face in src/styles/fonts.css resolves to after Vite
+// prefixes it with `base`; any mismatch makes browsers fetch the font twice.
+const fontPreload = `<link rel="preload" as="font" type="font/woff2" href="${cdnBase}fonts/inter-latin.woff2" crossorigin />`
 
 const finalHeroHtml = heroHtml
   .replace(/\.\/hero_mobile\.webp/g, `${cdnBase}hero_mobile.webp`)
