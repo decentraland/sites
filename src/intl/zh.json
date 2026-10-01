@@ -1058,6 +1058,7 @@
       "unblock": "解除屏蔽",
       "block": "屏蔽",
       "blocked_toast": "已屏蔽 {name}。",
+      "unblocked_toast": "已解除屏蔽 {name}。",
       "more_actions": "更多操作",
       "copy_address": "复制地址",
       "address_copied": "地址已复制！",

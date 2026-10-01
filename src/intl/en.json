@@ -1615,6 +1615,7 @@
       "unblock": "Unblock",
       "block": "Block",
       "blocked_toast": "{name} has been blocked.",
+      "unblocked_toast": "{name} has been unblocked.",
       "more_actions": "More actions",
       "copy_address": "Copy address",
       "address_copied": "Address copied!",

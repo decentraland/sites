@@ -349,7 +349,7 @@ describe('ProfileHeader', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
 
-    it('should unblock when the current status is blocked', async () => {
+    it('should unblock and confirm it with a toast when the current status is blocked', async () => {
       useFriendshipStatusMock.mockReturnValue({ status: 'blocked', isLoading: false, error: null })
       const user = userEvent.setup()
       renderHeader()
@@ -358,7 +358,7 @@ describe('ProfileHeader', () => {
       await user.click(screen.getByText('profile.header.unblock'))
 
       expect(setBlockedSpy).toHaveBeenCalledWith({ address, blocked: false })
-      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(await screen.findByRole('alert')).toHaveTextContent('profile.header.unblocked_toast:Mojito')
     })
 
     it('should close the more-actions menu without blocking when dismissed', async () => {
