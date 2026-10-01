@@ -9,7 +9,7 @@ const SCRIPT = join(__dirname, 'build-llms-txt.mjs')
 const LINKS = join(__dirname, '..', 'src', 'config', 'publicLinks.json')
 
 const MANIFEST = {
-  routes: ['/', '/download', '/events', '/help', '/places', '/places/place/:position'],
+  routes: ['/', '/blog', '/download', '/events', '/help', '/places', '/places/place/:position'],
   notFoundRoutes: ['/*', '/cast', '/cast/*', '/places/*']
 }
 
