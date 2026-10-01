@@ -25,11 +25,15 @@ jobs:
   dev:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    # Scoped to pushes. The broker serialises the KV write itself -- it holds a lease per
-    # environment and record, and answers `rollout_in_progress` with a Retry-After that this
-    # action retries -- so a release or a promotion may run alongside this one. Sharing a
-    # single group across all three instead lets a queued release be cancelled outright by
-    # the next push, which deploys nothing and reports no failure.
+    # Scoped to pushes. The broker serialises writes made through it -- a lease per
+    # environment and record, with `rollout_in_progress` and a Retry-After that this action
+    # waits out -- so a release or a promotion may run alongside this one. Sharing a single
+    # group across all three instead lets a queued release be cancelled outright by the next
+    # push, which deploys nothing and reports no failure.
+    #
+    # The lease covers broker writers only. `set-rollout-manual.yml` still writes KV through
+    # webhooks-receiver, which takes none, so a manual rollout run at the same time as one of
+    # these is a genuine lost-update race.
     #
     # Within this group a newer commit does supersede a pending older one, which is the
     # commit that should end up live.
@@ -143,14 +147,23 @@ jobs:
       # version to compute a commit version from — the action only demands one
       # when it has to compute it.
       #
-      # This is NOT a complete rollback on its own. Records are stored sorted descending by
-      # semver and the worker serves the first one whose percentage covers the user, so
-      # naming an older version here leaves the newer one still serving while this job
-      # reports success.
+      # One dispatch is NOT a rollback. Records are stored sorted descending by semver and
+      # the worker serves the first one whose percentage covers the user, so EVERY version
+      # that sorts above the target has to be at 0% before the target is reached -- on zone
+      # that is usually several commit builds, not one.
       #
-      # A rollback is this job dispatched twice: the abandoned version at 0%, then the one
-      # to restore at 100%. `percentage` accepts 0, so both halves are expressible here --
-      # what one dispatch cannot do is name two versions at once.
+      # The order matters. Restore the target to 100% FIRST, then zero the abandoned
+      # versions from the top down: at no point is there a gap where a record below the
+      # target serves. Zeroing first opens exactly that gap.
+      #
+      # One dispatch at a time, waiting for each run to finish. These share a concurrency
+      # group per environment, and a third dispatch queued behind a running one cancels the
+      # second while it is still pending -- which deploys nothing and reports no failure.
+      #
+      # A version published before this workflow existed has no `.deploy-complete.json`, and
+      # the broker refuses to point at a prefix whose upload it cannot confirm finished. Use
+      # `set-rollout-manual.yml` for those; it writes KV through the older path, which does
+      # not check.
       - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           package-name: "@dcl/sites"
