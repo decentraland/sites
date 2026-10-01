@@ -13,5 +13,8 @@
   "social": {
     "x": "https://x.com/decentraland",
     "discord": "https://dcl.gg/discord"
+  },
+  "newsletter": {
+    "subscribe": "https://embeds.beehiiv.com/ff89783d-748b-4ba3-8700-4759f6f62831"
   }
 }

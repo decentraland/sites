@@ -47,6 +47,14 @@ const CASES: Record<string, { input: Case; expected: string }> = {
     input: ['https://docs.decentraland.org/old.md', 200, 'text/markdown; charset=utf-8', '# Doc', 'https://docs.decentraland.org/new.md'],
     expected: 'ok'
   },
+  'a link redirected to the site homepage fails': {
+    input: ['https://decentraland.beehiiv.com/subscribe', 200, 'text/html', '<!doctype html>', 'https://decentraland.org/'],
+    expected: 'fail'
+  },
+  'a link redirected within the site to a page passes': {
+    input: ['https://dcl.gg/discord', 200, 'text/html', '<!doctype html>', 'https://decentraland.org/discord/'],
+    expected: 'ok'
+  },
   'an HTML page at a non-document URL passes': {
     input: ['https://x.com/decentraland', 200, 'text/html', '<!doctype html>'],
     expected: 'ok'
