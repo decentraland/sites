@@ -242,8 +242,10 @@ const MoreActionsButton = styled(IconButton)(({ theme }) => ({
 
 // Figma FriendCta 248:57656 — 180×40, padding 9/35, radius 10, bg #ff2d55, label Inter SemiBold 14 / tracking 0.4 / line 24 / uppercase
 const FriendCtaButton = styled(Button)(({ theme }) => ({
-  width: 180,
+  // A floor, not a fixed width: longer locales ("AGREGAR AMIGO") grow the pill instead of wrapping.
+  minWidth: 180,
   height: 40,
+  whiteSpace: 'nowrap',
   padding: '9px 35px',
   borderRadius: 10,
   fontFamily: '"Inter", sans-serif',
@@ -253,7 +255,6 @@ const FriendCtaButton = styled(Button)(({ theme }) => ({
   lineHeight: '24px',
   textTransform: 'uppercase',
   [theme.breakpoints.down('md')]: {
-    width: 'auto',
     minWidth: 140
   }
 }))
