@@ -1614,6 +1614,7 @@
       "remove_friend": "Unfriend",
       "unblock": "Unblock",
       "block": "Block",
+      "blocked_toast": "{name} has been blocked.",
       "more_actions": "More actions",
       "copy_address": "Copy address",
       "address_copied": "Address copied!",

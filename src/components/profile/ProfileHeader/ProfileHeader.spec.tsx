@@ -28,7 +28,7 @@ jest.mock('../../../hooks/useAuthIdentity', () => ({
 }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (key: string) => key
+  useFormatMessage: () => (key: string, values?: Record<string, string>) => (values?.name ? `${key}:${values.name}` : key)
 }))
 
 jest.mock('../../../config/env', () => ({
@@ -108,8 +108,16 @@ jest.mock('decentraland-ui2', () => {
   const Box = ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', null, children)
   const Tooltip = ({ open, title, children }: { open?: boolean; title?: React.ReactNode; children?: React.ReactNode }) =>
     mockReact.createElement(mockReact.Fragment, null, children, open ? mockReact.createElement('div', { role: 'tooltip' }, title) : null)
+  const Snackbar = ({ open, children }: { open: boolean; children?: React.ReactNode }) => (open ? children : null)
+  const Alert = ({ children, onClose }: { children?: React.ReactNode; onClose?: () => void }) =>
+    mockReact.createElement(
+      'div',
+      { role: 'alert' },
+      children,
+      mockReact.createElement('button', { 'aria-label': 'alert-close', onClick: onClose })
+    )
   const useTabletAndBelowMediaQuery = () => false
-  return { Box, Button, IconButton, Menu, MenuItem, Tooltip, useTabletAndBelowMediaQuery }
+  return { Alert, Box, Button, IconButton, Menu, MenuItem, Snackbar, Tooltip, useTabletAndBelowMediaQuery }
 })
 
 jest.mock('./ProfileHeader.styled', () => {
@@ -277,6 +285,27 @@ describe('ProfileHeader', () => {
       expect(setBlockedSpy).toHaveBeenCalledWith({ address, blocked: true })
     })
 
+    it('should confirm the block with a toast naming the user', async () => {
+      const user = userEvent.setup()
+      renderHeader()
+
+      await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
+      await user.click(screen.getByText('profile.header.block'))
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('profile.header.blocked_toast:Mojito')
+    })
+
+    it('should hide the block toast when it is dismissed', async () => {
+      const user = userEvent.setup()
+      renderHeader()
+
+      await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
+      await user.click(screen.getByText('profile.header.block'))
+      await user.click(await screen.findByLabelText('alert-close'))
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
     it('should unblock when the current status is blocked', async () => {
       useFriendshipStatusMock.mockReturnValue({ status: 'blocked', isLoading: false, error: null })
       const user = userEvent.setup()
@@ -286,6 +315,7 @@ describe('ProfileHeader', () => {
       await user.click(screen.getByText('profile.header.unblock'))
 
       expect(setBlockedSpy).toHaveBeenCalledWith({ address, blocked: false })
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
 
     it('should close the more-actions menu without blocking when dismissed', async () => {
@@ -307,6 +337,7 @@ describe('ProfileHeader', () => {
       await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
       await expect(user.click(screen.getByText('profile.header.block'))).resolves.toBeUndefined()
       expect(setBlockedSpy).toHaveBeenCalled()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
 

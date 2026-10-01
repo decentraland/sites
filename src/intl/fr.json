@@ -1052,6 +1052,7 @@
       "remove_friend": "Retirer",
       "unblock": "Débloquer",
       "block": "Bloquer",
+      "blocked_toast": "Vous avez bloqué {name}.",
       "more_actions": "Plus d'actions",
       "copy_address": "Copier l'adresse",
       "address_copied": "Adresse copiée !",

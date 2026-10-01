@@ -22,7 +22,7 @@ import PublicIcon from '@mui/icons-material/Public'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VerifiedIcon from '@mui/icons-material/Verified'
-import { Box, Button, Menu, MenuItem, Tooltip, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
+import { Alert, Box, Button, Menu, MenuItem, Snackbar, Tooltip, useTabletAndBelowMediaQuery } from 'decentraland-ui2'
 import { getEnv } from '../../../config/env'
 import {
   useBlockUser,
@@ -105,6 +105,7 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
   const { count: friendsCount } = useFriendsCount()
   const { setBlocked, isLoading: isUpdatingBlock } = useBlockUser()
   const [blockMenuAnchor, setBlockMenuAnchor] = useState<HTMLElement | null>(null)
+  const [isBlockedToastOpen, setIsBlockedToastOpen] = useState(false)
   const { count: mutualCount, friends: mutualFriendsPreview } = useMutualFriends(canQueryFriendship ? address : undefined)
   // Build up to 3 slots when at least one mutual friend exists. If the RPC populated the
   // preview list we render real `ProfileAvatar`s (which resolve the face image and fall back
@@ -149,10 +150,17 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
   const handleToggleBlock = useCallback(() => {
     setBlockMenuAnchor(null)
     if (!canQueryFriendship) return
-    void setBlocked({ address, blocked: friendshipStatus !== 'blocked' }).catch(() => {
-      /* error surfaced via the hook's `error` state */
-    })
+    const blocked = friendshipStatus !== 'blocked'
+    void setBlocked({ address, blocked })
+      .then(() => {
+        if (blocked) setIsBlockedToastOpen(true)
+      })
+      .catch(() => {
+        /* error surfaced via the hook's `error` state */
+      })
   }, [address, canQueryFriendship, friendshipStatus, setBlocked])
+
+  const handleCloseBlockedToast = useCallback(() => setIsBlockedToastOpen(false), [])
 
   // Inside a modal the friends/mutual lists render as stack surfaces (never a dialog on
   // a dialog); on the standalone page they open the FriendsModal dialog.
@@ -347,6 +355,16 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
           }}
         />
       ) : null}
+      <Snackbar
+        open={isBlockedToastOpen}
+        autoHideDuration={4000}
+        onClose={handleCloseBlockedToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" onClose={handleCloseBlockedToast}>
+          {t('profile.header.blocked_toast', { name: displayName })}
+        </Alert>
+      </Snackbar>
     </HeaderRoot>
   )
 }
