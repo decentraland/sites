@@ -6,7 +6,6 @@ import { LocaleProvider } from './intl/LocaleContext'
 import { DeferredAnalyticsProvider } from './modules/DeferredAnalyticsProvider'
 import { scheduleDeferredThirdParty } from './modules/deferredThirdParty'
 import { getSegmentApiHost, getSegmentCdnUrl, getSegmentWriteKey } from './modules/segmentConfig'
-import './styles/fonts.css'
 import { isAnalyticsExemptPath } from './utils/isAnalyticsExemptPath'
 import { scheduleWhenIdle } from './utils/scheduleWhenIdle'
 
