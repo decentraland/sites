@@ -240,9 +240,9 @@ const MoreActionsButton = styled(IconButton)(({ theme }) => ({
   color: theme.palette.common.white
 }))
 
-// Figma FriendCta 248:57656 — 180×40, padding 9/35, radius 10, bg #ff2d55, label Inter SemiBold 14 / tracking 0.4 / line 24 / uppercase
+// Figma FriendCta 248:57656 — min 180 × 40 (grows with longer labels), padding 9/35, radius 10, bg #ff2d55, label Inter SemiBold 14 / tracking 0.4 / line 24 / uppercase
 const FriendCtaButton = styled(Button)(({ theme }) => ({
-  // A floor, not a fixed width: longer locales ("AGREGAR AMIGO") grow the pill instead of wrapping.
+  // A floor, not a fixed width: longer labels (es "SOLICITUD ENVIADA") grow the pill instead of wrapping.
   minWidth: 180,
   height: 40,
   whiteSpace: 'nowrap',
