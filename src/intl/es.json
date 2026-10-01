@@ -1360,6 +1360,7 @@
       "copy_link": "Copiar enlace",
       "close": "Cerrar",
       "explore_scene": "Explorar la escena",
+      "jump_to_location": "Entrar a {location} (se abre en una pestaña nueva)",
       "copied": "¡Copiado!"
     },
     "featured": {

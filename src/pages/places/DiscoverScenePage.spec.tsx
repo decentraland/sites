@@ -79,7 +79,8 @@ jest.mock('../../config/env', () => ({
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (id?: string | null) => id ?? ''
+  useFormatMessage: () => (id?: string | null, values?: Record<string, string>) =>
+    values?.location ? `${id}:${values.location}` : id ?? ''
 }))
 
 jest.mock('../../hooks/useAuthIdentity', () => ({
@@ -275,6 +276,7 @@ describe('DiscoverScenePage', () => {
       const tag = screen.getByText('10,20').closest('a')
       expect(tag).toHaveAttribute('href', 'https://decentraland.org/jump/?position=10%2C20')
       expect(tag).toHaveAttribute('target', '_blank')
+      expect(tag).toHaveAttribute('aria-label', 'discover.scene.jump_to_location:10,20')
     })
 
     it('should keep the coordinates tag inert while the place is still loading', () => {
@@ -285,6 +287,7 @@ describe('DiscoverScenePage', () => {
       const tag = screen.getAllByText('10,20').find(el => el.tagName === 'A')
       expect(tag).toBeDefined()
       expect(tag).not.toHaveAttribute('href')
+      expect(tag).not.toHaveAttribute('aria-label')
     })
 
     describe('and the creator resolves to a wallet', () => {
@@ -395,7 +398,10 @@ describe('DiscoverScenePage', () => {
       render(<DiscoverScenePage kind="world" />)
       await screen.findByTestId('watcher-card')
 
-      expect(screen.getByRole('link')).toHaveAttribute('href', 'https://decentraland.org/jump/?realm=myworld.dcl.eth')
+      expect(screen.getByRole('link', { name: 'discover.scene.jump_to_location:myworld.dcl.eth' })).toHaveAttribute(
+        'href',
+        'https://decentraland.org/jump/?realm=myworld.dcl.eth'
+      )
     })
 
     it('should open the LiveKit room targeting the auto-selected first scene', async () => {

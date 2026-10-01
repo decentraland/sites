@@ -1360,6 +1360,7 @@
       "copy_link": "复制链接",
       "close": "关闭",
       "explore_scene": "探索场景",
+      "jump_to_location": "进入 {location}（在新标签页中打开）",
       "copied": "已复制！"
     },
     "featured": {

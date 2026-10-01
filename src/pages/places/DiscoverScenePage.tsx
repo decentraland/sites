@@ -189,8 +189,9 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   }, [kind, place, parsedPosition, worldName, hotScenesQuery.data, liveWorldsQuery.data])
   const isLoadingPlayers = kind === 'place' ? hotScenesQuery.isLoading : liveWorldsQuery.isLoading
 
-  // The chat footer's "Jump into <Scene>" anchor points at the /jump/ landing
-  // page (deep-link + download fallback), not a bare protocol link.
+  // The chat footer's "Jump into <Scene>" anchor and the header location tag
+  // point at the /jump/ landing page (deep-link + download fallback), not a
+  // bare protocol link.
   const jumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
 
   // `/places/*` is in `isPageTrackingExempt`, so Layout's route-level
@@ -303,7 +304,12 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
                 </CreatorRow>
               )}
               {locationLabel && (
-                <LocationTag href={jumpHref ?? undefined} target="_blank" rel="noopener noreferrer">
+                <LocationTag
+                  href={jumpHref ?? undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={jumpHref ? t('discover.scene.jump_to_location', { location: locationLabel }) : undefined}
+                >
                   <PinGlyph size="clamp(13px, 0.833vw, 16px)" color={dclColors.neutral.softWhite} />
                   {locationLabel}
                 </LocationTag>
