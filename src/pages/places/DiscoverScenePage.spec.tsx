@@ -277,6 +277,16 @@ describe('DiscoverScenePage', () => {
       expect(tag).toHaveAttribute('target', '_blank')
     })
 
+    it('should keep the coordinates tag inert while the place is still loading', () => {
+      mockPlaceQuery.mockReturnValue({ data: undefined, isLoading: true })
+      render(<DiscoverScenePage kind="place" />)
+
+      // The title also falls back to the coords while loading, so target the tag itself.
+      const tag = screen.getAllByText('10,20').find(el => el.tagName === 'A')
+      expect(tag).toBeDefined()
+      expect(tag).not.toHaveAttribute('href')
+    })
+
     describe('and the creator resolves to a wallet', () => {
       beforeEach(() => {
         mockUsePlaceCreator.mockReturnValue({ ...DEFAULT_CREATOR, creatorAddress: '0xcreator' })
@@ -379,6 +389,13 @@ describe('DiscoverScenePage', () => {
       expect(mockFetchWorldScenes).toHaveBeenCalledWith('myworld.dcl.eth')
       // Synth place title falls back to the lowercased URL world name.
       expect(screen.getAllByText('myworld.dcl.eth').length).toBeGreaterThan(0)
+    })
+
+    it('should link the world tag to the jump landing for the realm', async () => {
+      render(<DiscoverScenePage kind="world" />)
+      await screen.findByTestId('watcher-card')
+
+      expect(screen.getByRole('link')).toHaveAttribute('href', 'https://decentraland.org/jump/?realm=myworld.dcl.eth')
     })
 
     it('should open the LiveKit room targeting the auto-selected first scene', async () => {
