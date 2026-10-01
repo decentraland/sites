@@ -105,7 +105,9 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
   const { count: friendsCount } = useFriendsCount()
   const { setBlocked, isLoading: isUpdatingBlock } = useBlockUser()
   const [blockMenuAnchor, setBlockMenuAnchor] = useState<HTMLElement | null>(null)
-  const [isBlockedToastOpen, setIsBlockedToastOpen] = useState(false)
+  // Keyed by address: the header is reused across profiles, so a late response or an open toast
+  // must never name the profile the viewer moved to.
+  const [blockedToast, setBlockedToast] = useState<{ address: string; name: string } | null>(null)
   const { count: mutualCount, friends: mutualFriendsPreview } = useMutualFriends(canQueryFriendship ? address : undefined)
   // Build up to 3 slots when at least one mutual friend exists. If the RPC populated the
   // preview list we render real `ProfileAvatar`s (which resolve the face image and fall back
@@ -151,16 +153,20 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
     setBlockMenuAnchor(null)
     if (!canQueryFriendship) return
     const blocked = friendshipStatus !== 'blocked'
+    const blockedName = displayName
     void setBlocked({ address, blocked })
       .then(() => {
-        if (blocked) setIsBlockedToastOpen(true)
+        if (blocked) setBlockedToast({ address, name: blockedName })
       })
       .catch(() => {
         /* error surfaced via the hook's `error` state */
       })
-  }, [address, canQueryFriendship, friendshipStatus, setBlocked])
+  }, [address, canQueryFriendship, displayName, friendshipStatus, setBlocked])
 
-  const handleCloseBlockedToast = useCallback(() => setIsBlockedToastOpen(false), [])
+  const handleCloseBlockedToast = useCallback((_event?: unknown, reason?: string) => {
+    // Keep the confirmation up for its full duration instead of closing on the next click.
+    if (reason !== 'clickaway') setBlockedToast(null)
+  }, [])
 
   // Inside a modal the friends/mutual lists render as stack surfaces (never a dialog on
   // a dialog); on the standalone page they open the FriendsModal dialog.
@@ -356,13 +362,13 @@ function ProfileHeader({ address, isOwnProfile, onClose, onBack, embedded = fals
         />
       ) : null}
       <Snackbar
-        open={isBlockedToastOpen}
+        open={blockedToast?.address === address}
         autoHideDuration={4000}
         onClose={handleCloseBlockedToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="success" variant="filled" onClose={handleCloseBlockedToast}>
-          {t('profile.header.blocked_toast', { name: displayName })}
+          {t('profile.header.blocked_toast', { name: blockedToast?.name ?? '' })}
         </Alert>
       </Snackbar>
     </HeaderRoot>

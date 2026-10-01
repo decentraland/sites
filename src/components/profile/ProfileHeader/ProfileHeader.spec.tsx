@@ -1,6 +1,6 @@
 import * as mockReact from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProfileHeader } from './ProfileHeader'
 
@@ -108,7 +108,23 @@ jest.mock('decentraland-ui2', () => {
   const Box = ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', null, children)
   const Tooltip = ({ open, title, children }: { open?: boolean; title?: React.ReactNode; children?: React.ReactNode }) =>
     mockReact.createElement(mockReact.Fragment, null, children, open ? mockReact.createElement('div', { role: 'tooltip' }, title) : null)
-  const Snackbar = ({ open, children }: { open: boolean; children?: React.ReactNode }) => (open ? children : null)
+  const Snackbar = ({
+    open,
+    children,
+    onClose
+  }: {
+    open: boolean
+    children?: React.ReactNode
+    onClose?: (event: unknown, reason: string) => void
+  }) =>
+    open
+      ? mockReact.createElement(
+          mockReact.Fragment,
+          null,
+          children,
+          mockReact.createElement('button', { 'aria-label': 'snackbar-clickaway', onClick: () => onClose?.(null, 'clickaway') })
+        )
+      : null
   const Alert = ({ children, onClose }: { children?: React.ReactNode; onClose?: () => void }) =>
     mockReact.createElement(
       'div',
@@ -295,6 +311,33 @@ describe('ProfileHeader', () => {
       expect(await screen.findByRole('alert')).toHaveTextContent('profile.header.blocked_toast:Mojito')
     })
 
+    it('should not carry the block toast over to another profile', async () => {
+      const user = userEvent.setup()
+      const { rerender } = renderHeader()
+
+      await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
+      await user.click(screen.getByText('profile.header.block'))
+      await screen.findByRole('alert')
+      rerender(
+        <MemoryRouter>
+          <ProfileHeader address="0xBeefBeefBeefBeefBeefBeefBeefBeefBeefBeef" isOwnProfile={false} />
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('should keep the block toast open on a click elsewhere', async () => {
+      const user = userEvent.setup()
+      renderHeader()
+
+      await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
+      await user.click(screen.getByText('profile.header.block'))
+      await user.click(await screen.findByLabelText('snackbar-clickaway'))
+
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+
     it('should hide the block toast when it is dismissed', async () => {
       const user = userEvent.setup()
       renderHeader()
@@ -337,6 +380,8 @@ describe('ProfileHeader', () => {
       await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
       await expect(user.click(screen.getByText('profile.header.block'))).resolves.toBeUndefined()
       expect(setBlockedSpy).toHaveBeenCalled()
+      // Let the rejected promise settle before asserting that no toast showed up.
+      await act(() => new Promise(resolve => setTimeout(resolve, 0)))
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
