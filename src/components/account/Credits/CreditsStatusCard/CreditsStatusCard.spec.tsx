@@ -27,8 +27,7 @@ jest.mock('./CreditsStatusCard.styled', () => ({
       {children}
     </a>
   ),
-  ActionRow: ({ children }: ChildrenProps) => <div>{children}</div>,
-  ErrorText: ({ children, 'data-role': dataRole }: ChildrenProps & { 'data-role'?: string }) => <p data-role={dataRole}>{children}</p>
+  ActionRow: ({ children }: ChildrenProps) => <div>{children}</div>
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
@@ -45,6 +44,12 @@ describe('CreditsStatusCard', () => {
       render(<CreditsStatusCard status={undefined} isLoading onLeave={jest.fn()} />)
 
       expect(screen.getByTestId('skeleton')).toBeInTheDocument()
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    })
+
+    it('should not render the Leave Program button for an enrolled wallet until loading ends', () => {
+      render(<CreditsStatusCard status={UserCreditsStatus.ENROLLED} isLoading onLeave={jest.fn()} />)
+
       expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
   })

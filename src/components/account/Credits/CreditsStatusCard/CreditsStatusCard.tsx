@@ -37,7 +37,7 @@ const CreditsStatusCard = (props: CreditsStatusCardProps) => {
           {t('account.credits.learn_more')}
         </LearnMoreLink>
       </Description>
-      {/* NOTE: the web Join CTA was removed on 2026-10-01 (joining happens in-world). Restore it only if web opt-in comes back. */}
+      {/* NOTE: joining the Credits Program happens in-world, so the web only offers Leave. Restore a Join CTA only if web opt-in comes back. */}
       {!isLoading && isEnrolled ? (
         <ActionRow>
           <Button variant="contained" color="primary" onClick={onLeave} data-role="credits-leave-button">
