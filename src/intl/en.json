@@ -2047,7 +2047,6 @@
       },
       "learn_more": "Learn more",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Join Program",
       "leave_button": "Leave Program",
       "leave_modal": {
         "warning": "Leave Marketplace Credits?",
@@ -2058,10 +2057,6 @@
           "generic": "Couldn't leave the program right now. Please try again.",
           "already_claimed": "You can't leave this week because you've already claimed credits. Please try again next week."
         }
-      },
-      "join_errors": {
-        "generic": "Couldn't join the program right now. Please try again.",
-        "email_required": "Add and confirm an email in Notifications before joining the Credits Program."
       }
     },
     "delete": {

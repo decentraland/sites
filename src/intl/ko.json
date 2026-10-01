@@ -1625,7 +1625,6 @@
       },
       "learn_more": "자세히 알아보기",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "프로그램 참여",
       "leave_button": "프로그램 탈퇴",
       "leave_modal": {
         "warning": "마켓플레이스 크레딧을 탈퇴하시겠습니까?",
@@ -1636,10 +1635,6 @@
           "generic": "지금은 프로그램을 탈퇴할 수 없습니다. 다시 시도해 주세요.",
           "already_claimed": "이번 주에는 이미 크레딧을 청구했기 때문에 탈퇴할 수 없습니다. 다음 주에 다시 시도해 주세요."
         }
-      },
-      "join_errors": {
-        "generic": "지금은 프로그램에 가입할 수 없습니다. 다시 시도하세요.",
-        "email_required": "크레딧 프로그램에 가입하기 전에 알림에서 이메일을 추가하고 확인하세요."
       }
     },
     "delete": {

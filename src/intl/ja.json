@@ -1625,7 +1625,6 @@
       },
       "learn_more": "詳細はこちら",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "プログラムに参加",
       "leave_button": "プログラムを退会",
       "leave_modal": {
         "warning": "マーケットプレイス クレジットを退会しますか？",
@@ -1636,10 +1635,6 @@
           "generic": "現在プログラムを退会できませんでした。もう一度お試しください。",
           "already_claimed": "今週はすでにクレジットを請求しているため退会できません。来週もう一度お試しください。"
         }
-      },
-      "join_errors": {
-        "generic": "現在プログラムに参加できませんでした。もう一度お試しください。",
-        "email_required": "クレジットプログラムに参加する前に、通知でメールを追加して確認してください。"
       }
     },
     "delete": {
