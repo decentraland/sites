@@ -6,6 +6,7 @@ import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { dclColors } from 'decentraland-ui2'
 import { PinGlyph } from '../../components/places/_shared/CardIcons'
+import { CreatorByLineName } from '../../components/places/_shared/CreatorByLineName'
 import { SceneJumpInModal } from '../../components/places/SceneJumpInModal'
 import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/places/SceneLiveWatcher'
 import { getEnv } from '../../config/env'
@@ -31,7 +32,6 @@ import {
   ChatColumn,
   ChatFill,
   Content,
-  CreatorName,
   CreatorRow,
   HeaderRight,
   InfoLabel,
@@ -191,7 +191,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
   // The chat footer's "Jump into <Scene>" anchor points at the /jump/ landing
   // page (deep-link + download fallback), not a bare protocol link.
-  const chatJumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
+  const jumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
 
   // `/places/*` is in `isPageTrackingExempt`, so Layout's route-level
   // `page()` is suppressed. Fire once the place title resolves so Segment
@@ -228,7 +228,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
   const streamingHref = useMemo(() => (watcherTarget ? buildBevyHref(watcherTarget.location) : null), [watcherTarget])
 
-  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
+  const { creatorName, creatorAddress, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   // Coordinates (places) and the world name are known from the URL on the
   // first frame, so the header title never blanks even before the places-api
@@ -298,12 +298,12 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
                 <CreatorRow>
                   {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
+                    {t('discover.card.by')} <CreatorByLineName name={creatorName} address={creatorAddress} />
                   </ByText>
                 </CreatorRow>
               )}
               {locationLabel && (
-                <LocationTag>
+                <LocationTag href={jumpHref ?? undefined} target="_blank" rel="noopener noreferrer">
                   <PinGlyph size="clamp(13px, 0.833vw, 16px)" color={dclColors.neutral.softWhite} />
                   {locationLabel}
                 </LocationTag>
@@ -322,7 +322,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
         <ChatColumn>
           <ChatFill>
-            <SceneChatDock status={canRenderWatcher ? room.status : 'loading'} sceneName={headerTitle} jumpHref={chatJumpHref} />
+            <SceneChatDock status={canRenderWatcher ? room.status : 'loading'} sceneName={headerTitle} jumpHref={jumpHref} />
           </ChatFill>
         </ChatColumn>
 
