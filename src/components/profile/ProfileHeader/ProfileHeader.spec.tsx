@@ -1,6 +1,6 @@
 import * as mockReact from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProfileHeader } from './ProfileHeader'
 
@@ -108,14 +108,18 @@ jest.mock('decentraland-ui2', () => {
   const Box = ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', null, children)
   const Tooltip = ({ open, title, children }: { open?: boolean; title?: React.ReactNode; children?: React.ReactNode }) =>
     mockReact.createElement(mockReact.Fragment, null, children, open ? mockReact.createElement('div', { role: 'tooltip' }, title) : null)
+  // Closed: mimics MUI keeping the child mounted for its exit transition. The wrapper is `hidden`
+  // so role queries skip it, and `snackbar-exited` stands in for the transition finishing.
   const Snackbar = ({
     open,
     children,
-    onClose
+    onClose,
+    TransitionProps
   }: {
     open: boolean
     children?: React.ReactNode
     onClose?: (event: unknown, reason: string) => void
+    TransitionProps?: { onExited?: () => void }
   }) =>
     open
       ? mockReact.createElement(
@@ -124,7 +128,12 @@ jest.mock('decentraland-ui2', () => {
           children,
           mockReact.createElement('button', { 'aria-label': 'snackbar-clickaway', onClick: () => onClose?.(null, 'clickaway') })
         )
-      : null
+      : mockReact.createElement(
+          'div',
+          { hidden: true, 'data-testid': 'snackbar-exiting' },
+          children,
+          mockReact.createElement('button', { 'data-testid': 'snackbar-exited', onClick: () => TransitionProps?.onExited?.() })
+        )
   const Alert = ({ children, onClose }: { children?: React.ReactNode; onClose?: () => void }) =>
     mockReact.createElement(
       'div',
@@ -325,6 +334,41 @@ describe('ProfileHeader', () => {
       )
 
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('should not reopen the block toast when returning to the blocked profile', async () => {
+      const user = userEvent.setup()
+      const { rerender } = renderHeader()
+
+      await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
+      await user.click(screen.getByText('profile.header.block'))
+      await screen.findByRole('alert')
+      rerender(
+        <MemoryRouter>
+          <ProfileHeader address="0xBeefBeefBeefBeefBeefBeefBeefBeefBeefBeef" isOwnProfile={false} />
+        </MemoryRouter>
+      )
+      rerender(
+        <MemoryRouter>
+          <ProfileHeader address={address} isOwnProfile={false} />
+        </MemoryRouter>
+      )
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('should keep the blocked name in the toast until its exit transition ends', async () => {
+      const user = userEvent.setup()
+      renderHeader()
+
+      await user.click(screen.getByRole('button', { name: /profile\.header\.more_actions/i }))
+      await user.click(screen.getByText('profile.header.block'))
+      await user.click(await screen.findByLabelText('alert-close'))
+
+      expect(screen.getByTestId('snackbar-exiting')).toHaveTextContent('profile.header.blocked_toast:Mojito')
+      fireEvent.click(screen.getByTestId('snackbar-exited'))
+      expect(screen.getByTestId('snackbar-exiting')).toHaveTextContent('profile.header.blocked_toast')
+      expect(screen.getByTestId('snackbar-exiting')).not.toHaveTextContent('Mojito')
     })
 
     it('should keep the block toast open on a click elsewhere', async () => {
