@@ -1057,6 +1057,8 @@
       "remove_friend": "友達解除",
       "unblock": "ブロック解除",
       "block": "ブロック",
+      "blocked_toast": "{name}をブロックしました。",
+      "unblocked_toast": "{name}のブロックを解除しました。",
       "more_actions": "その他",
       "copy_address": "アドレスをコピー",
       "address_copied": "アドレスをコピーしました！",
