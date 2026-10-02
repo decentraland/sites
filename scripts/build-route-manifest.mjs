@@ -10,6 +10,11 @@
 // it. Anything the walker cannot classify fails the build rather than shipping a manifest that
 // would turn a live route into a 404.
 //
+// `sitemapRoutes` lists the public pages the edge adds to /sitemap.xml. It is opt-in, through a
+// `{/* route-manifest: sitemap */}` comment above a literal route: a page behind sign-in, a redirect
+// or a flow's success screen must never reach a sitemap, and only the author of the route knows
+// which one it is.
+//
 // Usage: node scripts/build-route-manifest.mjs [--src src/App.tsx] [--out dist/routes.json] [--check]
 
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -88,7 +93,7 @@ function readMarker(node, siblings, sourceFile) {
     }
     if (ts.isJsxExpression(previous)) {
       const text = previous.getFullText(sourceFile)
-      const match = text.match(/route-manifest:\s*(not-found|redirect)/)
+      const match = text.match(/route-manifest:\s*(not-found|redirect|sitemap)/)
       return match ? match[1] : null
     }
     return null
@@ -129,9 +134,23 @@ function assertNoComputedRoutes(node, sourceFile) {
   }
 }
 
+const lineOf = (node, sourceFile) => sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
+
 function collectRoutes(sourceFile) {
   const valid = new Set()
   const notFound = new Set()
+  const sitemap = new Set()
+
+  // A sitemap lists addresses, so only a literal path that renders a page can carry the marker.
+  const addToSitemap = (path, opening) => {
+    if (path.includes(':') || path.includes('*')) {
+      throw new BuildError(
+        `${sourceFile.fileName}:${lineOf(opening, sourceFile)} — "${path}" is marked for the sitemap but is not a literal ` +
+          `address; only routes without params or wildcards can be listed`
+      )
+    }
+    sitemap.add(path)
+  }
 
   const visit = (node, parentPath, siblings) => {
     let nextParent = parentPath
@@ -172,9 +191,10 @@ function collectRoutes(sourceFile) {
 
         if (path !== null) {
           const resolved = joinPaths(parentPath, path)
+          const marker = readMarker(node, siblings, sourceFile)
+          if (marker === 'sitemap') addToSitemap(resolved, opening)
           if (resolved.includes('*')) {
-            const marker = readMarker(node, siblings, sourceFile)
-            if (!marker) {
+            if (!marker || marker === 'sitemap') {
               const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
               throw new BuildError(
                 `${sourceFile.fileName}:${line + 1} — wildcard route "${resolved}" needs a marker comment above it: ` +
@@ -191,7 +211,9 @@ function collectRoutes(sourceFile) {
           // An index can BE the section's not-found screen, as `/cast` does. Without reading the
           // marker here the parent path is recorded as a live route and the edge answers 200 for a
           // URL the router sends to a not-found page.
-          if (readMarker(node, siblings, sourceFile) === 'not-found') {
+          const marker = readMarker(node, siblings, sourceFile)
+          if (marker === 'sitemap') addToSitemap(parentPath, opening)
+          if (marker === 'not-found') {
             // The parent <Route path="..."> already recorded this path as live on the way in.
             // Drop it: what renders here is the not-found screen, and leaving both entries makes
             // the edge tie-break in favour of the live route and answer 200.
@@ -212,7 +234,7 @@ function collectRoutes(sourceFile) {
   }
 
   visit(sourceFile, '/', [])
-  return { valid: [...valid].sort(), notFound: [...notFound].sort() }
+  return { valid: [...valid].sort(), notFound: [...notFound].sort(), sitemap: [...sitemap].sort() }
 }
 
 /**
@@ -313,13 +335,13 @@ function buildManifest(srcPath, srcDir) {
 
   const source = readFileSync(srcPath, 'utf8')
   const sourceFile = ts.createSourceFile(srcPath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
-  const { valid, notFound } = collectRoutes(sourceFile)
+  const { valid, notFound, sitemap } = collectRoutes(sourceFile)
 
   if (!valid.length) throw new BuildError(`no routes found in ${srcPath}; refusing to emit an empty manifest`)
 
   for (const pattern of [...valid, ...notFound]) assertSupportedPattern(pattern)
 
-  return { version: MANIFEST_VERSION, enforcedScope: ENFORCED_SCOPE, routes: valid, notFoundRoutes: notFound }
+  return { version: MANIFEST_VERSION, enforcedScope: ENFORCED_SCOPE, routes: valid, notFoundRoutes: notFound, sitemapRoutes: sitemap }
 }
 
 function run(argv, io) {
@@ -331,6 +353,7 @@ function run(argv, io) {
   if (check) {
     io.log(`route manifest: ${manifest.routes.length} routes, ${manifest.notFoundRoutes.length} not-found wildcards`)
     for (const route of manifest.routes) io.log(`  ${route}`)
+    io.log(`sitemap: ${manifest.sitemapRoutes.join(' ')}`)
     return 0
   }
 

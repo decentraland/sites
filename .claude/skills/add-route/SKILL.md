@@ -75,7 +75,9 @@ Every time you **add, remove, or rename** a route in `src/App.tsx`:
 
 4. **`scripts/llms.template.md`** when you remove or rename a path it links to (today `/events`, `/places`, `/download`, `/help` and `/places/place/:position`). The build validates every decentraland.org link in the generated `llms.txt` against `dist/routes.json`, so a dead link fails `npm run build`, not only `lint:routes`. Fix the template in the same PR.
 
-Internal-only changes (component rename, lazy-import path, comment) where no public path changes — skip all four.
+5. **Sitemap marker.** For a public page with a literal path, put `{/* route-manifest: sitemap */}` directly above its `<Route>` in `src/App.tsx`. The generated `sitemapRoutes` feeds `/sitemap-pages.xml`. Keep it off redirects, private/admin pages, success screens, and parameterized or wildcard routes; the worker enumerates dynamic events and places separately. Run `npm run lint:routes` to inspect the list.
+
+Internal-only changes (component rename, lazy-import path, comment) where no public path changes — skip all five.
 
 A `PostToolUse` hook fires on every edit to `src/App.tsx` to surface this reminder.
 
