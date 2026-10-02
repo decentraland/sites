@@ -10,7 +10,7 @@
 // it. Anything the walker cannot classify fails the build rather than shipping a manifest that
 // would turn a live route into a 404.
 //
-// `sitemapRoutes` lists the public pages the edge adds to /sitemap.xml. It is opt-in, through a
+// `sitemapRoutes` lists the public pages the edge adds to /sitemap-pages.xml. It is opt-in, through a
 // `{/* route-manifest: sitemap */}` comment above a literal route: a page behind sign-in, a redirect
 // or a flow's success screen must never reach a sitemap, and only the author of the route knows
 // which one it is.
@@ -80,7 +80,7 @@ const hasIndexAttribute = (element, sourceFile) =>
 
 /**
  * Classification comes from a marker comment, never from the element itself. Returns
- * 'not-found' | 'redirect' | null, reading the JSX expression containers that precede this route
+ * 'not-found' | 'redirect' | 'sitemap' | null, reading the JSX expression containers that precede this route
  * inside its parent.
  */
 function readMarker(node, siblings, sourceFile) {
@@ -194,7 +194,7 @@ function collectRoutes(sourceFile) {
           const marker = readMarker(node, siblings, sourceFile)
           if (marker === 'sitemap') addToSitemap(resolved, opening)
           if (resolved.includes('*')) {
-            if (!marker || marker === 'sitemap') {
+            if (!marker) {
               const { line } = sourceFile.getLineAndCharacterOfPosition(opening.getStart(sourceFile))
               throw new BuildError(
                 `${sourceFile.fileName}:${line + 1} — wildcard route "${resolved}" needs a marker comment above it: ` +
@@ -234,6 +234,11 @@ function collectRoutes(sourceFile) {
   }
 
   visit(sourceFile, '/', [])
+  for (const path of sitemap) {
+    if (!valid.has(path) || notFound.has(path)) {
+      throw new BuildError(`"${path}" is marked for the sitemap but is not a live route`)
+    }
+  }
   return { valid: [...valid].sort(), notFound: [...notFound].sort(), sitemap: [...sitemap].sort() }
 }
 

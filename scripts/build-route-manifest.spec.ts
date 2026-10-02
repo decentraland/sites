@@ -21,7 +21,8 @@ const sitemapOf = (stdout: string) =>
     .split('\n')
     .find(line => line.startsWith('sitemap: '))
     ?.slice('sitemap: '.length)
-    .split(' ') ?? []
+    .split(' ')
+    .filter(Boolean) ?? []
 
 describe('when extracting the route manifest from a router', () => {
   let dir: string
@@ -110,6 +111,51 @@ describe('when extracting the route manifest from a router', () => {
 
     it('should list the marked path and exclude the unmarked path', () => {
       expect(sitemapOf(runCheck(srcPath).stdout)).toEqual(['/events'])
+    })
+  })
+
+  describe('and no route is marked for the sitemap', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events" element={<Events />} />
+    </Routes>`)
+    })
+
+    it('should return an empty sitemap list', () => {
+      expect(sitemapOf(runCheck(srcPath).stdout)).toEqual([])
+    })
+  })
+
+  describe('and a relative child route is marked for the sitemap', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/places" element={<Layout />}>
+        {/* route-manifest: sitemap */}
+        <Route path="communities" element={<Communities />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should list the resolved child path', () => {
+      expect(sitemapOf(runCheck(srcPath).stdout)).toEqual(['/places/communities'])
+    })
+  })
+
+  describe('and a marked parent has a not-found index', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      {/* route-manifest: sitemap */}
+      <Route path="/cast" element={<Layout />}>
+        {/* route-manifest: not-found */}
+        <Route index element={<NotFound />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should reject a sitemap entry that the edge answers with 404', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('not a live route')
     })
   })
 
