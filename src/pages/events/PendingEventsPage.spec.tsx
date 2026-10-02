@@ -45,7 +45,12 @@ jest.mock('../../features/events/events.admin.client', () => ({
 
 jest.mock('../../components/events/EventDetailModal', () => ({
   EventDetailModal: ({ adminActions, onClose, data }: EventDetailModalProps) => (
-    <div data-testid="event-detail-modal" data-event-id={data?.id} data-has-admin-actions={adminActions ? 'true' : 'false'}>
+    <div
+      data-testid="event-detail-modal"
+      data-event-id={data?.id}
+      data-start-at={data?.startAt}
+      data-has-admin-actions={adminActions ? 'true' : 'false'}
+    >
       <button type="button" onClick={onClose}>
         close-modal
       </button>
@@ -64,7 +69,7 @@ jest.mock('../../components/events/EventDetailModal', () => ({
 }))
 
 jest.mock('../../components/events/EventDetailModal/normalizers', () => ({
-  normalizeEventEntry: (event: EventEntry) => ({ id: event.id, name: event.name })
+  normalizeEventEntry: (event: EventEntry) => ({ id: event.id, name: event.name, startAt: event.start_at })
 }))
 
 jest.mock('../../components/events/PendingEventCard', () => ({
@@ -72,9 +77,13 @@ jest.mock('../../components/events/PendingEventCard', () => ({
     event,
     onClick
   }: {
-    event: { id: string; name: string }
+    event: { id: string; name: string; start_at: string; finish_at: string }
     onClick: (event: { id: string; name: string }) => void
-  }) => <button onClick={() => onClick(event)}>{event.name}</button>
+  }) => (
+    <button data-start-at={event.start_at} data-finish-at={event.finish_at} onClick={() => onClick(event)}>
+      {event.name}
+    </button>
+  )
 }))
 
 jest.mock('../../components/events/RejectEventModal', () => ({
@@ -210,6 +219,40 @@ describe('PendingEventsPage', () => {
 
       expect(screen.queryByTestId('event-detail-modal')).not.toBeInTheDocument()
       expect(screen.getByTestId('location-search').textContent).toBe('?filter=mine')
+    })
+  })
+
+  describe('when a pending event is a recurrent series that already started', () => {
+    beforeEach(() => {
+      const pending = createMockEvent({
+        id: 'ev-series',
+        name: 'Weekly meetup',
+        approved: false,
+        rejected: false,
+        recurrent: true,
+        start_at: '2026-01-07T19:00:00.000Z',
+        finish_at: FAR_FUTURE,
+        next_start_at: '2026-10-07T19:00:00.000Z',
+        next_finish_at: '2026-10-07T20:00:00.000Z'
+      })
+      mockUseGetAdminEventsQuery.mockReturnValue({ currentData: [pending], isSuccess: true, refetch: jest.fn() })
+    })
+
+    it('should hand the card its upcoming occurrence instead of the series span', () => {
+      renderPage('/events/admin/pending-events')
+
+      const card = screen.getByRole('button', { name: 'Weekly meetup' })
+      expect(card).toHaveAttribute('data-start-at', '2026-10-07T19:00:00.000Z')
+      expect(card).toHaveAttribute('data-finish-at', '2026-10-07T20:00:00.000Z')
+    })
+
+    it('should open the detail modal on the series so its RRULE count starts at the series start', async () => {
+      const user = userEvent.setup()
+      renderPage('/events/admin/pending-events')
+
+      await user.click(screen.getByRole('button', { name: 'Weekly meetup' }))
+
+      expect(screen.getByTestId('event-detail-modal')).toHaveAttribute('data-start-at', '2026-01-07T19:00:00.000Z')
     })
   })
 

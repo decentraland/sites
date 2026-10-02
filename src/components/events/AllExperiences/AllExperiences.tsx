@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from '@dcl/hooks'
-import { bucketEventsByDay, isPubliclyVisibleEvent, useGetEventsQuery } from '../../../features/events'
+import { bucketEventsByDay, isPubliclyVisibleEvent, toUpcomingOccurrence, useGetEventsQuery } from '../../../features/events'
 import type { EventEntry, EventListType } from '../../../features/events'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
+import { useSeriesEventOpener } from '../../../hooks/useSeriesEventOpener'
 import { useVisibleColumnCount } from '../../../hooks/useVisibleColumnCount'
 import { redirectToAuth } from '../../../utils/authRedirect'
 import { addDays, formatDayHeaderAria } from '../../../utils/whatsOnDate'
@@ -156,18 +157,12 @@ function AllExperiences() {
     const now = Date.now()
     return allEvents
       .filter(event => (event.user ?? '').toLowerCase() === lowerAddress)
-      .map(event => {
-        if (event.recurrent && event.next_start_at && event.next_finish_at) {
-          /* eslint-disable @typescript-eslint/naming-convention */
-          return { ...event, start_at: event.next_start_at, finish_at: event.next_finish_at }
-          /* eslint-enable @typescript-eslint/naming-convention */
-        }
-        return event
-      })
+      .map(toUpcomingOccurrence)
       .filter(event => new Date(event.finish_at).getTime() >= now)
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
   }, [address, allEvents, isMyTab])
 
+  const openMyEvent = useSeriesEventOpener(allEvents, openEventDetailModal)
   const hasAnyUpcomingMyEvent = sortedMyEvents.length > 0
 
   useEffect(() => {
@@ -239,7 +234,7 @@ function AllExperiences() {
           showMyEmptyState ? (
             <MyExperiencesEmptyState />
           ) : (
-            <MyExperiencesGrid events={sortedMyEvents} onCardClick={openEventDetailModal} />
+            <MyExperiencesGrid events={sortedMyEvents} onCardClick={openMyEvent} />
           )
         ) : (
           <>

@@ -24,6 +24,7 @@ import type { CardData, JumpEvent } from '../../features/places/places.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useRemindMe } from '../../hooks/useRemindMe'
+import { getNextOccurrence } from '../../utils/recurrence'
 import { appendRealmParam, resolveEventRealm } from '../../utils/whatsOnUrl'
 import { CalendarButton, DeletedNotice, DeletedNoticeLink, EventActions, ExploreEventsButton, ShareIconButton } from './EventsPage.styled'
 import { JumpPageContainer, JumpPageContent } from './PageContainer.styled'
@@ -39,8 +40,9 @@ function buildGoogleCalendarUrl(event: JumpEvent, label: string): string {
   const jumpInUrl = buildJumpEventShareUrl(event)
   const details = event.description ? `${event.description}\n\n${label}: ${jumpInUrl}` : `${label}: ${jumpInUrl}`
   params.set('details', details)
-  const start = formatDateForGoogleCalendar(new Date(event.start_at))
-  const finish = formatDateForGoogleCalendar(new Date(event.finish_at))
+  const { startAt, finishAt } = getNextOccurrence(event)
+  const start = formatDateForGoogleCalendar(new Date(startAt))
+  const finish = formatDateForGoogleCalendar(new Date(finishAt))
   params.set('dates', `${start}/${finish}`)
   return `https://calendar.google.com/calendar/r/eventedit?${params.toString()}`
 }

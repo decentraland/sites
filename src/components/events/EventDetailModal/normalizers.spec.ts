@@ -46,7 +46,7 @@ describe('normalizeEventEntry', () => {
 
     it('should map the start and finish times', () => {
       expect(result.startAt).toBe('2026-04-07T10:00:00Z')
-      expect(result.finishAt).toBe('2026-04-07T12:00:00Z')
+      expect(result.finishAt).toBe('2026-04-07T12:00:00.000Z')
     })
 
     it('should map the recurrence fields', () => {
@@ -177,9 +177,17 @@ describe('normalizeEventEntry', () => {
           recurrent: true,
           recurrent_frequency: 'WEEKLY',
           recurrent_interval: 2,
-          recurrent_dates: ['2026-04-07', '2026-04-14']
+          recurrent_dates: ['2026-04-07', '2026-04-14'],
+          start_at: '2026-04-07T10:00:00Z',
+          finish_at: '2026-04-14T12:00:00Z',
+          next_start_at: '2026-04-14T10:00:00Z',
+          next_finish_at: '2026-04-14T12:00:00Z'
         })
       )
+    })
+
+    it('should end the finish time at the first occurrence instead of the series end', () => {
+      expect(result.finishAt).toBe('2026-04-07T12:00:00.000Z')
     })
 
     it('should map recurrent to true', () => {
