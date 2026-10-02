@@ -15,11 +15,13 @@ import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
+import type { OverlayLayout } from '../../../features/cast2/cast2.types'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { useScreenShare } from '../../../hooks/useScreenShare'
 import { SharePresentationModal } from '../SharePresentationModal/SharePresentationModal'
+import { CameraMenuDropdown } from './CameraMenuDropdown'
 import { ShareMenuDropdown } from './ShareMenuDropdown'
 import { StreamingControlsProps } from './StreamingControls.types'
 import {
@@ -240,6 +242,14 @@ export function StreamingControls({
     }
   }
 
+  const cameraOverlay = isPresentationActive && isCameraEnabled && presentationContext ? presentationContext.state.overlay : null
+  const hasCameraMenu = videoDevices.length > 1 || cameraOverlay !== null
+
+  const handleOverlaySelect = (patch: Partial<OverlayLayout>) => {
+    setShowVideoMenu(false)
+    void presentationContext?.setOverlay(patch)
+  }
+
   const isDisconnected = connectionState === ConnectionState.Disconnected
   const { credentials } = useLiveKitCredentials()
 
@@ -297,23 +307,19 @@ export function StreamingControls({
           {isStreamer && (
             <ButtonWithMenu>
               <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
-              {videoDevices.length > 1 && (
+              {hasCameraMenu && (
                 <ChevronButton data-dropdown-button onClick={() => setShowVideoMenu(!showVideoMenu)}>
                   <ExpandMoreIcon />
                 </ChevronButton>
               )}
-              {showVideoMenu && (
-                <DeviceMenu data-dropdown-menu>
-                  {videoDevices.map(device => (
-                    <DeviceMenuItem
-                      key={device.deviceId}
-                      $active={device.deviceId === selectedVideoDevice}
-                      onClick={() => handleVideoDeviceSelect(device.deviceId)}
-                    >
-                      {device.label || `Camera ${device.deviceId.slice(0, 5)}`}
-                    </DeviceMenuItem>
-                  ))}
-                </DeviceMenu>
+              {showVideoMenu && hasCameraMenu && (
+                <CameraMenuDropdown
+                  devices={videoDevices}
+                  selectedDeviceId={selectedVideoDevice}
+                  overlay={cameraOverlay}
+                  onSelectDevice={handleVideoDeviceSelect}
+                  onSelectOverlay={handleOverlaySelect}
+                />
               )}
             </ButtonWithMenu>
           )}
@@ -370,23 +376,19 @@ export function StreamingControls({
 
               <ButtonWithMenu>
                 <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
-                {videoDevices.length > 1 && (
+                {hasCameraMenu && (
                   <ChevronButton data-dropdown-button onClick={() => setShowVideoMenu(!showVideoMenu)}>
                     <ExpandMoreIcon />
                   </ChevronButton>
                 )}
-                {showVideoMenu && (
-                  <DeviceMenu data-dropdown-menu>
-                    {videoDevices.map(device => (
-                      <DeviceMenuItem
-                        key={device.deviceId}
-                        $active={device.deviceId === selectedVideoDevice}
-                        onClick={() => handleVideoDeviceSelect(device.deviceId)}
-                      >
-                        {device.label || `Camera ${device.deviceId.slice(0, 5)}`}
-                      </DeviceMenuItem>
-                    ))}
-                  </DeviceMenu>
+                {showVideoMenu && hasCameraMenu && (
+                  <CameraMenuDropdown
+                    devices={videoDevices}
+                    selectedDeviceId={selectedVideoDevice}
+                    overlay={cameraOverlay}
+                    onSelectDevice={handleVideoDeviceSelect}
+                    onSelectOverlay={handleOverlaySelect}
+                  />
                 )}
               </ButtonWithMenu>
 

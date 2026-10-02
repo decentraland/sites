@@ -165,6 +165,16 @@
         "connect_wallet_prompt": "Connectez votre portefeuille Decentraland pour envoyer des messages"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "title": "Bulle caméra",
+          "size_small": "Petite",
+          "size_large": "Grande",
+          "top_left": "En haut à gauche",
+          "top_right": "En haut à droite",
+          "bottom_left": "En bas à gauche",
+          "bottom_right": "En bas à droite",
+          "drag_hint": "Faites glisser pour déplacer votre caméra"
+        },
         "mute_mic": "Couper le micro",
         "unmute_mic": "Activer le micro",
         "stop_cam": "Arrêter la caméra",
