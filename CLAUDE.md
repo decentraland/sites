@@ -206,6 +206,8 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 
 A wildcard without one fails the build, as does a `path` that is not a string literal. That is deliberate: an incomplete manifest would turn a live route into a 404 in production. Run `npm run lint:routes` to print what the extractor sees.
 
+**Public static pages need a sitemap marker.** Place `{/* route-manifest: sitemap */}` directly above a literal page route (or its index route). The build adds marked paths to `sitemapRoutes` in `dist/routes.json`; the edge uses that list for `/sitemap-pages.xml`. Parameterized and wildcard routes cannot use this marker. Leave it off redirects, sign-in/admin pages, success screens, and other routes that should not be indexed. Dynamic events and places are listed by the worker's own feeds.
+
 **The manifest also gates `llms.txt`.** `scripts/build-llms-txt.mjs` validates every decentraland.org link in the generated `dist/llms.txt` against `dist/routes.json`, so removing or renaming a route that `scripts/llms.template.md` links to fails `npm run build`, not only `lint:routes`. Update the template in the same PR (skill `add-route`, repo sync checklist).
 
 ## Coding conventions
