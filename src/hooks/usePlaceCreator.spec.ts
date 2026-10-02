@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react'
 import type { DiscoverPlace } from '../features/discover'
 import { DCL_FOUNDATION_LOGO_URL } from '../features/events/events.helpers'
 import { useGetProfileQuery } from '../features/profile/profile.client'
-import { DCL_FOUNDATION_BACKGROUND_COLOR, getSyntheticAvatarUrl } from '../utils/avatarColor'
+import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName, getSyntheticAvatarUrl } from '../utils/avatarColor'
 import { usePlaceCreator } from './usePlaceCreator'
 
 jest.mock('../features/profile/profile.client', () => ({
@@ -64,11 +64,13 @@ describe('when resolving the creator credited on a place', () => {
       expect(mockUseGetProfileQuery).toHaveBeenCalledWith(CREATOR_ADDRESS, { skip: false })
     })
 
-    it('should fall back to the profile name when the scene declares no usable contact', () => {
+    it('should credit the place without a face or profile link when the scene declares no usable contact', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ creator_address: CREATOR_ADDRESS, contact_name: 'SDK' })))
 
-      expect(result.current.creatorName).toBe('ExampleLandOwner')
-      expect(result.current.creatorAvatar).toBe(FACE_URL)
+      expect(result.current.creatorName).toBe('Genesis Plaza')
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Genesis Plaza'))
+      expect(result.current.creatorAddress).toBeUndefined()
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
     })
   })
 
@@ -149,11 +151,13 @@ describe('when resolving the creator credited on a place', () => {
       mockUseGetProfileQuery.mockReturnValue(OWNER_PROFILE)
     })
 
-    it('should fall back to the owner profile, face included', () => {
+    it('should credit the place with a synthetic avatar', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: undefined })))
 
-      expect(result.current.creatorName).toBe('ExampleLandOwner')
-      expect(result.current.creatorAvatar).toBe(FACE_URL)
+      expect(result.current.creatorName).toBe('Genesis Plaza')
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('Genesis Plaza'))
+      expect(result.current.creatorAddress).toBeUndefined()
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
     })
   })
 
@@ -165,13 +169,40 @@ describe('when resolving the creator credited on a place', () => {
     it.each(['SDK', 'sdk', ' Sdk '])('should treat %s as no contact at all', contactName => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: contactName })))
 
-      expect(result.current.creatorName).toBe('ExampleLandOwner')
+      expect(result.current.creatorName).toBe('Genesis Plaza')
     })
 
-    it.each(['', '   '])('should treat an empty contact (%p) as no contact at all', contactName => {
+    it.each(['', '   ', undefined])('should treat an empty contact (%p) as no contact at all', contactName => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: contactName })))
 
-      expect(result.current.creatorName).toBe('ExampleLandOwner')
+      expect(result.current.creatorName).toBe('Genesis Plaza')
+    })
+  })
+
+  describe('and API endpoints disagree about the world deployer', () => {
+    let expected: ReturnType<typeof usePlaceCreator>
+
+    beforeEach(() => {
+      mockUseGetProfileQuery.mockReturnValue(OWNER_PROFILE)
+      expected = {
+        creatorName: 'Monster Recon',
+        creatorAvatar: getSyntheticAvatarUrl('Monster Recon'),
+        avatarBg: getAvatarBackgroundColor(getDisplayName({ name: 'Monster Recon', hasClaimedName: false, ethAddress: undefined })),
+        creatorAddress: undefined
+      }
+    })
+
+    it('should keep the title, avatar and color identical without linking either wallet', () => {
+      const { result, rerender } = renderHook(
+        ({ creatorAddress }) =>
+          usePlaceCreator(buildPlace({ title: '  Monster Recon  ', contact_name: 'SDK', creator_address: creatorAddress })),
+        { initialProps: { creatorAddress: CREATOR_ADDRESS as string | null } }
+      )
+
+      expect(result.current).toEqual(expected)
+      rerender({ creatorAddress: null })
+      expect(result.current).toEqual(expected)
+      expect(mockUseGetProfileQuery).toHaveBeenLastCalledWith(undefined, { skip: true })
     })
   })
 
@@ -199,10 +230,10 @@ describe('when resolving the creator credited on a place', () => {
       expect(result.current.creatorAvatar).toBe(FACE_URL)
     })
 
-    it('should render no by-line when there is no contact either', () => {
+    it('should credit the title when there is no contact either', () => {
       const { result } = renderHook(() => usePlaceCreator(buildPlace({ contact_name: undefined })))
 
-      expect(result.current.creatorName).toBeUndefined()
+      expect(result.current.creatorName).toBe('Genesis Plaza')
     })
   })
 
@@ -216,7 +247,7 @@ describe('when resolving the creator credited on a place', () => {
 
   describe('and the place carries no identity at all', () => {
     it('should return undefined for every field and skip the profile query', () => {
-      const { result } = renderHook(() => usePlaceCreator(buildPlace({ owner: null, contact_name: undefined })))
+      const { result } = renderHook(() => usePlaceCreator(buildPlace({ owner: null, contact_name: undefined, title: '' })))
 
       expect(result.current).toEqual({ creatorName: undefined, creatorAvatar: undefined, avatarBg: undefined, creatorAddress: undefined })
       expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })

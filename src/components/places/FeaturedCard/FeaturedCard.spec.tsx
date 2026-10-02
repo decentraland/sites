@@ -2,6 +2,7 @@ import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { DiscoverPlace } from '../../../features/discover'
 import { SegmentEvent } from '../../../modules/segment.types'
+import { getSyntheticAvatarUrl } from '../../../utils/avatarColor'
 // Import through the barrel so the re-export contract is exercised too.
 import { FeaturedCard } from '.'
 
@@ -305,7 +306,7 @@ describe('FeaturedCard', () => {
       expect(screen.getByText('12,34')).toBeInTheDocument()
     })
 
-    it('should render the owner face256 only when the scene names no contact', () => {
+    it('should credit the place title with a synthetic avatar when the scene names no contact', () => {
       mockUseGetProfileQuery.mockReturnValue({
         data: {
           avatars: [
@@ -315,7 +316,7 @@ describe('FeaturedCard', () => {
       })
       render(<FeaturedCard place={createPlace({ contact_name: undefined })} />)
 
-      expect(screen.getByAltText('LandOwner')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      expect(screen.getByAltText('Wonder Museum')).toHaveAttribute('src', getSyntheticAvatarUrl('Wonder Museum'))
     })
 
     it('should show the resolved face next to the contact name it belongs to', () => {
@@ -338,8 +339,8 @@ describe('FeaturedCard', () => {
       expect(screen.getByAltText('CuratorName').getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
     })
 
-    it('should render no by-line when the place has no creator name', () => {
-      render(<FeaturedCard place={createPlace({ contact_name: undefined, owner: null })} />)
+    it('should render no by-line when the place has neither an author nor a title', () => {
+      render(<FeaturedCard place={createPlace({ contact_name: undefined, owner: null, title: '' })} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
     })
