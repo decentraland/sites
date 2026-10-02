@@ -379,3 +379,67 @@ describe('when the notification list is open', () => {
     })
   })
 })
+
+describe('when the visitor clicks a navbar link', () => {
+  let user: ReturnType<typeof userEvent.setup>
+  let track: jest.Mock
+
+  beforeEach(() => {
+    user = userEvent.setup()
+    track = jest.fn()
+    ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
+  })
+
+  describe('and it is a desktop dropdown destination', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      const createTab = screen
+        .getAllByRole('button', { name: /navbar\.create$/i, hidden: true })
+        .find(button => button.getAttribute('aria-haspopup') === 'true')!
+      await user.hover(createTab.parentElement!)
+      const docsLink = screen.getByRole('link', { name: /creator_documentation/i })
+      docsLink.addEventListener('click', event => event.preventDefault())
+      await user.click(docsLink)
+    })
+
+    it('should send the link, its section and its destination', () => {
+      expect(track).toHaveBeenCalledWith('Click', {
+        place: 'Landing Navbar',
+        event: 'click',
+        action: 'creator_documentation',
+        section: 'create',
+        href: 'https://docs.decentraland.org/creator'
+      })
+    })
+  })
+
+  describe('and it is the Learn tab', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      const learn = screen.getAllByRole('link', { name: /navbar\.learn/i, hidden: true })[0]
+      learn.addEventListener('click', event => event.preventDefault())
+      await user.click(learn)
+    })
+
+    it('should send it under its own section', () => {
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'learn', section: 'learn', href: 'https://decentraland.org/blog/' })
+      )
+    })
+  })
+
+  describe('and analytics has not finished loading', () => {
+    beforeEach(async () => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      renderAt('/events')
+      const learn = screen.getAllByRole('link', { name: /navbar\.learn/i, hidden: true })[0]
+      learn.addEventListener('click', event => event.preventDefault())
+      await user.click(learn)
+    })
+
+    it('should not send anything', () => {
+      expect(track).not.toHaveBeenCalled()
+    })
+  })
+})
