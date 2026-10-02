@@ -254,6 +254,23 @@ describe('when resolving the creator credited on a place', () => {
     })
   })
 
+  describe('and only a synthesized world is available', () => {
+    let place: DiscoverPlace
+
+    beforeEach(() => {
+      place = buildPlace({ title: 'monsterrecon.dcl.eth', owner: null, contact_name: undefined })
+    })
+
+    it('should credit the world name without querying or linking a profile', () => {
+      const { result } = renderHook(() => usePlaceCreator(place))
+
+      expect(result.current.creatorName).toBe('monsterrecon.dcl.eth')
+      expect(result.current.creatorAvatar).toBe(getSyntheticAvatarUrl('monsterrecon.dcl.eth'))
+      expect(result.current.creatorAddress).toBeUndefined()
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+    })
+  })
+
   describe('and the place is undefined (page still resolving)', () => {
     it('should return undefined fields without crashing', () => {
       const { result } = renderHook(() => usePlaceCreator(undefined))

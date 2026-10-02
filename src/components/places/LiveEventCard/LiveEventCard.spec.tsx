@@ -289,17 +289,27 @@ describe('LiveEventCard', () => {
   })
 
   describe('when rendering the creator identity', () => {
-    it('should credit the place title with a synthetic avatar when the scene names no contact', () => {
-      mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [
-            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
-          ]
-        }
-      })
-      const { container } = render(<LiveEventCard place={createPlace({ contact_name: undefined })} />)
+    describe('and the scene declares no contact', () => {
+      let container: HTMLElement
 
-      expect(container.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Live Concert'))
+      beforeEach(() => {
+        mockUseGetProfileQuery.mockReturnValue({
+          data: {
+            avatars: [
+              { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+            ]
+          }
+        })
+        ;({ container } = render(<LiveEventCard place={createPlace({ contact_name: undefined })} />))
+      })
+
+      it('should credit the place title with a synthetic avatar', () => {
+        expect(container.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Live Concert'))
+      })
+
+      it('should skip the wallet profile query', () => {
+        expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+      })
     })
 
     it('should show the resolved face next to the contact name it links to', () => {

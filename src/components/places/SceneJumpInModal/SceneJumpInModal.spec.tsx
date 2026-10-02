@@ -283,17 +283,27 @@ describe('SceneJumpInModal', () => {
   })
 
   describe('when rendering the creator identity', () => {
-    it('should credit the place title with a synthetic avatar when the scene names no contact', () => {
-      mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [
-            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
-          ]
-        }
-      })
-      const { container } = render(<SceneJumpInModal place={createPlace({ contact_name: undefined })} onClose={onClose} />)
+    describe('and the scene declares no contact', () => {
+      let container: HTMLElement
 
-      expect(container.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Quiet Gallery'))
+      beforeEach(() => {
+        mockUseGetProfileQuery.mockReturnValue({
+          data: {
+            avatars: [
+              { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+            ]
+          }
+        })
+        ;({ container } = render(<SceneJumpInModal place={createPlace({ contact_name: undefined })} onClose={onClose} />))
+      })
+
+      it('should credit the place title with a synthetic avatar', () => {
+        expect(container.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Quiet Gallery'))
+      })
+
+      it('should skip the wallet profile query', () => {
+        expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+      })
     })
 
     it('should skip the profile request and use a synthetic avatar when there is no owner', () => {

@@ -306,17 +306,25 @@ describe('FeaturedCard', () => {
       expect(screen.getByText('12,34')).toBeInTheDocument()
     })
 
-    it('should credit the place title with a synthetic avatar when the scene names no contact', () => {
-      mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [
-            { name: 'LandOwner', hasClaimedName: false, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
-          ]
-        }
+    describe('and the scene declares no contact', () => {
+      beforeEach(() => {
+        mockUseGetProfileQuery.mockReturnValue({
+          data: {
+            avatars: [
+              { name: 'LandOwner', hasClaimedName: false, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+            ]
+          }
+        })
+        render(<FeaturedCard place={createPlace({ contact_name: undefined })} />)
       })
-      render(<FeaturedCard place={createPlace({ contact_name: undefined })} />)
 
-      expect(screen.getByAltText('Wonder Museum')).toHaveAttribute('src', getSyntheticAvatarUrl('Wonder Museum'))
+      it('should credit the place title with a synthetic avatar', () => {
+        expect(screen.getByAltText('Wonder Museum')).toHaveAttribute('src', getSyntheticAvatarUrl('Wonder Museum'))
+      })
+
+      it('should skip the wallet profile query', () => {
+        expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+      })
     })
 
     it('should show the resolved face next to the contact name it belongs to', () => {

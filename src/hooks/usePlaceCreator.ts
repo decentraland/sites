@@ -27,7 +27,7 @@ interface PlaceCreator {
 // background. The profile query's module-level cache dedupes per address
 // across a grid, so mounting this in every card doesn't fan out per-card
 // requests.
-function usePlaceCreator(place: DiscoverPlace | undefined): PlaceCreator {
+function usePlaceCreator(place: Pick<DiscoverPlace, 'title' | 'contact_name' | 'owner' | 'creator_address'> | undefined): PlaceCreator {
   // `contact_name` comes from the scene's own scene.json, so it is the author
   // saying who made this, and it wins over the profile's display name.
   const contactName = isJunkContactName(place?.contact_name) ? undefined : place?.contact_name?.trim()
@@ -55,6 +55,7 @@ function usePlaceCreator(place: DiscoverPlace | undefined): PlaceCreator {
   // everywhere. The face now follows the address the by-line links to: one
   // identity, one picture, one profile. On a studio wallet that means the studio's
   // avatar beside the contact's name, which is what /events has always shown.
+  // Guard against a cached face being returned after the author is removed.
   const creditedFace = isFoundation ? DCL_FOUNDATION_LOGO_URL : contactName ? avatarFace : undefined
   const creatorAvatar = creditedFace || (creatorName ? getSyntheticAvatarUrl(creatorName) : undefined)
 
