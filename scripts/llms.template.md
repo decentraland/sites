@@ -7,10 +7,13 @@
 
   Links: a {{group.key}} placeholder is filled from src/config/publicLinks.json, the same file the
   site's download buttons and footer read, plus the llms.txt attribution rules in the generator.
-  Literal URLs are not synced from anywhere. The decentraland.org ones (/events, /places, /blog, the
-  Genesis Plaza place page) are validated against the route manifest at build time, so a removed route fails
-  the build, but their wording and choice are editorial. The docs and API links have no source in
-  the app. Anything the site itself renders from a shared constant belongs in publicLinks.json.
+  Literal URLs are not synced from anywhere. The decentraland.org ones served by this SPA (/events,
+  /places, /blog, the Genesis Plaza place page, /download/creator-hub) are validated against the
+  route manifest at build time, so a removed route fails the build, but their wording and choice are
+  editorial. The ones served by other apps (/shop, /marketplace, /builder, /dao, /governance) are
+  exact entries in OTHER_SITE_URLS in the generator: the build cannot verify them, so
+  `npm run check:llms-links` fetches them live. The docs and API links have no source in the app.
+  Anything the site itself renders from a shared constant belongs in publicLinks.json.
   HTML comments are stripped from the output.
 -->
 
@@ -54,15 +57,16 @@ Decentraland is good for live music and DJ sets from home, watching a movie or d
 ## Trade, Build And Govern
 
 <!--
-  Each of these is its own app under decentraland.org with a name an agent can confuse with its
-  neighbour (Shop vs Marketplace, DAO vs Governance), so each entry says what it is not.
+  Each of these is its own app under decentraland.org. Two pairs are easy for an agent to confuse
+  (Shop vs Marketplace, and DAO vs Governance, both titled "Decentraland DAO"), so each side of a
+  pair says what it is not. Descriptions follow each app's own page title and description.
 -->
 
-- [Shop](https://decentraland.org/shop): Buy new wearables and emotes for your avatar directly from creators. Not the Marketplace.
-- [Marketplace](https://decentraland.org/marketplace): Trade LAND, NAMEs and wearables between users, including resales. Not the Shop.
-- [Builder](https://decentraland.org/builder): Web tool to create and publish wearable and emote collections and manage LAND. For building scenes, the desktop [Creator Hub](https://decentraland.org/download/creator-hub) is the main tool.
-- [DAO](https://decentraland.org/dao): What the Decentraland DAO is, what it controls and how to take part.
-- [Governance](https://decentraland.org/governance): Where DAO proposals are created, discussed and voted on.
+- [Shop](https://decentraland.org/shop): Browse and buy wearables and emotes for your avatar. Not the Marketplace, which also handles LAND, NAMEs and resales between users.
+- [Marketplace](https://decentraland.org/marketplace): Buy and sell wearables, emotes, LAND and NAMEs, both new collection items and resales between users. LAND and NAMEs are traded here, not in the Shop.
+- [Builder](https://decentraland.org/builder): Web tool to create scenes and Worlds with simple tools and ready-made 3D models, publish wearable and emote collections, and manage LAND and NAMEs. Scenes can also be built with the desktop [Creator Hub](https://decentraland.org/download/creator-hub).
+- [DAO](https://decentraland.org/dao): What the Decentraland DAO is, what it decides and how to take part. Not where proposals are voted; that is Governance.
+- [Governance](https://decentraland.org/governance): The governance hub where DAO proposals are created, discussed and voted on. Not the DAO overview page.
 
 ## For Builders And Developers
 

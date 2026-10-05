@@ -75,6 +75,30 @@ describe('when classifying a link check response', () => {
   })
 })
 
+describe('when selecting the links to check live', () => {
+  it('should check external links and allowlisted decentraland.org apps, and skip SPA routes', () => {
+    const text = [
+      '- [Docs](https://docs.decentraland.org/llms.txt)',
+      '- [Shop](https://decentraland.org/shop)',
+      '- [Governance](https://decentraland.org/governance)',
+      '- [Events](https://decentraland.org/events)',
+      '- [Again](https://docs.decentraland.org/llms.txt)'
+    ].join('\n')
+    const code = `import { linksToCheck } from ${JSON.stringify(pathToFileURL(SCRIPT).href)}
+process.stdout.write(JSON.stringify(linksToCheck(process.env.INPUT)))`
+    const result = spawnSync(process.execPath, ['--input-type=module', '-e', code], {
+      encoding: 'utf8',
+      env: { ...process.env, INPUT: text }
+    })
+    expect(result.stderr).toBe('')
+    expect(JSON.parse(result.stdout)).toEqual([
+      'https://docs.decentraland.org/llms.txt',
+      'https://decentraland.org/shop',
+      'https://decentraland.org/governance'
+    ])
+  })
+})
+
 describe('when the checker is run with bad input', () => {
   let dir: string
 

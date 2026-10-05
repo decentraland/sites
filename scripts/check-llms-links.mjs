@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Live check of every external link in dist/llms.txt. Not part of the build: it needs the network
-// and third parties answer bots inconsistently. decentraland.org links are skipped because the build
-// already validates them against the route manifest.
+// Live check of every external link in dist/llms.txt, plus the decentraland.org URLs served by other
+// apps (OTHER_SITE_URLS in build-llms-txt.mjs). Not part of the build: it needs the network and third
+// parties answer bots inconsistently. The remaining decentraland.org links are skipped because the
+// build already validates them against this SPA's route manifest.
 //
 // 403 and 429 are reported as inconclusive, not as failures: beehiiv, for one, answers 403 to any
 // non-browser client. Those need a manual check in a browser.
@@ -11,6 +12,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { OTHER_SITE_URLS } from './build-llms-txt.mjs'
 
 const MARKDOWN_LINK = /\[([^\]]*)\]\(([^)\s]+)\)/g
 const SITE_HOST = 'decentraland.org'
@@ -49,6 +51,20 @@ function classify(requestedUrl, finalUrl, status, contentType, body) {
   return { result: 'ok', reason: `HTTP ${status}${via}` }
 }
 
+function hostOf(url) {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return null
+  }
+}
+
+/** The unique links in `text` that need a live check: everything the build cannot verify. */
+function linksToCheck(text) {
+  const urls = new Set([...text.matchAll(MARKDOWN_LINK)].map(([, , url]) => url))
+  return [...urls].filter(url => hostOf(url) !== SITE_HOST || OTHER_SITE_URLS.has(url))
+}
+
 async function check(url, timeout) {
   try {
     const response = await fetch(url, {
@@ -73,14 +89,7 @@ async function run(argv) {
   const timeout = Number(options.timeout)
   if (!Number.isFinite(timeout) || timeout <= 0) throw new Error(`--timeout must be a positive number, got ${options.timeout}`)
   const text = readFileSync(resolve(options.file), 'utf8')
-  const hostOf = url => {
-    try {
-      return new URL(url).hostname
-    } catch {
-      return null
-    }
-  }
-  const urls = [...new Set([...text.matchAll(MARKDOWN_LINK)].map(([, , url]) => url))].filter(url => hostOf(url) !== SITE_HOST)
+  const urls = linksToCheck(text)
 
   // A malformed URL is a failed link, reported with the rest instead of aborting the run.
   const results = await Promise.all(
@@ -89,7 +98,7 @@ async function run(argv) {
   for (const { url, result, reason } of results) process.stdout.write(`${result.padEnd(12)} ${reason.padEnd(24)} ${url}\n`)
   const failed = results.filter(({ result }) => result === 'fail').length
   const inconclusive = results.filter(({ result }) => result === 'inconclusive').length
-  process.stdout.write(`\n${results.length} external links: ${failed} failed, ${inconclusive} inconclusive\n`)
+  process.stdout.write(`\n${results.length} links checked: ${failed} failed, ${inconclusive} inconclusive\n`)
   return failed ? 1 : 0
 }
 
@@ -105,4 +114,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   )
 }
 
-export { classify }
+export { classify, linksToCheck }
