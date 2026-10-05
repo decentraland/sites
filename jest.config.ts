@@ -36,8 +36,8 @@ const jestConfig: Config = {
     // Step 1 images export their file name (see assetNameTransformer) so specs can assert which one is shown.
     ['images/download/steps/.+\\.webp$']: '<rootDir>/src/__mocks__/assetNameTransformer.cjs'
   },
-  // @dcl/hooks ships ESM: transform it so a spec can run the real browser detection.
-  transformIgnorePatterns: ['/node_modules/(?!@dcl/hooks/)'],
+  // @dcl/hooks and decentraland-ui2 ship ESM: transform them so a spec can run the real browser detection and the real ui2 Logo.
+  transformIgnorePatterns: ['/node_modules/(?!(@dcl/hooks|decentraland-ui2)/)'],
   moduleNameMapper: {
     '^(?!.*images/download/steps/.+\\.webp$).*\\.(webp|png|jpg|jpeg|gif|svg|mp4|webm|mov)$': '<rootDir>/src/__mocks__/fileMock.js'
   },

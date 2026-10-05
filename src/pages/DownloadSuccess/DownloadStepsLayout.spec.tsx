@@ -54,7 +54,8 @@ describe('when rendering the steps layout', () => {
   it('should render the header logo, title and subtitle', () => {
     renderLayout()
 
-    expect(screen.getByTestId('header-logo')).toBeInTheDocument()
+    // the closed backdrop mounts a Logo too: one must be outside it, in the header
+    expect(screen.getAllByTestId('header-logo').some(logo => !logo.closest('[data-testid="backdrop"]'))).toBe(true)
     expect(screen.getByText('Page title')).toBeInTheDocument()
     expect(screen.getByText('Page subtitle')).toBeInTheDocument()
   })
@@ -129,12 +130,11 @@ describe('when rendering the steps layout', () => {
   })
 
   describe('and the page is not loading', () => {
-    it('should not mount the backdrop content (its logo would otherwise come first in the DOM)', () => {
+    it('should keep the backdrop content mounted and closed', () => {
       renderLayout({ loading: false, backdropContent: <p>Custom progress</p> })
 
       expect(screen.getByTestId('backdrop')).toHaveAttribute('data-open', 'false')
-      expect(screen.getByTestId('backdrop')).toBeEmptyDOMElement()
-      expect(screen.getAllByTestId('header-logo')).toHaveLength(1)
+      expect(within(screen.getByTestId('backdrop')).getByText('Custom progress')).toBeInTheDocument()
     })
   })
 })

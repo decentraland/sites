@@ -94,8 +94,7 @@ const DownloadStepsLayout = memo((props: DownloadStepsLayoutProps) => {
 
   return (
     <>
-      {/* NOTE: bridge for decentraland-ui2 Logo duplicate gradient id (https://github.com/decentraland/ui2/pull/487); revisit after bumping ui2. */}
-      <DownloadBackdrop open={loading}>{loading ? backdropContent ?? defaultBackdropContent : null}</DownloadBackdrop>
+      <DownloadBackdrop open={loading}>{backdropContent ?? defaultBackdropContent}</DownloadBackdrop>
 
       <DownloadStepsPage>
         <DownloadStepsHeader>
