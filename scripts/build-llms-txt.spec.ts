@@ -8,8 +8,9 @@ import { matchRoutes } from 'react-router'
 const SCRIPT = join(__dirname, 'build-llms-txt.mjs')
 const LINKS = join(__dirname, '..', 'src', 'config', 'publicLinks.json')
 
+// `/download/creator-hub` is here because the real template links it: the `run()` tests build that template.
 const MANIFEST = {
-  routes: ['/', '/blog', '/download', '/events', '/help', '/places', '/places/place/:position'],
+  routes: ['/', '/blog', '/download', '/download/creator-hub', '/events', '/help', '/places', '/places/place/:position'],
   notFoundRoutes: ['/*', '/cast', '/cast/*', '/places/*']
 }
 
@@ -63,7 +64,7 @@ describe('when validating the links of an llms.txt', () => {
   })
 
   it('should reject a decentraland.org path that is not listed anywhere', () => {
-    expect(errorsFor('- [Marketplace](https://decentraland.org/marketplace)')).toHaveLength(1)
+    expect(errorsFor('- [Unknown](https://decentraland.org/unknown-app)')).toHaveLength(1)
   })
 
   it('should accept an allowlisted URL of another decentraland.org site', () => {
@@ -251,6 +252,21 @@ describe('when running the generator', () => {
     const changed = join(dir, 'links.json')
     writeFileSync(changed, JSON.stringify(links))
     expect(run(changed).text).toContain('[X](https://x.com/somebody-else)')
+  })
+
+  it('should publish the other decentraland.org apps and the Creator Hub download', () => {
+    const { status, text } = run()
+    expect(status).toBe(0)
+    for (const url of [
+      'https://decentraland.org/shop',
+      'https://decentraland.org/marketplace',
+      'https://decentraland.org/builder',
+      'https://decentraland.org/dao',
+      'https://decentraland.org/governance',
+      'https://decentraland.org/download/creator-hub'
+    ]) {
+      expect(text).toContain(`](${url})`)
+    }
   })
 
   it('should fail the build when a published SPA route disappears', () => {
