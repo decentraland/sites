@@ -1,4 +1,4 @@
-import { isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
+import { isSectionActive, toAbsoluteHref, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
 
 describe('when deciding which navbar section owns the current page', () => {
   it('should light up Discover on the What is On calendar', () => {
@@ -65,5 +65,21 @@ describe('when naming the analytics action for a navbar link', () => {
 
   it('should return a key without dots unchanged', () => {
     expect(toNavbarAction('learn')).toBe('learn')
+  })
+})
+
+describe('when resolving a navbar destination for analytics', () => {
+  it('should resolve an app route against the current origin', () => {
+    expect(toAbsoluteHref('/events', 'https://decentraland.org')).toBe('https://decentraland.org/events')
+  })
+
+  it('should keep an absolute URL as it is', () => {
+    expect(toAbsoluteHref('https://docs.decentraland.org/creator', 'https://decentraland.org')).toBe(
+      'https://docs.decentraland.org/creator'
+    )
+  })
+
+  it('should return the raw value when it cannot be parsed', () => {
+    expect(toAbsoluteHref('/events', 'not an origin')).toBe('/events')
   })
 })

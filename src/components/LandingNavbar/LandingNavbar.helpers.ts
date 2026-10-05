@@ -49,4 +49,17 @@ function toNavbarAction(labelKey: string): string {
   return labelKey.slice(labelKey.lastIndexOf('.') + 1)
 }
 
-export { isSectionActive, toNavbarAction, toNotificationLocale }
+/**
+ * Resolves a navbar destination to an absolute URL, so app routes (`/events`) and
+ * external links (`https://decentraland.org/shop`) group the same way in the
+ * warehouse.
+ */
+function toAbsoluteHref(href: string, origin: string): string {
+  try {
+    return new URL(href, origin).href
+  } catch {
+    return href
+  }
+}
+
+export { isSectionActive, toAbsoluteHref, toNavbarAction, toNotificationLocale }
