@@ -55,14 +55,6 @@ const mockAnalyticsPage = jest.fn()
 // Browser reported by the (mocked) detection hook; undefined = still resolving.
 let mockUserAgentData: { browser: { name: string } } | undefined
 let mockResolveBrowser: (browserName: string) => void
-// TEMP local-dev switch (skipAutoDownload.ts): mutable so a case can turn it on.
-let mockSkipAutoDownload = false
-
-jest.mock('./skipAutoDownload', () => ({
-  get SKIP_AUTO_DOWNLOAD() {
-    return mockSkipAutoDownload
-  }
-}))
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
@@ -192,7 +184,6 @@ jest.mock('../../components/LandingFooter', () => ({
 
 beforeEach(() => {
   mockUserAgentData = undefined
-  mockSkipAutoDownload = false
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('anon-123')
@@ -1352,58 +1343,5 @@ describe('when choosing the step images by operating system and detected browser
       expect(help).toHaveAttribute('target', '_blank')
       expect(help).toHaveAttribute('rel', 'noopener noreferrer')
     })
-  })
-})
-
-describe('when the local-dev switch to skip the auto-download is on', () => {
-  beforeEach(() => {
-    mockSkipAutoDownload = true
-    sessionStorage.clear()
-    searchParamsInstance = new URLSearchParams('os=macos&arch=arm64&place=landing-hero')
-    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.decentraland.org/launcher/signed/Install.bin', filename: 'Install.bin' })
-    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
-  })
-
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  it('should not resolve or stream the installer', async () => {
-    render(<DownloadSuccess />)
-
-    await new Promise(resolve => setTimeout(resolve, 1200))
-
-    expect(mockCalculateDownloadUrl).not.toHaveBeenCalled()
-    expect(mockStreamOrFallback).not.toHaveBeenCalled()
-  })
-
-  it('should not send any download event, arrival beacon or exit beacon', async () => {
-    render(<DownloadSuccess />)
-
-    await new Promise(resolve => setTimeout(resolve, 1200))
-    React.act(() => {
-      setVisibility(true)
-    })
-    React.act(() => {
-      setVisibility(false)
-    })
-
-    expect(mockPostSegmentEvent).not.toHaveBeenCalled()
-    expect(mockSendDownloadFunnelExit).not.toHaveBeenCalled()
-  })
-
-  it('should keep the loading backdrop closed so the page can be seen', () => {
-    render(<DownloadSuccess />)
-
-    expect(mockLayoutProps.loading).toBe(false)
-  })
-
-  it('should still download when the retry link is clicked', async () => {
-    const { findByRole } = render(<DownloadSuccess />)
-
-    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
-    link.click()
-
-    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledTimes(1))
   })
 })
