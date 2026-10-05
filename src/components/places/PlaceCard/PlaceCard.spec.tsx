@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { DiscoverPlace } from '../../../features/discover'
 import { SegmentEvent } from '../../../modules/segment.types'
+import { getSyntheticAvatarUrl } from '../../../utils/avatarColor'
 // Import through the barrel so the re-export contract is exercised too.
 import { PlaceCard } from '.'
 
@@ -303,21 +304,27 @@ describe('PlaceCard', () => {
   })
 
   describe('when the scene names no contact and the owner has a catalyst profile', () => {
-    it('should render the owner face256', () => {
+    beforeEach(() => {
       mockUseGetProfileQuery.mockReturnValue({
         data: {
           avatars: [{ name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.example.com/face256.png' } } }]
         }
       })
-      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined })} />)
-
-      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.example.com/face256.png')
+      render(<PlaceCard place={createPlace({ title: 'Monster Recon', contact_name: undefined })} />)
     })
 
-    it('should request the profile for the owner address', () => {
-      render(<PlaceCard place={createPlace()} />)
+    it('should render a synthetic avatar for the place title', () => {
+      expect(document.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Monster Recon'))
+    })
 
-      expect(mockUseGetProfileQuery).toHaveBeenCalledWith('0x1111111111111111111111111111111111111111', { skip: false })
+    it('should skip the owner profile request', () => {
+      expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+    })
+
+    it('should render the credited title without a profile button', () => {
+      expect(screen.getAllByText('Monster Recon')).toHaveLength(2)
+      expect(screen.queryByRole('button', { name: 'Monster Recon' })).not.toBeInTheDocument()
+      expect(screen.queryByText('LandOwner')).not.toBeInTheDocument()
     })
   })
 
@@ -393,9 +400,9 @@ describe('PlaceCard', () => {
     })
   })
 
-  describe('when the place has no creator name at all', () => {
+  describe('when the place has neither a creator name nor a title', () => {
     it('should render neither the by-line nor an avatar', () => {
-      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined, owner: null })} />)
+      const { container } = render(<PlaceCard place={createPlace({ contact_name: undefined, owner: null, title: '' })} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
       expect(container.querySelector('img')).not.toBeInTheDocument()
