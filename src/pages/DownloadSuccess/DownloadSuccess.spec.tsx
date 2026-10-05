@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, waitFor } from '@testing-library/react'
+import { act, render, waitFor } from '@testing-library/react'
 import { DownloadSuccess } from './DownloadSuccess'
 
 const mockCalculateDownloadUrl = jest.fn()
@@ -52,6 +52,9 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 const mockAnalyticsPage = jest.fn()
+// Browser reported by the (mocked) detection hook; undefined = still resolving.
+let mockUserAgentData: { browser: { name: string } } | undefined
+let mockResolveBrowser: (browserName: string) => void
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
@@ -67,7 +70,15 @@ jest.mock('@dcl/hooks', () => ({
     }
   }),
   // Only selects the Step 1 image: it must never reach the download flow.
-  useAdvancedUserAgentData: () => [false, undefined],
+  useAdvancedUserAgentData: () => {
+    // Like the real hook: the result arrives later through a state update of the component that calls it.
+    const [, setTick] = jest.requireActual('react').useState(0)
+    mockResolveBrowser = (browserName: string) => {
+      mockUserAgentData = { browser: { name: browserName } }
+      setTick((tick: number) => tick + 1)
+    }
+    return [!mockUserAgentData, mockUserAgentData]
+  },
   // usePageView (this page is outside <Layout />, so it emits its own pageview)
   useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
@@ -134,18 +145,23 @@ type LayoutProps = {
   loading?: boolean
   backdropContent?: React.ReactNode
   footer?: React.ReactNode
-  steps: unknown[]
+  steps: Array<{ image: string; imageFit: string; highlight?: { x: number; y: number } }>
   afterContent?: React.ReactNode
 }
 
+let mockLayoutProps: LayoutProps
+
 jest.mock('./DownloadStepsLayout', () => ({
-  DownloadStepsLayout: (props: LayoutProps) => (
-    <div data-testid="layout">
-      <div data-testid="backdrop">{props.backdropContent}</div>
-      <div data-testid="footer-slot">{props.footer}</div>
-      {props.afterContent}
-    </div>
-  )
+  DownloadStepsLayout: (props: LayoutProps) => {
+    mockLayoutProps = props
+    return (
+      <div data-testid="layout">
+        <div data-testid="backdrop">{props.backdropContent}</div>
+        <div data-testid="footer-slot">{props.footer}</div>
+        {props.afterContent}
+      </div>
+    )
+  }
 }))
 
 jest.mock('./DownloadSteps.styled', () => ({
@@ -167,6 +183,7 @@ jest.mock('../../components/LandingFooter', () => ({
 }))
 
 beforeEach(() => {
+  mockUserAgentData = undefined
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('anon-123')
@@ -1219,5 +1236,112 @@ describe('when DownloadSuccess mounts', () => {
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
     const arrivedCalls = mockPostSegmentEvent.mock.calls.filter(([event]) => event === 'download_success_arrived')
     expect(arrivedCalls).toHaveLength(1)
+  })
+})
+
+describe('when choosing the step images by operating system and detected browser', () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.decentraland.org/launcher/signed/Install.bin', filename: 'Install.bin' })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  const renderFor = (os: string, browserName?: string) => {
+    searchParamsInstance = new URLSearchParams(`os=${os}&place=landing-hero`)
+    mockUserAgentData = browserName === undefined ? undefined : { browser: { name: browserName } }
+
+    return render(<DownloadSuccess />)
+  }
+
+  // Images export their file name in jest (see jest.config.ts), so image and highlight are asserted together.
+  describe.each([
+    ['macos', 'Chrome', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
+    ['macos', 'Opera', 'macos-opera-step1.webp', { x: 55.84, y: 39.79 }],
+    ['macos', 'Opera GX', 'macos-opera-step1.webp', { x: 55.84, y: 39.79 }],
+    ['macos', 'Safari', 'macos-safari-step1.webp', { x: 56.28, y: 27.08 }],
+    ['macos', 'Mobile Safari', 'macos-safari-step1.webp', { x: 56.28, y: 27.08 }],
+    ['macos', 'Edge', 'windows-edge-step1.webp', { x: 65.1, y: 38.12 }],
+    ['windows', 'Chrome', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
+    ['windows', 'Opera', 'windows-opera-step1.webp', { x: 55.84, y: 43.54 }],
+    ['windows', 'Edge', 'windows-edge-step1.webp', { x: 65.1, y: 38.12 }],
+    ['windows', 'Safari', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
+    // unknown, still resolving and not yet designed browsers fall back to Chrome of the OS
+    ['macos', undefined, 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
+    ['macos', 'Unknown', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
+    ['windows', undefined, 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
+    ['windows', 'Unknown', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
+    ['macos', 'Firefox', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
+    ['macos', 'Brave', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
+    ['windows', 'Firefox', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
+    ['windows', 'Brave', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }]
+  ])('and the OS is %s and the browser is %s', (os, browserName, image, highlight) => {
+    it('should pass its Step 1 image together with the highlight to the layout', () => {
+      renderFor(os, browserName)
+
+      expect(mockLayoutProps.steps[0]).toEqual(expect.objectContaining({ image, imageFit: 'cover', highlight }))
+    })
+  })
+
+  describe('and the OS is macOS', () => {
+    it('should use the macOS install image contained and the shared launch image covering', () => {
+      renderFor('macos', 'Chrome')
+
+      expect(mockLayoutProps.steps.slice(1).map(({ image, imageFit }) => [image, imageFit])).toEqual([
+        ['macos-step2.webp', 'contain'],
+        ['step3.webp', 'cover']
+      ])
+    })
+  })
+
+  describe('and the OS is Windows', () => {
+    it('should use the Windows install image covering and the shared launch image', () => {
+      renderFor('windows', 'Chrome')
+
+      expect(mockLayoutProps.steps.slice(1).map(({ image, imageFit }) => [image, imageFit])).toEqual([
+        ['windows-step2.webp', 'cover'],
+        ['step3.webp', 'cover']
+      ])
+    })
+  })
+
+  describe('and the page is shown in any language', () => {
+    it('should always show the highlight on the first step (it no longer depends on a translated word)', () => {
+      renderFor('macos', 'Chrome')
+
+      expect(mockLayoutProps.steps[0].highlight).toBeDefined()
+      expect(mockLayoutProps.steps.slice(1).every(step => step.highlight === undefined)).toBe(true)
+    })
+  })
+
+  describe('and the browser is detected after the page mounted', () => {
+    it('should switch the Step 1 image without starting the download again', async () => {
+      renderFor('windows')
+
+      await waitFor(() => expect(mockStreamOrFallback).toHaveBeenCalledTimes(1))
+      expect(mockLayoutProps.steps[0].image).toBe('windows-chrome-step1.webp')
+
+      act(() => mockResolveBrowser('Edge'))
+
+      await waitFor(() => expect(mockLayoutProps.steps[0].image).toBe('windows-edge-step1.webp'))
+      expect(mockCalculateDownloadUrl).toHaveBeenCalledTimes(1)
+      expect(mockStreamOrFallback).toHaveBeenCalledTimes(1)
+      expect(mockPostSegmentEvent.mock.calls.filter(([event]) => event === 'download_started')).toHaveLength(1)
+    })
+  })
+
+  describe('and rendering the footer', () => {
+    it('should link to the help page in a new tab without leaking the opener', async () => {
+      const { findByRole } = renderFor('macos', 'Chrome')
+
+      const help = await findByRole('link', { name: 'page.download.success.footer_help_link' })
+
+      expect(help).toHaveAttribute('href', '/help')
+      expect(help).toHaveAttribute('target', '_blank')
+      expect(help).toHaveAttribute('rel', 'noopener noreferrer')
+    })
   })
 })
