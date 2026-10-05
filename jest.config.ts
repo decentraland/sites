@@ -36,8 +36,8 @@ const jestConfig: Config = {
     // Step 1 images export their file name (see assetNameTransformer) so specs can assert which one is shown.
     ['images/download/steps/.+\\.webp$']: '<rootDir>/src/__mocks__/assetNameTransformer.cjs'
   },
-  // @dcl/hooks ships ESM: transform it (and its ua-parser-js) so a spec can run the real browser detection.
-  transformIgnorePatterns: ['/node_modules/(?!(@dcl/hooks|ua-parser-js)/)'],
+  // @dcl/hooks ships ESM: transform it so a spec can run the real browser detection.
+  transformIgnorePatterns: ['/node_modules/(?!@dcl/hooks/)'],
   moduleNameMapper: {
     '^(?!.*images/download/steps/.+\\.webp$).*\\.(webp|png|jpg|jpeg|gif|svg|mp4|webm|mov)$': '<rootDir>/src/__mocks__/fileMock.js'
   },
