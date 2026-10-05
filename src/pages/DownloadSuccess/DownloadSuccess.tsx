@@ -31,6 +31,7 @@ import { Architecture, OperativeSystem } from '../../types/download.types'
 import { resolveReferrer } from '../../utils/referrer'
 import { DownloadStepsLayout } from './DownloadStepsLayout'
 import { getStepOneVariant, resolveDownloadBrowser } from './DownloadSuccess.helpers'
+import { SKIP_AUTO_DOWNLOAD } from './skipAutoDownload'
 import type { DownloadStepsStep } from './DownloadSuccess.types'
 import { DownloadStepsExternalIcon, DownloadStepsFooterLine, DownloadStepsFooterLink } from './DownloadSteps.styled'
 import {
@@ -286,6 +287,8 @@ const DownloadSuccess = memo(() => {
   // unlike the tracker, which omits it.
   const arrivedFiredRef = useRef(false)
   useEffect(() => {
+    // TEMP local-dev switch (see skipAutoDownload.ts): no arrival beacon either.
+    if (SKIP_AUTO_DOWNLOAD) return
     if (arrivedFiredRef.current) return
     arrivedFiredRef.current = true
     const correlation = readDownloadClickCorrelation()
@@ -335,7 +338,8 @@ const DownloadSuccess = memo(() => {
   }, [anonUserId, anonUserIdReady])
 
   useEffect(() => {
-    if (!anonUserIdReady) return
+    // TEMP local-dev switch (see skipAutoDownload.ts): only this auto-download; the "Try again" link still downloads.
+    if (!anonUserIdReady || SKIP_AUTO_DOWNLOAD) return
     const abortController = new AbortController()
     const { signal } = abortController
 
@@ -630,9 +634,9 @@ const DownloadSuccess = memo(() => {
   // Only measure sessions that entered via a download CTA — a known `place`
   // means a button click navigated here. Direct/campaign landings, refreshes
   // and bots resolve to UNKNOWN and aren't part of the click → download funnel.
-  useDownloadFunnelExit(getExitData, place !== DownloadPlace.UNKNOWN)
+  useDownloadFunnelExit(getExitData, place !== DownloadPlace.UNKNOWN && !SKIP_AUTO_DOWNLOAD)
 
-  const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
+  const showBackdrop = !SKIP_AUTO_DOWNLOAD && (isDownloading || (!downloadError && !isFileSaved))
 
   const backdropContent = isDownloading ? (
     <DownloadBackdropContent>
