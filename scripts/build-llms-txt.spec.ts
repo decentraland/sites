@@ -9,7 +9,7 @@ const SCRIPT = join(__dirname, 'build-llms-txt.mjs')
 const LINKS = join(__dirname, '..', 'src', 'config', 'publicLinks.json')
 
 const MANIFEST = {
-  routes: ['/', '/blog', '/download', '/events', '/help', '/places', '/places/place/:position'],
+  routes: ['/', '/blog', '/download', '/download/creator-hub', '/events', '/help', '/places', '/places/place/:position'],
   notFoundRoutes: ['/*', '/cast', '/cast/*', '/places/*']
 }
 
@@ -63,7 +63,7 @@ describe('when validating the links of an llms.txt', () => {
   })
 
   it('should reject a decentraland.org path that is not listed anywhere', () => {
-    expect(errorsFor('- [Marketplace](https://decentraland.org/marketplace)')).toHaveLength(1)
+    expect(errorsFor('- [Unknown](https://decentraland.org/unknown-app)')).toHaveLength(1)
   })
 
   it('should accept an allowlisted URL of another decentraland.org site', () => {

@@ -51,6 +51,19 @@ Decentraland is good for live music and DJ sets from home, watching a movie or d
 - [X]({{social.x}}): News and event announcements.
 - [Discord]({{social.discord}}): Chat with the community outside the world.
 
+## Trade, Build And Govern
+
+<!--
+  Each of these is its own app under decentraland.org with a name an agent can confuse with its
+  neighbour (Shop vs Marketplace, DAO vs Governance), so each entry says what it is not.
+-->
+
+- [Shop](https://decentraland.org/shop): Buy new wearables and emotes for your avatar directly from creators. Not the Marketplace.
+- [Marketplace](https://decentraland.org/marketplace): Trade LAND, NAMEs and wearables between users, including resales. Not the Shop.
+- [Builder](https://decentraland.org/builder): Web tool to create and publish wearable and emote collections and manage LAND. For building scenes, the desktop [Creator Hub](https://decentraland.org/download/creator-hub) is the main tool.
+- [DAO](https://decentraland.org/dao): What the Decentraland DAO is, what it controls and how to take part.
+- [Governance](https://decentraland.org/governance): Where DAO proposals are created, discussed and voted on.
+
 ## For Builders And Developers
 
 - [Developer docs index](https://docs.decentraland.org/llms.txt): Full documentation for creators, contributors and developers.

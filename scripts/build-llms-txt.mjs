@@ -38,8 +38,14 @@ const ATTRIBUTION = {
 }
 
 // decentraland.org URLs served by OTHER sites (not this SPA's router), as exact URLs with the owning
-// site named. Only what the output publishes belongs here; today it publishes none.
-const OTHER_SITE_URLS = new Map()
+// site named. Only what the output publishes belongs here.
+const OTHER_SITE_URLS = new Map([
+  ['https://decentraland.org/shop', 'shop'],
+  ['https://decentraland.org/marketplace', 'marketplace'],
+  ['https://decentraland.org/builder', 'builder'],
+  ['https://decentraland.org/dao', 'dao-landing'],
+  ['https://decentraland.org/governance', 'governance-ui']
+])
 
 // The one dynamic SPA link the output publishes, checked against its route pattern.
 const DYNAMIC_SPA_LINKS = [{ pattern: '/places/place/:position', path: /^\/places\/place\/-?\d+,-?\d+$/ }]
