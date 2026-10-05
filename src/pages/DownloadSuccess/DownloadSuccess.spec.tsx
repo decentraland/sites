@@ -1278,15 +1278,15 @@ describe('when choosing the step images by operating system and detected browser
     ['windows', 'Opera', 'windows-opera-step1.webp', { x: 55.84, y: 43.54 }],
     ['windows', 'Edge', 'windows-edge-step1.webp', { x: 65.1, y: 38.12 }],
     ['windows', 'Safari', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
-    // unknown, still resolving and not yet designed browsers fall back to Chrome of the OS
+    // unknown and still resolving browsers fall back to Chrome of the OS
     ['macos', undefined, 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
     ['macos', 'Unknown', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
     ['windows', undefined, 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
     ['windows', 'Unknown', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
-    ['macos', 'Firefox', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
-    ['macos', 'Brave', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
-    ['windows', 'Firefox', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
-    ['windows', 'Brave', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }]
+    ['macos', 'Firefox', 'macos-firefox-step1.webp', { x: 64.34, y: 49.79 }],
+    ['macos', 'Brave', 'macos-brave-step1.webp', { x: 29.82, y: 41.46 }],
+    ['windows', 'Firefox', 'windows-firefox-step1.webp', { x: 63.07, y: 48.54 }],
+    ['windows', 'Brave', 'windows-brave-step1.webp', { x: 29.82, y: 41.46 }]
   ])('and the OS is %s and the browser is %s', (os, browserName, image, highlight) => {
     it('should pass its Step 1 image together with the highlight to the layout', () => {
       renderFor(os, browserName)

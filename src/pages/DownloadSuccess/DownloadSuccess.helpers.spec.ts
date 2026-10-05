@@ -8,6 +8,11 @@ const MACOS_OPERA = { image: 'macos-opera-step1.webp', highlight: { x: 55.84, y:
 const MACOS_SAFARI = { image: 'macos-safari-step1.webp', highlight: { x: 56.28, y: 27.08 } }
 const WINDOWS_CHROME = { image: 'windows-chrome-step1.webp', highlight: { x: 70.37, y: 46.35 } }
 const WINDOWS_OPERA = { image: 'windows-opera-step1.webp', highlight: { x: 55.84, y: 43.54 } }
+const MACOS_FIREFOX = { image: 'macos-firefox-step1.webp', highlight: { x: 64.34, y: 49.79 } }
+const MACOS_BRAVE = { image: 'macos-brave-step1.webp', highlight: { x: 29.82, y: 41.46 } }
+const WINDOWS_FIREFOX = { image: 'windows-firefox-step1.webp', highlight: { x: 63.07, y: 48.54 } }
+// Same toolbar as macOS Brave, so the same slot
+const WINDOWS_BRAVE = { image: 'windows-brave-step1.webp', highlight: { x: 29.82, y: 41.46 } }
 const WINDOWS_EDGE = { image: 'windows-edge-step1.webp', highlight: { x: 65.1, y: 38.12 } }
 
 describe('when resolving the download browser from a detected name', () => {
@@ -48,9 +53,13 @@ describe('when selecting the Step 1 variant', () => {
     [OperativeSystem.MACOS, DownloadBrowser.CHROME, MACOS_CHROME],
     [OperativeSystem.MACOS, DownloadBrowser.OPERA, MACOS_OPERA],
     [OperativeSystem.MACOS, DownloadBrowser.SAFARI, MACOS_SAFARI],
+    [OperativeSystem.MACOS, DownloadBrowser.FIREFOX, MACOS_FIREFOX],
+    [OperativeSystem.MACOS, DownloadBrowser.BRAVE, MACOS_BRAVE],
     // macOS Edge reuses the Windows Edge image
     [OperativeSystem.MACOS, DownloadBrowser.EDGE, WINDOWS_EDGE],
     [OperativeSystem.WINDOWS, DownloadBrowser.CHROME, WINDOWS_CHROME],
+    [OperativeSystem.WINDOWS, DownloadBrowser.FIREFOX, WINDOWS_FIREFOX],
+    [OperativeSystem.WINDOWS, DownloadBrowser.BRAVE, WINDOWS_BRAVE],
     [OperativeSystem.WINDOWS, DownloadBrowser.OPERA, WINDOWS_OPERA],
     [OperativeSystem.WINDOWS, DownloadBrowser.EDGE, WINDOWS_EDGE],
     // no Windows Safari exists: it shows the Windows Chrome image
@@ -58,23 +67,6 @@ describe('when selecting the Step 1 variant', () => {
   ])('and the OS is %s and the browser is %s', (os, browser, expected) => {
     it('should return its image together with the highlight centered on its download icon', () => {
       expect(getStepOneVariant(os, browser)).toEqual(expected)
-    })
-  })
-
-  // Firefox and Brave Step 1 images are still being designed. Replace each todo with the
-  // matrix rows above (own image + measured highlight) when their entries land in the helpers.
-  describe.each([
-    [OperativeSystem.MACOS, DownloadBrowser.FIREFOX],
-    [OperativeSystem.MACOS, DownloadBrowser.BRAVE],
-    [OperativeSystem.WINDOWS, DownloadBrowser.FIREFOX],
-    [OperativeSystem.WINDOWS, DownloadBrowser.BRAVE]
-  ])('and the OS is %s and the browser is %s', (os, browser) => {
-    it.todo(`should return its own image and a measured highlight (${os} ${browser}: no asset yet)`)
-
-    it('should return the Chrome variant of that OS while it has no asset', () => {
-      const chrome = getStepOneVariant(os, DownloadBrowser.CHROME)
-
-      expect(getStepOneVariant(os, browser)).toBe(chrome)
     })
   })
 
@@ -86,7 +78,20 @@ describe('when selecting the Step 1 variant', () => {
       const images = new Set(operativeSystems.flatMap(os => browsers.map(browser => getStepOneVariant(os, browser).image)))
 
       expect(images).toEqual(
-        new Set([MACOS_CHROME, MACOS_OPERA, MACOS_SAFARI, WINDOWS_CHROME, WINDOWS_OPERA, WINDOWS_EDGE].map(({ image }) => image))
+        new Set(
+          [
+            MACOS_CHROME,
+            MACOS_FIREFOX,
+            MACOS_BRAVE,
+            MACOS_OPERA,
+            MACOS_SAFARI,
+            WINDOWS_CHROME,
+            WINDOWS_FIREFOX,
+            WINDOWS_BRAVE,
+            WINDOWS_OPERA,
+            WINDOWS_EDGE
+          ].map(({ image }) => image)
+        )
       )
     })
 
