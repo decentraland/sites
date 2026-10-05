@@ -1057,6 +1057,8 @@
       "remove_friend": "删除好友",
       "unblock": "解除屏蔽",
       "block": "屏蔽",
+      "blocked_toast": "已屏蔽 {name}。",
+      "unblocked_toast": "已解除屏蔽 {name}。",
       "more_actions": "更多操作",
       "copy_address": "复制地址",
       "address_copied": "地址已复制！",
@@ -1360,6 +1362,7 @@
       "copy_link": "复制链接",
       "close": "关闭",
       "explore_scene": "探索场景",
+      "jump_to_location": "进入 {location}（在新标签页中打开）",
       "copied": "已复制！"
     },
     "featured": {
@@ -1625,7 +1628,6 @@
       },
       "learn_more": "了解更多",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "加入计划",
       "leave_button": "离开计划",
       "leave_modal": {
         "warning": "离开市场积分？",
@@ -1636,10 +1638,6 @@
           "generic": "目前无法离开计划。请重试。",
           "already_claimed": "您本周无法离开，因为您已经领取了积分。请下周再试。"
         }
-      },
-      "join_errors": {
-        "generic": "目前无法加入该计划，请重试。",
-        "email_required": "加入积分计划前，请在通知中添加并确认电子邮件。"
       }
     },
     "delete": {

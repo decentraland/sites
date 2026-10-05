@@ -4,7 +4,9 @@
 // llms.txt attribution rules below, so a store URL changed on the site changes here too.
 //
 // Every link in the output is validated and any failure fails the build: a link an LLM repeats to a
-// user has to exist. No network here; `npm run check:llms-links` does the live check.
+// user has to exist. decentraland.org links are checked against this SPA's route manifest, except the
+// OTHER_SITE_URLS allowlist, which the build cannot verify. No network here; `npm run check:llms-links`
+// does the live check, and it covers the allowlist plus every external link.
 //
 // Usage: node scripts/build-llms-txt.mjs [--template ...] [--links ...] [--routes dist/routes.json] [--out dist/llms.txt]
 
@@ -37,9 +39,16 @@ const ATTRIBUTION = {
   'download.googlePlay': url => buildGooglePlayUrl(url, LLMS_UTM)
 }
 
-// decentraland.org URLs served by OTHER sites (not this SPA's router), as exact URLs with the owning
-// site named. Only what the output publishes belongs here; today it publishes none.
-const OTHER_SITE_URLS = new Map()
+// decentraland.org URLs served by OTHER sites (not this SPA's router), as exact URLs. The value only
+// names the owning site for the reader; nothing reads it. The build trusts these entries, so
+// check-llms-links.mjs fetches them live. Only what the output publishes belongs here.
+const OTHER_SITE_URLS = new Map([
+  ['https://decentraland.org/shop', 'shop'],
+  ['https://decentraland.org/marketplace', 'marketplace'],
+  ['https://decentraland.org/builder', 'builder'],
+  ['https://decentraland.org/dao', 'dao-landing'],
+  ['https://decentraland.org/governance', 'governance-ui']
+])
 
 // The one dynamic SPA link the output publishes, checked against its route pattern.
 const DYNAMIC_SPA_LINKS = [{ pattern: '/places/place/:position', path: /^\/places\/place\/-?\d+,-?\d+$/ }]
@@ -206,4 +215,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   }
 }
 
-export { buildLlmsTxt, fillTemplate, validateLinks, validateStructure }
+export { OTHER_SITE_URLS, buildLlmsTxt, fillTemplate, validateLinks, validateStructure }

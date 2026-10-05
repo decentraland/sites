@@ -13,13 +13,10 @@ jest.mock('./CreditsPage.styled', () => ({
   CreditsPanel: ({ children }: ChildrenProps) => <div>{children}</div>
 }))
 
-type StatusCardProps = { status?: string; isLoading: boolean; onJoin: () => void; onLeave: () => void }
+type StatusCardProps = { status?: string; isLoading: boolean; onLeave: () => void }
 jest.mock('../../components/account/Credits/CreditsStatusCard/CreditsStatusCard', () => ({
-  CreditsStatusCard: ({ status, isLoading, onJoin, onLeave }: StatusCardProps) => (
+  CreditsStatusCard: ({ status, isLoading, onLeave }: StatusCardProps) => (
     <div data-testid="status-card" data-status={status ?? ''} data-loading={String(isLoading)}>
-      <button type="button" onClick={onJoin}>
-        join
-      </button>
       <button type="button" onClick={onLeave}>
         leave
       </button>
@@ -43,8 +40,7 @@ jest.mock('../../components/account/Credits/OptOutConfirmModal/OptOutConfirmModa
 }))
 
 jest.mock('../../components/account/Credits/credits.errors', () => ({
-  mapOptOutErrorToI18nKey: () => 'account.credits.leave_modal.errors.generic',
-  mapJoinErrorToI18nKey: () => 'account.credits.join_errors.generic'
+  mapOptOutErrorToI18nKey: () => 'account.credits.leave_modal.errors.generic'
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -53,11 +49,9 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
 
 const mockUseGetUserCreditsStatusQuery = jest.fn()
 const mockOptOut = jest.fn()
-const mockRegister = jest.fn()
 jest.mock('../../features/account-credits', () => ({
   useGetUserCreditsStatusQuery: (...args: unknown[]) => mockUseGetUserCreditsStatusQuery(...args),
-  useOptOutFromCreditsMutation: () => [mockOptOut, { isLoading: false }],
-  useRegisterForCreditsMutation: () => [mockRegister, { isLoading: false }]
+  useOptOutFromCreditsMutation: () => [mockOptOut, { isLoading: false }]
 }))
 
 jest.mock('../../hooks/useAuthIdentity', () => ({
@@ -71,7 +65,6 @@ describe('CreditsPage', () => {
       isLoading: false
     })
     mockOptOut.mockReturnValue({ unwrap: () => Promise.resolve(undefined) })
-    mockRegister.mockReturnValue({ unwrap: () => Promise.resolve(undefined) })
   })
 
   afterEach(() => {
@@ -82,18 +75,6 @@ describe('CreditsPage', () => {
     render(<CreditsPage />)
 
     expect(screen.getByTestId('status-card')).toHaveAttribute('data-status', UserCreditsStatus.ENROLLED)
-  })
-
-  it('should register via the credits API when Join is clicked', async () => {
-    mockUseGetUserCreditsStatusQuery.mockReturnValue({
-      currentData: { status: UserCreditsStatus.NOT_REGISTERED, optedOutAt: null },
-      isLoading: false
-    })
-    render(<CreditsPage />)
-
-    fireEvent.click(screen.getByText('join'))
-
-    await waitFor(() => expect(mockRegister).toHaveBeenCalledWith('0x1234567890123456789012345678901234567890'))
   })
 
   it('should not show the confirm modal until Leave is clicked', () => {

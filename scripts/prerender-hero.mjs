@@ -292,10 +292,27 @@ html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
 // doesn't have to ship 56 KB / 17 KB gzip of static JSON. JSON.parse is ~5×
 // faster than JS object-literal parse for payloads this size, so even at the
 // same byte cost the visitor gets a faster TBT.
+//
+// It goes at the END of <body>, after #root, not in <head>: the dictionary is ~107 KB of script,
+// and in <head> it pushed every byte of page content (the hero, and the documents the edge worker
+// appends inside #root for crawlers) past the 120 KB mark. Readers that do not run JavaScript
+// and cap what they fetch saw script before content. The app bundle is a module script, which
+// runs only after the whole document is parsed, so `window.__dclEn` is still set before React
+// reads it (src/intl/LocaleContext.tsx).
 const enJson = readFileSync(resolve(__dirname, '..', 'src', 'intl', 'en.json'), 'utf8')
 const enLiteral = JSON.stringify(enJson) // escapes the JSON string for embedding
 const enScript = `<script data-dcl-en>window.__dclEn=JSON.parse(${enLiteral.replace(/<\/(script|!--)/gi, m => `\\u003c\\u002f${m.slice(2)}`)})</script>`
-html = html.replace('</head>', `${enScript}\n</head>`)
+html = html.replace('</body>', `${enScript}\n</body>`)
+
+// A dictionary that lands before #root, or not at all, silently costs every visitor a JSON chunk
+// and every crawler the content offset above; a shell without #root has nothing to mount into.
+// Fail the build instead of shipping either.
+const rootOffset = html.indexOf('<div id="root">')
+const dictionaryOffset = html.indexOf('<script data-dcl-en>')
+if (rootOffset === -1 || dictionaryOffset === -1 || dictionaryOffset < rootOffset) {
+  console.error('❌ Hero shell prerender failed: <div id="root"> must be present and precede the inline English dictionary.')
+  process.exit(1)
+}
 
 // Rewrite favicon href to CDN so it doesn't 404 on decentraland.zone
 // (the zone server's catch-all returns HTML for /favicon.ico)
