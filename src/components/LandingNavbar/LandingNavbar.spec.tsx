@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LandingNavbar } from './LandingNavbar'
 
@@ -397,9 +397,9 @@ describe('when the visitor clicks a navbar link', () => {
         .getAllByRole('button', { name: /navbar\.create$/i, hidden: true })
         .find(button => button.getAttribute('aria-haspopup') === 'true')!
       await user.hover(createTab.parentElement!)
-      const docsLink = screen.getByRole('link', { name: /creator_documentation/i })
+      const docsLink = within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true })
       docsLink.addEventListener('click', event => event.preventDefault())
-      await user.click(docsLink)
+      fireEvent.click(docsLink)
     })
 
     it('should send the link, its section and its destination', () => {
@@ -410,6 +410,67 @@ describe('when the visitor clicks a navbar link', () => {
         section: 'create',
         href: 'https://docs.decentraland.org/creator'
       })
+    })
+  })
+
+  describe('and it is a desktop section tab', () => {
+    let open: jest.SpyInstance
+
+    beforeEach(() => {
+      open = jest.spyOn(window, 'open').mockImplementation(() => null)
+      renderAt('/events')
+      const createTab = screen
+        .getAllByRole('button', { name: /navbar\.create$/i, hidden: true })
+        .find(button => button.getAttribute('aria-haspopup') === 'true')!
+      fireEvent.click(createTab)
+    })
+
+    afterEach(() => {
+      open.mockRestore()
+    })
+
+    it('should send the section with its first destination before navigating there', () => {
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'create', section: 'create', href: 'https://decentraland.org/create/' })
+      )
+      expect(track.mock.invocationCallOrder[0]).toBeLessThan(open.mock.invocationCallOrder[0])
+      expect(open).toHaveBeenCalledWith('https://decentraland.org/create/', '_self')
+    })
+  })
+
+  describe('and it is a mobile menu destination', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      await user.click(screen.getByRole('button', { name: 'Open menu' }))
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      const wearables = within(mobileMenu).getByRole('link', { name: /navbar\.wearables/i, hidden: true })
+      wearables.addEventListener('click', event => event.preventDefault())
+      fireEvent.click(wearables)
+    })
+
+    it('should send it under its section', () => {
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'wearables', section: 'shop', href: 'https://decentraland.org/shop/items?category=wearable' })
+      )
+    })
+  })
+
+  describe('and it is a user menu entry', () => {
+    beforeEach(async () => {
+      renderAt('/events', { isSignedIn: true, address: '0x1234567890123456789012345678901234567890' })
+      await user.click(screen.getByRole('button', { name: 'User menu' }))
+      const profile = screen.getAllByRole('link', { name: /navbar\.view_profile/i, hidden: true })[0]
+      profile.addEventListener('click', event => event.preventDefault())
+      fireEvent.click(profile)
+    })
+
+    it('should send it under the user menu section', () => {
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'view_profile', section: 'user_menu', href: 'https://decentraland.org/profile' })
+      )
     })
   })
 
