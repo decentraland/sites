@@ -66,6 +66,8 @@ jest.mock('@dcl/hooks', () => ({
       }
     }
   }),
+  // Only selects the Step 1 image: it must never reach the download flow.
+  useAdvancedUserAgentData: () => [false, undefined],
   // usePageView (this page is outside <Layout />, so it emits its own pageview)
   useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
@@ -132,20 +134,24 @@ type LayoutProps = {
   loading?: boolean
   backdropContent?: React.ReactNode
   footer?: React.ReactNode
-  renderCardOverlay?: (step: unknown, index: number) => React.ReactNode
   steps: unknown[]
   afterContent?: React.ReactNode
 }
 
-jest.mock('./DownloadSuccessLayout', () => ({
-  DownloadSuccessLayout: (props: LayoutProps) => (
+jest.mock('./DownloadStepsLayout', () => ({
+  DownloadStepsLayout: (props: LayoutProps) => (
     <div data-testid="layout">
       <div data-testid="backdrop">{props.backdropContent}</div>
       <div data-testid="footer-slot">{props.footer}</div>
-      <div data-testid="step-overlay">{props.renderCardOverlay?.(props.steps[0], 0)}</div>
       {props.afterContent}
     </div>
   )
+}))
+
+jest.mock('./DownloadSteps.styled', () => ({
+  DownloadStepsExternalIcon: () => <span />,
+  DownloadStepsFooterLine: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  DownloadStepsFooterLink: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>
 }))
 
 jest.mock('./DownloadSuccess.styled', () => ({
@@ -153,8 +159,7 @@ jest.mock('./DownloadSuccess.styled', () => ({
   DownloadBackdropText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   DownloadDetailContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DownloadProgressBar: () => <div />,
-  DownloadProgressContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  HighlightAnimation: () => <div />
+  DownloadProgressContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }))
 
 jest.mock('../../components/LandingFooter', () => ({
@@ -603,7 +608,7 @@ describe('when the user clicks the footer re-download link', () => {
 
   it('should fire download_started with the footer place and call streamOrFallback', async () => {
     const { findByRole } = render(<DownloadSuccess />)
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
     await waitFor(() => {
       expect(mockStreamOrFallback).toHaveBeenCalled()
@@ -638,7 +643,7 @@ describe('when the user clicks the footer re-download link', () => {
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&position=10,20&realm=foo.eth')
     mockUseAnonUserId.mockReturnValue(undefined)
     const { findByRole } = render(<DownloadSuccess />)
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
     await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })))
   })
@@ -648,7 +653,7 @@ describe('when the user clicks the footer re-download link', () => {
     let resolveStream: (() => void) | undefined
     mockStreamOrFallback.mockImplementation(() => new Promise<{ bytesTransferred?: number }>(r => (resolveStream = () => r({}))))
     const { findByRole } = render(<DownloadSuccess />)
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
     link.click()
     resolveStream?.()
@@ -668,7 +673,7 @@ describe('when the user clicks the footer re-download link', () => {
     })
     mockCalculateDownloadUrl.mockRejectedValueOnce(new Error('boom'))
 
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
 
     await waitFor(() => {
@@ -696,7 +701,7 @@ describe('when the user clicks the footer re-download link', () => {
     // tracker.failed line, not the fallback tracker path).
     mockStreamOrFallback.mockRejectedValueOnce(new Error('footer stream blew up'))
 
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
 
     await waitFor(() => {
