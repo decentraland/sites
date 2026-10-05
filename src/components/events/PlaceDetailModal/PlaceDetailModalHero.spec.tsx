@@ -31,8 +31,8 @@ jest.mock('../../jump/JumpInButton', () => ({
   JumpInButton: () => <button type="button">jump-in</button>
 }))
 
-jest.mock('../DetailModal', () => ({
-  DetailModalCreator: () => <div>creator</div>
+jest.mock('./PlaceDetailModalCreator', () => ({
+  PlaceDetailModalCreator: () => <div>creator</div>
 }))
 
 jest.mock('../DetailModal/DetailModal.styled', () => ({
