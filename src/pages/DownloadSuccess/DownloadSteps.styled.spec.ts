@@ -59,16 +59,21 @@ describe('when loading the steps styles', () => {
 
   describe('and building the card header', () => {
     it.each([
-      [0, '#673075', 'rgba(194, 92, 184, 0.32)'],
-      [1, '#550F76', 'rgba(105, 0, 146, 0.52)'],
-      [2, '#511B68', 'rgba(37, 0, 69, 0.41)'],
-      [3, '#673075', 'rgba(194, 92, 184, 0.32)']
-    ])('should tint step %s with its own accent and base color', (step, accent, base) => {
-      const header = findStyle(style => typeof style.boxShadow === 'string' && String(style.boxShadow).startsWith('inset 4px'), { step })
+      [0, 'rgba(194, 92, 184, 0.32)', '110.97deg'],
+      [1, 'rgba(105, 0, 146, 0.52)', '108.7deg'],
+      [2, 'rgba(37, 0, 69, 0.41)', '110.97deg'],
+      [3, 'rgba(194, 92, 184, 0.32)', '110.97deg']
+    ])('should tint step %s with its own base color and sheen', (step, base, angle) => {
+      const header = findStyle(style => style.minHeight === 180, { step })
 
-      expect(header.boxShadow).toBe(`inset 4px 0 0 0 ${accent}`)
       expect(header.backgroundColor).toBe(base)
-      expect(header.minHeight).toBe(180)
+      expect(header.backgroundImage).toContain(`linear-gradient(${angle}`)
+    })
+
+    it('should not draw an accent line on the left edge of the header', () => {
+      const header = findStyle(style => style.minHeight === 180, { step: 0 })
+
+      expect(header).not.toHaveProperty('boxShadow')
     })
 
     it('should keep the step index out of the DOM', () => {
