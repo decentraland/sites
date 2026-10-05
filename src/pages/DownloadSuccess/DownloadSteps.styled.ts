@@ -1,6 +1,7 @@
 import { Box, Typography, dclColors, keyframes, styled } from 'decentraland-ui2'
 import type { DownloadStepsStep } from './DownloadSuccess.types'
 
+// Colors below are literal values from the Figma design with no equivalent dclColors token.
 const PAGE_BACKGROUND = '#32134C'
 const CARD_BORDER = 'rgba(160, 155, 168, 0.48)'
 const MEDIA_UNDERLAY = 'rgba(51, 22, 54, 0.7)'

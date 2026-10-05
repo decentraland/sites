@@ -76,7 +76,8 @@ const DownloadStepsCard = memo(({ step, index }: DownloadStepsCardProps) => {
 
 DownloadStepsCard.displayName = 'DownloadStepsCard'
 
-const DownloadStepsLayout = memo(({ loading, backdropContent, title, subtitle, steps, footer, afterContent }: DownloadStepsLayoutProps) => {
+const DownloadStepsLayout = memo((props: DownloadStepsLayoutProps) => {
+  const { loading, backdropContent, title, subtitle, steps, footer, afterContent } = props
   const l = useFormatMessage()
 
   const defaultBackdropContent = (
@@ -120,4 +121,3 @@ const DownloadStepsLayout = memo(({ loading, backdropContent, title, subtitle, s
 DownloadStepsLayout.displayName = 'DownloadStepsLayout'
 
 export { DownloadStepsLayout }
-export type { DownloadStepsLayoutProps }

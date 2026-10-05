@@ -1308,8 +1308,8 @@ describe('when choosing the step images by operating system and detected browser
     })
   })
 
-  describe('and the page is shown in any language', () => {
-    it('should always show the highlight on the first step (it no longer depends on a translated word)', () => {
+  describe('and the steps are built', () => {
+    it('should highlight only the first step, whatever the translated copy (the old gate on a translated word is gone)', () => {
       renderFor('macos', 'Chrome')
 
       expect(mockLayoutProps.steps[0].highlight).toBeDefined()
