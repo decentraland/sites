@@ -6,12 +6,7 @@ import { ParticipantGrid } from '../../cast/ParticipantGrid/ParticipantGrid'
 import { PresentationStage } from '../../cast/PresentationStage/PresentationStage'
 import { Placeholder, PlaceholderHint, PlaceholderTitle } from './SceneLiveWatcher.styled'
 
-// Permissive content renderer for the /get-scene-adapter path. Unlike
-// WatcherViewContent (which filters on `metadata.role === 'streamer'`, set
-// only by cast2 web streamers), this component shows any remote participant
-// with an active Camera or ScreenShare track — the OBS publisher, the kernel
-// scene client, anything. Falls back to a "waiting" placeholder showing the
-// current participant count when nobody has video.
+/** Renders every remote participant with an active camera or screen share, or a waiting placeholder with the participant count. */
 function SceneRoomContent() {
   const t = useFormatMessage()
   const participants = useRemoteParticipants()

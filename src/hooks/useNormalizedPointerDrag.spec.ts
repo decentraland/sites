@@ -6,9 +6,7 @@ import type { NormalizedPointerDragOptions } from './useNormalizedPointerDrag.ty
 const BOUNDS = { left: 100, top: 50, width: 200, height: 100 }
 
 const createTarget = () => ({
-  setPointerCapture: jest.fn(),
-  releasePointerCapture: jest.fn(),
-  hasPointerCapture: jest.fn(() => true)
+  setPointerCapture: jest.fn()
 })
 
 type Target = ReturnType<typeof createTarget>
@@ -53,16 +51,21 @@ describe('useNormalizedPointerDrag', () => {
       act(() => result.current.handlers.onPointerDown(pointer(target, 150, 75)))
       expect(options.onStart).toHaveBeenCalledWith(0.25, 0.25)
     })
+
+    it('should capture the pointer', () => {
+      const { result } = renderDrag()
+      act(() => result.current.handlers.onPointerDown(pointer(target, 150, 75)))
+      expect(target.setPointerCapture).toHaveBeenCalledWith(7)
+    })
   })
 
   describe('when the pointer moves past the threshold after going down', () => {
-    it('should report the move, start dragging and capture the pointer', () => {
+    it('should report the move and start dragging', () => {
       const { result } = renderDrag()
       act(() => result.current.handlers.onPointerDown(pointer(target, 150, 75)))
       act(() => result.current.handlers.onPointerMove(pointer(target, 200, 100)))
       expect(options.onMove).toHaveBeenCalledWith(0.5, 0.5)
       expect(result.current.isDragging).toBe(true)
-      expect(target.setPointerCapture).toHaveBeenCalledWith(7)
     })
   })
 
@@ -97,13 +100,12 @@ describe('useNormalizedPointerDrag', () => {
   })
 
   describe('when the pointer is released after a drag', () => {
-    it('should end with the last position and release the capture', () => {
+    it('should end with the last position and stop dragging', () => {
       const { result } = renderDrag()
       act(() => result.current.handlers.onPointerDown(pointer(target, 150, 75)))
       act(() => result.current.handlers.onPointerMove(pointer(target, 200, 100)))
       act(() => result.current.handlers.onPointerUp(pointer(target, 260, 140)))
       expect(options.onEnd).toHaveBeenCalledWith(0.5, 0.5)
-      expect(target.releasePointerCapture).toHaveBeenCalledWith(7)
       expect(result.current.isDragging).toBe(false)
     })
   })
@@ -127,6 +129,15 @@ describe('useNormalizedPointerDrag', () => {
       expect(options.onCancel).toHaveBeenCalledTimes(1)
       expect(options.onEnd).not.toHaveBeenCalled()
       expect(result.current.isDragging).toBe(false)
+    })
+
+    it('should ignore later hovers', () => {
+      const { result } = renderDrag()
+      act(() => result.current.handlers.onPointerDown(pointer(target, 150, 75)))
+      act(() => result.current.handlers.onPointerMove(pointer(target, 200, 100)))
+      act(() => result.current.handlers.onPointerMove(pointer(target, 210, 100, { buttons: 0 })))
+      act(() => result.current.handlers.onPointerMove(pointer(target, 250, 120, { buttons: 0 })))
+      expect(options.onMove).toHaveBeenCalledTimes(1)
     })
   })
 

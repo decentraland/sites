@@ -4,6 +4,7 @@ import type { AnonymousIdentity } from './cast2.types'
 const STREAMER_TOKEN_KEY = 'dcl_cast_streamer_token'
 const DEVICE_SETTINGS_KEY = 'dcl_cast_device_settings'
 const PRESENTATION_BOT_IDENTITY_PREFIX = 'presentation-bot:'
+const PRESENTATION_VIDEO_TRACK = 'presentation-video'
 
 interface DeviceSettings {
   audioInputId?: string
@@ -194,6 +195,7 @@ const RETRYABLE_VIDEO_ERROR_CODES = new Set<string>([
 const isRetryableVideoErrorCode = (code: string): boolean => RETRYABLE_VIDEO_ERROR_CODES.has(code)
 
 export {
+  PRESENTATION_VIDEO_TRACK,
   clearDeviceSettings,
   clearStreamerToken,
   createLiveKitIdentity,

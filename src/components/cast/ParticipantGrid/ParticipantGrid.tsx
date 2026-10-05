@@ -4,7 +4,7 @@ import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } fro
 import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { Track } from 'livekit-client'
-import { getDisplayName, isPresentationBot } from '../../../features/cast2/cast2.utils'
+import { PRESENTATION_VIDEO_TRACK, getDisplayName, isPresentationBot } from '../../../features/cast2/cast2.utils'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { Avatar } from '../Avatar/Avatar'
 import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
@@ -31,7 +31,6 @@ import {
 
 const MAX_VISIBLE_PARTICIPANTS = 9
 const MAX_THUMBNAILS = 1
-const PRESENTATION_VIDEO_TRACK = 'presentation-video'
 
 function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }: ParticipantGridProps) {
   const { t } = useCastTranslation()
@@ -58,9 +57,6 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
     [filteredTracks]
   )
 
-  // Auto-expand presentation bot tile on its first appearance only, so manual
-  // tile selections by the user aren't snapped back to the bot on every rerender.
-  // The ref latches once per bot-presence cycle and resets when the bot leaves.
   const autoExpandedRef = useRef(false)
   useEffect(() => {
     const presentationTrack = finalTracks.find(t => isPresentationBot(t.participant))
@@ -78,7 +74,6 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
   const hasMultipleParticipants = participantCount >= 2
   const hasOverflow = participantCount > MAX_VISIBLE_PARTICIPANTS && !showAllParticipants
 
-  // Determine which tracks to display
   const displayTracks = useMemo(() => {
     if (!hasOverflow) return finalTracks
     return finalTracks.slice(0, MAX_VISIBLE_PARTICIPANTS - 1)
@@ -117,14 +112,11 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
     )
   }
 
-  // When there are multiple participants and one is expanded
   if (hasMultipleParticipants && expandedTrackSid) {
     const expandedTrack = finalTracks.find(t => t.participant.sid + t.source === expandedTrackSid)
     const otherTracks = finalTracks.filter(t => t.participant.sid + t.source !== expandedTrackSid)
     const isPresentationExpanded = expandedTrack ? isPresentationBot(expandedTrack.participant) : false
 
-    // Check if we have more thumbnails than MAX_THUMBNAILS
-    // Only show overflow card if there are at least 2 more participants (+2 minimum)
     const hasEnoughForOverflow = otherTracks.length > MAX_THUMBNAILS + 1
     const hasThumbnailOverflow = hasEnoughForOverflow
     const visibleThumbnails = hasThumbnailOverflow ? otherTracks.slice(0, MAX_THUMBNAILS) : otherTracks
@@ -141,9 +133,7 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
             overlay={presentationOverlay}
           />
         )}
-        {/* Hide participant thumbnails during presentation — slides are the focus */}
         {isPresentationExpanded ? null : otherTracks.length === 1 ? (
-          // Single floating video
           <FloatingVideoContainer>
             <ParticipantTile
               trackRef={otherTracks[0]}
@@ -152,7 +142,6 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
             />
           </FloatingVideoContainer>
         ) : (
-          // Multiple thumbnails in vertical grid
           <ThumbnailGrid>
             {visibleThumbnails.map(trackRef => (
               <ThumbnailItem key={trackRef.participant.sid + trackRef.source}>

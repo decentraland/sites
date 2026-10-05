@@ -1,9 +1,9 @@
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
-import { act, render } from '@testing-library/react'
+import { act, render, renderHook } from '@testing-library/react'
 import { useGetPresentationBotTokenMutation, useUploadPresentationFromUrlMutation, useUploadPresentationMutation } from '../cast2.client'
-import { isPresentationBot } from '../cast2.utils'
+import { getStreamerToken, isPresentationBot } from '../cast2.utils'
 import { decodeCommsPacket, encodeCommsPacket } from '../commsProtocol'
-import { type PresentationContextValue, PresentationProvider, usePresentation } from './PresentationContext'
+import { type PresentationContextValue, PresentationProvider, usePresentation, usePresentationOptional } from './PresentationContext'
 
 jest.mock('@livekit/components-react', () => ({ useRemoteParticipants: jest.fn(), useRoomContext: jest.fn() }))
 jest.mock('../cast2.client', () => ({
@@ -14,10 +14,11 @@ jest.mock('../cast2.client', () => ({
 jest.mock('../cast2.utils', () => ({
   ...jest.requireActual('../cast2.utils'),
   isPresentationBot: jest.fn(),
-  getStreamerToken: () => 'streaming-key'
+  getStreamerToken: jest.fn()
 }))
+const mockShow = jest.fn()
 jest.mock('./NotificationContext', () => ({
-  useNotifications: () => ({ show: jest.fn(), dismiss: jest.fn(), notifications: [] })
+  useNotifications: () => ({ show: mockShow, dismiss: jest.fn(), notifications: [] })
 }))
 jest.mock('../useCastTranslation', () => ({
   useCastTranslation: () => ({ t: (key: string) => key })
@@ -36,6 +37,7 @@ const HOLD_START = 1_000_000
 const mockUseRemoteParticipants = useRemoteParticipants as jest.Mock
 const mockUseRoomContext = useRoomContext as jest.Mock
 const mockIsPresentationBot = isPresentationBot as jest.Mock
+const mockGetStreamerToken = getStreamerToken as jest.Mock
 
 const makeBot = (extra: Record<string, unknown> = {}): FakeParticipant => ({
   identity: 'presentation-bot:room:1',
@@ -96,6 +98,11 @@ const claimCount = (): number =>
     return data?.type === 'presentation:presenter:claim'
   }).length
 
+const sentCommands = (): unknown[] => publishData.mock.calls.map(([payload]: [Uint8Array]) => decodeCommsPacket(payload)?.data)
+
+const errorPacket = (extra: Record<string, unknown> = {}) =>
+  encodeCommsPacket('presentation', { type: 'presentation:error', code: 'video-timeout', message: 'Video timed out', ...extra })
+
 const SLIDE = { url: 'https://presenter.test/presentations/deck-1/slides/0f3a.png', width: 1920, height: 1080 }
 const SLIDE_VIDEO = { url: 'https://presenter.test/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }
 const PRESENTATION_INFO = { id: 'deck-2', slideCount: 5, currentSlide: 0, fileType: 'pdf' }
@@ -119,6 +126,7 @@ describe('PresentationProvider', () => {
     mockUseRoomContext.mockReturnValue(room)
     mockUseRemoteParticipants.mockReturnValue([])
     mockIsPresentationBot.mockImplementation((participant: FakeParticipant) => participant.identity.startsWith('presentation-bot:'))
+    mockGetStreamerToken.mockReturnValue('streaming-key')
     ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([jest.fn()])
     ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([jest.fn()])
     ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([jest.fn()])
@@ -477,6 +485,112 @@ describe('PresentationProvider', () => {
     })
   })
 
+  describe('when the bot metadata reports a failed video', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([makeBot({ videoState: 'error', slideVideos: [SLIDE_VIDEO] })])
+      renderProvider()
+    })
+
+    it('should keep the slide videos so the play control stays available', () => {
+      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO])
+    })
+
+    it('should expose the video as idle', () => {
+      expect(current.state.videoState).toBe('idle')
+    })
+  })
+
+  describe.each(['error', 'bogus', 42])('when a presentation:state packet carries the video state %p', value => {
+    let videoState: unknown
+
+    beforeEach(() => {
+      videoState = value
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ videoState }), bot)
+    })
+
+    it('should expose the video as idle', () => {
+      expect(current.state.videoState).toBe('idle')
+    })
+  })
+
+  describe('when a presentation:state packet carries a video placed partly off the slide', () => {
+    let offSlideVideo: typeof SLIDE_VIDEO
+
+    beforeEach(() => {
+      offSlideVideo = { url: 'https://presenter.test/edge.mp4', geometry: { x: -40, y: -10, width: 0, height: 120 } }
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ slideVideos: [SLIDE_VIDEO, offSlideVideo] }), bot)
+    })
+
+    it('should keep every slide video so the playing index still points at the right one', () => {
+      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO, offSlideVideo])
+    })
+  })
+
+  describe('when a presentation:state packet has no file type', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(statePacket({ fileType: undefined, currentSlide: 2 }), bot)
+    })
+
+    it('should apply the packet', () => {
+      expect(current.state.currentSlide).toBe(2)
+    })
+
+    it('should expose no file type', () => {
+      expect(current.state.fileType).toBeNull()
+    })
+  })
+
+  describe('when a presentation bot sends packets before its metadata arrives', () => {
+    let pendingBot: FakeParticipant
+
+    beforeEach(() => {
+      pendingBot = { identity: 'presentation-bot:room:1', metadata: '' }
+      mockUseRemoteParticipants.mockReturnValue([pendingBot])
+      renderProvider()
+      deliver(statePacket({ currentSlide: 2 }), pendingBot)
+    })
+
+    it('should apply the packet', () => {
+      expect(current.state.currentSlide).toBe(2)
+    })
+  })
+
+  describe('when a second presentation bot sends packets', () => {
+    let otherBot: FakeParticipant
+
+    beforeEach(() => {
+      otherBot = { identity: 'presentation-bot:room:2', metadata: '' }
+      mockUseRemoteParticipants.mockReturnValue([bot, otherBot])
+      renderProvider()
+    })
+
+    describe('and the packet is a presentation:state', () => {
+      beforeEach(() => {
+        deliver(statePacket({ currentSlide: 2 }), otherBot)
+      })
+
+      it('should ignore it', () => {
+        expect(current.state.currentSlide).toBe(0)
+      })
+    })
+
+    describe('and the packet is a presentation:stopped', () => {
+      beforeEach(() => {
+        deliver(encodeCommsPacket('presentation', { type: 'presentation:stopped' }), otherBot)
+      })
+
+      it('should keep the presentation active', () => {
+        expect(current.state.status).toBe('active')
+      })
+    })
+  })
+
   describe('when a presentation:state packet comes from a legacy server', () => {
     beforeEach(() => {
       mockUseRemoteParticipants.mockReturnValue([bot])
@@ -793,5 +907,359 @@ describe('PresentationProvider', () => {
         expect(claimCount()).toBe(0)
       })
     })
+  })
+
+  describe.each<[string, (value: PresentationContextValue) => Promise<void>, Record<string, unknown>]>([
+    ['navigateSlide', value => value.navigateSlide('next'), { type: 'presentation:navigate', action: 'next' }],
+    ['goToSlide', value => value.goToSlide(2), { type: 'presentation:navigate', action: 'goto', slideIndex: 2 }],
+    ['playVideo', value => value.playVideo(1), { type: 'presentation:video:play', videoIndex: 1 }],
+    ['pauseVideo', value => value.pauseVideo(), { type: 'presentation:video:pause' }],
+    ['stopVideo', value => value.stopVideo(), { type: 'presentation:video:stop' }],
+    ['stopPresentation', value => value.stopPresentation(), { type: 'presentation:stop' }]
+  ])('when %s is called', (_name, invoke, expected) => {
+    describe('and a presentation is active', () => {
+      beforeEach(async () => {
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        renderProvider()
+        await act(async () => {
+          await invoke(current)
+        })
+      })
+
+      it('should publish the command to the presentation topic', () => {
+        expect(sentCommands()).toEqual([expected])
+      })
+    })
+
+    describe('and there is no presentation', () => {
+      beforeEach(async () => {
+        renderProvider()
+        await act(async () => {
+          await invoke(current)
+        })
+      })
+
+      it('should not publish anything', () => {
+        expect(publishData).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and the room has no local participant', () => {
+      beforeEach(async () => {
+        mockUseRoomContext.mockReturnValue({ localParticipant: undefined, on: jest.fn(), off: jest.fn() })
+        mockUseRemoteParticipants.mockReturnValue([bot])
+        renderProvider()
+        await act(async () => {
+          await invoke(current)
+        })
+      })
+
+      it('should not publish anything', () => {
+        expect(publishData).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('when there is no room', () => {
+    beforeEach(() => {
+      mockUseRoomContext.mockReturnValue(undefined)
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+    })
+
+    it('should still apply the bot metadata', () => {
+      expect(current.state.id).toBe('deck-1')
+    })
+
+    it('should not subscribe to room data', () => {
+      expect(dataHandler).toBeUndefined()
+    })
+  })
+
+  describe('when the followed bot sends presentation:stopped', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(encodeCommsPacket('presentation', { type: 'presentation:stopped' }), bot)
+    })
+
+    it('should reset the presentation state', () => {
+      expect(current.state).toEqual(expect.objectContaining({ id: null, status: 'idle', slideCount: 0 }))
+    })
+
+    it('should report the presentation as inactive', () => {
+      expect(current.isPresentationActive).toBe(false)
+    })
+  })
+
+  describe('when a packet arrives on another topic', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      deliver(encodeCommsPacket('chat', { type: 'presentation:stopped' }), bot)
+    })
+
+    it('should ignore it', () => {
+      expect(current.state.status).toBe('active')
+    })
+  })
+
+  describe('when a packet arrives without a participant', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+      act(() => {
+        dataHandler?.(encodeCommsPacket('presentation', { type: 'presentation:stopped' }))
+      })
+    })
+
+    it('should ignore it', () => {
+      expect(current.state.status).toBe('active')
+    })
+  })
+
+  describe('when the followed bot sends a presentation:error', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      renderProvider()
+    })
+
+    describe('and the code is retryable and it names a video', () => {
+      beforeEach(() => {
+        deliver(errorPacket({ videoIndex: 2, videoUrl: 'https://presenter.test/video.mp4' }), bot)
+      })
+
+      it('should show a video playback failure with a retry action', () => {
+        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', {
+          message: 'Video timed out',
+          code: 'video-timeout',
+          action: { label: 'notifications.retry', onClick: expect.any(Function) }
+        })
+      })
+
+      describe('and the retry action is clicked', () => {
+        beforeEach(async () => {
+          const [, { action }] = mockShow.mock.calls[0] as [string, { action: { onClick: () => void } }]
+          await act(async () => {
+            action.onClick()
+          })
+        })
+
+        it('should ask the bot to play that video again', () => {
+          expect(sentCommands()).toEqual([{ type: 'presentation:video:play', videoIndex: 2 }])
+        })
+      })
+    })
+
+    describe('and the code is not retryable', () => {
+      beforeEach(() => {
+        deliver(errorPacket({ code: 'video-not-found', message: 'Video not found', videoIndex: 2 }), bot)
+      })
+
+      it('should show a video playback failure without an action', () => {
+        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', {
+          message: 'Video not found',
+          code: 'video-not-found',
+          action: undefined
+        })
+      })
+    })
+
+    describe('and the code is retryable but it names no video', () => {
+      beforeEach(() => {
+        deliver(errorPacket(), bot)
+      })
+
+      it('should show a video playback failure without an action', () => {
+        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', {
+          message: 'Video timed out',
+          code: 'video-timeout',
+          action: undefined
+        })
+      })
+    })
+
+    describe.each<[string, Record<string, unknown>]>([
+      ['a numeric code', { code: 42 }],
+      ['a numeric message', { message: 42 }],
+      ['a string video index', { videoIndex: '2' }],
+      ['a numeric video url', { videoUrl: 42 }]
+    ])('and it carries %s', (_label, extra) => {
+      beforeEach(() => {
+        deliver(errorPacket(extra), bot)
+      })
+
+      it('should not show a notification', () => {
+        expect(mockShow).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('when the bot metadata has no presentation id', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([makeBot({ id: undefined })])
+      renderProvider()
+    })
+
+    it('should ask the bot for its state', () => {
+      expect(sentCommands()).toEqual([{ type: 'presentation:get-state' }])
+    })
+
+    it('should follow the bot', () => {
+      expect(current.presentationParticipantIdentity).toBe('presentation-bot:room:1')
+    })
+  })
+
+  describe('when the bot leaves while the presentation is active', () => {
+    beforeEach(() => {
+      mockUseRemoteParticipants.mockReturnValue([bot])
+      const view = renderProvider()
+      mockUseRemoteParticipants.mockReturnValue([])
+      view.rerender(tree())
+    })
+
+    it('should reset the presentation state', () => {
+      expect(current.state).toEqual(expect.objectContaining({ id: null, status: 'idle' }))
+    })
+  })
+
+  describe('when a presentation upload is requested', () => {
+    let getPresentationBotToken: jest.Mock
+    let uploadPresentation: jest.Mock
+    let uploadPresentationFromUrl: jest.Mock
+
+    beforeEach(() => {
+      getPresentationBotToken = jest.fn(() => ({ unwrap: () => Promise.resolve({ token: 'bot-token', url: 'wss://example.test' }) }))
+      uploadPresentation = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
+      uploadPresentationFromUrl = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
+      ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([getPresentationBotToken])
+      ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([uploadPresentation])
+      ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([uploadPresentationFromUrl])
+    })
+
+    describe('and another upload is already running', () => {
+      let resolveToken: (token: { token: string; url: string }) => void
+
+      beforeEach(async () => {
+        getPresentationBotToken.mockImplementation(() => ({
+          unwrap: () =>
+            new Promise(resolve => {
+              resolveToken = resolve
+            })
+        }))
+        renderProvider()
+        let first: Promise<void> = Promise.resolve()
+        act(() => {
+          first = current.startPresentation(new File(['deck'], 'deck.pdf'))
+        })
+        await act(async () => {
+          await current.startPresentationFromUrl('https://docs.test/deck.pdf')
+        })
+        await act(async () => {
+          resolveToken({ token: 'bot-token', url: 'wss://example.test' })
+          await first
+        })
+      })
+
+      it('should request a single bot token', () => {
+        expect(getPresentationBotToken).toHaveBeenCalledTimes(1)
+      })
+
+      it('should not run the second upload', () => {
+        expect(uploadPresentationFromUrl).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and there is no stored streaming key', () => {
+      beforeEach(async () => {
+        mockGetStreamerToken.mockReturnValue(null)
+        renderProvider()
+        await act(async () => {
+          await current.startPresentation(new File(['deck'], 'deck.pdf'))
+        })
+      })
+
+      it('should show a persistent download failure', () => {
+        expect(mockShow).toHaveBeenCalledWith('PresentationDownloadFailed', { message: 'No streaming key available', persistent: true })
+      })
+
+      it('should not request a bot token', () => {
+        expect(getPresentationBotToken).not.toHaveBeenCalled()
+      })
+
+      it('should go back to idle', () => {
+        expect(current.state.status).toBe('idle')
+      })
+    })
+
+    describe.each<[string, (value: PresentationContextValue) => Promise<void>, string]>([
+      ['a file upload', value => value.startPresentation(new File(['deck'], 'deck.pdf')), 'Failed to start presentation'],
+      ['a URL upload', value => value.startPresentationFromUrl('https://docs.test/deck.pdf'), 'Failed to start presentation from URL']
+    ])('and %s rejects with a non-Error value', (_label, invoke, expectedMessage) => {
+      beforeEach(async () => {
+        uploadPresentation.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
+        uploadPresentationFromUrl.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
+        renderProvider()
+        await act(async () => {
+          await invoke(current)
+        })
+      })
+
+      it('should show a persistent download failure with the generic label', () => {
+        expect(mockShow).toHaveBeenCalledWith('PresentationDownloadFailed', { message: expectedMessage, persistent: true })
+      })
+    })
+
+    describe('and the bot reports an active presentation before it finishes', () => {
+      beforeEach(async () => {
+        let resolveUpload: (info: typeof PRESENTATION_INFO) => void = () => undefined
+        uploadPresentation.mockReturnValue({
+          unwrap: () =>
+            new Promise(resolve => {
+              resolveUpload = resolve
+            })
+        })
+        mockUseRemoteParticipants.mockReturnValue([makeBot({ id: undefined })])
+        renderProvider()
+        let pending: Promise<void> = Promise.resolve()
+        await act(async () => {
+          pending = current.startPresentation(new File(['deck'], 'deck.pdf'))
+        })
+        deliver(statePacket(), bot)
+        await act(async () => {
+          resolveUpload(PRESENTATION_INFO)
+          await pending
+        })
+      })
+
+      it('should keep the active state reported by the bot', () => {
+        expect(current.state).toEqual(expect.objectContaining({ id: 'deck-1', status: 'active' }))
+      })
+    })
+  })
+})
+
+describe('when usePresentation is used outside a PresentationProvider', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    jest.restoreAllMocks()
+  })
+
+  it('should throw', () => {
+    expect(() => renderHook(() => usePresentation())).toThrow('usePresentation must be used within PresentationProvider')
+  })
+})
+
+describe('when usePresentationOptional is used outside a PresentationProvider', () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should return null', () => {
+    expect(renderHook(() => usePresentationOptional()).result.current).toBeNull()
   })
 })

@@ -1,21 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocalParticipant, useTracks } from '@livekit/components-react'
-import type { TrackReference, TrackReferenceOrPlaceholder } from '@livekit/components-react'
 import { RoomEvent, Track } from 'livekit-client'
 import { getPresenterServerUrl } from '../../../features/cast2/cast2.helpers'
-import { containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
+import { MIN_CIRCLE_DIAMETER, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
 import { isAllowedSlideUrl } from '../../../features/cast2/cast2.slideUrl'
+import { PRESENTATION_VIDEO_TRACK } from '../../../features/cast2/cast2.utils'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import type { PresentationStageProps } from './PresentationStage.types'
 import { CameraCircle, CircleVideo, RegionVideo, SlideBox, SlideImage, StageContainer, VideoRegion } from './PresentationStage.styled'
 
-const PRESENTATION_VIDEO_TRACK = 'presentation-video'
 const TRACK_SOURCES = [Track.Source.Camera, Track.Source.ScreenShare]
 const TRACK_OPTIONS = { updateOnlyOn: [RoomEvent.TrackMuted, RoomEvent.TrackUnmuted] }
-const MIN_CIRCLE_DIAMETER = 2
-
-const hasTrack = (ref: TrackReferenceOrPlaceholder): ref is TrackReference => ref.publication?.track !== undefined
 
 const percent = (value: number, total: number): string => `${(value / total) * 100}%`
 
@@ -43,7 +39,6 @@ function PresentationStage({ overlay }: PresentationStageProps) {
   if (!slide || size.width === 0 || size.height === 0) return <StageContainer ref={containerRef} />
 
   const box = containRect(size.width, size.height, slide.width, slide.height)
-  const publishedTracks = tracks.filter(hasTrack)
 
   const showSlide = failedSlideUrl !== slide.url && isAllowedSlideUrl(slide.url, getPresenterServerUrl())
   const handleSlideError = () => {
@@ -51,7 +46,7 @@ function PresentationStage({ overlay }: PresentationStageProps) {
     setFailedSlideUrl(slide.url)
   }
 
-  const videoTrackRef = publishedTracks.find(
+  const videoTrackRef = tracks.find(
     ref =>
       ref.participant.identity === presentationParticipantIdentity &&
       ref.source === Track.Source.ScreenShare &&
@@ -62,18 +57,14 @@ function PresentationStage({ overlay }: PresentationStageProps) {
       ? state.slideVideos[state.playingVideoIndex]
       : undefined
 
+  // NOTE: the `!participant.isLocal` check was dropped (2026-10); the presenterIdentity guard already excludes the local participant.
   const cameraTrackRef =
     state.presenterIdentity && state.presenterIdentity !== localParticipant.identity
-      ? publishedTracks.find(
-          ref =>
-            ref.participant.identity === state.presenterIdentity &&
-            ref.source === Track.Source.Camera &&
-            !ref.participant.isLocal &&
-            !ref.publication.isMuted
+      ? tracks.find(
+          ref => ref.participant.identity === state.presenterIdentity && ref.source === Track.Source.Camera && !ref.publication.isMuted
         )
       : undefined
   const circle = overlayRect(state.overlay, slide.width, slide.height)
-  const scale = box.width / slide.width
 
   return (
     <StageContainer ref={containerRef}>
@@ -94,7 +85,14 @@ function PresentationStage({ overlay }: PresentationStageProps) {
           </VideoRegion>
         ) : null}
         {cameraTrackRef && circle.d >= MIN_CIRCLE_DIAMETER ? (
-          <CameraCircle style={{ left: circle.left * scale, top: circle.top * scale, width: circle.d * scale, height: circle.d * scale }}>
+          <CameraCircle
+            style={{
+              left: percent(circle.left, slide.width),
+              top: percent(circle.top, slide.height),
+              width: percent(circle.d, slide.width),
+              height: percent(circle.d, slide.height)
+            }}
+          >
             <CircleVideo trackRef={cameraTrackRef} />
           </CameraCircle>
         ) : null}

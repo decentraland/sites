@@ -9,6 +9,7 @@ jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/
 jest.mock('@livekit/components-react', () => ({ useRemoteParticipants: jest.fn() }))
 jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePresentationOptional: jest.fn() }))
 jest.mock('../../../features/cast2/cast2.utils', () => ({
+  ...jest.requireActual('../../../features/cast2/cast2.utils'),
   getDisplayName: (participant: { identity: string }) => participant.identity
 }))
 jest.mock('../../../features/cast2/useCastTranslation', () => ({

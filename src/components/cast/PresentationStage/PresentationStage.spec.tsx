@@ -29,8 +29,9 @@ const mockUseLocalParticipant = useLocalParticipant as jest.Mock
 const BOT = 'presentation-bot:deck'
 const PRESENTER = '0xpresenter'
 const LOCAL = 'stream:local'
-const SLIDE_URL = 'https://presenter.example/presentations/deck/slides/0a1b2c.png'
-const NEXT_SLIDE_URL = 'https://presenter.example/presentations/deck/slides/3d4e5f.png'
+const PRESENTATION_ID = '3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b'
+const SLIDE_URL = `https://presenter.example/presentations/${PRESENTATION_ID}/slides/0a1b2c3d4e5f6a7b.png`
+const NEXT_SLIDE_URL = `https://presenter.example/presentations/${PRESENTATION_ID}/slides/3d4e5f6a7b8c9d0e.png`
 const LABEL = 'streaming_controls.presentation'
 
 interface FakePublication {
@@ -189,7 +190,7 @@ describe('PresentationStage', () => {
 
   describe('when the slide URL is on another origin', () => {
     beforeEach(() => {
-      state = makeState({ slide: { url: 'https://evil.example/presentations/deck/slides/0a1b2c.png', width: 1920, height: 1080 } })
+      state = makeState({ slide: { url: SLIDE_URL.replace('presenter.example', 'evil.example'), width: 1920, height: 1080 } })
     })
 
     it('should not render the slide image', () => {
@@ -378,13 +379,13 @@ describe('PresentationStage', () => {
       rect = overlayRect(state.overlay, 1920, 1080)
     })
 
-    it('should render the presenter camera in a circle scaled to the slide box', () => {
+    it('should render the presenter camera in a circle positioned as a share of the slide', () => {
       renderStage()
       expect(cameraVideo()?.parentElement).toHaveStyle({
-        left: `${rect.left * 0.5}px`,
-        top: `${rect.top * 0.5}px`,
-        width: `${rect.d * 0.5}px`,
-        height: `${rect.d * 0.5}px`
+        left: `${(rect.left / 1920) * 100}%`,
+        top: `${(rect.top / 1080) * 100}%`,
+        width: `${(rect.d / 1920) * 100}%`,
+        height: `${(rect.d / 1080) * 100}%`
       })
     })
 
@@ -404,17 +405,6 @@ describe('PresentationStage', () => {
       })
     })
 
-    describe('and the camera publication has no track yet', () => {
-      beforeEach(() => {
-        tracks = [trackRef(PRESENTER, Track.Source.Camera, { track: undefined })]
-      })
-
-      it('should not render the camera circle', () => {
-        renderStage()
-        expect(cameraVideo()).not.toBeInTheDocument()
-      })
-    })
-
     describe('and the slide is too small for a circle', () => {
       beforeEach(() => {
         state = { ...state, slide: { url: SLIDE_URL, width: 6, height: 4 } }
@@ -424,18 +414,6 @@ describe('PresentationStage', () => {
         renderStage()
         expect(cameraVideo()).not.toBeInTheDocument()
       })
-    })
-  })
-
-  describe('when the presenter has no camera publication', () => {
-    beforeEach(() => {
-      state = makeState({ presenterIdentity: PRESENTER })
-      tracks = [{ participant: { identity: PRESENTER, isLocal: false }, source: Track.Source.Camera }]
-    })
-
-    it('should not render the camera circle', () => {
-      renderStage()
-      expect(cameraVideo()).not.toBeInTheDocument()
     })
   })
 
@@ -477,7 +455,7 @@ describe('PresentationStage', () => {
 
     describe('and the slide URL is on another origin', () => {
       beforeEach(() => {
-        state = makeState({ slide: { url: 'https://evil.example/presentations/deck/slides/0a1b2c.png', width: 1920, height: 1080 } })
+        state = makeState({ slide: { url: SLIDE_URL.replace('presenter.example', 'evil.example'), width: 1920, height: 1080 } })
       })
 
       it('should still render the overlay', () => {

@@ -81,7 +81,7 @@ const cast2Endpoints = cast2Client.injectEndpoints({
       query: ({ url, livekitToken, livekitUrl, presenterIdentity }) => ({
         url: `${getPresenterServerUrl()}/presentations`,
         method: 'POST',
-        body: { url, livekitToken, livekitUrl, ...(presenterIdentity ? { presenterIdentity } : {}) }
+        body: { url, livekitToken, livekitUrl, presenterIdentity }
       })
     })
   }),

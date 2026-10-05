@@ -3,6 +3,8 @@ import type { MediaRect, OverlayLayout, OverlayRect, OverlaySize } from './cast2
 const RATIO: Record<OverlaySize, number> = { small: 0.15, large: 0.25 }
 const MARGIN_RATIO = 0.02
 
+const MIN_CIRCLE_DIAMETER = 2
+
 const even = (n: number): number => n - (n % 2)
 
 /** Clamps `value` into `[min, max]`. */
@@ -26,4 +28,4 @@ function containRect(boxWidth: number, boxHeight: number, mediaWidth: number, me
   return { left: (boxWidth - width) / 2, top: (boxHeight - height) / 2, width, height }
 }
 
-export { clamp, containRect, overlayRect }
+export { MIN_CIRCLE_DIAMETER, clamp, containRect, overlayRect }

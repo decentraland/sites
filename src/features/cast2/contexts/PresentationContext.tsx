@@ -42,19 +42,11 @@ const PRESENTATION_TOPIC = 'presentation'
 const DEFAULT_OVERLAY: OverlayLayout = { x: 0, y: 1, size: 'small' }
 const OVERLAY_HOLD_MS = 1000
 
-interface PresentationBotMetadata {
-  role: 'presentation'
-  id?: string
-  slideCount?: number
-  currentSlide?: number
-  fileType?: 'pdf' | 'pptx'
-  videoState?: PresentationState['videoState']
-  slideVideos?: unknown
-  overlay?: unknown
-  slide?: unknown
-  presenterIdentity?: unknown
-  playingVideoIndex?: unknown
-}
+type PresentationBotMetadata = Record<string, unknown> & { role: 'presentation'; id?: string }
+
+type IncomingState = Omit<PresentationState, 'status'>
+
+const VIDEO_STATES: PresentationState['videoState'][] = ['idle', 'loading', 'playing', 'paused']
 
 const initialState: PresentationState = {
   id: null,
@@ -70,11 +62,19 @@ const initialState: PresentationState = {
   playingVideoIndex: null
 }
 
-const isOverlayLayout = (value: unknown): value is OverlayLayout => {
-  if (typeof value !== 'object' || value === null) return false
-  const v = value as Record<string, unknown>
-  return Number.isFinite(v.x) && Number.isFinite(v.y) && (v.size === 'small' || v.size === 'large')
+const toOverlay = (value: unknown): OverlayLayout => {
+  if (typeof value !== 'object' || value === null) return DEFAULT_OVERLAY
+  const { x, y, size } = value as Record<string, unknown>
+  return typeof x === 'number' &&
+    Number.isFinite(x) &&
+    typeof y === 'number' &&
+    Number.isFinite(y) &&
+    (size === 'small' || size === 'large')
+    ? { x, y, size }
+    : DEFAULT_OVERLAY
 }
+
+const toVideoState = (value: unknown): PresentationState['videoState'] => VIDEO_STATES.find(videoState => videoState === value) ?? 'idle'
 
 const isPositiveFinite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0
 
@@ -99,33 +99,27 @@ const isSlideVideo = (value: unknown): value is SlideVideoInfo => {
 
 const toSlideVideos = (value: unknown): SlideVideoInfo[] => (Array.isArray(value) && value.every(isSlideVideo) ? value : [])
 
+const toIncomingState = (id: string, data: Record<string, unknown>): IncomingState => ({
+  id,
+  slideCount: typeof data.slideCount === 'number' ? data.slideCount : 0,
+  currentSlide: typeof data.currentSlide === 'number' ? data.currentSlide : 0,
+  fileType: data.fileType === 'pdf' || data.fileType === 'pptx' ? data.fileType : null,
+  slideVideos: toSlideVideos(data.slideVideos),
+  videoState: toVideoState(data.videoState),
+  overlay: toOverlay(data.overlay),
+  slide: toSlideInfo(data.slide),
+  presenterIdentity: toPresenterIdentity(data.presenterIdentity),
+  playingVideoIndex: toPlayingVideoIndex(data.playingVideoIndex)
+})
+
 const sameOverlay = (a: OverlayLayout, b: OverlayLayout): boolean =>
   Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
 
-const isPresentationStateMessage = (
-  data: unknown
-): data is {
-  type: 'presentation:state'
-  id: string
-  slideCount: number
-  currentSlide: number
-  fileType: 'pdf' | 'pptx'
-  slideVideos?: unknown
-  videoState?: PresentationState['videoState']
-  overlay?: unknown
-  slide?: unknown
-  presenterIdentity?: unknown
-  playingVideoIndex?: unknown
-} => {
+const isPresentationStateMessage = (data: unknown): data is Record<string, unknown> & { type: 'presentation:state'; id: string } => {
   if (typeof data !== 'object' || data === null) return false
   const d = data as Record<string, unknown>
-  return (
-    d.type === 'presentation:state' &&
-    typeof d.id === 'string' &&
-    typeof d.slideCount === 'number' &&
-    typeof d.currentSlide === 'number' &&
-    (d.fileType === 'pdf' || d.fileType === 'pptx')
-  )
+  // NOTE: slideCount, currentSlide and fileType are no longer required here (2026-10); toIncomingState defaults them, so packets parse like bot metadata.
+  return d.type === 'presentation:state' && typeof d.id === 'string'
 }
 
 const isPresentationStoppedMessage = (data: unknown): data is { type: 'presentation:stopped' } =>
@@ -153,21 +147,8 @@ const isPresentationErrorMessage = (
 const isPresentationBotMetadata = (data: unknown): data is PresentationBotMetadata => {
   if (typeof data !== 'object' || data === null) return false
   const d = data as Record<string, unknown>
-  if (d.role !== 'presentation') return false
-  if (d.id !== undefined && typeof d.id !== 'string') return false
-  if (d.slideCount !== undefined && typeof d.slideCount !== 'number') return false
-  if (d.currentSlide !== undefined && typeof d.currentSlide !== 'number') return false
-  if (d.fileType !== undefined && d.fileType !== 'pdf' && d.fileType !== 'pptx') return false
-  if (
-    d.videoState !== undefined &&
-    d.videoState !== 'idle' &&
-    d.videoState !== 'loading' &&
-    d.videoState !== 'playing' &&
-    d.videoState !== 'paused'
-  )
-    return false
-  if (d.slideVideos !== undefined && !Array.isArray(d.slideVideos)) return false
-  return true
+  // NOTE: per-field checks moved to toIncomingState (2026-10), which defaults bad fields instead of rejecting the whole metadata.
+  return d.role === 'presentation' && (d.id === undefined || typeof d.id === 'string')
 }
 
 const PresentationContext = createContext<PresentationContextValue | undefined>(undefined)
@@ -188,15 +169,16 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
   const uploadingRef = useRef(false)
   const pendingOverlayRef = useRef<{ layout: OverlayLayout; until: number } | null>(null)
 
-  const resolveIncomingOverlay = (prev: OverlayLayout, incoming: OverlayLayout): OverlayLayout => {
-    const pending = pendingOverlayRef.current
-    if (!pending) return incoming
-    if (Date.now() >= pending.until) {
-      pendingOverlayRef.current = null
-      return incoming
-    }
-    return sameOverlay(incoming, pending.layout) ? incoming : prev
-  }
+  const applyIncoming = useCallback((incoming: IncomingState) => {
+    setState(prev => {
+      const pending = pendingOverlayRef.current
+      const isHeld = pending !== null && Date.now() < pending.until
+      if (!isHeld) pendingOverlayRef.current = null
+      const overlay = isHeld && !sameOverlay(incoming.overlay, pending.layout) ? prev.overlay : incoming.overlay
+      const next: PresentationState = { ...initialState, ...incoming, status: 'active', overlay }
+      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next
+    })
+  }, [])
 
   const sendCommand = useCallback(
     async (command: Record<string, unknown>): Promise<boolean> => {
@@ -213,99 +195,32 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
     [room]
   )
 
-  const { presentationParticipantIdentity, botMetadata } = useMemo<{
-    presentationParticipantIdentity: string | null
-    botMetadata: PresentationBotMetadata | null
-  }>(() => {
+  const { presentationParticipantIdentity, botMetadataJson } = useMemo(() => {
+    let firstBotIdentity: string | null = null
     for (const p of remoteParticipants) {
       if (!isPresentationBot(p)) continue
-      const parsed = parseParticipantMetadata(p)
-      if (isPresentationBotMetadata(parsed)) {
-        return { presentationParticipantIdentity: p.identity, botMetadata: parsed }
+      firstBotIdentity ??= p.identity
+      if (isPresentationBotMetadata(parseParticipantMetadata(p))) {
+        return { presentationParticipantIdentity: p.identity, botMetadataJson: p.metadata ?? null }
       }
     }
-    return { presentationParticipantIdentity: null, botMetadata: null }
+    return { presentationParticipantIdentity: firstBotIdentity, botMetadataJson: null }
   }, [remoteParticipants])
 
-  const botId = botMetadata?.id ?? null
-  const botSlideCount = botMetadata?.slideCount ?? 0
-  const botCurrentSlide = botMetadata?.currentSlide ?? 0
-  const botFileType = botMetadata?.fileType ?? null
-  const botVideoState = botMetadata?.videoState ?? 'idle'
-  const botSlide = toSlideInfo(botMetadata?.slide)
-  const botSlideUrl = botSlide?.url ?? null
-  const botSlideWidth = botSlide?.width ?? null
-  const botSlideHeight = botSlide?.height ?? null
-  const botPresenterIdentity = toPresenterIdentity(botMetadata?.presenterIdentity)
-  const botPlayingVideoIndex = toPlayingVideoIndex(botMetadata?.playingVideoIndex)
-  const {
-    x: botOverlayX,
-    y: botOverlayY,
-    size: botOverlaySize
-  } = isOverlayLayout(botMetadata?.overlay) ? botMetadata.overlay : DEFAULT_OVERLAY
-  const botSlideVideosJson = useMemo(() => JSON.stringify(toSlideVideos(botMetadata?.slideVideos)), [botMetadata])
-  const hasBotMetadata = botMetadata !== null
+  const botIncoming = useMemo(() => {
+    const metadata = parseParticipantMetadata<PresentationBotMetadata>({ metadata: botMetadataJson ?? undefined })
+    return metadata?.id ? toIncomingState(metadata.id, metadata) : null
+  }, [botMetadataJson])
+  const hasBotMetadata = botMetadataJson !== null
 
   useEffect(() => {
     if (!hasBotMetadata) return
-    if (botId) {
-      setState(prev => {
-        const overlay = resolveIncomingOverlay(prev.overlay, { x: botOverlayX, y: botOverlayY, size: botOverlaySize })
-        if (
-          prev.status === 'active' &&
-          prev.id === botId &&
-          prev.currentSlide === botCurrentSlide &&
-          prev.slideCount === botSlideCount &&
-          prev.fileType === botFileType &&
-          prev.videoState === botVideoState &&
-          JSON.stringify(prev.slideVideos) === botSlideVideosJson &&
-          prev.overlay === overlay &&
-          (prev.slide?.url ?? null) === botSlideUrl &&
-          (prev.slide?.width ?? null) === botSlideWidth &&
-          (prev.slide?.height ?? null) === botSlideHeight &&
-          prev.presenterIdentity === botPresenterIdentity &&
-          prev.playingVideoIndex === botPlayingVideoIndex
-        ) {
-          return prev
-        }
-        return {
-          id: botId,
-          slideCount: botSlideCount,
-          currentSlide: botCurrentSlide,
-          fileType: botFileType,
-          status: 'active',
-          slideVideos: JSON.parse(botSlideVideosJson),
-          videoState: botVideoState,
-          overlay,
-          slide:
-            botSlideUrl !== null && botSlideWidth !== null && botSlideHeight !== null
-              ? { url: botSlideUrl, width: botSlideWidth, height: botSlideHeight }
-              : null,
-          presenterIdentity: botPresenterIdentity,
-          playingVideoIndex: botPlayingVideoIndex
-        }
-      })
+    if (botIncoming) {
+      applyIncoming(botIncoming)
       return
     }
     sendCommand({ type: 'presentation:get-state' })
-  }, [
-    hasBotMetadata,
-    botId,
-    botSlideCount,
-    botCurrentSlide,
-    botFileType,
-    botVideoState,
-    botSlideVideosJson,
-    botOverlayX,
-    botOverlayY,
-    botOverlaySize,
-    botSlideUrl,
-    botSlideWidth,
-    botSlideHeight,
-    botPresenterIdentity,
-    botPlayingVideoIndex,
-    sendCommand
-  ])
+  }, [hasBotMetadata, botIncoming, applyIncoming, sendCommand])
 
   const claimedForRef = useRef<string | null | undefined>(undefined)
 
@@ -330,29 +245,18 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
   tRef.current = t
   const sendCommandRef = useRef(sendCommand)
   sendCommandRef.current = sendCommand
+  const presentationParticipantIdentityRef = useRef(presentationParticipantIdentity)
+  presentationParticipantIdentityRef.current = presentationParticipantIdentity
 
   useEffect(() => {
     if (!room) return
     const handleData = (payload: Uint8Array, participant?: RemoteParticipant) => {
-      if (!participant || !isPresentationBot(participant)) return
+      if (!participant || participant.identity !== presentationParticipantIdentityRef.current) return
       const decoded = decodeCommsPacket(payload)
       if (!decoded || decoded.topic !== PRESENTATION_TOPIC) return
 
       if (isPresentationStateMessage(decoded.data)) {
-        const stateMessage = decoded.data
-        setState(prev => ({
-          id: stateMessage.id,
-          slideCount: stateMessage.slideCount,
-          currentSlide: stateMessage.currentSlide,
-          fileType: stateMessage.fileType,
-          status: 'active',
-          slideVideos: toSlideVideos(stateMessage.slideVideos),
-          videoState: stateMessage.videoState ?? 'idle',
-          overlay: resolveIncomingOverlay(prev.overlay, isOverlayLayout(stateMessage.overlay) ? stateMessage.overlay : DEFAULT_OVERLAY),
-          slide: toSlideInfo(stateMessage.slide),
-          presenterIdentity: toPresenterIdentity(stateMessage.presenterIdentity),
-          playingVideoIndex: toPlayingVideoIndex(stateMessage.playingVideoIndex)
-        }))
+        applyIncoming(toIncomingState(decoded.data.id, decoded.data))
       } else if (isPresentationStoppedMessage(decoded.data)) {
         setState(initialState)
       } else if (isPresentationErrorMessage(decoded.data)) {
@@ -373,7 +277,7 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
     return () => {
       room.off(RoomEvent.DataReceived, handleData)
     }
-  }, [room])
+  }, [room, applyIncoming])
 
   const runPresentationUpload = useCallback(
     async (
@@ -395,19 +299,7 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
         setState(prev =>
           prev.status === 'active'
             ? prev
-            : {
-                id: info.id,
-                slideCount: info.slideCount,
-                currentSlide: 0,
-                fileType: info.fileType,
-                status: 'starting',
-                slideVideos: [],
-                videoState: 'idle',
-                overlay: DEFAULT_OVERLAY,
-                slide: null,
-                presenterIdentity: null,
-                playingVideoIndex: null
-              }
+            : { ...initialState, id: info.id, slideCount: info.slideCount, fileType: info.fileType, status: 'starting' }
         )
       } catch (err) {
         const message = err instanceof Error ? err.message : errorLabel

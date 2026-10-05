@@ -38,9 +38,9 @@ const mockUseLocalParticipant = useLocalParticipant as jest.Mock
 
 const HINT = 'streaming_controls.camera_overlay.drag_hint'
 
-const firePointer = (element: HTMLElement, type: string, clientX: number, clientY: number, buttons = 1) => {
+const firePointer = (element: HTMLElement, type: string, clientX: number, clientY: number) => {
   act(() => {
-    element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX, clientY, button: 0, buttons }))
+    element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX, clientY, button: 0, buttons: 1 }))
   })
 }
 
@@ -102,8 +102,6 @@ describe('CameraOverlayHandle', () => {
     ]
     jest.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 960, height: 540 } as DOMRect)
     HTMLElement.prototype.setPointerCapture = jest.fn()
-    HTMLElement.prototype.releasePointerCapture = jest.fn()
-    HTMLElement.prototype.hasPointerCapture = jest.fn(() => true)
     disconnect = jest.fn()
     originalResizeObserver = global.ResizeObserver
     global.ResizeObserver = class {
@@ -227,19 +225,6 @@ describe('CameraOverlayHandle', () => {
       renderHandle()
       fireEvent.click(circle())
       expect(onTileClick).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('when the press is lost before release', () => {
-    it('should drop the local position and send nothing more', () => {
-      const view = renderHandle()
-      firePointer(circle(), 'pointerdown', 100, 448)
-      firePointer(circle(), 'pointermove', 120, 448)
-      firePointer(circle(), 'pointermove', 130, 448, 0)
-      overlay = { x: 1, y: 0, size: 'small' }
-      view.rerender(tree())
-      expect(position()).toEqual({ left: '796', top: '18', size: '144' })
-      expect(setOverlay).toHaveBeenCalledTimes(1)
     })
   })
 

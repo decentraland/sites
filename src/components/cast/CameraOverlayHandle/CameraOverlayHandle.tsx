@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { useLocalParticipant } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import { clamp, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
+import { MIN_CIRCLE_DIAMETER, clamp, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
 import type { MeasuredMedia, OverlayLayout } from '../../../features/cast2/cast2.types'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
@@ -10,7 +10,6 @@ import { useNormalizedPointerDrag } from '../../../hooks/useNormalizedPointerDra
 import { HandleCircle, HandleLayer, HandlePreview, HandlePreviewVideo } from './CameraOverlayHandle.styled'
 
 const SEND_INTERVAL_MS = 100
-const MIN_CIRCLE_DIAMETER = 2
 
 const stopClick = (event: MouseEvent) => event.stopPropagation()
 
@@ -30,35 +29,22 @@ function CameraOverlayHandle() {
 
   useEffect(() => {
     const layer = layerRef.current
-    if (layer && hasSlide) {
-      const measureSlide = () =>
-        setMedia({
-          ...containRect(layer.clientWidth, layer.clientHeight, slideWidth, slideHeight),
-          videoWidth: slideWidth,
-          videoHeight: slideHeight
-        })
-      measureSlide()
-      const slideObserver = new ResizeObserver(measureSlide)
-      slideObserver.observe(layer)
-      return () => slideObserver.disconnect()
+    const video = hasSlide ? null : layer?.parentElement?.querySelector('video')
+    if (!layer || (!hasSlide && !video)) return
+    const measure = () => {
+      const width = video ? video.videoWidth : slideWidth
+      const height = video ? video.videoHeight : slideHeight
+      setMedia({ ...containRect(layer.clientWidth, layer.clientHeight, width, height), videoWidth: width, videoHeight: height })
     }
-    const video = layer?.parentElement?.querySelector('video')
-    if (!layer || !video) return
-    const measure = () =>
-      setMedia({
-        ...containRect(layer.clientWidth, layer.clientHeight, video.videoWidth, video.videoHeight),
-        videoWidth: video.videoWidth,
-        videoHeight: video.videoHeight
-      })
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(layer)
-    video.addEventListener('loadedmetadata', measure)
-    video.addEventListener('resize', measure)
+    video?.addEventListener('loadedmetadata', measure)
+    video?.addEventListener('resize', measure)
     return () => {
       observer.disconnect()
-      video.removeEventListener('loadedmetadata', measure)
-      video.removeEventListener('resize', measure)
+      video?.removeEventListener('loadedmetadata', measure)
+      video?.removeEventListener('resize', measure)
     }
   }, [hasSlide, slideWidth, slideHeight])
 

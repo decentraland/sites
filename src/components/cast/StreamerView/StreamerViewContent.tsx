@@ -11,6 +11,8 @@ import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
 import { PresentationStage } from '../PresentationStage/PresentationStage'
 import { ContentWrapper } from './StreamerViewContent.styled'
 
+const TRACK_INIT_GRACE_MS = 2000
+
 export function StreamerViewContent() {
   const { t } = useCastTranslation()
   const { localParticipant } = useLocalParticipant()
@@ -25,29 +27,24 @@ export function StreamerViewContent() {
   const hasAnyVideo = hasLocalCamera || hasLocalScreenShare
   const isClientComposed = Boolean(presentation?.state.slide)
 
-  // Track initialization state - wait a bit for tracks to initialize
   useEffect(() => {
     if (!isConnected) {
       setIsInitializing(true)
       return
     }
 
-    // If we're connected and have tracks, we're done initializing
     if (hasLocalCamera || hasLocalScreenShare) {
       setIsInitializing(false)
       return
     }
 
-    // Give the camera/mic a moment to initialize after connection
     const timer = setTimeout(() => {
       setIsInitializing(false)
-    }, 2000) // 2 seconds grace period for tracks to initialize
+    }, TRACK_INIT_GRACE_MS)
 
     return () => clearTimeout(timer)
   }, [isConnected, hasLocalCamera, hasLocalScreenShare])
 
-  // Show initializing state while connecting or camera is starting up
-  // (prevents showing "disconnected" message during initial connection)
   if ((isConnecting || isDisconnected || (isConnected && isInitializing)) && !hasAnyVideo && isInitializing) {
     return (
       <ContentWrapper>
@@ -56,7 +53,6 @@ export function StreamerViewContent() {
     )
   }
 
-  // If disconnected (but not during initialization), show reconnection message
   if (isDisconnected && !isInitializing) {
     return (
       <ContentWrapper>
