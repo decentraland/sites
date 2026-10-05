@@ -8,7 +8,6 @@ import { useCopyShareLink } from '../../../hooks/useCopyShareLink'
 import { useShareUrl } from '../../../hooks/useShareUrl'
 import { buildPlaceShareUrl } from '../../../utils/whatsOnUrl'
 import { JumpInButton } from '../../jump/JumpInButton'
-import { DetailModalCreator } from '../DetailModal'
 import {
   ActionsRow,
   BackButton,
@@ -22,6 +21,7 @@ import {
   HeroSection,
   ModalTitle
 } from '../DetailModal/DetailModal.styled'
+import { PlaceDetailModalCreator } from './PlaceDetailModalCreator'
 import type { ModalPlaceData } from './PlaceDetailModal.types'
 
 interface PlaceDetailModalHeroProps {
@@ -61,7 +61,7 @@ function PlaceDetailModalHero({ data, onClose, onBack }: PlaceDetailModalHeroPro
       </CloseButton>
       <HeroContent>
         <ModalTitle id="place-detail-title">{data.title}</ModalTitle>
-        <DetailModalCreator address={data.ownerAddress} name={data.ownerName} prefixLabel={t('place_detail.by_prefix')} />
+        <PlaceDetailModalCreator data={data} prefixLabel={t('place_detail.by_prefix')} />
         <ActionsRow>
           <JumpInButton position={`${x},${y}`} realm={realm} size="medium">
             {t('place_detail.jump_in')}

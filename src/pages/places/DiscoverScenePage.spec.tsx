@@ -79,7 +79,8 @@ jest.mock('../../config/env', () => ({
 }))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (id?: string | null) => id ?? ''
+  useFormatMessage: () => (id?: string | null, values?: Record<string, string>) =>
+    values?.location ? `${id}:${values.location}` : id ?? ''
 }))
 
 jest.mock('../../hooks/useAuthIdentity', () => ({
@@ -95,8 +96,20 @@ jest.mock('../../hooks/useShareUrl', () => ({
   useShareUrl: (target: string) => mockShareUrl(target)
 }))
 
+const DEFAULT_CREATOR = {
+  creatorName: 'CreatorName',
+  creatorAddress: undefined,
+  creatorAvatar: 'https://avatar.test/a.png',
+  avatarBg: '#123456'
+}
+const mockUsePlaceCreator = jest.fn()
 jest.mock('../../hooks/usePlaceCreator', () => ({
-  usePlaceCreator: () => ({ creatorName: 'CreatorName', creatorAvatar: 'https://avatar.test/a.png', avatarBg: '#123456' })
+  usePlaceCreator: () => mockUsePlaceCreator()
+}))
+
+const mockOpenProfile = jest.fn()
+jest.mock('../../components/profile/ProfileModal/useOpenProfileModal', () => ({
+  useOpenProfileModal: () => mockOpenProfile
 }))
 
 jest.mock('../../hooks/useSceneRoom', () => ({
@@ -140,6 +153,7 @@ function createPlace(overrides: Partial<DiscoverPlace> = {}): DiscoverPlace {
 
 describe('DiscoverScenePage', () => {
   beforeEach(() => {
+    mockUsePlaceCreator.mockReturnValue(DEFAULT_CREATOR)
     mockUseParams.mockReturnValue({ position: '10,20' })
     mockUseLocation.mockReturnValue({ state: null })
     mockPlaceQuery.mockReturnValue({ data: undefined, isLoading: false })
@@ -268,6 +282,49 @@ describe('DiscoverScenePage', () => {
       expect(screen.getByText('10,20')).toBeInTheDocument()
     })
 
+    it('should link the coordinates tag to the jump landing for the scene', () => {
+      render(<DiscoverScenePage kind="place" />)
+
+      const tag = screen.getByText('10,20').closest('a')
+      expect(tag).toHaveAttribute('href', 'https://decentraland.org/jump/?position=10%2C20')
+      expect(tag).toHaveAttribute('target', '_blank')
+      expect(tag).toHaveAttribute('aria-label', 'discover.scene.jump_to_location:10,20')
+    })
+
+    it('should keep the coordinates tag inert while the place is still loading', () => {
+      mockPlaceQuery.mockReturnValue({ data: undefined, isLoading: true })
+      render(<DiscoverScenePage kind="place" />)
+
+      // The title also falls back to the coords while loading, so target the tag itself.
+      const tag = screen.getAllByText('10,20').find(el => el.tagName === 'A')
+      expect(tag).toBeDefined()
+      expect(tag).not.toHaveAttribute('href')
+      expect(tag).not.toHaveAttribute('aria-label')
+    })
+
+    describe('and the creator resolves to a wallet', () => {
+      beforeEach(() => {
+        mockUsePlaceCreator.mockReturnValue({ ...DEFAULT_CREATOR, creatorAddress: '0xcreator' })
+      })
+
+      it('should open the creator profile when the name is clicked', () => {
+        render(<DiscoverScenePage kind="place" />)
+
+        fireEvent.click(screen.getByRole('button', { name: 'CreatorName' }))
+
+        expect(mockOpenProfile).toHaveBeenCalledWith('0xcreator')
+      })
+    })
+
+    describe('and the creator has no wallet', () => {
+      it('should render the creator name as plain text', () => {
+        render(<DiscoverScenePage kind="place" />)
+
+        expect(screen.queryByRole('button', { name: 'CreatorName' })).not.toBeInTheDocument()
+        expect(screen.getByText('CreatorName')).toBeInTheDocument()
+      })
+    })
+
     it('should render the WHAT TO EXPECT panel with the place description', () => {
       render(<DiscoverScenePage kind="place" />)
 
@@ -347,6 +404,16 @@ describe('DiscoverScenePage', () => {
       expect(mockFetchWorldScenes).toHaveBeenCalledWith('myworld.dcl.eth')
       // Synth place title falls back to the lowercased URL world name.
       expect(screen.getAllByText('myworld.dcl.eth').length).toBeGreaterThan(0)
+    })
+
+    it('should link the world tag to the jump landing for the realm', async () => {
+      render(<DiscoverScenePage kind="world" />)
+      await screen.findByTestId('watcher-card')
+
+      expect(screen.getByRole('link', { name: 'discover.scene.jump_to_location:myworld.dcl.eth' })).toHaveAttribute(
+        'href',
+        'https://decentraland.org/jump/?realm=myworld.dcl.eth'
+      )
     })
 
     it('should open the LiveKit room targeting the auto-selected first scene', async () => {

@@ -21,15 +21,21 @@ on:
         required: true
         default: "100"
 
-# The KV update is read-modify-write, so one deploy at a time per repo.
-concurrency:
-  group: cdn-deploy-${{ github.repository }}
-  cancel-in-progress: false
-
 jobs:
   dev:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    # Scoped to pushes. The broker serialises writes made through it -- a lease per
+    # environment and record, with `rollout_in_progress` and a Retry-After that this action
+    # waits out -- so a release or a promotion may run alongside this one. Sharing a single
+    # group across all three instead lets a queued release be cancelled outright by the next
+    # push, which deploys nothing and reports no failure.
+    #
+    # Within this group a newer commit does supersede a pending older one, which is the
+    # commit that should end up live.
+    concurrency:
+      group: cdn-deploy-${{ github.repository }}-push
+      cancel-in-progress: false
     env:
       # Job level, not step level: the build now runs inside a composite action,
       # and composite steps do not inherit `env:` from the step that calls them.
@@ -73,6 +79,11 @@ jobs:
     # publish to zone like any other release.
     if: github.event_name == 'release' && !github.event.release.prerelease
     runs-on: ubuntu-latest
+    # Keyed by tag: two releases published close together both deploy, rather than the
+    # pending one being cancelled when the second arrives.
+    concurrency:
+      group: cdn-deploy-${{ github.repository }}-release-${{ github.event.release.tag_name }}
+      cancel-in-progress: false
     env:
       # Job level: the build runs inside a composite action, which does not see
       # `env:` set on the step that calls it.
@@ -114,6 +125,10 @@ jobs:
   promote:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Keyed by environment: a promotion to zone must not queue behind one to org.
+    concurrency:
+      group: cdn-deploy-${{ github.repository }}-promote-${{ inputs.environment }}
+      cancel-in-progress: false
     # Required: GitHub evaluates this before the job starts and only then issues
     # the environment claim the broker checks for today and org.
     environment: ${{ inputs.environment }}
@@ -128,13 +143,24 @@ jobs:
       # version to compute a commit version from — the action only demands one
       # when it has to compute it.
       #
-      # This is NOT a complete rollback. Records are stored sorted descending by
-      # semver and the worker serves the first one above zero percent, so naming
-      # an older version here leaves the newer one still serving every user while
-      # this job reports success. Rolling back also needs the abandoned version
-      # set to 0%, which this single-version dispatch cannot express — use
-      # set-rollout-manual.yml for that until the broker zeroes superseded
-      # records.
+      # One dispatch is NOT a rollback. Records are stored sorted descending by semver and
+      # the worker serves the first one whose percentage covers the user, so EVERY version
+      # that sorts above the target has to be at 0% before the target is reached -- on zone
+      # that is usually several commit builds, not one.
+      #
+      # The order matters, and only one order is safe. Restore the target to 100% FIRST:
+      # that is invisible to users, because a newer record still sorts ahead and keeps
+      # serving. Then zero the abandoned versions. Zeroing first leaves users whom no
+      # record covers, and `calculateRollout` skips records at 0% and falls back to the
+      # LAST one -- the oldest version still stored -- so a rollback done in that order can
+      # briefly serve something older than either version involved.
+      #
+      # One dispatch at a time, waiting for each run to finish. These share a concurrency
+      # group per environment, and a third dispatch queued behind a running one cancels the
+      # second while it is still pending -- which deploys nothing and reports no failure.
+      #
+      # A version published before this workflow existed has no `.deploy-complete.json`, and
+      # the broker refuses to point at a prefix whose upload it cannot confirm finished.
       - uses: decentraland/actions/cdn-deploy@cdn-deploy-v1
         with:
           package-name: "@dcl/sites"

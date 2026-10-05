@@ -18,8 +18,11 @@ function createMockJumpPlace(overrides: Partial<JumpPlace> = {}): JumpPlace {
   }
 }
 
-describe('normalizeJumpPlace', () => {
-  describe('when normalizing a regular place with all fields', () => {
+describe('when normalizing a jump place', () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+  describe('and normalizing a regular place with all fields', () => {
     let result: ReturnType<typeof normalizeJumpPlace>
 
     beforeEach(() => {
@@ -47,13 +50,13 @@ describe('normalizeJumpPlace', () => {
       expect(result.worldName).toBeNull()
     })
 
-    it('should map owner address and prefer the owner over contact_name', () => {
+    it('should preserve the owner address and declared contact separately', () => {
       expect(result.ownerAddress).toBe('0xOwner')
-      expect(result.ownerName).toBe('0xOwner')
+      expect(result.contactName).toBe('Decentraland Foundation')
     })
   })
 
-  describe('when the place has no owner but has a contact_name', () => {
+  describe('and the place has no owner but has a contact_name', () => {
     let result: ReturnType<typeof normalizeJumpPlace>
 
     beforeEach(() => {
@@ -64,12 +67,12 @@ describe('normalizeJumpPlace', () => {
       expect(result.ownerAddress).toBeUndefined()
     })
 
-    it('should fall back to contact_name for ownerName', () => {
-      expect(result.ownerName).toBe('Decentraland Foundation')
+    it('should fall back to contact_name for contactName', () => {
+      expect(result.contactName).toBe('Decentraland Foundation')
     })
   })
 
-  describe('when the place is a world', () => {
+  describe('and the place is a world', () => {
     let result: ReturnType<typeof normalizeJumpPlace>
 
     beforeEach(() => {
@@ -82,7 +85,7 @@ describe('normalizeJumpPlace', () => {
     })
   })
 
-  describe('when favorites and user_count are missing', () => {
+  describe('and favorites and user_count are missing', () => {
     let result: ReturnType<typeof normalizeJumpPlace>
 
     beforeEach(() => {
@@ -95,7 +98,7 @@ describe('normalizeJumpPlace', () => {
     })
   })
 
-  describe('when the description is empty', () => {
+  describe('and the description is empty', () => {
     it('should normalize to null', () => {
       const result = normalizeJumpPlace(createMockJumpPlace({ description: '' }))
 
@@ -103,7 +106,7 @@ describe('normalizeJumpPlace', () => {
     })
   })
 
-  describe('when base_position is malformed', () => {
+  describe('and base_position is malformed', () => {
     it('should fall back to 0,0 instead of NaN', () => {
       const result = normalizeJumpPlace(createMockJumpPlace({ base_position: 'not-a-coord' }))
 

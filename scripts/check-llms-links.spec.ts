@@ -47,6 +47,14 @@ const CASES: Record<string, { input: Case; expected: string }> = {
     input: ['https://docs.decentraland.org/old.md', 200, 'text/markdown; charset=utf-8', '# Doc', 'https://docs.decentraland.org/new.md'],
     expected: 'ok'
   },
+  'a link redirected to the site homepage fails': {
+    input: ['https://decentraland.beehiiv.com/subscribe', 200, 'text/html', '<!doctype html>', 'https://decentraland.org/'],
+    expected: 'fail'
+  },
+  'a link redirected within the site to a page passes': {
+    input: ['https://dcl.gg/discord', 200, 'text/html', '<!doctype html>', 'https://decentraland.org/discord/'],
+    expected: 'ok'
+  },
   'an HTML page at a non-document URL passes': {
     input: ['https://x.com/decentraland', 200, 'text/html', '<!doctype html>'],
     expected: 'ok'
@@ -64,6 +72,30 @@ describe('when classifying a link check response', () => {
 
   it.each(Object.keys(CASES))('should classify correctly: %s', name => {
     expect(results[name]).toBe(CASES[name].expected)
+  })
+})
+
+describe('when selecting the links to check live', () => {
+  it('should check external links and allowlisted decentraland.org apps, and skip SPA routes', () => {
+    const text = [
+      '- [Docs](https://docs.decentraland.org/llms.txt)',
+      '- [Shop](https://decentraland.org/shop)',
+      '- [Governance](https://decentraland.org/governance)',
+      '- [Events](https://decentraland.org/events)',
+      '- [Again](https://docs.decentraland.org/llms.txt)'
+    ].join('\n')
+    const code = `import { linksToCheck } from ${JSON.stringify(pathToFileURL(SCRIPT).href)}
+process.stdout.write(JSON.stringify(linksToCheck(process.env.INPUT)))`
+    const result = spawnSync(process.execPath, ['--input-type=module', '-e', code], {
+      encoding: 'utf8',
+      env: { ...process.env, INPUT: text }
+    })
+    expect(result.stderr).toBe('')
+    expect(JSON.parse(result.stdout)).toEqual([
+      'https://docs.decentraland.org/llms.txt',
+      'https://decentraland.org/shop',
+      'https://decentraland.org/governance'
+    ])
   })
 })
 

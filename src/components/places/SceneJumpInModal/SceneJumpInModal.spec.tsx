@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { DiscoverPlace } from '../../../features/discover'
+import { getSyntheticAvatarUrl } from '../../../utils/avatarColor'
 // Import through the barrel so the re-export contract is exercised too.
 import { SceneJumpInModal } from '.'
 
@@ -272,17 +273,27 @@ describe('SceneJumpInModal', () => {
   })
 
   describe('when rendering the creator identity', () => {
-    it('should render the owner face256 only when the scene names no contact', () => {
-      mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [
-            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
-          ]
-        }
-      })
-      const { container } = render(<SceneJumpInModal place={createPlace({ contact_name: undefined })} onClose={onClose} />)
+    describe('and the scene declares no contact', () => {
+      let container: HTMLElement
 
-      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      beforeEach(() => {
+        mockUseGetProfileQuery.mockReturnValue({
+          data: {
+            avatars: [
+              { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+            ]
+          }
+        })
+        ;({ container } = render(<SceneJumpInModal place={createPlace({ contact_name: undefined })} onClose={onClose} />))
+      })
+
+      it('should credit the place title with a synthetic avatar', () => {
+        expect(container.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Quiet Gallery'))
+      })
+
+      it('should skip the wallet profile query', () => {
+        expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+      })
     })
 
     it('should skip the profile request and use a synthetic avatar when there is no owner', () => {
@@ -292,8 +303,8 @@ describe('SceneJumpInModal', () => {
       expect(container.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/)
     })
 
-    it('should render no by-line when the place has no creator name', () => {
-      render(<SceneJumpInModal place={createPlace({ contact_name: undefined, owner: null })} onClose={onClose} />)
+    it('should render no by-line when the place has neither an author nor a title', () => {
+      render(<SceneJumpInModal place={createPlace({ contact_name: undefined, owner: null, title: '' })} onClose={onClose} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
     })
