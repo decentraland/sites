@@ -78,9 +78,14 @@ const DownloadStepsCards = styled(Box)(({ theme }) => ({
   width: '100%',
   maxWidth: 1230,
   marginTop: theme.spacing(6),
+  // One row per card part (header, media) shared by all cards, so a longer translation grows every header
+  // and the images stay aligned.
   [theme.breakpoints.up('md')]: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    gridTemplateRows: 'auto auto',
+    columnGap: theme.spacing(3),
+    rowGap: 0,
     marginTop: theme.spacing(8)
   }
 }))
@@ -95,7 +100,10 @@ const DownloadStepsCardRoot = styled(Box)(({ theme }) => ({
   border: `1px solid ${CARD_BORDER}`,
   borderRadius: theme.spacing(3),
   [theme.breakpoints.up('md')]: {
-    flex: '1 1 0'
+    display: 'grid',
+    gridRow: 'span 2',
+    gridTemplateRows: 'subgrid',
+    justifySelf: 'center'
   }
 }))
 
