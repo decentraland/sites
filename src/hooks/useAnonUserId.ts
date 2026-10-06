@@ -20,7 +20,8 @@ const ANON_USER_ID_PARAM = 'anon_user_id'
  * The provider initialization flag triggers another lookup. It signals that
  * the buffered AnalyticsBrowser exists, not that its SDK has finished loading;
  * the resolver only reads the synchronous SDK instance after it resolves.
- * This lookup never mints an identity or promotes URL attribution into one.
+ * Before SDK boot this lookup does not mint. A loaded SDK getter may create or
+ * synchronize its identity; URL attribution is never promoted into one.
  *
  * Both sources are validated against UUID format to prevent malformed strings
  * from flowing into download URLs and analytics events.
@@ -35,7 +36,7 @@ function useAnonUserId(): string | undefined {
       return fromUrl
     }
 
-    // A resolved SDK lookup can resync its stores; it does not mint or adopt the URL id.
+    // The resolved SDK getter can mint or resync; it never adopts the URL id.
     const segmentId = readSegmentAnonymousId()
     return segmentId && GATEWAY_UUID_RE.test(segmentId) ? segmentId : undefined
     // `isInitialized` participates in deps so the memo re-runs when Segment

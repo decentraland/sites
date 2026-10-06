@@ -113,6 +113,7 @@
     "npm": ">=10"
   },
   "overrides": {
-    "@types/node": "20.8.3"
+    "@types/node": "20.8.3",
+    "@segment/analytics-next": "1.84.3"
   }
 }

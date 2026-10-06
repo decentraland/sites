@@ -24,6 +24,34 @@ describe('when resolving the browser anonymous identity', () => {
     document.cookie = 'ajs_anonymous_id=; domain=.decentraland.org; path=/; max-age=0'
   })
 
+  describe('and there is no identity yet', () => {
+    let cookieWrites: ReturnType<typeof jest.spyOn>
+    beforeEach(() => {
+      cookieWrites = jest.spyOn(document, 'cookie', 'set')
+    })
+    it('should persist on the writable parent and remove the probe cookie', () => {
+      resolver.ensure()
+      expect(cookieWrites).toHaveBeenCalledWith(expect.stringMatching(/^ajs_anonymous_id=.*; domain=\.decentraland\.org$/))
+      expect(cookieWrites).toHaveBeenCalledWith(
+        expect.stringMatching(/^__dcl_segment_domain__=; domain=\.decentraland\.org; path=\/; max-age=0$/)
+      )
+      expect(document.cookie).not.toContain('__dcl_segment_domain__')
+    })
+  })
+
+  describe('and host-only and parent cookies coexist', () => {
+    let firstCookieId: string
+    beforeEach(() => {
+      document.cookie = `ajs_anonymous_id=${LOCAL_ID}; path=/`
+      document.cookie = `ajs_anonymous_id=${COOKIE_ID}; domain=.decentraland.org; path=/`
+      firstCookieId = document.cookie.split('; ')[0].split('=')[1]
+    })
+    it('should match the SDK first-cookie behavior without removing other scopes', () => {
+      expect(resolver.ensure()).toBe(firstCookieId)
+      expect(document.cookie.match(/ajs_anonymous_id=/g)).toHaveLength(2)
+    })
+  })
+
   describe('and only a parent cookie exists', () => {
     beforeEach(() => {
       document.cookie = `ajs_anonymous_id=${COOKIE_ID}; domain=.decentraland.org; path=/`
@@ -91,7 +119,7 @@ describe('when resolving the browser anonymous identity', () => {
     })
   })
 
-  describe.each(['', '""', 'null', '123', '{}'])('and stores contain an absent or non-string id %s', raw => {
+  describe.each(['', '""', 'null', '{}'])('and stores contain an absent or non-string id %s', raw => {
     beforeEach(() => {
       localStorage.setItem('ajs_anonymous_id', raw)
       document.cookie = `ajs_anonymous_id=${encodeURIComponent(raw)}; path=/`
@@ -103,6 +131,17 @@ describe('when resolving the browser anonymous identity', () => {
       expect(resolver.ensure()).toMatch(/^[0-9a-f-]{36}$/i)
       expect(localStorage.getItem('ajs_anonymous_id')).toBe(JSON.stringify(resolver.ensure()))
       expect(document.cookie).toContain(`ajs_anonymous_id=${resolver.ensure()}`)
+    })
+  })
+
+  describe.each(['0', '123', '-42', '1.5'])('and a legacy numeric identity %s is stored', raw => {
+    beforeEach(() => {
+      document.cookie = `ajs_anonymous_id=${raw}; path=/`
+      localStorage.setItem('ajs_anonymous_id', JSON.stringify(LOCAL_ID))
+    })
+    it('should preserve the cookie identity as a string and synchronize localStorage', () => {
+      expect(resolver.ensure()).toBe(raw)
+      expect(localStorage.getItem('ajs_anonymous_id')).toBe(JSON.stringify(raw))
     })
   })
 

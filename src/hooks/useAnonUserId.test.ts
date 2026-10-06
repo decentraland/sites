@@ -63,6 +63,7 @@ describe('useAnonUserId', () => {
 
   describe.each([
     ['unsupported version', '11111111-2222-0333-8444-555555555555'],
+    ['unsupported v7 version', '11111111-2222-7333-8444-555555555555'],
     ['invalid variant', '11111111-2222-4333-4444-555555555555']
   ])('when URL attribution has an %s', (_context, invalidId) => {
     beforeEach(() => {

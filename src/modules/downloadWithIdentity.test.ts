@@ -288,6 +288,12 @@ describe('resolveGatewayAnonUserId', () => {
     beforeEach(() => {
       mockEnsureSegmentAnonymousId.mockReturnValue('custom-segment-id')
     })
+    it('should reuse attribution across repeated downloads for the same custom identity', () => {
+      expect(resolveGatewayAnonUserId(undefined, { position: '10,20' })).toBe(
+        resolveGatewayAnonUserId(undefined, { realm: 'world.dcl.eth' })
+      )
+    })
+
     it('should give the gateway a valid attribution UUID without replacing Segment identity', () => {
       expect(resolveGatewayAnonUserId(undefined, { position: '10,20' })).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i

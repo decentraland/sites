@@ -1,8 +1,10 @@
 import { Architecture } from '../types/download.types'
 import { triggerFileDownload } from './file'
+import { createGatewayAnonymousIdResolver } from './gatewayAnonymousId.helpers'
 import { ensureSegmentAnonymousId } from './segmentAnonymousId'
-import { GATEWAY_UUID_RE, generateUuid } from './segmentAnonymousId.helpers'
 import { addQueryParamsToUrlString, calculateCDNReleaseLinksWithIdentity, extractDownloadLinkFromCDNReleaseOption } from './url'
+
+const resolveGatewayAttributionId = createGatewayAnonymousIdResolver()
 
 type DownloadWithIdentityParams = {
   os: string
@@ -140,7 +142,7 @@ function resolveGatewayAnonUserId(
   const segmentId = ensureSegmentAnonymousId()
   // Segment permits custom strings; the anonymous gateway only accepts UUIDs.
   // A separate attribution id preserves deep links without resetting Segment.
-  return GATEWAY_UUID_RE.test(segmentId) ? segmentId : generateUuid()
+  return resolveGatewayAttributionId(segmentId)
 }
 
 export { calculateDownloadUrl, getDownloadLinkWithIdentity, resolveGatewayAnonUserId }

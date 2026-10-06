@@ -14,6 +14,7 @@ function generateUuid(): string {
 function safeParseStoredId(value: string): string | undefined {
   try {
     const parsed: unknown = JSON.parse(value)
+    if (typeof parsed === 'number') return String(parsed)
     return typeof parsed === 'string' && parsed !== '' ? parsed : undefined
   } catch {
     return value || undefined

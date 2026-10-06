@@ -9,4 +9,3 @@ const ensureSegmentAnonymousId = resolver.ensure
 const readSegmentAnonymousId = resolver.read
 
 export { ensureSegmentAnonymousId, readSegmentAnonymousId }
-export { generateUuid } from './segmentAnonymousId.helpers'
