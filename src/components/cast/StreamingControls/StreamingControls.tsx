@@ -15,6 +15,7 @@ import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
+import { controllableOverlay } from '../../../features/cast2/cast2.overlay'
 import type { OverlayLayout } from '../../../features/cast2/cast2.types'
 import { useLiveKitCredentials } from '../../../features/cast2/contexts/LiveKitContext'
 import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
@@ -242,7 +243,10 @@ export function StreamingControls({
     }
   }
 
-  const cameraOverlay = isPresentationActive && isCameraEnabled && presentationContext ? presentationContext.state.overlay : null
+  const cameraOverlay =
+    isPresentationActive && isCameraEnabled && presentationContext
+      ? controllableOverlay(presentationContext.state, localParticipant.identity)
+      : null
   const hasCameraMenu = videoDevices.length > 1 || cameraOverlay !== null
 
   const handleOverlaySelect = (patch: Partial<OverlayLayout>) => {

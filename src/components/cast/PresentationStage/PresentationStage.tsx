@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocalParticipant, useTracks } from '@livekit/components-react'
 import { RoomEvent, Track } from 'livekit-client'
 import { getPresenterServerUrl } from '../../../features/cast2/cast2.helpers'
-import { MIN_CIRCLE_DIAMETER, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
+import { DEFAULT_OVERLAY, MIN_CIRCLE_DIAMETER, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
 import { isAllowedSlideUrl } from '../../../features/cast2/cast2.slideUrl'
 import { PRESENTATION_VIDEO_TRACK } from '../../../features/cast2/cast2.utils'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
@@ -64,7 +64,7 @@ function PresentationStage({ overlay }: PresentationStageProps) {
           ref => ref.participant.identity === state.presenterIdentity && ref.source === Track.Source.Camera && !ref.publication.isMuted
         )
       : undefined
-  const circle = overlayRect(state.overlay, slide.width, slide.height)
+  const circle = overlayRect(state.overlay ?? DEFAULT_OVERLAY, slide.width, slide.height)
 
   return (
     <StageContainer ref={containerRef}>

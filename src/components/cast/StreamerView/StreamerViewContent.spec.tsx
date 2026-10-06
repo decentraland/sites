@@ -35,10 +35,12 @@ const mockUseConnectionState = useConnectionState as jest.Mock
 const mockUseLocalVideoTracks = useLocalVideoTracks as jest.Mock
 const mockUsePresentationOptional = usePresentationOptional as jest.Mock
 
-const legacy = { isPresentationActive: true, state: { slide: null, presenterIdentity: null } }
-const composed = (presenterIdentity: string) => ({
+const OVERLAY = { x: 0, y: 1, size: 'small' }
+const legacy = { isPresentationActive: true, state: { slide: null, presenterIdentity: null, overlay: OVERLAY } }
+const legacyWithoutOverlay = { isPresentationActive: true, state: { ...legacy.state, overlay: null } }
+const composed = (presenterIdentity: string, overlay: typeof OVERLAY | null = OVERLAY) => ({
   isPresentationActive: true,
-  state: { slide: { url: 'https://presenter.test/slides/ab12.png', width: 1920, height: 1080 }, presenterIdentity }
+  state: { slide: { url: 'https://presenter.test/slides/ab12.png', width: 1920, height: 1080 }, presenterIdentity, overlay }
 })
 
 describe('when the streamer view renders', () => {
@@ -61,6 +63,22 @@ describe('when the streamer view renders', () => {
     ['the camera is off during a legacy presentation', ConnectionState.Connected, false, legacy, 'participant-grid', 0],
     ['the camera is on without a presentation', ConnectionState.Connected, true, null, 'participant-grid', 0],
     ['the camera is on during a legacy presentation', ConnectionState.Connected, true, legacy, 'participant-grid', 1],
+    [
+      'the camera is on during a presentation from a server without overlays',
+      ConnectionState.Connected,
+      true,
+      legacyWithoutOverlay,
+      'participant-grid',
+      0
+    ],
+    [
+      'the local participant presents a composed deck without an overlay',
+      ConnectionState.Connected,
+      true,
+      composed('0xabc', null),
+      'presentation-stage',
+      0
+    ],
     [
       'the local participant presents a composed deck on camera',
       ConnectionState.Connected,

@@ -1,9 +1,10 @@
-import type { MediaRect, OverlayLayout, OverlayRect, OverlaySize } from './cast2.types'
+import type { MediaRect, OverlayLayout, OverlayRect, OverlaySize, SlideInfo } from './cast2.types'
 
 const RATIO: Record<OverlaySize, number> = { small: 0.15, large: 0.25 }
 const MARGIN_RATIO = 0.02
 
 const MIN_CIRCLE_DIAMETER = 2
+const DEFAULT_OVERLAY: OverlayLayout = { x: 0, y: 1, size: 'small' }
 
 const even = (n: number): number => n - (n % 2)
 
@@ -28,4 +29,16 @@ function containRect(boxWidth: number, boxHeight: number, mediaWidth: number, me
   return { left: (boxWidth - width) / 2, top: (boxHeight - height) / 2, width, height }
 }
 
-export { MIN_CIRCLE_DIAMETER, clamp, containRect, overlayRect }
+/**
+ * Camera-bubble layout the local participant may move, or `null` when the server sends no overlay
+ * or someone else presents a client-composed deck.
+ */
+function controllableOverlay(
+  state: { overlay: OverlayLayout | null; slide: SlideInfo | null; presenterIdentity: string | null },
+  localIdentity: string
+): OverlayLayout | null {
+  if (state.slide !== null && state.presenterIdentity !== localIdentity) return null
+  return state.overlay
+}
+
+export { DEFAULT_OVERLAY, MIN_CIRCLE_DIAMETER, clamp, containRect, controllableOverlay, overlayRect }

@@ -1,5 +1,8 @@
-import { containRect, overlayRect } from './cast2.overlay'
-import type { MediaRect, OverlayLayout, OverlayRect } from './cast2.types'
+import { containRect, controllableOverlay, overlayRect } from './cast2.overlay'
+import type { MediaRect, OverlayLayout, OverlayRect, SlideInfo } from './cast2.types'
+
+const LAYOUT: OverlayLayout = { x: 0, y: 1, size: 'small' }
+const SLIDE: SlideInfo = { url: 'https://presenter.test/slide.png', width: 1920, height: 1080 }
 
 describe.each<[string, OverlayLayout, number, OverlayRect]>([
   ['the small bubble sits bottom-left on a 960x540 frame', { x: 0, y: 1, size: 'small' }, 540, { left: 18, top: 376, d: 144 }],
@@ -42,3 +45,28 @@ describe.each<[string, [number, number], MediaRect]>([
     expect(rect).toEqual(expected)
   })
 })
+
+describe.each<[string, OverlayLayout | null, SlideInfo | null, string | null, OverlayLayout | null]>([
+  ['the server sends no overlay', null, null, null, null],
+  ['the server composites the deck', LAYOUT, null, null, LAYOUT],
+  ['the local participant presents a client-composed deck', LAYOUT, SLIDE, '0xme', LAYOUT],
+  ['another participant presents a client-composed deck', LAYOUT, SLIDE, '0xother', null],
+  ['a client-composed deck has no presenter yet', LAYOUT, SLIDE, null, null]
+])(
+  'when deciding whether the local participant controls the camera bubble and %s',
+  (_label, overlay, slide, presenterIdentity, expected) => {
+    let controlled: OverlayLayout | null
+
+    beforeEach(() => {
+      controlled = controllableOverlay({ overlay, slide, presenterIdentity }, '0xme')
+    })
+
+    afterEach(() => {
+      jest.resetAllMocks()
+    })
+
+    it('should return the overlay only when the local participant may move it', () => {
+      expect(controlled).toEqual(expected)
+    })
+  }
+)

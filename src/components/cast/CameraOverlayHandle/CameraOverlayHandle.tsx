@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { useLocalParticipant } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import { MIN_CIRCLE_DIAMETER, clamp, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
+import { DEFAULT_OVERLAY, MIN_CIRCLE_DIAMETER, clamp, containRect, overlayRect } from '../../../features/cast2/cast2.overlay'
 import type { MeasuredMedia, OverlayLayout } from '../../../features/cast2/cast2.types'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
@@ -49,7 +49,8 @@ function CameraOverlayHandle() {
   }, [hasSlide, slideWidth, slideHeight])
 
   const measured = media && media.videoWidth > 0 && media.videoHeight > 0 ? media : null
-  const displayed = local ? { ...state.overlay, ...local } : state.overlay
+  const overlay = state.overlay ?? DEFAULT_OVERLAY
+  const displayed = local ? { ...overlay, ...local } : overlay
   const rect = measured ? overlayRect(displayed, measured.videoWidth, measured.videoHeight) : null
 
   const getBounds = () => {

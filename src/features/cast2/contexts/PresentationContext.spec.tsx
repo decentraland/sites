@@ -47,7 +47,7 @@ const LEGACY_STATE = {
   status: 'active',
   slideVideos: [],
   videoState: 'idle',
-  overlay: DEFAULT_OVERLAY,
+  overlay: null,
   slide: null,
   presenterIdentity: null,
   playingVideoIndex: null
@@ -140,13 +140,14 @@ describe('PresentationProvider', () => {
       renderProvider()
     })
 
-    it('should expose an idle presentation with the default overlay', () => {
-      expect(current).toMatchObject({ isPresentationActive: false, state: { status: 'idle', overlay: DEFAULT_OVERLAY } })
+    it('should expose an idle presentation with no overlay', () => {
+      expect(current).toMatchObject({ isPresentationActive: false, state: { status: 'idle', overlay: null } })
     })
   })
 
   describe.each<[string, Fields, Fields]>([
     ['composition fields', COMPOSED_METADATA, COMPOSED_METADATA],
+    ['no overlay', {}, { status: 'active', overlay: null }],
     ['a malformed overlay', { overlay: { x: 'a' } }, { status: 'active', overlay: DEFAULT_OVERLAY }],
     ['a failed video', { videoState: 'error', slideVideos: [SLIDE_VIDEO] }, { videoState: 'idle', slideVideos: [SLIDE_VIDEO] }]
   ])('when the bot metadata carries %s', (_label, extra, expected) => {
@@ -401,8 +402,8 @@ describe('PresentationProvider', () => {
       })
     })
 
-    it('should update the overlay right away', () => {
-      expect(current.state.overlay.size).toBe('large')
+    it('should update the overlay right away from the default layout', () => {
+      expect(current.state.overlay).toEqual({ ...DEFAULT_OVERLAY, size: 'large' })
     })
   })
 
@@ -438,6 +439,17 @@ describe('PresentationProvider', () => {
         it('should keep ignoring the stale overlay', () => {
           expect(current.state.overlay).toEqual(HELD_OVERLAY)
         })
+      })
+    })
+
+    describe('and a presentation:state packet without an overlay arrives within the hold', () => {
+      beforeEach(() => {
+        now = HOLD_START + 500
+        deliver(statePacket())
+      })
+
+      it('should keep the local overlay', () => {
+        expect(current.state.overlay).toEqual(HELD_OVERLAY)
       })
     })
 
@@ -585,7 +597,7 @@ describe('PresentationProvider', () => {
         expect(current.state).toMatchObject({
           id: 'deck-2',
           status: 'starting',
-          overlay: DEFAULT_OVERLAY,
+          overlay: null,
           slide: null,
           presenterIdentity: null,
           playingVideoIndex: null

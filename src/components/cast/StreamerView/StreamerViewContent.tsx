@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useConnectionState, useLocalParticipant } from '@livekit/components-react'
 import { ConnectionState } from 'livekit-client'
+import { controllableOverlay } from '../../../features/cast2/cast2.overlay'
 import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { useLocalVideoTracks } from '../../../hooks/useLocalVideoTracks'
@@ -26,6 +27,7 @@ export function StreamerViewContent() {
   const isDisconnected = connectionState === ConnectionState.Disconnected
   const hasAnyVideo = hasLocalCamera || hasLocalScreenShare
   const isClientComposed = Boolean(presentation?.state.slide)
+  const canMoveBubble = hasLocalCamera && !!presentation && controllableOverlay(presentation.state, localParticipant.identity) !== null
 
   useEffect(() => {
     if (!isConnected) {
@@ -62,11 +64,10 @@ export function StreamerViewContent() {
   }
 
   if (isClientComposed) {
-    const isLocalPresenter = presentation?.state.presenterIdentity === localParticipant.identity
     return (
       <ContentWrapper>
         <LiveStreamCounter />
-        <PresentationStage overlay={hasLocalCamera && isLocalPresenter ? <CameraOverlayHandle /> : undefined} />
+        <PresentationStage overlay={canMoveBubble ? <CameraOverlayHandle /> : undefined} />
       </ContentWrapper>
     )
   }
@@ -77,7 +78,7 @@ export function StreamerViewContent() {
       {hasAnyVideo || presentation?.isPresentationActive ? (
         <ParticipantGrid
           localParticipantVisible={true}
-          presentationOverlay={presentation?.isPresentationActive && hasLocalCamera ? <CameraOverlayHandle /> : undefined}
+          presentationOverlay={presentation?.isPresentationActive && canMoveBubble ? <CameraOverlayHandle /> : undefined}
         />
       ) : (
         <EmptyStreamState

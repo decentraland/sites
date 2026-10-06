@@ -3,6 +3,7 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useM
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RemoteParticipant, RoomEvent } from 'livekit-client'
 import { useGetPresentationBotTokenMutation, useUploadPresentationFromUrlMutation, useUploadPresentationMutation } from '../cast2.client'
+import { DEFAULT_OVERLAY } from '../cast2.overlay'
 import type { OverlayLayout, PresentationInfo, SlideInfo, SlideVideoInfo } from '../cast2.types'
 import { getStreamerToken as getStoredToken, isPresentationBot, isRetryableVideoErrorCode, parseParticipantMetadata } from '../cast2.utils'
 import { decodeCommsPacket, encodeCommsPacket } from '../commsProtocol'
@@ -17,7 +18,7 @@ interface PresentationState {
   status: 'idle' | 'uploading' | 'starting' | 'active'
   slideVideos: SlideVideoInfo[]
   videoState: 'idle' | 'loading' | 'playing' | 'paused'
-  overlay: OverlayLayout
+  overlay: OverlayLayout | null
   slide: SlideInfo | null
   presenterIdentity: string | null
   playingVideoIndex: number | null
@@ -39,7 +40,6 @@ interface PresentationContextValue {
 }
 
 const PRESENTATION_TOPIC = 'presentation'
-const DEFAULT_OVERLAY: OverlayLayout = { x: 0, y: 1, size: 'small' }
 const OVERLAY_HOLD_MS = 1000
 
 type PresentationBotMetadata = Record<string, unknown> & { role: 'presentation'; id?: string }
@@ -56,14 +56,15 @@ const initialState: PresentationState = {
   status: 'idle',
   slideVideos: [],
   videoState: 'idle',
-  overlay: DEFAULT_OVERLAY,
+  overlay: null,
   slide: null,
   presenterIdentity: null,
   playingVideoIndex: null
 }
 
-const toOverlay = (value: unknown): OverlayLayout => {
-  if (typeof value !== 'object' || value === null) return DEFAULT_OVERLAY
+const toOverlay = (value: unknown): OverlayLayout | null => {
+  if (value === undefined || value === null) return null
+  if (typeof value !== 'object') return DEFAULT_OVERLAY
   const { x, y, size } = value as Record<string, unknown>
   return typeof x === 'number' &&
     Number.isFinite(x) &&
@@ -112,8 +113,8 @@ const toIncomingState = (id: string, data: Record<string, unknown>): IncomingSta
   playingVideoIndex: toPlayingVideoIndex(data.playingVideoIndex)
 })
 
-const sameOverlay = (a: OverlayLayout, b: OverlayLayout): boolean =>
-  Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
+const sameOverlay = (a: OverlayLayout | null, b: OverlayLayout): boolean =>
+  a !== null && Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
 
 const isPresentationStateMessage = (data: unknown): data is Record<string, unknown> & { type: 'presentation:state'; id: string } => {
   if (typeof data !== 'object' || data === null) return false
@@ -370,7 +371,7 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
     async (patch: Partial<OverlayLayout>) => {
       if (!idRef.current) return
       setState(prev => {
-        const overlay = { ...prev.overlay, ...patch }
+        const overlay = { ...(prev.overlay ?? DEFAULT_OVERLAY), ...patch }
         pendingOverlayRef.current = { layout: overlay, until: Date.now() + OVERLAY_HOLD_MS }
         return { ...prev, overlay }
       })
