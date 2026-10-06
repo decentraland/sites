@@ -9,6 +9,7 @@ import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { assetUrl } from '../../utils/assetUrl'
 import { getAvatarBackgroundColor, getDisplayName } from '../../utils/avatarColor'
+import { isAnalyticsExemptPath } from '../../utils/isAnalyticsExemptPath'
 // Module-level cache for notification type→component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,6 +35,7 @@ import {
 import { isSectionActive, toAbsoluteHref, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
+import type { NavbarLink } from './LandingNavbar.types'
 import {
   AvatarButton,
   AvatarImage,
@@ -111,14 +113,6 @@ interface NotificationItem {
 }
 
 type NotificationActiveTab = 'newest' | 'read'
-
-interface NavbarLink {
-  section: DropdownSection | 'learn' | 'user_menu'
-  labelKey: string
-  href: string
-  element: 'tab' | 'item'
-  menu: 'desktop' | 'mobile'
-}
 
 interface NotificationsData {
   items: NotificationItem[]
@@ -293,6 +287,9 @@ const LandingNavbar = memo(function LandingNavbar({
         track(SegmentEvent.CLICK, properties)
         return
       }
+      // The beacon skips the exempt-path gate, so on a page that keeps analytics off until it
+      // boots (legal pages) a click made before then is not sent at all.
+      if (!isInitializedRef.current && isAnalyticsExemptPath(window.location.pathname)) return
       postSegmentEvent(SegmentEvent.CLICK, properties, ensureSegmentAnonymousId())
     },
     [track]
@@ -575,7 +572,11 @@ const LandingNavbar = memo(function LandingNavbar({
     return (
       <NavBarRoot ref={navRef} className="minimal">
         <NavBarLeft style={{ gap: 16 }}>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+          <LogoLink
+            href="https://decentraland.org"
+            aria-label="Decentraland Home"
+            {...navbarLinkHandlers({ section: 'home', labelKey: 'logo', href: 'https://decentraland.org', element: 'item', menu: 'bar' })}
+          >
             <DclLogo />
           </LogoLink>
           <img
@@ -628,7 +629,11 @@ const LandingNavbar = memo(function LandingNavbar({
     <>
       <NavBarRoot ref={navRef} className={isLandingPage && isSignedIn ? 'logged-landing' : ''}>
         <NavBarLeft>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+          <LogoLink
+            href="https://decentraland.org"
+            aria-label="Decentraland Home"
+            {...navbarLinkHandlers({ section: 'home', labelKey: 'logo', href: 'https://decentraland.org', element: 'item', menu: 'bar' })}
+          >
             <DclLogo />
           </LogoLink>
 
@@ -714,6 +719,7 @@ const LandingNavbar = memo(function LandingNavbar({
               {creditsBalance !== null && creditsBalance !== undefined && (
                 <CreditsChip
                   href={CREDITS_URL}
+                  {...navbarLinkHandlers({ section: 'user_menu', labelKey: 'credits', href: CREDITS_URL, element: 'item', menu: 'bar' })}
                   aria-label={l('component.landing.navbar.credits_balance', { count: formatCredits(creditsBalance) })}
                 >
                   <CreditsIcon />

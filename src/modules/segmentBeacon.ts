@@ -144,11 +144,13 @@ const buildSegmentBeaconPayload = (input: SegmentBeaconInput): SegmentBeaconPayl
  * otherwise attach it automatically. See `resolveSegmentUserId`.
  */
 function postSegmentEvent(event: SegmentEvent, properties: Record<string, unknown>, anonymousId: string): void {
-  // NOTE: bypasses the analytics-exempt-path gate on purpose. Every caller of
-  // this transport fires an explicit conversion event (download CTA click,
-  // funnel exit, download_started/_success/_failed) — the gate exists to
-  // suppress the automatic analytics boot on pure-text pages, and /download
-  // (exempt for Lighthouse) hosts download CTAs whose clicks must still land.
+  // NOTE: bypasses the analytics-exempt-path gate on purpose. The download
+  // callers fire explicit conversion events (download CTA click, funnel exit,
+  // download_started/_success/_failed) — the gate exists to suppress the
+  // automatic analytics boot on pure-text pages, and /download (exempt for
+  // Lighthouse) hosts download CTAs whose clicks must still land. Any other
+  // caller (the landing navbar) must check isAnalyticsExemptPath itself and
+  // skip the beacon on an exempt page until analytics has loaded.
   const writeKey = getSegmentWriteKey({ bypassExemptPathGate: true })
   if (!writeKey) return
 

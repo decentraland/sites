@@ -587,4 +587,110 @@ describe('when the visitor clicks a navbar link', () => {
       )
     })
   })
+
+  describe('and it is a Ctrl+click with analytics ready', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      const shopTab = desktopSection(/navbar\.shop$/i)
+      await user.hover(shopTab.parentElement!)
+      fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })), {
+        ctrlKey: true
+      })
+    })
+
+    it('should send it through analytics, since the page stays open', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'wearables', section: 'shop' }))
+      expect(postSegmentEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and it is a middle click before analytics loads', () => {
+    beforeEach(() => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      renderAt('/events')
+      const learn = within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', {
+        name: /navbar\.learn/i,
+        hidden: true
+      })
+      fireEvent(learn, new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+    })
+
+    it('should fall back to the beacon', () => {
+      expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      expect(postSegmentEvent).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'learn' }), 'anon-id')
+      expect(track).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and it is on a page that keeps analytics off until it loads', () => {
+    describe('and analytics has not loaded', () => {
+      beforeEach(async () => {
+        ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+        window.history.pushState({}, '', '/privacy')
+        renderAt('/privacy')
+        const shopTab = desktopSection(/navbar\.shop$/i)
+        await user.hover(shopTab.parentElement!)
+        fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
+      })
+
+      afterEach(() => {
+        window.history.pushState({}, '', '/')
+      })
+
+      it('should not send anything', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and analytics has loaded', () => {
+      beforeEach(async () => {
+        window.history.pushState({}, '', '/privacy')
+        renderAt('/privacy')
+        const shopTab = desktopSection(/navbar\.shop$/i)
+        await user.hover(shopTab.parentElement!)
+        fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
+      })
+
+      afterEach(() => {
+        window.history.pushState({}, '', '/')
+      })
+
+      it('should send the click as on any other page', () => {
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
+
+  describe('and it is the logo', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      fireEvent.click(preventNavigation(screen.getByRole('link', { name: 'Decentraland Home' })))
+    })
+
+    it('should send it as the home link in the bar', () => {
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'logo', section: 'home', element: 'item', menu: 'bar', href: 'https://decentraland.org/' }),
+        'anon-id'
+      )
+    })
+  })
+
+  describe('and it is the credits chip', () => {
+    beforeEach(() => {
+      renderAt('/events', { isSignedIn: true, address: '0x1234567890123456789012345678901234567890', creditsBalance: 120 })
+      fireEvent.click(preventNavigation(screen.getByRole('link', { name: /credits_balance/i })))
+    })
+
+    it('should send it under the user menu section', () => {
+      expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'credits', section: 'user_menu', menu: 'bar', href: `${window.location.origin}/shop/credits` }),
+        'anon-id'
+      )
+    })
+  })
 })
