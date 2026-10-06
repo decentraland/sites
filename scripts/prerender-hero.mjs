@@ -243,8 +243,6 @@ const heroHtml = `<div id="hero-shell-nav">
 (function(){var p=location.pathname;if(p.length>1&&p[p.length-1]==='/'){p=p.slice(0,-1);}if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
 </script>`
 
-const fontPreload = '<link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" crossorigin />'
-
 let html = readFileSync(distPath, 'utf-8')
 
 // Extract CDN URLs from the <link rel="preload"> tags Vite already wrote.
@@ -286,7 +284,7 @@ html = html.replace(
   '<div id="root">',
   `${finalHeroHtml}\n<div id="root">`
 )
-html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
+html = html.replace('</head>', `${criticalCss}\n</head>`)
 
 // Inline the English locale into the HTML response so the main JS bundle
 // doesn't have to ship 56 KB / 17 KB gzip of static JSON. JSON.parse is ~5×
