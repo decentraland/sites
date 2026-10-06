@@ -3,17 +3,17 @@ import { getStepOneVariant, resolveDownloadBrowser } from './DownloadSuccess.hel
 import { DownloadBrowser } from './DownloadSuccess.types'
 
 // Step 1 images export their file name in jest (see jest.config.ts), so the matrix asserts each image together with its coordinates.
-const MACOS_CHROME = { image: 'macos-chrome-step1.webp', highlight: { x: 73.54, y: 44.06 } }
-const MACOS_OPERA = { image: 'macos-opera-step1.webp', highlight: { x: 55.84, y: 39.79 } }
-const MACOS_SAFARI = { image: 'macos-safari-step1.webp', highlight: { x: 56.28, y: 27.08 } }
-const WINDOWS_CHROME = { image: 'windows-chrome-step1.webp', highlight: { x: 70.37, y: 46.35 } }
-const WINDOWS_OPERA = { image: 'windows-opera-step1.webp', highlight: { x: 55.84, y: 43.54 } }
-const MACOS_FIREFOX = { image: 'macos-firefox-step1.webp', highlight: { x: 64.34, y: 49.79 } }
-const MACOS_BRAVE = { image: 'macos-brave-step1.webp', highlight: { x: 29.82, y: 41.46 } }
-const WINDOWS_FIREFOX = { image: 'windows-firefox-step1.webp', highlight: { x: 63.07, y: 48.54 } }
+const MACOS_CHROME = { image: 'macos-chrome-step1.webp', highlight: { x: 75.82, y: 47.81 } }
+const MACOS_OPERA = { image: 'macos-opera-step1.webp', highlight: { x: 68.78, y: 35.21 } }
+const MACOS_SAFARI = { image: 'macos-safari-step1.webp', highlight: { x: 49.37, y: 26.25 } }
+const WINDOWS_CHROME = { image: 'windows-chrome-step1.webp', highlight: { x: 75, y: 45.42 } }
+const WINDOWS_OPERA = { image: 'windows-opera-step1.webp', highlight: { x: 68.4, y: 38.75 } }
+const MACOS_FIREFOX = { image: 'macos-firefox-step1.webp', highlight: { x: 77.28, y: 40.21 } }
+const MACOS_BRAVE = { image: 'macos-brave-step1.webp', highlight: { x: 64.47, y: 46.15 } }
+const WINDOWS_FIREFOX = { image: 'windows-firefox-step1.webp', highlight: { x: 76.46, y: 41.35 } }
 // Same toolbar as macOS Brave, so the same slot
-const WINDOWS_BRAVE = { image: 'windows-brave-step1.webp', highlight: { x: 29.82, y: 41.46 } }
-const WINDOWS_EDGE = { image: 'windows-edge-step1.webp', highlight: { x: 65.1, y: 38.12 } }
+const WINDOWS_BRAVE = { image: 'windows-brave-step1.webp', highlight: { x: 63.64, y: 42.92 } }
+const WINDOWS_EDGE = { image: 'windows-edge-step1.webp', highlight: { x: 75.63, y: 36.98 } }
 
 describe('when resolving the download browser from a detected name', () => {
   describe.each([

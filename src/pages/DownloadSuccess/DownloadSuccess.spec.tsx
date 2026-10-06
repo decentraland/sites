@@ -1259,25 +1259,25 @@ describe('when choosing the step images by operating system and detected browser
 
   // Images export their file name in jest (see jest.config.ts), so image and highlight are asserted together.
   describe.each([
-    ['macos', 'Chrome', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
-    ['macos', 'Opera', 'macos-opera-step1.webp', { x: 55.84, y: 39.79 }],
-    ['macos', 'Opera GX', 'macos-opera-step1.webp', { x: 55.84, y: 39.79 }],
-    ['macos', 'Safari', 'macos-safari-step1.webp', { x: 56.28, y: 27.08 }],
-    ['macos', 'Mobile Safari', 'macos-safari-step1.webp', { x: 56.28, y: 27.08 }],
-    ['macos', 'Edge', 'windows-edge-step1.webp', { x: 65.1, y: 38.12 }],
-    ['windows', 'Chrome', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
-    ['windows', 'Opera', 'windows-opera-step1.webp', { x: 55.84, y: 43.54 }],
-    ['windows', 'Edge', 'windows-edge-step1.webp', { x: 65.1, y: 38.12 }],
-    ['windows', 'Safari', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
+    ['macos', 'Chrome', 'macos-chrome-step1.webp', { x: 75.82, y: 47.81 }],
+    ['macos', 'Opera', 'macos-opera-step1.webp', { x: 68.78, y: 35.21 }],
+    ['macos', 'Opera GX', 'macos-opera-step1.webp', { x: 68.78, y: 35.21 }],
+    ['macos', 'Safari', 'macos-safari-step1.webp', { x: 49.37, y: 26.25 }],
+    ['macos', 'Mobile Safari', 'macos-safari-step1.webp', { x: 49.37, y: 26.25 }],
+    ['macos', 'Edge', 'windows-edge-step1.webp', { x: 75.63, y: 36.98 }],
+    ['windows', 'Chrome', 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    ['windows', 'Opera', 'windows-opera-step1.webp', { x: 68.4, y: 38.75 }],
+    ['windows', 'Edge', 'windows-edge-step1.webp', { x: 75.63, y: 36.98 }],
+    ['windows', 'Safari', 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
     // unknown and still resolving browsers fall back to Chrome of the OS
-    ['macos', undefined, 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
-    ['macos', 'Unknown', 'macos-chrome-step1.webp', { x: 73.54, y: 44.06 }],
-    ['windows', undefined, 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
-    ['windows', 'Unknown', 'windows-chrome-step1.webp', { x: 70.37, y: 46.35 }],
-    ['macos', 'Firefox', 'macos-firefox-step1.webp', { x: 64.34, y: 49.79 }],
-    ['macos', 'Brave', 'macos-brave-step1.webp', { x: 29.82, y: 41.46 }],
-    ['windows', 'Firefox', 'windows-firefox-step1.webp', { x: 63.07, y: 48.54 }],
-    ['windows', 'Brave', 'windows-brave-step1.webp', { x: 29.82, y: 41.46 }]
+    ['macos', undefined, 'macos-chrome-step1.webp', { x: 75.82, y: 47.81 }],
+    ['macos', 'Unknown', 'macos-chrome-step1.webp', { x: 75.82, y: 47.81 }],
+    ['windows', undefined, 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    ['windows', 'Unknown', 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    ['macos', 'Firefox', 'macos-firefox-step1.webp', { x: 77.28, y: 40.21 }],
+    ['macos', 'Brave', 'macos-brave-step1.webp', { x: 64.47, y: 46.15 }],
+    ['windows', 'Firefox', 'windows-firefox-step1.webp', { x: 76.46, y: 41.35 }],
+    ['windows', 'Brave', 'windows-brave-step1.webp', { x: 63.64, y: 42.92 }]
   ])('and the OS is %s and the browser is %s', (os, browserName, image, highlight) => {
     it('should pass its Step 1 image together with the highlight to the layout', () => {
       renderFor(os, browserName)

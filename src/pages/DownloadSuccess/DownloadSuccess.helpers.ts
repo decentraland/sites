@@ -12,32 +12,28 @@ import { OperativeSystem } from '../../types/download.types'
 import { DownloadBrowser } from './DownloadSuccess.types'
 import type { DownloadStepOneVariant } from './DownloadSuccess.types'
 
-// Highlight centers are measured, not copied from the spec. Chrome, Opera, Safari and Edge show a native
-// download icon: the center is the one of that glyph on the final webp (the Figma disc sits off it in some
-// variants, macOS Opera ~7px lower). Firefox and Brave have no download icon in their screenshot: the center is
-// the Figma highlight disc as drawn in the reference composite. The Brave slot is the gap between its shield/triangle
-// icons and the sidebar icon; the Windows screenshot has the same toolbar, so it reuses the macOS slot.
-const MACOS_CHROME: DownloadStepOneVariant = { image: macosChromeStepOne, highlight: { x: 73.54, y: 44.06 } }
-const WINDOWS_CHROME: DownloadStepOneVariant = { image: windowsChromeStepOne, highlight: { x: 70.37, y: 46.35 } }
-const WINDOWS_EDGE: DownloadStepOneVariant = { image: windowsEdgeStepOne, highlight: { x: 65.1, y: 38.12 } }
-
-const BRAVE_HIGHLIGHT = { x: 29.82, y: 41.46 }
+// Highlight centers are measured on the final webp files: the center of the native download icon that each
+// screenshot shows (Chrome: the active download button; Firefox: the circular downloads icon; Brave, Opera, Edge:
+// the download arrow; Safari: the circled arrow). The highlight disc is drawn over it.
+const MACOS_CHROME: DownloadStepOneVariant = { image: macosChromeStepOne, highlight: { x: 75.82, y: 47.81 } }
+const WINDOWS_CHROME: DownloadStepOneVariant = { image: windowsChromeStepOne, highlight: { x: 75, y: 45.42 } }
+const WINDOWS_EDGE: DownloadStepOneVariant = { image: windowsEdgeStepOne, highlight: { x: 75.63, y: 36.98 } }
 
 const STEP_ONE_VARIANTS: Record<OperativeSystem, Partial<Record<DownloadBrowser, DownloadStepOneVariant>>> = {
   [OperativeSystem.MACOS]: {
     [DownloadBrowser.CHROME]: MACOS_CHROME,
-    [DownloadBrowser.FIREFOX]: { image: macosFirefoxStepOne, highlight: { x: 64.34, y: 49.79 } },
-    [DownloadBrowser.BRAVE]: { image: macosBraveStepOne, highlight: BRAVE_HIGHLIGHT },
-    [DownloadBrowser.OPERA]: { image: macosOperaStepOne, highlight: { x: 55.84, y: 39.79 } },
-    [DownloadBrowser.SAFARI]: { image: macosSafariStepOne, highlight: { x: 56.28, y: 27.08 } },
+    [DownloadBrowser.FIREFOX]: { image: macosFirefoxStepOne, highlight: { x: 77.28, y: 40.21 } },
+    [DownloadBrowser.BRAVE]: { image: macosBraveStepOne, highlight: { x: 64.47, y: 46.15 } },
+    [DownloadBrowser.OPERA]: { image: macosOperaStepOne, highlight: { x: 68.78, y: 35.21 } },
+    [DownloadBrowser.SAFARI]: { image: macosSafariStepOne, highlight: { x: 49.37, y: 26.25 } },
     // No macOS Edge capture was designed: it reuses the Windows one.
     [DownloadBrowser.EDGE]: WINDOWS_EDGE
   },
   [OperativeSystem.WINDOWS]: {
     [DownloadBrowser.CHROME]: WINDOWS_CHROME,
-    [DownloadBrowser.FIREFOX]: { image: windowsFirefoxStepOne, highlight: { x: 63.07, y: 48.54 } },
-    [DownloadBrowser.BRAVE]: { image: windowsBraveStepOne, highlight: BRAVE_HIGHLIGHT },
-    [DownloadBrowser.OPERA]: { image: windowsOperaStepOne, highlight: { x: 55.84, y: 43.54 } },
+    [DownloadBrowser.FIREFOX]: { image: windowsFirefoxStepOne, highlight: { x: 76.46, y: 41.35 } },
+    [DownloadBrowser.BRAVE]: { image: windowsBraveStepOne, highlight: { x: 63.64, y: 42.92 } },
+    [DownloadBrowser.OPERA]: { image: windowsOperaStepOne, highlight: { x: 68.4, y: 38.75 } },
     [DownloadBrowser.EDGE]: WINDOWS_EDGE
   }
 }
