@@ -102,9 +102,11 @@ Hero prerender + lazy `<Layout />` + lazy `<DappsShell />` + deferred analytics.
 
 ## Deployment: where production actually comes from
 
-**Vercel is preview-only.** `npm run build` publishes `@dcl/sites` to npm, a GitLab job mirrors it to
-`cdn.decentraland.org/@dcl/sites/<version>`, and `set-rollout-action` points an environment at that
-version (`zone` + `today` automatic, `org` manual + release tag). At request time every environment is
+**Vercel is preview-only.** `.github/workflows/cdn-deploy.yml` builds the site and uploads it straight
+to `cdn.decentraland.org/@dcl/sites/<version>`, then points an environment at that version — `zone` on
+every merge to master, `today` and `org` by manual dispatch, with `org` requiring a released version
+and an approval on the GitHub environment. No npm publish and no GitLab hop. At request time every
+environment is
 served by the **`sites-deployer` Cloudflare Worker** (`dcl.tools:ops/sites-deployer`, GitLab), which
 pulls the CDN bundle and rewrites the HTML on the way out. `server: cloudflare`, no Vercel headers.
 
@@ -113,14 +115,42 @@ affects previews only.** Two things that live there are therefore NOT what produ
 
 - **OG meta / `<title>`.** Production titles come from the worker's handlers in
   `workers/sites-worker/rollouts/routes/handlers/` — `OpenGraphWhatsOnRoute` (events + `/jump`),
-  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community. The route
-  _path patterns_ are not even in that repo: they come from the sites DSL in `@decentraland/definitions`,
-  so making a new path emit OG cards is a two-repo change.
+  `OpenGraphStaticPageRoute` (its `PAGES` map), blog, profile, reels, invite, community.
 - **Per-route headers**, including the COOP/COEP pair the bevy iframe needs. Verify a header claim with
   `curl -sI https://decentraland.org/<path>`, never by reading `vercel.json`.
 
+### Which repo owns what
+
+Emitting OG for a path is never only this repo. Get the layer wrong and the fix lands somewhere that does not
+serve production. Which repos a path needs depends on its handler:
+
+- **Static page** (a fixed title/description/image): matched by the `PAGES` map in
+  `OpenGraphStaticPageRoute.ts` in `sites-deployer`. Definitions registers that handler once with no `path:`,
+  so a new static page needs only a `PAGES` entry, no definitions change.
+- **Dedicated handler** (events, places, blog, profile, reels, communities...): needs a `path:` pattern in
+  definitions AND the handler in `sites-deployer`.
+
+| Layer                              | Repo                                               | File                                             | Owns                                                                                                                |
+| ---------------------------------- | -------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Which paths get a handler**      | `decentraland/definitions` (GitHub, private)       | `src/sites/sites.ts`, `sites.config[env].routes` | Dedicated handlers only: the `path:` pattern per environment (dev/stg/prd). No pattern, no card.                    |
+| **What the card says**             | `dcl.tools:ops/sites-deployer` (GitLab, MR not PR) | `workers/sites-worker/rollouts/routes/handlers/` | Title, description, image, canonical, the API calls behind them; for static pages also which paths match (`PAGES`). |
+| **The tab title after navigation** | this repo                                          | Helmet in the page or its layout                 | What the browser tab shows once JS runs. Crawlers never see it.                                                     |
+
+**Merge order for a dedicated handler, and why it is that order:** definitions first (publishes `@next` on push to `main`) →
+sites-deployer to `master` (deploys dev + stg, and its `.gitlab-ci.yml` runs
+`npm i @decentraland/definitions@next`, so one deploy picks up both) → `release` (prd) → only then the
+`org` rollout of sites. Rolling `org` first ships a live path with no card. A static page skips the
+definitions step: sites-deployer (`master`, then `release`) → `org`.
+
+**Do not work around a missing pattern inside a dedicated handler.** The temptation is to widen its `test()` in
+sites-deployer so the new path matches without touching definitions. It buys nothing: the handler change
+needs a worker deploy anyway, and that same deploy installs `definitions@next`. Fix the layer that owns
+the problem.
+
 A route renamed in the SPA keeps serving the old section's OG card until the worker is updated, and the
-new path serves the bare shell (`<title>Decentraland</title>`) until it is added there.
+new path serves the bare shell (`<title>Decentraland</title>`) until it is added there. Keep BOTH
+prefixes configured while the redirect lives: shared and indexed links hit the worker before the SPA can
+redirect them.
 
 ### Blog SEO (preview tier)
 
@@ -176,6 +206,10 @@ Tier picker (lightweight / heavy / Layout-less), full step-by-step, navbar clear
 
 A wildcard without one fails the build, as does a `path` that is not a string literal. That is deliberate: an incomplete manifest would turn a live route into a 404 in production. Run `npm run lint:routes` to print what the extractor sees.
 
+**Public static pages need a sitemap marker.** Place `{/* route-manifest: sitemap */}` directly above a literal page route (or its index route). The build adds marked paths to `sitemapRoutes` in `dist/routes.json`; the edge uses that list for `/sitemap-pages.xml`. Parameterized and wildcard routes cannot use this marker. Leave it off redirects, sign-in/admin pages, success screens, and other routes that should not be indexed. Dynamic events and places are listed by the worker's own feeds.
+
+**The manifest also gates `llms.txt`.** `scripts/build-llms-txt.mjs` validates every decentraland.org link in the generated `dist/llms.txt` against `dist/routes.json`, so removing or renaming a route that `scripts/llms.template.md` links to fails `npm run build`, not only `lint:routes`. Update the template in the same PR (skill `add-route`, repo sync checklist).
+
 ## Coding conventions
 
 ### File placement
@@ -194,7 +228,7 @@ A wildcard without one fails the build, as does a `path` that is not a string li
 
 ### Styled components
 
-- Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes`.
+- Import from `decentraland-ui2`: `styled`, `Box`, `Typography`, `keyframes` (exported since ui2 3.23.3). Source files never import them from `@emotion/*` directly (test mocks may).
 - Object syntax only: `styled(Box)(({ theme }) => ({ ... }))`.
 - Theme tokens: `theme.palette.*`, `theme.spacing()`, `theme.breakpoints.*`.
 - Separate `*.styled.ts` files. No hardcoded colors — use `dclColors` or theme palette.
@@ -325,6 +359,24 @@ One line each. Open the doc for code patterns and full rationale.
 - **23.** Page tracking + Helmet — `useBlogPageTracking({ name, properties })` + `Layout.helpers.ts:isPageTrackingExempt`.
 - **24.** Props destructuring threshold — ≤3 in params, ≥4 in body.
 - **25.** No inline `sx` with hardcoded values — co-located `*.styled.ts` with theme tokens.
+
+### 26. Renaming or adding a public path changes the OG layer too
+
+Any PR that adds a public path, renames one, or changes what a section is called must land the OG layer
+too, in the order in Deployment > Which repo owns what (static pages skip definitions). Before opening it:
+
+- **New or renamed static page** → add its pathname to the `PAGES` map in `sites-deployer`. On a rename
+  keep the old `PAGES` key while its redirect lives. No definitions change.
+- **New or renamed path served by a dedicated handler** → add its `path:` pattern to
+  `sites.config[env].routes` in `decentraland/definitions` for all three environments, and keep the old
+  prefix while its redirect lives.
+- **Section renamed** → update the strings in that section's handler in `sites-deployer`, and
+  canonicalize the legacy prefix onto the new one.
+- **Any of these** → give the destination page or layout a Helmet title. A client-side redirect never
+  rewrites the served `<head>`, so the tab inherits the title of the URL the visitor typed.
+
+Confirm the current behavior with `curl -sA Twitterbot https://decentraland.zone/<path> | grep '<title>'`
+rather than reasoning about it. `zone` runs master, so it shows what `org` will do after the rollout.
 
 ## Security checklist
 

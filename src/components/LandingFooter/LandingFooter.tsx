@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
+import publicLinks from '../../config/publicLinks.json'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { type SupportedLocale, useLocale } from '../../intl/LocaleContext'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
@@ -37,7 +38,7 @@ import {
   Wordmark
 } from './LandingFooter.styled'
 
-const BEEHIIV_EMBED_URL = 'https://embeds.beehiiv.com/ff89783d-748b-4ba3-8700-4759f6f62831?slim=true'
+const BEEHIIV_EMBED_URL = `${publicLinks.newsletter.subscribe}?slim=true`
 
 const socialIconMap: Record<string, React.FC> = {
   Discord,

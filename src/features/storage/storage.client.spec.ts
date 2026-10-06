@@ -244,6 +244,61 @@ describe('storage.client endpoints', () => {
     fetchSpy.mockRestore()
   })
 
+  describe('getCollaboratorScenes', () => {
+    it('returns the self-scoped page of collaborator scenes with its pagination', async () => {
+      const page = {
+        data: [
+          { sceneId: 's1', worldName: 'foo.dcl.eth', baseParcel: '0,0', title: 'My Scene', realmKind: 'world' },
+          { sceneId: 's2', worldName: '', baseParcel: '10,10', title: null, realmKind: 'genesis' }
+        ],
+        pagination: { limit: 20, offset: 0, total: 2 }
+      }
+      signedFetchMock.mockResolvedValue(makeResponse(page))
+      const store = setupStore()
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
+      expect(result.data).toEqual(page)
+    })
+
+    it('forwards limit and offset as query params to /collaborator', async () => {
+      signedFetchMock.mockResolvedValue(makeResponse({ data: [], pagination: { limit: 10, offset: 20, total: 0 } }))
+      const store = setupStore()
+      await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 10, offset: 20 }))
+      expect(signedFetchMock).toHaveBeenCalledWith(expect.stringContaining('/collaborator?limit=10&offset=20'), expect.anything())
+    })
+
+    it('returns an empty page when the caller collaborates on no scenes', async () => {
+      signedFetchMock.mockResolvedValue(makeResponse({ data: [], pagination: { limit: 20, offset: 0, total: 0 } }))
+      const store = setupStore()
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
+      expect(result.data).toEqual({ data: [], pagination: { limit: 20, offset: 0, total: 0 } })
+    })
+
+    it('surfaces the 400 Invalid Auth Chain response as an error', async () => {
+      signedFetchMock.mockResolvedValue(
+        makeResponse(
+          { error: 'Invalid Auth Chain', message: 'This endpoint requires a signed fetch request. See ADR-44.' },
+          { status: 400 }
+        )
+      )
+      const store = setupStore()
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
+      expect((result.error as { status: number }).status).toBe(400)
+    })
+
+    it('accumulates offset pages into one cache entry and drops repeated scenes', async () => {
+      const first = { sceneId: 's1', worldName: 'foo.dcl.eth', baseParcel: '0,0', title: 'One', realmKind: 'world' }
+      const second = { sceneId: 's2', worldName: '', baseParcel: '10,10', title: null, realmKind: 'genesis' }
+      const third = { sceneId: 's3', worldName: 'bar.dcl.eth', baseParcel: '1,1', title: 'Three', realmKind: 'world' }
+      signedFetchMock
+        .mockResolvedValueOnce(makeResponse({ data: [first, second], pagination: { limit: 2, offset: 0, total: 3 } }))
+        .mockResolvedValueOnce(makeResponse({ data: [second, third], pagination: { limit: 2, offset: 2, total: 3 } }))
+      const store = setupStore()
+      await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 2, offset: 0 }))
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 2, offset: 2 }))
+      expect(result.data?.data.map(scene => scene.sceneId)).toEqual(['s1', 's2', 's3'])
+    })
+  })
+
   describe('signed-fetch endpoints surface HTTP errors from their catch branch', () => {
     it.each([
       ['deleteEnv', () => storageEndpoints.endpoints.deleteEnv.initiate({ identity, key: 'API_KEY', ...ctx })],

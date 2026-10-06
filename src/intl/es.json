@@ -773,7 +773,13 @@
         "scene_count_one": "1 escena",
         "edit": "Editar",
         "edit_scenes": "Editar escenas",
-        "select_scene": "Seleccionar escena"
+        "select_scene": "Seleccionar escena",
+        "collaborations": "Colaboraciones",
+        "no_collaborations": "No se encontraron colaboraciones",
+        "collaborations_error": "No se pudieron cargar tus colaboraciones. Inténtalo de nuevo.",
+        "collaborations_hint": "Las escenas concedidas recientemente pueden tardar un momento en aparecer.",
+        "realm_world": "Mundo",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Variables de entorno",
@@ -1061,6 +1067,8 @@
       "remove_friend": "Quitar amigo",
       "unblock": "Desbloquear",
       "block": "Bloquear",
+      "blocked_toast": "Bloqueaste a {name}.",
+      "unblocked_toast": "Desbloqueaste a {name}.",
       "more_actions": "Más acciones",
       "copy_address": "Copiar dirección",
       "address_copied": "¡Dirección copiada!",
@@ -1364,6 +1372,7 @@
       "copy_link": "Copiar enlace",
       "close": "Cerrar",
       "explore_scene": "Explorar la escena",
+      "jump_to_location": "Entrar a {location} (se abre en una pestaña nueva)",
       "copied": "¡Copiado!"
     },
     "featured": {
@@ -1629,7 +1638,6 @@
       },
       "learn_more": "Más información",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Unirse al Programa",
       "leave_button": "Abandonar Programa",
       "leave_modal": {
         "warning": "¿Abandonar Créditos del Marketplace?",
@@ -1640,10 +1648,6 @@
           "generic": "No se pudo abandonar el programa en este momento. Por favor, inténtalo de nuevo.",
           "already_claimed": "No puedes abandonar esta semana porque ya has reclamado créditos. Por favor, inténtalo de nuevo la próxima semana."
         }
-      },
-      "join_errors": {
-        "generic": "No se pudo unir al programa en este momento. Intentá de nuevo.",
-        "email_required": "Agregá y confirmá un email en Notificaciones antes de unirte al Programa de Créditos."
       }
     },
     "delete": {

@@ -768,7 +768,13 @@
         "scene_count_one": "1 scène",
         "edit": "Modifier",
         "edit_scenes": "Modifier les scènes",
-        "select_scene": "Sélectionner une scène"
+        "select_scene": "Sélectionner une scène",
+        "collaborations": "Collaborations",
+        "no_collaborations": "Aucune collaboration trouvée",
+        "collaborations_error": "Impossible de charger vos collaborations. Veuillez réessayer.",
+        "collaborations_hint": "Les scènes récemment accordées peuvent mettre un moment à apparaître.",
+        "realm_world": "Monde",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Variables d’environnement",
@@ -1056,6 +1062,8 @@
       "remove_friend": "Retirer",
       "unblock": "Débloquer",
       "block": "Bloquer",
+      "blocked_toast": "Vous avez bloqué {name}.",
+      "unblocked_toast": "Vous avez débloqué {name}.",
       "more_actions": "Plus d'actions",
       "copy_address": "Copier l'adresse",
       "address_copied": "Adresse copiée !",
@@ -1359,6 +1367,7 @@
       "copy_link": "Copier le lien",
       "close": "Fermer",
       "explore_scene": "Explorer la scène",
+      "jump_to_location": "Rejoindre {location} (s’ouvre dans un nouvel onglet)",
       "copied": "Copié !"
     },
     "featured": {
@@ -1624,7 +1633,6 @@
       },
       "learn_more": "En savoir plus",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Rejoindre le programme",
       "leave_button": "Quitter le programme",
       "leave_modal": {
         "warning": "Quitter les Crédits du Marketplace ?",
@@ -1635,10 +1643,6 @@
           "generic": "Impossible de quitter le programme pour le moment. Veuillez réessayer.",
           "already_claimed": "Vous ne pouvez pas quitter cette semaine car vous avez déjà réclamé des crédits. Veuillez réessayer la semaine prochaine."
         }
-      },
-      "join_errors": {
-        "generic": "Impossible de rejoindre le programme pour le moment. Veuillez réessayer.",
-        "email_required": "Ajoutez et confirmez un e-mail dans Notifications avant de rejoindre le programme de crédits."
       }
     },
     "delete": {

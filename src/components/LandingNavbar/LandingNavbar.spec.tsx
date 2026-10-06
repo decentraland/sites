@@ -9,6 +9,7 @@ import type { LandingNavbarProps } from './LandingNavbar'
 
 jest.mock('decentraland-ui2', () => ({
   styled: jest.requireActual('@emotion/styled').default,
+  keyframes: jest.requireActual('@emotion/react').keyframes,
   dclColors: {
     base: { primary: '#ff2d55', primaryDark: '#d3255f' },
     neutral: { gray: '#716b7c', softWhite: '#ecebed', white: '#ffffff' }

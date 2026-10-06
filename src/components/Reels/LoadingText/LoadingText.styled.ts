@@ -1,5 +1,4 @@
-import { keyframes } from '@emotion/react'
-import { Box, styled } from 'decentraland-ui2'
+import { Box, keyframes, styled } from 'decentraland-ui2'
 
 const loadingShimmer = keyframes`
   to { background-position-x: -200%; }

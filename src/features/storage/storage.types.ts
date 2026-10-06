@@ -258,12 +258,34 @@ interface ContributableDomainsResponse {
   domains: ContributableDomainRaw[]
 }
 
+type RealmKind = 'world' | 'genesis'
+
+interface CollaboratorScene {
+  sceneId: string
+  worldName: string
+  baseParcel: string
+  title: string | null
+  realmKind: RealmKind
+}
+
+interface GetCollaboratorScenesParams {
+  limit?: number
+  offset?: number
+}
+
+interface CollaboratorScenesResponse {
+  data: CollaboratorScene[]
+  pagination: { limit: number; offset: number; total: number }
+}
+
 type WrapSignedFetchError = { status: number; data?: unknown } | { status: 'FETCH_ERROR'; error: string }
 
 export { LandType, RoleType }
 export type {
   AuthParams,
   ClearPlayerParams,
+  CollaboratorScene,
+  CollaboratorScenesResponse,
   ContributableDomain,
   ContributableDomainRaw,
   ContributableDomainsResponse,
@@ -272,6 +294,7 @@ export type {
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  GetCollaboratorScenesParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   Land,
@@ -286,6 +309,7 @@ export type {
   PlayerValue,
   Rental,
   RentalFields,
+  RealmKind,
   RentalsQueryResponse,
   RentalsQueryResult,
   SceneKey,

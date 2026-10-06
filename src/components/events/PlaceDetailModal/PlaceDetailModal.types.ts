@@ -5,7 +5,8 @@ interface ModalPlaceData {
   image: string | null
   coordinates: [number, number]
   ownerAddress: string | undefined
-  ownerName: string | undefined
+  contactName: string | undefined
+  creatorAddress?: string | null
   favorites: number
   userCount: number
   isWorld: boolean
@@ -18,4 +19,9 @@ interface PlaceDetailModalProps {
   data: ModalPlaceData | null
 }
 
-export type { ModalPlaceData, PlaceDetailModalProps }
+interface PlaceDetailModalCreatorProps {
+  data: ModalPlaceData
+  prefixLabel: string
+}
+
+export type { ModalPlaceData, PlaceDetailModalProps, PlaceDetailModalCreatorProps }

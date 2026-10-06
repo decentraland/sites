@@ -1,5 +1,4 @@
-import { keyframes } from '@emotion/react'
-import { Box, Typography, styled } from 'decentraland-ui2'
+import { Box, Typography, keyframes, styled } from 'decentraland-ui2'
 
 const errorShake = keyframes`
   0%, 100% { transform: translateX(0); }
