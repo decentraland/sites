@@ -6,11 +6,11 @@ const PAGE_BACKGROUND = '#32134C'
 const CARD_BORDER = 'rgba(160, 155, 168, 0.48)'
 const MEDIA_UNDERLAY = 'rgba(51, 22, 54, 0.7)'
 
-// Figma card header per step: base color and sheen angle.
+// Figma card header per step: base color, sheen angle and the 4px accent on the left edge.
 const STEP_TINTS = [
-  { base: 'rgba(194, 92, 184, 0.32)', angle: '110.97deg' },
-  { base: 'rgba(105, 0, 146, 0.52)', angle: '108.7deg' },
-  { base: 'rgba(37, 0, 69, 0.41)', angle: '110.97deg' }
+  { base: 'rgba(194, 92, 184, 0.32)', angle: '110.97deg', accent: '#673075' },
+  { base: 'rgba(105, 0, 146, 0.52)', angle: '108.7deg', accent: '#550F76' },
+  { base: 'rgba(37, 0, 69, 0.41)', angle: '110.97deg', accent: '#511B68' }
 ] as const
 
 // Step 1 images are 394 wide in the design. Every highlight size is expressed in cqw so the glow
@@ -117,7 +117,8 @@ const DownloadStepsCardHeader = styled(Box, { shouldForwardProp: prop => prop !=
     minHeight: 180,
     padding: theme.spacing(3),
     backgroundColor: tint.base,
-    backgroundImage: `linear-gradient(${tint.angle}, rgba(255, 255, 255, 0.2) 4.17%, rgba(255, 255, 255, 0) 92.73%)`
+    backgroundImage: `linear-gradient(${tint.angle}, rgba(255, 255, 255, 0.2) 4.17%, rgba(255, 255, 255, 0) 92.73%)`,
+    boxShadow: `inset 4px 0 0 0 ${tint.accent}`
   }
 })
 
