@@ -1,9 +1,10 @@
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { act, render, renderHook } from '@testing-library/react'
 import { useGetPresentationBotTokenMutation, useUploadPresentationFromUrlMutation, useUploadPresentationMutation } from '../cast2.client'
-import { getStreamerToken, isPresentationBot } from '../cast2.utils'
+import { getStreamerToken } from '../cast2.utils'
 import { decodeCommsPacket, encodeCommsPacket } from '../commsProtocol'
-import { type PresentationContextValue, PresentationProvider, usePresentation, usePresentationOptional } from './PresentationContext'
+import { PresentationProvider, usePresentation, usePresentationOptional } from './PresentationContext'
+import type { PresentationContextValue, PresentationState } from './PresentationContext'
 
 jest.mock('@livekit/components-react', () => ({ useRemoteParticipants: jest.fn(), useRoomContext: jest.fn() }))
 jest.mock('../cast2.client', () => ({
@@ -11,125 +12,121 @@ jest.mock('../cast2.client', () => ({
   useUploadPresentationMutation: jest.fn(),
   useUploadPresentationFromUrlMutation: jest.fn()
 }))
-jest.mock('../cast2.utils', () => ({
-  ...jest.requireActual('../cast2.utils'),
-  isPresentationBot: jest.fn(),
-  getStreamerToken: jest.fn()
-}))
+jest.mock('../cast2.utils', () => ({ ...jest.requireActual('../cast2.utils'), getStreamerToken: jest.fn() }))
 const mockShow = jest.fn()
-jest.mock('./NotificationContext', () => ({
-  useNotifications: () => ({ show: mockShow, dismiss: jest.fn(), notifications: [] })
-}))
-jest.mock('../useCastTranslation', () => ({
-  useCastTranslation: () => ({ t: (key: string) => key })
-}))
-
-type DataHandler = (payload: Uint8Array, participant?: unknown) => void
+jest.mock('./NotificationContext', () => ({ useNotifications: () => ({ show: mockShow }) }))
+jest.mock('../useCastTranslation', () => ({ useCastTranslation: () => ({ t: (key: string) => key }) }))
 
 interface FakeParticipant {
   identity: string
   metadata: string
 }
+type DataHandler = (payload: Uint8Array, participant?: FakeParticipant) => void
+type Invoke = (value: PresentationContextValue) => Promise<void>
+type Fields = Record<string, unknown>
 
+const BOT_IDENTITY = 'presentation-bot:room:1'
 const DEFAULT_OVERLAY = { x: 0, y: 1, size: 'small' }
+const LARGE_OVERLAY = { x: 1, y: 0, size: 'large' }
+const HELD_OVERLAY = { x: 0.5, y: 0.5, size: 'small' }
+const FAR_OVERLAY = { x: 0.3, y: 0.3, size: 'small' }
 const HOLD_START = 1_000_000
+const SLIDE = { url: 'https://presenter.test/presentations/deck-1/slides/0f3a.png', width: 1920, height: 1080 }
+const SLIDE_VIDEO = { url: 'https://presenter.test/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }
+const OFF_SLIDE_VIDEO = { url: 'https://presenter.test/edge.mp4', geometry: { x: -40, y: -10, width: 0, height: 120 } }
+const COMPOSITION = { slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }
+const COMPOSED_METADATA = { overlay: LARGE_OVERLAY, slideVideos: [SLIDE_VIDEO], ...COMPOSITION }
+const ORPHANED = { slide: SLIDE, presenterIdentity: 'stream:old' }
+const OTHER_PARTICIPANT = { identity: 'stream:other', metadata: '' }
+const PRESENTATION_INFO = { id: 'deck-2', slideCount: 5, currentSlide: 0, fileType: 'pdf' }
+const LEGACY_STATE = {
+  id: 'deck-1',
+  slideCount: 3,
+  currentSlide: 0,
+  fileType: 'pdf',
+  status: 'active',
+  slideVideos: [],
+  videoState: 'idle',
+  overlay: DEFAULT_OVERLAY,
+  slide: null,
+  presenterIdentity: null,
+  playingVideoIndex: null
+}
 
-const mockUseRemoteParticipants = useRemoteParticipants as jest.Mock
-const mockUseRoomContext = useRoomContext as jest.Mock
-const mockIsPresentationBot = isPresentationBot as jest.Mock
-const mockGetStreamerToken = getStreamerToken as jest.Mock
-
-const makeBot = (extra: Record<string, unknown> = {}): FakeParticipant => ({
-  identity: 'presentation-bot:room:1',
+const makeBot = (extra: Fields = {}): FakeParticipant => ({
+  identity: BOT_IDENTITY,
   metadata: JSON.stringify({ role: 'presentation', id: 'deck-1', slideCount: 3, currentSlide: 0, fileType: 'pdf', ...extra })
 })
-
-const statePacket = (extra: Record<string, unknown> = {}) =>
-  encodeCommsPacket('presentation', {
-    type: 'presentation:state',
-    id: 'deck-1',
-    slideCount: 3,
-    currentSlide: 0,
-    fileType: 'pdf',
-    ...extra
-  })
+const presentationPacket = (data: Fields) => encodeCommsPacket('presentation', data)
+const statePacket = (extra: Fields = {}) =>
+  presentationPacket({ type: 'presentation:state', id: 'deck-1', slideCount: 3, currentSlide: 0, fileType: 'pdf', ...extra })
+const STOPPED_PACKET = presentationPacket({ type: 'presentation:stopped' })
+const errorPacket = (extra: Fields = {}) =>
+  presentationPacket({ type: 'presentation:error', code: 'video-timeout', message: 'Video timed out', ...extra })
+const NO_VIDEOS = { slideVideos: [] }
+const afterValidVideo = (video: unknown) => ({ slideVideos: [SLIDE_VIDEO, video] })
+const resolved = (value: unknown) => ({ unwrap: () => Promise.resolve(value) })
+const startFromFile: Invoke = value => value.startPresentation(new File(['deck'], 'deck.pdf'))
+const startFromUrl: Invoke = value => value.startPresentationFromUrl('https://docs.test/deck.pdf')
 
 let current: PresentationContextValue
-let dataHandler: DataHandler | undefined
-let publishData: jest.Mock
-let now: number
 
 const Probe = () => {
   current = usePresentation()
   return null
 }
 
-const tree = () => (
-  <PresentationProvider>
+const tree = (canControl = false) => (
+  <PresentationProvider canControl={canControl || undefined}>
     <Probe />
   </PresentationProvider>
 )
-
-const controllerTree = () => (
-  <PresentationProvider canControl>
-    <Probe />
-  </PresentationProvider>
-)
-
-const renderProvider = () => render(tree())
-
-const deliver = (payload: Uint8Array, participant: FakeParticipant) => {
-  act(() => {
-    dataHandler?.(payload, participant)
-  })
-}
-
-const makeRoom = (identity: string) => ({
-  localParticipant: { identity, publishData },
-  on: jest.fn((_event: string, handler: DataHandler) => {
-    dataHandler = handler
-  }),
-  off: jest.fn()
-})
-
-const claimCount = (): number =>
-  publishData.mock.calls.filter(([payload]: [Uint8Array]) => {
-    const data = decodeCommsPacket(payload)?.data as { type?: string } | undefined
-    return data?.type === 'presentation:presenter:claim'
-  }).length
-
-const sentCommands = (): unknown[] => publishData.mock.calls.map(([payload]: [Uint8Array]) => decodeCommsPacket(payload)?.data)
-
-const errorPacket = (extra: Record<string, unknown> = {}) =>
-  encodeCommsPacket('presentation', { type: 'presentation:error', code: 'video-timeout', message: 'Video timed out', ...extra })
-
-const SLIDE = { url: 'https://presenter.test/presentations/deck-1/slides/0f3a.png', width: 1920, height: 1080 }
-const SLIDE_VIDEO = { url: 'https://presenter.test/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }
-const PRESENTATION_INFO = { id: 'deck-2', slideCount: 5, currentSlide: 0, fileType: 'pdf' }
 
 describe('PresentationProvider', () => {
   let bot: FakeParticipant
+  let dataHandler: DataHandler | undefined
+  let publishData: jest.Mock
+  let localParticipant: { identity: string; publishData: jest.Mock }
+  let room: { localParticipant?: typeof localParticipant; on: jest.Mock; off: jest.Mock }
+  let getPresentationBotToken: jest.Mock
+  let uploadPresentation: jest.Mock
+  let uploadPresentationFromUrl: jest.Mock
+  let view: ReturnType<typeof render>
+
+  const participants = (list: FakeParticipant[]) => (useRemoteParticipants as jest.Mock).mockReturnValue([...list])
+  const renderProvider = (canControl = false) => {
+    view = render(tree(canControl))
+  }
+  const rerender = (canControl = false) => view.rerender(tree(canControl))
+  const deliver = (payload: Uint8Array, sender: FakeParticipant | null = bot) => act(() => dataHandler?.(payload, sender ?? undefined))
+  const run = (invoke: Invoke) =>
+    act(async () => {
+      await invoke(current)
+    })
+  const sentCommands = () => publishData.mock.calls.map(([payload]: [Uint8Array]) => decodeCommsPacket(payload)?.data as Fields)
+  const claimCount = () => sentCommands().filter(command => command.type === 'presentation:presenter:claim').length
 
   beforeEach(() => {
-    now = HOLD_START
-    jest.spyOn(Date, 'now').mockImplementation(() => now)
     bot = makeBot()
     dataHandler = undefined
     publishData = jest.fn().mockResolvedValue(undefined)
-    const room = {
-      localParticipant: { identity: 'stream:p:1', publishData },
+    localParticipant = { identity: 'stream:p:1', publishData }
+    room = {
+      localParticipant,
       on: jest.fn((_event: string, handler: DataHandler) => {
         dataHandler = handler
       }),
       off: jest.fn()
     }
-    mockUseRoomContext.mockReturnValue(room)
-    mockUseRemoteParticipants.mockReturnValue([])
-    mockIsPresentationBot.mockImplementation((participant: FakeParticipant) => participant.identity.startsWith('presentation-bot:'))
-    mockGetStreamerToken.mockReturnValue('streaming-key')
-    ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([jest.fn()])
-    ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([jest.fn()])
-    ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([jest.fn()])
+    getPresentationBotToken = jest.fn().mockReturnValue(resolved({ token: 'bot-token', url: 'wss://example.test' }))
+    uploadPresentation = jest.fn().mockReturnValue(resolved(PRESENTATION_INFO))
+    uploadPresentationFromUrl = jest.fn().mockReturnValue(resolved(PRESENTATION_INFO))
+    ;(useRoomContext as jest.Mock).mockReturnValue(room)
+    ;(getStreamerToken as jest.Mock).mockReturnValue('streaming-key')
+    ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([getPresentationBotToken])
+    ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([uploadPresentation])
+    ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([uploadPresentationFromUrl])
+    participants([bot])
   })
 
   afterEach(() => {
@@ -137,539 +134,63 @@ describe('PresentationProvider', () => {
     jest.restoreAllMocks()
   })
 
-  describe('when it first renders', () => {
+  describe('when there is no presentation bot', () => {
     beforeEach(() => {
+      participants([])
       renderProvider()
     })
 
-    it('should expose the default overlay', () => {
-      expect(current.state.overlay).toEqual(DEFAULT_OVERLAY)
+    it('should expose an idle presentation with the default overlay', () => {
+      expect(current).toMatchObject({ isPresentationActive: false, state: { status: 'idle', overlay: DEFAULT_OVERLAY } })
     })
   })
 
-  describe('when the bot metadata carries a valid overlay', () => {
+  describe.each<[string, Fields, Fields]>([
+    ['composition fields', COMPOSED_METADATA, COMPOSED_METADATA],
+    ['a malformed overlay', { overlay: { x: 'a' } }, { status: 'active', overlay: DEFAULT_OVERLAY }],
+    ['a failed video', { videoState: 'error', slideVideos: [SLIDE_VIDEO] }, { videoState: 'idle', slideVideos: [SLIDE_VIDEO] }]
+  ])('when the bot metadata carries %s', (_label, extra, expected) => {
     beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ overlay: { x: 1, y: 0, size: 'large' } })])
+      participants([makeBot(extra)])
       renderProvider()
     })
 
-    it('should expose that overlay', () => {
-      expect(current.state.overlay).toEqual({ x: 1, y: 0, size: 'large' })
+    it('should expose the normalized presentation state', () => {
+      expect(current.state).toMatchObject(expected)
     })
   })
 
-  describe('when the bot metadata carries a malformed overlay', () => {
+  describe('when the bot metadata has no presentation id', () => {
     beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ overlay: { x: 'a' } })])
+      participants([makeBot({ id: undefined })])
       renderProvider()
     })
 
-    it('should still activate the presentation', () => {
-      expect(current.isPresentationActive).toBe(true)
+    it('should ask the bot for its state', () => {
+      expect(sentCommands()).toEqual([{ type: 'presentation:get-state' }])
     })
 
-    it('should fall back to the default overlay', () => {
-      expect(current.state.overlay).toEqual(DEFAULT_OVERLAY)
-    })
-  })
-
-  describe('when a presentation:state packet carries a valid overlay', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ overlay: { x: 1, y: 1, size: 'large' } }), bot)
-    })
-
-    it('should update the overlay', () => {
-      expect(current.state.overlay).toEqual({ x: 1, y: 1, size: 'large' })
-    })
-  })
-
-  describe('when a presentation:state packet has no overlay', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ overlay: { x: 1, y: 0, size: 'large' } })])
-      renderProvider()
-      deliver(statePacket(), bot)
-    })
-
-    it('should fall back to the default overlay', () => {
-      expect(current.state.overlay).toEqual(DEFAULT_OVERLAY)
-    })
-  })
-
-  describe('when setOverlay is called with an active presentation', () => {
-    let resolvePublish: () => void
-    let pending: Promise<void>
-
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      publishData.mockImplementation(
-        () =>
-          new Promise<void>(resolve => {
-            resolvePublish = resolve
-          })
-      )
-      act(() => {
-        pending = current.setOverlay({ size: 'large' })
-      })
-    })
-
-    afterEach(async () => {
-      await act(async () => {
-        resolvePublish()
-        await pending
-      })
-    })
-
-    it('should publish one overlay update command', () => {
-      expect(publishData).toHaveBeenCalledTimes(1)
-      expect(decodeCommsPacket(publishData.mock.calls[0][0])).toEqual({
-        topic: 'presentation',
-        data: { type: 'presentation:overlay:update', size: 'large' }
-      })
-    })
-
-    it('should update the overlay before the command resolves', () => {
-      expect(current.state.overlay.size).toBe('large')
-    })
-  })
-
-  describe('when setOverlay is called without a presentation', () => {
-    beforeEach(async () => {
-      renderProvider()
-      await act(async () => {
-        await current.setOverlay({ size: 'large' })
-      })
-    })
-
-    it('should not publish anything', () => {
-      expect(publishData).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('when a local overlay change is held', () => {
-    let view: ReturnType<typeof renderProvider>
-
-    beforeEach(async () => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      view = renderProvider()
-      await act(async () => {
-        await current.setOverlay({ x: 0.5, y: 0.5 })
-      })
-    })
-
-    describe('and a differing presentation:state packet arrives within the hold', () => {
-      beforeEach(() => {
-        now = HOLD_START + 500
-        deliver(statePacket({ overlay: { x: 0.3, y: 0.3, size: 'small' } }), bot)
-      })
-
-      it('should keep the local overlay', () => {
-        expect(current.state.overlay).toEqual({ x: 0.5, y: 0.5, size: 'small' })
-      })
-
-      describe('and then a matching packet arrives followed by a stale one', () => {
-        beforeEach(() => {
-          now = HOLD_START + 700
-          deliver(statePacket({ overlay: { x: 0.5, y: 0.5, size: 'small' } }), bot)
-          now = HOLD_START + 800
-          deliver(statePacket({ overlay: { x: 0.3, y: 0.3, size: 'small' } }), bot)
-        })
-
-        it('should apply the matching packet and keep ignoring the stale one', () => {
-          expect(current.state.overlay).toEqual({ x: 0.5, y: 0.5, size: 'small' })
-        })
-      })
-    })
-
-    describe('and a differing presentation:state packet arrives after the hold', () => {
-      beforeEach(() => {
-        now = HOLD_START + 1001
-        deliver(statePacket({ overlay: { x: 0.3, y: 0.3, size: 'small' } }), bot)
-      })
-
-      it('should apply the incoming overlay', () => {
-        expect(current.state.overlay).toEqual({ x: 0.3, y: 0.3, size: 'small' })
-      })
-    })
-
-    describe('and differing bot metadata arrives within the hold', () => {
-      beforeEach(() => {
-        now = HOLD_START + 500
-        mockUseRemoteParticipants.mockReturnValue([makeBot({ overlay: { x: 0.3, y: 0.3, size: 'small' } })])
-        view.rerender(tree())
-      })
-
-      it('should keep the local overlay', () => {
-        expect(current.state.overlay).toEqual({ x: 0.5, y: 0.5, size: 'small' })
-      })
-    })
-  })
-
-  describe('when a presentation upload succeeds', () => {
-    beforeEach(async () => {
-      ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([
-        () => ({ unwrap: () => Promise.resolve({ token: 'bot-token', url: 'wss://example.test' }) })
-      ])
-      ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([
-        () => ({ unwrap: () => Promise.resolve({ id: 'deck-2', slideCount: 5, currentSlide: 0, fileType: 'pdf' }) })
-      ])
-      renderProvider()
-      await act(async () => {
-        await current.startPresentation(new File(['deck'], 'deck.pdf'))
-      })
-    })
-
-    it('should start with the default overlay', () => {
-      expect(current.state).toEqual(expect.objectContaining({ status: 'starting', overlay: DEFAULT_OVERLAY }))
-    })
-  })
-
-  describe('when the bot metadata carries the v2 composition fields', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 })])
-      renderProvider()
-    })
-
-    it('should expose the slide, the presenter identity and the playing video index', () => {
-      const { slide, presenterIdentity, playingVideoIndex } = current.state
-      expect({ slide, presenterIdentity, playingVideoIndex }).toEqual({
-        slide: SLIDE,
-        presenterIdentity: 'stream:p:1',
-        playingVideoIndex: 0
-      })
-    })
-  })
-
-  describe('when a presentation:state packet carries the v2 composition fields', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }), bot)
-    })
-
-    it('should expose the slide, the presenter identity and the playing video index', () => {
-      const { slide, presenterIdentity, playingVideoIndex } = current.state
-      expect({ slide, presenterIdentity, playingVideoIndex }).toEqual({
-        slide: SLIDE,
-        presenterIdentity: 'stream:p:1',
-        playingVideoIndex: 0
-      })
-    })
-  })
-
-  describe('when a presentation:state packet carries a slide with an empty url', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ currentSlide: 2, slide: { ...SLIDE, url: '' } }), bot)
-    })
-
-    it('should drop the slide', () => {
-      expect(current.state.slide).toBeNull()
-    })
-
-    it('should still apply the rest of the packet', () => {
-      expect(current.state.currentSlide).toBe(2)
-    })
-  })
-
-  describe('when a presentation:state packet carries a slide with a zero width', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ slide: { ...SLIDE, width: 0 } }), bot)
-    })
-
-    it('should drop the slide', () => {
-      expect(current.state.slide).toBeNull()
-    })
-  })
-
-  describe('when a presentation:state packet carries a slide that is not an object', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ slide: 'slide.png' }), bot)
-    })
-
-    it('should drop the slide', () => {
-      expect(current.state.slide).toBeNull()
-    })
-  })
-
-  describe.each([-1, 1.5, '0'])('when a presentation:state packet carries the playing video index %p', index => {
-    let playingVideoIndex: unknown
-
-    beforeEach(() => {
-      playingVideoIndex = index
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ playingVideoIndex }), bot)
-    })
-
-    it('should expose no playing video index', () => {
-      expect(current.state.playingVideoIndex).toBeNull()
-    })
-  })
-
-  describe('when a presentation:state packet carries a numeric presenter identity', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ presenterIdentity: 42 }), bot)
-    })
-
-    it('should expose no presenter identity', () => {
-      expect(current.state.presenterIdentity).toBeNull()
-    })
-  })
-
-  describe('when a presentation:state packet carries valid slide videos', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ slideVideos: [SLIDE_VIDEO] }), bot)
-    })
-
-    it('should expose the slide videos', () => {
-      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO])
-    })
-  })
-
-  describe.each<[string, unknown]>([
-    ['a list of non-video values', [null, {}, 'x']],
-    ['a string', 'x'],
-    ['a valid video followed by one with no url', [SLIDE_VIDEO, {}]],
-    ['a valid video followed by one with a null geometry', [SLIDE_VIDEO, { url: 'u', geometry: null }]],
-    ['a valid video followed by one with a string geometry', [SLIDE_VIDEO, { url: 'u', geometry: 'g' }]],
-    [
-      'a valid video followed by one with a non-numeric width',
-      [SLIDE_VIDEO, { url: 'u', geometry: { ...SLIDE_VIDEO.geometry, width: '960' } }]
-    ]
-  ])('when a presentation:state packet carries slide videos that are %s', (_label, value) => {
-    let slideVideos: unknown
-
-    beforeEach(() => {
-      slideVideos = value
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ slideVideos }), bot)
-    })
-
-    it('should expose no slide videos', () => {
-      expect(current.state.slideVideos).toEqual([])
-    })
-  })
-
-  describe('when the bot metadata carries valid slide videos', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ slideVideos: [SLIDE_VIDEO] })])
-      renderProvider()
-    })
-
-    it('should expose the slide videos', () => {
-      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO])
-    })
-  })
-
-  describe('when the bot metadata carries a valid slide video followed by a malformed one', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ slideVideos: [SLIDE_VIDEO, { url: 'u' }] })])
-      renderProvider()
-    })
-
-    it('should expose no slide videos', () => {
-      expect(current.state.slideVideos).toEqual([])
-    })
-  })
-
-  describe('when the bot metadata reports a failed video', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ videoState: 'error', slideVideos: [SLIDE_VIDEO] })])
-      renderProvider()
-    })
-
-    it('should keep the slide videos so the play control stays available', () => {
-      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO])
-    })
-
-    it('should expose the video as idle', () => {
-      expect(current.state.videoState).toBe('idle')
-    })
-  })
-
-  describe.each(['error', 'bogus', 42])('when a presentation:state packet carries the video state %p', value => {
-    let videoState: unknown
-
-    beforeEach(() => {
-      videoState = value
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ videoState }), bot)
-    })
-
-    it('should expose the video as idle', () => {
-      expect(current.state.videoState).toBe('idle')
-    })
-  })
-
-  describe('when a presentation:state packet carries a video placed partly off the slide', () => {
-    let offSlideVideo: typeof SLIDE_VIDEO
-
-    beforeEach(() => {
-      offSlideVideo = { url: 'https://presenter.test/edge.mp4', geometry: { x: -40, y: -10, width: 0, height: 120 } }
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ slideVideos: [SLIDE_VIDEO, offSlideVideo] }), bot)
-    })
-
-    it('should keep every slide video so the playing index still points at the right one', () => {
-      expect(current.state.slideVideos).toEqual([SLIDE_VIDEO, offSlideVideo])
-    })
-  })
-
-  describe('when a presentation:state packet has no file type', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket({ fileType: undefined, currentSlide: 2 }), bot)
-    })
-
-    it('should apply the packet', () => {
-      expect(current.state.currentSlide).toBe(2)
-    })
-
-    it('should expose no file type', () => {
-      expect(current.state.fileType).toBeNull()
+    it('should follow the bot', () => {
+      expect(current.presentationParticipantIdentity).toBe(BOT_IDENTITY)
     })
   })
 
   describe('when a presentation bot sends packets before its metadata arrives', () => {
-    let pendingBot: FakeParticipant
-
     beforeEach(() => {
-      pendingBot = { identity: 'presentation-bot:room:1', metadata: '' }
-      mockUseRemoteParticipants.mockReturnValue([pendingBot])
+      bot = { identity: BOT_IDENTITY, metadata: '' }
+      participants([bot])
       renderProvider()
-      deliver(statePacket({ currentSlide: 2 }), pendingBot)
+      deliver(statePacket({ currentSlide: 2 }))
     })
 
     it('should apply the packet', () => {
       expect(current.state.currentSlide).toBe(2)
-    })
-  })
-
-  describe('when a second presentation bot sends packets', () => {
-    let otherBot: FakeParticipant
-
-    beforeEach(() => {
-      otherBot = { identity: 'presentation-bot:room:2', metadata: '' }
-      mockUseRemoteParticipants.mockReturnValue([bot, otherBot])
-      renderProvider()
-    })
-
-    describe('and the packet is a presentation:state', () => {
-      beforeEach(() => {
-        deliver(statePacket({ currentSlide: 2 }), otherBot)
-      })
-
-      it('should ignore it', () => {
-        expect(current.state.currentSlide).toBe(0)
-      })
-    })
-
-    describe('and the packet is a presentation:stopped', () => {
-      beforeEach(() => {
-        deliver(encodeCommsPacket('presentation', { type: 'presentation:stopped' }), otherBot)
-      })
-
-      it('should keep the presentation active', () => {
-        expect(current.state.status).toBe('active')
-      })
-    })
-  })
-
-  describe('when a presentation:state packet comes from a legacy server', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(statePacket(), bot)
-    })
-
-    it('should expose the legacy state with every v2 field unset', () => {
-      expect(current.state).toEqual({
-        id: 'deck-1',
-        slideCount: 3,
-        currentSlide: 0,
-        fileType: 'pdf',
-        status: 'active',
-        slideVideos: [],
-        videoState: 'idle',
-        overlay: DEFAULT_OVERLAY,
-        slide: null,
-        presenterIdentity: null,
-        playingVideoIndex: null
-      })
-    })
-  })
-
-  describe('when the bot metadata is re-emitted during a local overlay hold', () => {
-    let fields: Record<string, unknown>
-    let previous: PresentationContextValue['state']
-
-    const reEmitDuringHold = async () => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot(fields)])
-      const view = renderProvider()
-      await act(async () => {
-        await current.setOverlay({ x: 0.5, y: 0.5 })
-      })
-      previous = current.state
-      now = HOLD_START + 500
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ ...fields, overlay: { x: 0.3, y: 0.3, size: 'small' } })])
-      view.rerender(tree())
-    }
-
-    describe('and it carries identical v2 composition fields', () => {
-      beforeEach(async () => {
-        fields = { slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }
-        await reEmitDuringHold()
-      })
-
-      it('should keep the same state object', () => {
-        expect(current.state).toBe(previous)
-      })
-    })
-
-    describe('and it carries no v2 composition fields', () => {
-      beforeEach(async () => {
-        fields = {}
-        await reEmitDuringHold()
-      })
-
-      it('should keep the same state object', () => {
-        expect(current.state).toBe(previous)
-      })
     })
   })
 
   describe('when a streamer identity claims the presentation role in its metadata', () => {
     beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([
-        {
-          identity: 'stream:x:1',
-          metadata: JSON.stringify({
-            role: 'presentation',
-            id: 'deck-1',
-            slideCount: 3,
-            currentSlide: 0,
-            fileType: 'pdf',
-            slide: SLIDE,
-            presenterIdentity: 'stream:x:1'
-          })
-        }
-      ])
+      participants([{ ...makeBot(COMPOSITION), identity: 'stream:x:1' }])
       renderProvider()
     })
 
@@ -678,292 +199,91 @@ describe('PresentationProvider', () => {
     })
   })
 
-  describe('when a presentation upload runs', () => {
-    let uploadPresentation: jest.Mock
-    let uploadPresentationFromUrl: jest.Mock
-
+  describe.each<[string, Fields, Fields]>([
+    ['no v2 field', {}, LEGACY_STATE],
+    ['a valid overlay', { overlay: FAR_OVERLAY }, { overlay: FAR_OVERLAY }],
+    ['a malformed overlay', { overlay: { x: 'a' } }, { overlay: DEFAULT_OVERLAY }],
+    ['composition fields', COMPOSITION, COMPOSITION],
+    ['non-numeric slide counters', { slideCount: '3', currentSlide: '1' }, { slideCount: 0, currentSlide: 0 }],
+    ['no file type', { fileType: undefined, currentSlide: 2 }, { fileType: null, currentSlide: 2 }],
+    ['a slide with an empty url', { currentSlide: 2, slide: { ...SLIDE, url: '' } }, { currentSlide: 2, slide: null }],
+    ['a slide with a zero width', { slide: { ...SLIDE, width: 0 } }, { slide: null }],
+    ['a slide that is not an object', { slide: 'slide.png' }, { slide: null }],
+    ['a negative playing video index', { playingVideoIndex: -1 }, { playingVideoIndex: null }],
+    ['a fractional playing video index', { playingVideoIndex: 1.5 }, { playingVideoIndex: null }],
+    ['a string playing video index', { playingVideoIndex: '0' }, { playingVideoIndex: null }],
+    ['a numeric presenter identity', { presenterIdentity: 42 }, { presenterIdentity: null }],
+    ['valid slide videos', { slideVideos: [SLIDE_VIDEO] }, { slideVideos: [SLIDE_VIDEO] }],
+    ['a video placed partly off the slide', afterValidVideo(OFF_SLIDE_VIDEO), afterValidVideo(OFF_SLIDE_VIDEO)],
+    ['slide videos that are a string', { slideVideos: 'x' }, NO_VIDEOS],
+    ['a valid video then a null', afterValidVideo(null), NO_VIDEOS],
+    ['a valid video then one with no url', afterValidVideo({}), NO_VIDEOS],
+    ['a valid video then one with a null geometry', afterValidVideo({ url: 'u', geometry: null }), NO_VIDEOS],
+    ['a valid video then one with a string geometry', afterValidVideo({ url: 'u', geometry: 'g' }), NO_VIDEOS],
+    [
+      'a valid video then one with a non-numeric width',
+      afterValidVideo({ url: 'u', geometry: { ...SLIDE_VIDEO.geometry, width: '9' } }),
+      NO_VIDEOS
+    ],
+    ['the error video state', { videoState: 'error' }, { videoState: 'idle' }],
+    ['an unknown video state', { videoState: 'bogus' }, { videoState: 'idle' }],
+    ['a numeric video state', { videoState: 42 }, { videoState: 'idle' }]
+  ])('when the followed bot sends a presentation:state packet with %s', (_label, extra, expected) => {
     beforeEach(() => {
-      uploadPresentation = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
-      uploadPresentationFromUrl = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
-      ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([
-        () => ({ unwrap: () => Promise.resolve({ token: 'bot-token', url: 'wss://example.test' }) })
-      ])
-      ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([uploadPresentation])
-      ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([uploadPresentationFromUrl])
+      participants([makeBot({ overlay: LARGE_OVERLAY })])
+      renderProvider()
+      deliver(statePacket(extra))
     })
 
-    describe('and it uploads a file', () => {
-      beforeEach(async () => {
-        renderProvider()
-        await act(async () => {
-          await current.startPresentation(new File(['deck'], 'deck.pdf'))
-        })
-      })
-
-      it('should send the local participant identity as the presenter identity', () => {
-        expect(uploadPresentation).toHaveBeenCalledWith(expect.objectContaining({ presenterIdentity: 'stream:p:1' }))
-      })
-
-      it('should start with every v2 field unset', () => {
-        const { slide, presenterIdentity, playingVideoIndex } = current.state
-        expect({ slide, presenterIdentity, playingVideoIndex }).toEqual({ slide: null, presenterIdentity: null, playingVideoIndex: null })
-      })
-    })
-
-    describe('and it uploads from a URL', () => {
-      beforeEach(async () => {
-        renderProvider()
-        await act(async () => {
-          await current.startPresentationFromUrl('https://docs.test/deck.pdf')
-        })
-      })
-
-      it('should send the local participant identity as the presenter identity', () => {
-        expect(uploadPresentationFromUrl).toHaveBeenCalledWith(expect.objectContaining({ presenterIdentity: 'stream:p:1' }))
-      })
-    })
-
-    describe('and the local participant has no identity yet', () => {
-      beforeEach(async () => {
-        mockUseRoomContext.mockReturnValue(makeRoom(''))
-        renderProvider()
-        await act(async () => {
-          await current.startPresentation(new File(['deck'], 'deck.pdf'))
-        })
-      })
-
-      it('should omit the presenter identity', () => {
-        expect(uploadPresentation.mock.calls[0][0].presenterIdentity).toBeUndefined()
-      })
+    it('should expose the normalized presentation state', () => {
+      expect(current.state).toMatchObject(expected)
     })
   })
 
-  describe('when a presenter client sees an orphaned presenterIdentity', () => {
-    let view: ReturnType<typeof renderProvider>
-
+  describe.each<[string, Uint8Array, string | null]>([
+    ['a presentation:state from another bot', statePacket({ currentSlide: 2 }), 'presentation-bot:room:2'],
+    ['a presentation:stopped from another bot', STOPPED_PACKET, 'presentation-bot:room:2'],
+    ['a presentation:stopped on another topic', encodeCommsPacket('chat', { type: 'presentation:stopped' }), BOT_IDENTITY],
+    ['a presentation:stopped without a sender', STOPPED_PACKET, null],
+    ['a presentation packet whose payload is not an object', encodeCommsPacket('presentation', 'stopped'), BOT_IDENTITY]
+  ])('when the room receives %s', (_label, packet, senderIdentity) => {
     beforeEach(() => {
-      mockUseRoomContext.mockReturnValue(makeRoom('stream:new'))
+      participants([{ identity: 'presentation-bot:room:2', metadata: '' }, bot])
+      renderProvider()
+      deliver(packet, senderIdentity ? { identity: senderIdentity, metadata: '' } : null)
     })
 
-    describe('and the presenter identity left the room', () => {
-      beforeEach(() => {
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        view = render(controllerTree())
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
-      })
-
-      it('should send exactly one presenter claim', () => {
-        expect(claimCount()).toBe(1)
-      })
-
-      describe('and the provider re-renders and the same packet repeats', () => {
-        beforeEach(() => {
-          view.rerender(controllerTree())
-          deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
-        })
-
-        it('should not send another claim', () => {
-          expect(claimCount()).toBe(1)
-        })
-      })
-
-      describe('and the server re-points it at the local identity', () => {
-        beforeEach(() => {
-          deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:new' }), bot)
-        })
-
-        it('should not send another claim', () => {
-          expect(claimCount()).toBe(1)
-        })
-      })
-
-      describe('and the server re-points it at another absent identity', () => {
-        beforeEach(() => {
-          deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
-        })
-
-        it('should send a second claim', () => {
-          expect(claimCount()).toBe(2)
-        })
-      })
-    })
-
-    describe('and the presenter identity is null', () => {
-      beforeEach(() => {
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        render(controllerTree())
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: null }), bot)
-      })
-
-      it('should send one presenter claim', () => {
-        expect(claimCount()).toBe(1)
-      })
-    })
-
-    describe('and the presenter identity is a remote participant', () => {
-      beforeEach(() => {
-        mockUseRemoteParticipants.mockReturnValue([bot, { identity: 'stream:other', metadata: '' }])
-        view = render(controllerTree())
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
-      })
-
-      it('should not send a presenter claim', () => {
-        expect(claimCount()).toBe(0)
-      })
-
-      describe('and that participant then leaves the room', () => {
-        beforeEach(() => {
-          mockUseRemoteParticipants.mockReturnValue([bot])
-          view.rerender(controllerTree())
-        })
-
-        it('should send exactly one presenter claim', () => {
-          expect(claimCount()).toBe(1)
-        })
-      })
-    })
-
-    describe('and the claim fails to send', () => {
-      beforeEach(async () => {
-        jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-        publishData.mockRejectedValueOnce(new Error('data channel closed'))
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        view = render(controllerTree())
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
-        await act(async () => {})
-      })
-
-      describe('and the provider re-renders with the same orphaned presenter identity', () => {
-        beforeEach(() => {
-          mockUseRemoteParticipants.mockReturnValue([bot])
-          view.rerender(controllerTree())
-        })
-
-        it('should send the claim again', () => {
-          expect(claimCount()).toBe(2)
-        })
-      })
-    })
-
-    describe('and a claim fails after the server re-pointed it at another absent identity', () => {
-      let rejectFirstClaim: (error: Error) => void
-
-      beforeEach(async () => {
-        jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-        publishData.mockImplementationOnce(
-          () =>
-            new Promise<void>((_resolve, reject) => {
-              rejectFirstClaim = reject
-            })
-        )
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        view = render(controllerTree())
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }), bot)
-        await act(async () => {
-          rejectFirstClaim(new Error('data channel closed'))
-        })
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        view.rerender(controllerTree())
-      })
-
-      it('should not claim the current identity again', () => {
-        expect(claimCount()).toBe(2)
-      })
-    })
-
-    describe('and the presenter identity is the local participant', () => {
-      beforeEach(() => {
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        render(controllerTree())
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:new' }), bot)
-      })
-
-      it('should not send a presenter claim', () => {
-        expect(claimCount()).toBe(0)
-      })
-    })
-
-    describe('and the state has no slide', () => {
-      beforeEach(() => {
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        render(controllerTree())
-        deliver(statePacket({ presenterIdentity: null }), bot)
-      })
-
-      it('should not send a presenter claim', () => {
-        expect(claimCount()).toBe(0)
-      })
-    })
-
-    describe('and the provider is rendered without canControl', () => {
-      beforeEach(() => {
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        renderProvider()
-        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:old' }), bot)
-      })
-
-      it('should not send a presenter claim', () => {
-        expect(claimCount()).toBe(0)
-      })
+    it('should keep the presentation of the followed bot', () => {
+      expect(current.state).toMatchObject({ status: 'active', currentSlide: 0 })
     })
   })
 
-  describe.each<[string, (value: PresentationContextValue) => Promise<void>, Record<string, unknown>]>([
-    ['navigateSlide', value => value.navigateSlide('next'), { type: 'presentation:navigate', action: 'next' }],
-    ['goToSlide', value => value.goToSlide(2), { type: 'presentation:navigate', action: 'goto', slideIndex: 2 }],
-    ['playVideo', value => value.playVideo(1), { type: 'presentation:video:play', videoIndex: 1 }],
-    ['pauseVideo', value => value.pauseVideo(), { type: 'presentation:video:pause' }],
-    ['stopVideo', value => value.stopVideo(), { type: 'presentation:video:stop' }],
-    ['stopPresentation', value => value.stopPresentation(), { type: 'presentation:stop' }]
-  ])('when %s is called', (_name, invoke, expected) => {
-    describe('and a presentation is active', () => {
-      beforeEach(async () => {
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        renderProvider()
-        await act(async () => {
-          await invoke(current)
-        })
-      })
-
-      it('should publish the command to the presentation topic', () => {
-        expect(sentCommands()).toEqual([expected])
-      })
+  describe('when the followed bot sends presentation:stopped', () => {
+    beforeEach(() => {
+      renderProvider()
+      deliver(STOPPED_PACKET)
     })
 
-    describe('and there is no presentation', () => {
-      beforeEach(async () => {
-        renderProvider()
-        await act(async () => {
-          await invoke(current)
-        })
-      })
+    it('should reset the presentation', () => {
+      expect(current).toMatchObject({ isPresentationActive: false, state: { id: null, status: 'idle', slideCount: 0 } })
+    })
+  })
 
-      it('should not publish anything', () => {
-        expect(publishData).not.toHaveBeenCalled()
-      })
+  describe('when the bot leaves while the presentation is active', () => {
+    beforeEach(() => {
+      renderProvider()
+      participants([])
+      rerender()
     })
 
-    describe('and the room has no local participant', () => {
-      beforeEach(async () => {
-        mockUseRoomContext.mockReturnValue({ localParticipant: undefined, on: jest.fn(), off: jest.fn() })
-        mockUseRemoteParticipants.mockReturnValue([bot])
-        renderProvider()
-        await act(async () => {
-          await invoke(current)
-        })
-      })
-
-      it('should not publish anything', () => {
-        expect(publishData).not.toHaveBeenCalled()
-      })
+    it('should reset the presentation', () => {
+      expect(current.state).toMatchObject({ id: null, status: 'idle' })
     })
   })
 
   describe('when there is no room', () => {
     beforeEach(() => {
-      mockUseRoomContext.mockReturnValue(undefined)
-      mockUseRemoteParticipants.mockReturnValue([bot])
+      ;(useRoomContext as jest.Mock).mockReturnValue(undefined)
       renderProvider()
     })
 
@@ -976,117 +296,49 @@ describe('PresentationProvider', () => {
     })
   })
 
-  describe('when the followed bot sends presentation:stopped', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(encodeCommsPacket('presentation', { type: 'presentation:stopped' }), bot)
-    })
-
-    it('should reset the presentation state', () => {
-      expect(current.state).toEqual(expect.objectContaining({ id: null, status: 'idle', slideCount: 0 }))
-    })
-
-    it('should report the presentation as inactive', () => {
-      expect(current.isPresentationActive).toBe(false)
-    })
-  })
-
-  describe('when a packet arrives on another topic', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      deliver(encodeCommsPacket('chat', { type: 'presentation:stopped' }), bot)
-    })
-
-    it('should ignore it', () => {
-      expect(current.state.status).toBe('active')
-    })
-  })
-
-  describe('when a packet arrives without a participant', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      renderProvider()
-      act(() => {
-        dataHandler?.(encodeCommsPacket('presentation', { type: 'presentation:stopped' }))
-      })
-    })
-
-    it('should ignore it', () => {
-      expect(current.state.status).toBe('active')
-    })
-  })
-
   describe('when the followed bot sends a presentation:error', () => {
     beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
       renderProvider()
     })
 
-    describe('and the code is retryable and it names a video', () => {
+    describe.each<[string, Fields, Fields]>([
+      [
+        'a retryable code naming a video',
+        { videoIndex: 2, videoUrl: 'https://presenter.test/video.mp4' },
+        { message: 'Video timed out', code: 'video-timeout', action: { label: 'notifications.retry', onClick: expect.any(Function) } }
+      ],
+      ['a code that is not retryable', { code: 'video-not-found', videoIndex: 2 }, { message: 'Video timed out', code: 'video-not-found' }],
+      ['a retryable code naming no video', {}, { message: 'Video timed out', code: 'video-timeout' }]
+    ])('and it carries %s', (_label, extra, expected) => {
       beforeEach(() => {
-        deliver(errorPacket({ videoIndex: 2, videoUrl: 'https://presenter.test/video.mp4' }), bot)
+        deliver(errorPacket(extra))
       })
 
-      it('should show a video playback failure with a retry action', () => {
-        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', {
-          message: 'Video timed out',
-          code: 'video-timeout',
-          action: { label: 'notifications.retry', onClick: expect.any(Function) }
-        })
-      })
-
-      describe('and the retry action is clicked', () => {
-        beforeEach(async () => {
-          const [, { action }] = mockShow.mock.calls[0] as [string, { action: { onClick: () => void } }]
-          await act(async () => {
-            action.onClick()
-          })
-        })
-
-        it('should ask the bot to play that video again', () => {
-          expect(sentCommands()).toEqual([{ type: 'presentation:video:play', videoIndex: 2 }])
-        })
+      it('should show a video playback failure', () => {
+        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', { action: undefined, ...expected })
       })
     })
 
-    describe('and the code is not retryable', () => {
-      beforeEach(() => {
-        deliver(errorPacket({ code: 'video-not-found', message: 'Video not found', videoIndex: 2 }), bot)
+    describe('and the retry action of a retryable failure is clicked', () => {
+      beforeEach(async () => {
+        deliver(errorPacket({ videoIndex: 2 }))
+        const [, { action }] = mockShow.mock.calls[0] as [string, { action: { onClick: () => void } }]
+        await act(async () => action.onClick())
       })
 
-      it('should show a video playback failure without an action', () => {
-        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', {
-          message: 'Video not found',
-          code: 'video-not-found',
-          action: undefined
-        })
+      it('should ask the bot to play that video again', () => {
+        expect(sentCommands()).toEqual([{ type: 'presentation:video:play', videoIndex: 2 }])
       })
     })
 
-    describe('and the code is retryable but it names no video', () => {
-      beforeEach(() => {
-        deliver(errorPacket(), bot)
-      })
-
-      it('should show a video playback failure without an action', () => {
-        expect(mockShow).toHaveBeenCalledWith('VideoPlaybackFailed', {
-          message: 'Video timed out',
-          code: 'video-timeout',
-          action: undefined
-        })
-      })
-    })
-
-    describe.each<[string, Record<string, unknown>]>([
+    describe.each<[string, Fields]>([
       ['a numeric code', { code: 42 }],
       ['a numeric message', { message: 42 }],
       ['a string video index', { videoIndex: '2' }],
       ['a numeric video url', { videoUrl: 42 }]
     ])('and it carries %s', (_label, extra) => {
       beforeEach(() => {
-        deliver(errorPacket(extra), bot)
+        deliver(errorPacket(extra))
       })
 
       it('should not show a notification', () => {
@@ -1095,96 +347,302 @@ describe('PresentationProvider', () => {
     })
   })
 
-  describe('when the bot metadata has no presentation id', () => {
-    beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([makeBot({ id: undefined })])
-      renderProvider()
+  describe.each<[string, Invoke, Fields]>([
+    ['navigateSlide', value => value.navigateSlide('next'), { type: 'presentation:navigate', action: 'next' }],
+    ['goToSlide', value => value.goToSlide(2), { type: 'presentation:navigate', action: 'goto', slideIndex: 2 }],
+    ['playVideo', value => value.playVideo(1), { type: 'presentation:video:play', videoIndex: 1 }],
+    ['pauseVideo', value => value.pauseVideo(), { type: 'presentation:video:pause' }],
+    ['stopVideo', value => value.stopVideo(), { type: 'presentation:video:stop' }],
+    ['setOverlay', value => value.setOverlay({ size: 'large' }), { type: 'presentation:overlay:update', size: 'large' }],
+    ['stopPresentation', value => value.stopPresentation(), { type: 'presentation:stop' }]
+  ])('when %s is called', (_name, invoke, expected) => {
+    describe('and a presentation is active', () => {
+      beforeEach(async () => {
+        renderProvider()
+        await run(invoke)
+      })
+
+      it('should publish the command to the presentation topic', () => {
+        expect(sentCommands()).toEqual([expected])
+      })
     })
 
-    it('should ask the bot for its state', () => {
-      expect(sentCommands()).toEqual([{ type: 'presentation:get-state' }])
+    describe('and there is no presentation', () => {
+      beforeEach(async () => {
+        participants([])
+        renderProvider()
+        await run(invoke)
+      })
+
+      it('should not publish anything', () => {
+        expect(publishData).not.toHaveBeenCalled()
+      })
     })
 
-    it('should follow the bot', () => {
-      expect(current.presentationParticipantIdentity).toBe('presentation-bot:room:1')
+    describe('and the room has no local participant', () => {
+      beforeEach(async () => {
+        room.localParticipant = undefined
+        renderProvider()
+        await run(invoke)
+      })
+
+      it('should not publish anything', () => {
+        expect(publishData).not.toHaveBeenCalled()
+      })
     })
   })
 
-  describe('when the bot leaves while the presentation is active', () => {
+  describe('when setOverlay is waiting for its command to be published', () => {
     beforeEach(() => {
-      mockUseRemoteParticipants.mockReturnValue([bot])
-      const view = renderProvider()
-      mockUseRemoteParticipants.mockReturnValue([])
-      view.rerender(tree())
+      publishData.mockReturnValueOnce(new Promise(() => undefined))
+      renderProvider()
+      act(() => {
+        void current.setOverlay({ size: 'large' })
+      })
     })
 
-    it('should reset the presentation state', () => {
-      expect(current.state).toEqual(expect.objectContaining({ id: null, status: 'idle' }))
+    it('should update the overlay right away', () => {
+      expect(current.state.overlay.size).toBe('large')
+    })
+  })
+
+  describe('when a local overlay change is held', () => {
+    let now: number
+
+    beforeEach(async () => {
+      now = HOLD_START
+      jest.spyOn(Date, 'now').mockImplementation(() => now)
+      participants([makeBot(COMPOSITION)])
+      renderProvider()
+      await run(value => value.setOverlay({ x: 0.5, y: 0.5 }))
+    })
+
+    describe('and a differing presentation:state packet arrives within the hold', () => {
+      beforeEach(() => {
+        now = HOLD_START + 500
+        deliver(statePacket({ overlay: FAR_OVERLAY }))
+      })
+
+      it('should keep the local overlay', () => {
+        expect(current.state.overlay).toEqual(HELD_OVERLAY)
+      })
+
+      describe('and then a matching packet arrives followed by a stale one', () => {
+        beforeEach(() => {
+          now = HOLD_START + 700
+          deliver(statePacket({ overlay: HELD_OVERLAY }))
+          now = HOLD_START + 800
+          deliver(statePacket({ overlay: FAR_OVERLAY }))
+        })
+
+        it('should keep ignoring the stale overlay', () => {
+          expect(current.state.overlay).toEqual(HELD_OVERLAY)
+        })
+      })
+    })
+
+    describe('and a differing presentation:state packet arrives after the hold', () => {
+      beforeEach(() => {
+        now = HOLD_START + 1001
+        deliver(statePacket({ overlay: FAR_OVERLAY }))
+      })
+
+      it('should apply the incoming overlay', () => {
+        expect(current.state.overlay).toEqual(FAR_OVERLAY)
+      })
+    })
+
+    describe('and the bot metadata re-emits a differing overlay within the hold', () => {
+      let previous: PresentationState
+
+      beforeEach(() => {
+        previous = current.state
+        now = HOLD_START + 500
+        participants([makeBot({ ...COMPOSITION, overlay: FAR_OVERLAY })])
+        rerender()
+      })
+
+      it('should keep the same state object', () => {
+        expect(current.state).toBe(previous)
+      })
+    })
+  })
+
+  describe.each<[string, FakeParticipant[], Fields, boolean, number]>([
+    ['a presenter who left the room', [], ORPHANED, true, 1],
+    ['no presenter', [], { slide: SLIDE, presenterIdentity: null }, true, 1],
+    ['a presenter who is a remote participant', [OTHER_PARTICIPANT], { slide: SLIDE, presenterIdentity: 'stream:other' }, true, 0],
+    ['the local participant as presenter', [], { slide: SLIDE, presenterIdentity: 'stream:p:1' }, true, 0],
+    ['no slide', [], { presenterIdentity: null }, true, 0],
+    ['a presenter who left the room to a client that cannot control', [], ORPHANED, false, 0]
+  ])('when the followed bot reports %s', (_label, others, extra, canControl, expected) => {
+    beforeEach(() => {
+      participants([bot, ...others])
+      renderProvider(canControl)
+      deliver(statePacket(extra))
+    })
+
+    it(`should send ${expected} presenter claims`, () => {
+      expect(claimCount()).toBe(expected)
+    })
+  })
+
+  describe.each([
+    ['the same absent presenter', 'stream:old', 1],
+    ['the local identity', 'stream:p:1', 1],
+    ['another absent identity', 'stream:absent', 2]
+  ])('when a controlling client has claimed for an absent presenter and the bot then reports %s', (_label, presenterIdentity, expected) => {
+    beforeEach(() => {
+      renderProvider(true)
+      deliver(statePacket(ORPHANED))
+      rerender(true)
+      deliver(statePacket({ slide: SLIDE, presenterIdentity }))
+    })
+
+    it(`should have sent ${expected} presenter claims in total`, () => {
+      expect(claimCount()).toBe(expected)
+    })
+  })
+
+  describe('when the remote presenter of a controlling client leaves the room', () => {
+    beforeEach(() => {
+      participants([bot, OTHER_PARTICIPANT])
+      renderProvider(true)
+      deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:other' }))
+      participants([bot])
+      rerender(true)
+    })
+
+    it('should send exactly one presenter claim', () => {
+      expect(claimCount()).toBe(1)
+    })
+  })
+
+  describe('when a presenter claim fails to send', () => {
+    beforeEach(() => {
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    })
+
+    describe('and the provider re-renders with the same orphaned presenter', () => {
+      beforeEach(async () => {
+        publishData.mockRejectedValueOnce(new Error('data channel closed'))
+        renderProvider(true)
+        deliver(statePacket(ORPHANED))
+        await act(async () => {})
+        participants([bot])
+        rerender(true)
+      })
+
+      it('should send the claim again', () => {
+        expect(claimCount()).toBe(2)
+      })
+    })
+
+    describe('and the server had already re-pointed it at another absent identity', () => {
+      let rejectFirstClaim: (error: Error) => void
+
+      beforeEach(async () => {
+        publishData.mockReturnValueOnce(
+          new Promise<void>((_resolve, reject) => {
+            rejectFirstClaim = reject
+          })
+        )
+        renderProvider(true)
+        deliver(statePacket(ORPHANED))
+        deliver(statePacket({ slide: SLIDE, presenterIdentity: 'stream:absent' }))
+        await act(async () => rejectFirstClaim(new Error('data channel closed')))
+        participants([bot])
+        rerender(true)
+      })
+
+      it('should not claim the current identity again', () => {
+        expect(claimCount()).toBe(2)
+      })
     })
   })
 
   describe('when a presentation upload is requested', () => {
-    let getPresentationBotToken: jest.Mock
-    let uploadPresentation: jest.Mock
-    let uploadPresentationFromUrl: jest.Mock
-
     beforeEach(() => {
-      getPresentationBotToken = jest.fn(() => ({ unwrap: () => Promise.resolve({ token: 'bot-token', url: 'wss://example.test' }) }))
-      uploadPresentation = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
-      uploadPresentationFromUrl = jest.fn(() => ({ unwrap: () => Promise.resolve(PRESENTATION_INFO) }))
-      ;(useGetPresentationBotTokenMutation as jest.Mock).mockReturnValue([getPresentationBotToken])
-      ;(useUploadPresentationMutation as jest.Mock).mockReturnValue([uploadPresentation])
-      ;(useUploadPresentationFromUrlMutation as jest.Mock).mockReturnValue([uploadPresentationFromUrl])
+      participants([])
+    })
+
+    describe.each<[string, Invoke]>([
+      ['a file', startFromFile],
+      ['a URL', startFromUrl]
+    ])('and it uploads %s', (_label, invoke) => {
+      beforeEach(async () => {
+        renderProvider()
+        await run(invoke)
+      })
+
+      it('should send the local participant identity as the presenter identity', () => {
+        expect([...uploadPresentation.mock.calls, ...uploadPresentationFromUrl.mock.calls]).toEqual([
+          [expect.objectContaining({ presenterIdentity: 'stream:p:1' })]
+        ])
+      })
+
+      it('should start the uploaded presentation with every v2 field unset', () => {
+        expect(current.state).toMatchObject({
+          id: 'deck-2',
+          status: 'starting',
+          overlay: DEFAULT_OVERLAY,
+          slide: null,
+          presenterIdentity: null,
+          playingVideoIndex: null
+        })
+      })
+    })
+
+    describe('and the local participant has no identity yet', () => {
+      beforeEach(async () => {
+        localParticipant.identity = ''
+        renderProvider()
+        await run(startFromFile)
+      })
+
+      it('should omit the presenter identity', () => {
+        expect(uploadPresentation.mock.calls[0][0].presenterIdentity).toBeUndefined()
+      })
     })
 
     describe('and another upload is already running', () => {
-      let resolveToken: (token: { token: string; url: string }) => void
-
       beforeEach(async () => {
-        getPresentationBotToken.mockImplementation(() => ({
+        let resolveToken: (token: unknown) => void = () => undefined
+        getPresentationBotToken.mockReturnValueOnce({
           unwrap: () =>
             new Promise(resolve => {
               resolveToken = resolve
             })
-        }))
+        })
         renderProvider()
         let first: Promise<void> = Promise.resolve()
         act(() => {
-          first = current.startPresentation(new File(['deck'], 'deck.pdf'))
+          first = startFromFile(current)
         })
-        await act(async () => {
-          await current.startPresentationFromUrl('https://docs.test/deck.pdf')
-        })
+        await run(startFromUrl)
         await act(async () => {
           resolveToken({ token: 'bot-token', url: 'wss://example.test' })
           await first
         })
       })
 
-      it('should request a single bot token', () => {
-        expect(getPresentationBotToken).toHaveBeenCalledTimes(1)
-      })
-
-      it('should not run the second upload', () => {
-        expect(uploadPresentationFromUrl).not.toHaveBeenCalled()
+      it('should run only the first upload', () => {
+        expect({ tokens: getPresentationBotToken.mock.calls.length, urlUploads: uploadPresentationFromUrl.mock.calls.length }).toEqual({
+          tokens: 1,
+          urlUploads: 0
+        })
       })
     })
 
     describe('and there is no stored streaming key', () => {
       beforeEach(async () => {
-        mockGetStreamerToken.mockReturnValue(null)
+        ;(getStreamerToken as jest.Mock).mockReturnValueOnce(null)
         renderProvider()
-        await act(async () => {
-          await current.startPresentation(new File(['deck'], 'deck.pdf'))
-        })
+        await run(startFromFile)
       })
 
       it('should show a persistent download failure', () => {
         expect(mockShow).toHaveBeenCalledWith('PresentationDownloadFailed', { message: 'No streaming key available', persistent: true })
-      })
-
-      it('should not request a bot token', () => {
-        expect(getPresentationBotToken).not.toHaveBeenCalled()
       })
 
       it('should go back to idle', () => {
@@ -1192,17 +650,15 @@ describe('PresentationProvider', () => {
       })
     })
 
-    describe.each<[string, (value: PresentationContextValue) => Promise<void>, string]>([
-      ['a file upload', value => value.startPresentation(new File(['deck'], 'deck.pdf')), 'Failed to start presentation'],
-      ['a URL upload', value => value.startPresentationFromUrl('https://docs.test/deck.pdf'), 'Failed to start presentation from URL']
+    describe.each<[string, Invoke, string]>([
+      ['a file upload', startFromFile, 'Failed to start presentation'],
+      ['a URL upload', startFromUrl, 'Failed to start presentation from URL']
     ])('and %s rejects with a non-Error value', (_label, invoke, expectedMessage) => {
       beforeEach(async () => {
-        uploadPresentation.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
-        uploadPresentationFromUrl.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
+        uploadPresentation.mockReturnValueOnce({ unwrap: () => Promise.reject({ status: 500 }) })
+        uploadPresentationFromUrl.mockReturnValueOnce({ unwrap: () => Promise.reject({ status: 500 }) })
         renderProvider()
-        await act(async () => {
-          await invoke(current)
-        })
+        await run(invoke)
       })
 
       it('should show a persistent download failure with the generic label', () => {
@@ -1212,20 +668,20 @@ describe('PresentationProvider', () => {
 
     describe('and the bot reports an active presentation before it finishes', () => {
       beforeEach(async () => {
-        let resolveUpload: (info: typeof PRESENTATION_INFO) => void = () => undefined
-        uploadPresentation.mockReturnValue({
+        let resolveUpload: (info: unknown) => void = () => undefined
+        uploadPresentation.mockReturnValueOnce({
           unwrap: () =>
             new Promise(resolve => {
               resolveUpload = resolve
             })
         })
-        mockUseRemoteParticipants.mockReturnValue([makeBot({ id: undefined })])
+        participants([makeBot({ id: undefined })])
         renderProvider()
         let pending: Promise<void> = Promise.resolve()
         await act(async () => {
-          pending = current.startPresentation(new File(['deck'], 'deck.pdf'))
+          pending = startFromFile(current)
         })
-        deliver(statePacket(), bot)
+        deliver(statePacket())
         await act(async () => {
           resolveUpload(PRESENTATION_INFO)
           await pending
@@ -1233,15 +689,22 @@ describe('PresentationProvider', () => {
       })
 
       it('should keep the active state reported by the bot', () => {
-        expect(current.state).toEqual(expect.objectContaining({ id: 'deck-1', status: 'active' }))
+        expect(current.state).toMatchObject({ id: 'deck-1', status: 'active' })
       })
     })
   })
 })
 
 describe('when usePresentation is used outside a PresentationProvider', () => {
+  let thrown: unknown
+
   beforeEach(() => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      renderHook(() => usePresentation())
+    } catch (error) {
+      thrown = error
+    }
   })
 
   afterEach(() => {
@@ -1249,17 +712,23 @@ describe('when usePresentation is used outside a PresentationProvider', () => {
     jest.restoreAllMocks()
   })
 
-  it('should throw', () => {
-    expect(() => renderHook(() => usePresentation())).toThrow('usePresentation must be used within PresentationProvider')
+  it('should throw a provider error', () => {
+    expect(thrown).toEqual(new Error('usePresentation must be used within PresentationProvider'))
   })
 })
 
 describe('when usePresentationOptional is used outside a PresentationProvider', () => {
+  let value: PresentationContextValue | null
+
+  beforeEach(() => {
+    value = renderHook(() => usePresentationOptional()).result.current
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })
 
   it('should return null', () => {
-    expect(renderHook(() => usePresentationOptional()).result.current).toBeNull()
+    expect(value).toBeNull()
   })
 })

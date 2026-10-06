@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import type { OverlayLayout } from '../../../features/cast2/cast2.types'
 import { CameraMenuDropdown } from './CameraMenuDropdown'
+import type { CameraMenuDropdownProps } from './StreamingControls.types'
 
 jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/styledMock'))
 jest.mock('../../../features/cast2/useCastTranslation', () => ({
@@ -8,117 +8,79 @@ jest.mock('../../../features/cast2/useCastTranslation', () => ({
 }))
 
 const device = (deviceId: string, label: string) => ({ deviceId, label }) as MediaDeviceInfo
+const option = (name: string) => screen.getByRole('menuitemradio', { name: `streaming_controls.camera_overlay.${name}` })
 
-describe('CameraMenuDropdown', () => {
-  let devices: MediaDeviceInfo[]
-  let overlay: OverlayLayout | null
-  let onSelectDevice: jest.Mock
-  let onSelectOverlay: jest.Mock
-
-  const renderMenu = () =>
-    render(
-      <CameraMenuDropdown
-        devices={devices}
-        selectedDeviceId="cam-1"
-        overlay={overlay}
-        onSelectDevice={onSelectDevice}
-        onSelectOverlay={onSelectOverlay}
-      />
-    )
+describe('when the camera menu renders', () => {
+  let props: CameraMenuDropdownProps
 
   beforeEach(() => {
-    devices = [device('cam-1', 'Front camera'), device('cam-2', 'Back camera')]
-    overlay = null
-    onSelectDevice = jest.fn()
-    onSelectOverlay = jest.fn()
+    props = {
+      devices: [device('cam-1', 'Front camera'), device('abcdef123', '')],
+      selectedDeviceId: 'cam-1',
+      overlay: null,
+      onSelectDevice: jest.fn(),
+      onSelectOverlay: jest.fn()
+    }
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe('when there is no camera bubble to configure', () => {
-    it('should list the cameras', () => {
-      renderMenu()
-      expect(screen.getByText('Back camera')).toBeInTheDocument()
+  describe('and there is no camera bubble to configure', () => {
+    beforeEach(() => {
+      render(<CameraMenuDropdown {...props} />)
+    })
+
+    it.each(['Front camera', 'Camera abcde'])('should list the camera as %s', label => {
+      expect(screen.getByText(label)).toBeInTheDocument()
     })
 
     it('should not show the camera bubble options', () => {
-      renderMenu()
-      expect(screen.queryByRole('group', { name: 'streaming_controls.camera_overlay.title' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('group')).not.toBeInTheDocument()
     })
 
     describe('and a camera is picked', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByText('Camera abcde'))
+      })
+
       it('should select that camera', () => {
-        renderMenu()
-        fireEvent.click(screen.getByText('Back camera'))
-        expect(onSelectDevice).toHaveBeenCalledWith('cam-2')
+        expect(props.onSelectDevice).toHaveBeenCalledWith('abcdef123')
       })
     })
   })
 
-  describe('when the camera bubble can be configured', () => {
+  describe('and the camera bubble can be configured with a single camera', () => {
     beforeEach(() => {
-      overlay = { x: 0, y: 1, size: 'small' }
+      props.devices = [device('cam-1', 'Front camera')]
+      props.overlay = { x: 0, y: 1, size: 'small' }
+      render(<CameraMenuDropdown {...props} />)
+    })
+
+    it('should not list the only camera', () => {
+      expect(screen.queryByText('Front camera')).not.toBeInTheDocument()
     })
 
     it('should show the camera bubble options under their heading', () => {
-      renderMenu()
       expect(screen.getByRole('group', { name: 'streaming_controls.camera_overlay.title' })).toBeInTheDocument()
     })
 
-    it('should mark the current size', () => {
-      renderMenu()
-      expect(screen.getByRole('menuitemradio', { name: 'streaming_controls.camera_overlay.size_small' })).toHaveAttribute(
-        'aria-checked',
-        'true'
-      )
+    it.each(['size_small', 'bottom_left'])('should mark %s as current', name => {
+      expect(option(name)).toHaveAttribute('aria-checked', 'true')
     })
 
-    it('should mark the current corner', () => {
-      renderMenu()
-      expect(screen.getByRole('menuitemradio', { name: 'streaming_controls.camera_overlay.bottom_left' })).toHaveAttribute(
-        'aria-checked',
-        'true'
-      )
-    })
-
-    describe('and a size is picked', () => {
-      it('should select that size', () => {
-        renderMenu()
-        fireEvent.click(screen.getByRole('menuitemradio', { name: 'streaming_controls.camera_overlay.size_large' }))
-        expect(onSelectOverlay).toHaveBeenCalledWith({ size: 'large' })
-      })
-    })
-
-    describe('and a corner is picked', () => {
-      it('should select that corner', () => {
-        renderMenu()
-        fireEvent.click(screen.getByRole('menuitemradio', { name: 'streaming_controls.camera_overlay.top_right' }))
-        expect(onSelectOverlay).toHaveBeenCalledWith({ x: 1, y: 0 })
-      })
-    })
-
-    describe('and there is a single camera', () => {
+    describe.each([
+      ['size_large', { size: 'large' }],
+      ['top_right', { x: 1, y: 0 }]
+    ])('and %s is picked', (name, layout) => {
       beforeEach(() => {
-        devices = [device('cam-1', 'Front camera')]
+        fireEvent.click(option(name))
       })
 
-      it('should not list the camera', () => {
-        renderMenu()
-        expect(screen.queryByText('Front camera')).not.toBeInTheDocument()
+      it('should select that layout', () => {
+        expect(props.onSelectOverlay).toHaveBeenCalledWith(layout)
       })
-    })
-  })
-
-  describe('when a camera has no label', () => {
-    beforeEach(() => {
-      devices = [device('abcdef123', ''), device('cam-2', 'Back camera')]
-    })
-
-    it('should name it after its device id', () => {
-      renderMenu()
-      expect(screen.getByText('Camera abcde')).toBeInTheDocument()
     })
   })
 })

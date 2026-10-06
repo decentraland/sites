@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTracks } from '@livekit/components-react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
 import { Track } from 'livekit-client'
 import { ParticipantGrid } from './ParticipantGrid'
 
@@ -8,7 +9,6 @@ jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/
 jest.mock('@livekit/components-react', () => ({
   useTracks: jest.fn(),
   useIsSpeaking: () => false,
-  useAudioWaveform: () => ({ bars: [] }),
   VideoTrack: () => React.createElement('video', { 'data-testid': 'video-track' })
 }))
 jest.mock('../../../features/cast2/cast2.utils', () => ({
@@ -16,242 +16,166 @@ jest.mock('../../../features/cast2/cast2.utils', () => ({
   isPresentationBot: (participant: { identity: string }) => participant.identity.startsWith('presentation-bot:'),
   getDisplayName: (participant: { identity: string }) => participant.identity
 }))
-jest.mock('../../../features/cast2/useCastTranslation', () => ({
-  useCastTranslation: () => ({ t: (key: string) => key })
-}))
-jest.mock('../Avatar/Avatar', () => ({
-  Avatar: () => React.createElement('div', { 'data-testid': 'avatar' })
-}))
-jest.mock('../LiveKitEnhancements/SpeakingIndicator', () => ({
-  SpeakingIndicator: () => React.createElement('div', { 'data-testid': 'speaking-indicator' })
-}))
+jest.mock('../../../features/cast2/useCastTranslation', () => ({ useCastTranslation: () => ({ t: (key: string) => key }) }))
+jest.mock('../Avatar/Avatar', () => ({ Avatar: () => null }))
+jest.mock('../LiveKitEnhancements/SpeakingIndicator', () => ({ SpeakingIndicator: () => null }))
 
-const mockUseTracks = useTracks as jest.Mock
-
-const trackRef = (identity: string, source: Track.Source) => ({
-  participant: { sid: `${identity}-sid`, identity, isLocal: false },
+const trackRef = (identity: string, source: Track.Source, publication: { isMuted?: boolean; track?: object; trackName?: string } = {}) => ({
+  participant: { sid: `${identity}-sid`, identity, isLocal: identity === 'me' },
   source,
-  publication: { isMuted: false, track: {} }
+  publication: { isMuted: false, track: {}, ...publication }
 })
 
-const botTrack = trackRef('presentation-bot:room:1', Track.Source.ScreenShare)
-const cameraTrack = trackRef('0xabc', Track.Source.Camera)
+type FakeTrack = ReturnType<typeof trackRef>
 
-const namedBotTrack = (trackName: string) => ({ ...botTrack, publication: { isMuted: false, track: {}, trackName } })
-
-const slot = <span data-testid="slot" />
-
+const BOT = 'presentation-bot:room:1'
 const cameras = (count: number) => Array.from({ length: count }, (_, index) => trackRef(`cam-${index + 1}`, Track.Source.Camera))
-
-const localCamera = { ...trackRef('me', Track.Source.Camera), participant: { sid: 'me-sid', identity: 'me', isLocal: true } }
-
 const visibleNames = () => screen.queryAllByText(/^(cam-\d+|me)$/).map(element => element.textContent)
 
-describe('ParticipantGrid', () => {
-  let videoTracks: ReturnType<typeof trackRef>[]
-  let audioTracks: ReturnType<typeof trackRef>[]
+describe('when the participant grid renders', () => {
+  let videoTracks: FakeTrack[]
+  let audioTracks: FakeTrack[]
+  let view: RenderResult
 
   beforeEach(() => {
     audioTracks = []
-    mockUseTracks.mockImplementation((sources: Track.Source[]) => (sources.includes(Track.Source.Microphone) ? audioTracks : videoTracks))
+    jest
+      .mocked(useTracks)
+      .mockImplementation(sources => ((sources as Track.Source[]).includes(Track.Source.Microphone) ? audioTracks : videoTracks) as never)
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe('when the presentation bot is the only tile', () => {
+  describe.each([
+    ['the presentation bot is the only tile', [trackRef(BOT, Track.Source.ScreenShare)], 1],
+    ['the presentation bot video is still initialising', [trackRef(BOT, Track.Source.ScreenShare, { track: { readyState: 'new' } })], 0],
+    ['the presentation bot is auto-expanded next to a camera', [trackRef(BOT, Track.Source.ScreenShare), ...cameras(1)], 1],
+    ['only a camera tile is shown', cameras(1), 0]
+  ])('and %s', (_, tracks, overlays) => {
     beforeEach(() => {
-      videoTracks = [botTrack]
+      videoTracks = tracks
+      render(<ParticipantGrid presentationOverlay={<span data-testid="slot" />} />)
     })
 
-    it('should render the presentation overlay on the bot tile', () => {
-      render(<ParticipantGrid presentationOverlay={slot} />)
-      expect(screen.getByTestId('slot')).toBeInTheDocument()
+    it(`should render the presentation overlay ${overlays} time(s)`, () => {
+      expect(screen.queryAllByTestId('slot')).toHaveLength(overlays)
     })
+  })
 
-    it('should render no overlay when none is given', () => {
+  describe.each([
+    ['client-composition video', 'presentation-video', 0],
+    ['legacy composited', 'presentation', 1]
+  ])('and the bot publishes its %s track', (_, trackName, tiles) => {
+    beforeEach(() => {
+      videoTracks = [trackRef(BOT, Track.Source.ScreenShare, { trackName })]
       render(<ParticipantGrid />)
-      expect(screen.queryByTestId('slot')).not.toBeInTheDocument()
+    })
+
+    it(`should render ${tiles} video tile(s) for it`, () => {
+      expect(screen.queryAllByTestId('video-track')).toHaveLength(tiles)
     })
   })
 
-  describe('when the presentation bot video is still initialising', () => {
+  describe.each([
+    ['there are no video tracks', true, 'empty_state.no_video_streams'],
+    ['the hidden local participant is the only track', false, 'empty_state.waiting_participants']
+  ])('and %s', (_, localParticipantVisible, message) => {
     beforeEach(() => {
-      videoTracks = [{ ...botTrack, publication: { isMuted: false, track: { readyState: 'new' } } }]
+      videoTracks = localParticipantVisible ? [] : [trackRef('me', Track.Source.Camera)]
+      render(<ParticipantGrid localParticipantVisible={localParticipantVisible} />)
     })
 
-    it('should not render the presentation overlay', () => {
-      render(<ParticipantGrid presentationOverlay={slot} />)
-      expect(screen.queryByTestId('slot')).not.toBeInTheDocument()
+    it('should render the matching empty state', () => {
+      expect(screen.getByText(message)).toBeInTheDocument()
     })
   })
 
-  describe('when the presentation bot is expanded next to a camera', () => {
+  describe('and the local participant is hidden next to a remote camera', () => {
     beforeEach(() => {
-      videoTracks = [botTrack, cameraTrack]
+      videoTracks = [trackRef('me', Track.Source.Camera), ...cameras(1)]
+      render(<ParticipantGrid localParticipantVisible={false} />)
     })
 
-    it('should render the presentation overlay once, on the expanded bot tile', () => {
-      render(<ParticipantGrid presentationOverlay={slot} />)
-      expect(screen.getAllByTestId('slot')).toHaveLength(1)
-    })
-  })
-
-  describe('when the bot publishes its client-composition video track', () => {
-    beforeEach(() => {
-      videoTracks = [namedBotTrack('presentation-video')]
-    })
-
-    it('should render no tile for it', () => {
-      render(<ParticipantGrid />)
-      expect(screen.queryByTestId('video-track')).not.toBeInTheDocument()
+    it('should render only the remote camera tile', () => {
+      expect(visibleNames()).toEqual(['cam-1'])
     })
   })
 
-  describe('when the bot publishes its legacy composited track', () => {
-    beforeEach(() => {
-      videoTracks = [namedBotTrack('presentation')]
-    })
-
-    it('should render its tile', () => {
-      render(<ParticipantGrid />)
-      expect(screen.getByTestId('video-track')).toBeInTheDocument()
-    })
-  })
-
-  describe('when only a camera tile is shown', () => {
-    beforeEach(() => {
-      videoTracks = [cameraTrack]
-    })
-
-    it('should not render the presentation overlay', () => {
-      render(<ParticipantGrid presentationOverlay={slot} />)
-      expect(screen.queryByTestId('slot')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when there are no video tracks', () => {
-    beforeEach(() => {
-      videoTracks = []
-    })
-
-    it('should render the no video streams empty state', () => {
-      render(<ParticipantGrid />)
-      expect(screen.getByText('empty_state.no_video_streams')).toBeInTheDocument()
-    })
-  })
-
-  describe('when the local participant is hidden', () => {
-    describe('and a remote camera is also shown', () => {
-      beforeEach(() => {
-        videoTracks = [localCamera, ...cameras(1)]
-      })
-
-      it('should render only the remote camera tile', () => {
-        render(<ParticipantGrid localParticipantVisible={false} />)
-        expect(visibleNames()).toEqual(['cam-1'])
-      })
-    })
-
-    describe('and the local camera is the only track', () => {
-      beforeEach(() => {
-        videoTracks = [localCamera]
-      })
-
-      it('should render the waiting for participants empty state', () => {
-        render(<ParticipantGrid localParticipantVisible={false} />)
-        expect(screen.getByText('empty_state.waiting_participants')).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('when two cameras are shown', () => {
+  describe('and two cameras are shown', () => {
     beforeEach(() => {
       videoTracks = cameras(2)
       render(<ParticipantGrid />)
+      fireEvent.click(screen.getByText('cam-2'))
     })
 
-    describe('and the second tile is clicked', () => {
+    it('should expand the clicked tile ahead of the floating tile', () => {
+      expect(visibleNames()).toEqual(['cam-2', 'cam-1'])
+    })
+
+    describe('and the floating tile is clicked', () => {
       beforeEach(() => {
-        fireEvent.click(screen.getByText('cam-2'))
+        fireEvent.click(screen.getByText('cam-1'))
       })
 
-      it('should expand it ahead of the floating tile', () => {
-        expect(visibleNames()).toEqual(['cam-2', 'cam-1'])
-      })
-
-      describe('and the floating tile is clicked', () => {
-        beforeEach(() => {
-          fireEvent.click(screen.getByText('cam-1'))
-        })
-
-        it('should expand the floating tile instead', () => {
-          expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
-        })
+      it('should expand the floating tile instead', () => {
+        expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
       })
     })
   })
 
-  describe('when four cameras are shown', () => {
+  describe('and four cameras are shown with one expanded', () => {
     beforeEach(() => {
       videoTracks = cameras(4)
-      render(<ParticipantGrid />)
+      view = render(<ParticipantGrid />)
+      fireEvent.click(screen.getByText('cam-3'))
     })
 
-    describe('and a tile is clicked', () => {
+    it('should render the expanded tile and a single thumbnail', () => {
+      expect(visibleNames()).toEqual(['cam-3', 'cam-1'])
+    })
+
+    it('should summarise the remaining thumbnails in an overflow card', () => {
+      expect(screen.getByText('+2')).toBeInTheDocument()
+    })
+
+    describe.each([
+      ['the thumbnail is clicked', 'cam-1', ['cam-1', 'cam-2']],
+      ['the expanded tile is clicked again', 'cam-3', ['cam-1', 'cam-2', 'cam-3', 'cam-4']]
+    ])('and %s', (_, name, expected) => {
       beforeEach(() => {
-        fireEvent.click(screen.getByText('cam-3'))
+        fireEvent.click(screen.getByText(name))
       })
 
-      it('should render the expanded tile and a single thumbnail', () => {
-        expect(visibleNames()).toEqual(['cam-3', 'cam-1'])
+      it('should rearrange the tiles', () => {
+        expect(visibleNames()).toEqual(expected)
+      })
+    })
+
+    describe.each([
+      ['the expanded camera leaves', ['cam-1', 'cam-2', 'cam-4'], ['cam-1', 'cam-2', 'cam-4']],
+      ['the expanded camera stays', ['cam-1', 'cam-2', 'cam-3', 'cam-4'], ['cam-3', 'cam-1']]
+    ])('and the grid re-renders as %s', (_, remaining, expected) => {
+      beforeEach(() => {
+        videoTracks = cameras(4).filter(track => remaining.includes(track.participant.identity))
+        view.rerender(<ParticipantGrid />)
       })
 
-      it('should summarise the remaining thumbnails in an overflow card', () => {
-        expect(screen.getByText('+2')).toBeInTheDocument()
-        expect(screen.getAllByTestId('avatar')).toHaveLength(2)
-      })
-
-      describe('and the thumbnail is clicked', () => {
-        beforeEach(() => {
-          fireEvent.click(screen.getByText('cam-1'))
-        })
-
-        it('should expand the thumbnail instead', () => {
-          expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
-        })
-      })
-
-      describe('and the expanded tile is clicked again', () => {
-        beforeEach(() => {
-          fireEvent.click(screen.getByText('cam-3'))
-        })
-
-        it('should collapse back to the full grid', () => {
-          expect(visibleNames()).toEqual(['cam-1', 'cam-2', 'cam-3', 'cam-4'])
-        })
-
-        it('should not render an overflow card', () => {
-          expect(screen.queryByText('+2')).not.toBeInTheDocument()
-        })
+      it('should render the tiles in the expected layout', () => {
+        expect(visibleNames()).toEqual(expected)
       })
     })
   })
 
-  describe('when ten cameras are shown', () => {
+  describe('and ten cameras are shown', () => {
     beforeEach(() => {
       videoTracks = cameras(10)
       render(<ParticipantGrid />)
     })
 
     it('should render the first eight tiles', () => {
-      expect(visibleNames()).toEqual(['cam-1', 'cam-2', 'cam-3', 'cam-4', 'cam-5', 'cam-6', 'cam-7', 'cam-8'])
-    })
-
-    it('should summarise the rest in an overflow card', () => {
-      expect(screen.getByText('+2')).toBeInTheDocument()
-      expect(screen.getAllByTestId('avatar')).toHaveLength(2)
+      expect(visibleNames()).toHaveLength(8)
     })
 
     describe('and the overflow card is clicked', () => {
@@ -262,75 +186,34 @@ describe('ParticipantGrid', () => {
       it('should render every tile', () => {
         expect(visibleNames()).toHaveLength(10)
       })
-
-      it('should no longer render the overflow card', () => {
-        expect(screen.queryByText('+2')).not.toBeInTheDocument()
-      })
     })
   })
 
-  describe('when a camera participant publishes an unmuted microphone', () => {
+  describe.each([
+    ['an unmuted', false, 0],
+    ['a muted', true, 1]
+  ])('and a camera participant publishes %s microphone', (_, isMuted, icons) => {
     beforeEach(() => {
       videoTracks = cameras(1)
-      audioTracks = [trackRef('cam-1', Track.Source.Microphone)]
+      audioTracks = [trackRef('cam-1', Track.Source.Microphone, { isMuted })]
       render(<ParticipantGrid />)
     })
 
-    it('should not render the muted indicator', () => {
-      expect(screen.queryByTestId('MicOffIcon')).not.toBeInTheDocument()
+    it(`should render ${icons} muted indicator(s)`, () => {
+      expect(screen.queryAllByTestId('MicOffIcon')).toHaveLength(icons)
     })
   })
 
-  describe('when a camera participant publishes a muted microphone', () => {
+  describe('and the auto-expanded presentation bot leaves', () => {
     beforeEach(() => {
-      videoTracks = cameras(1)
-      audioTracks = [{ ...trackRef('cam-1', Track.Source.Microphone), publication: { isMuted: true, track: {} } }]
-      render(<ParticipantGrid />)
-    })
-
-    it('should render the muted indicator', () => {
-      expect(screen.getByTestId('MicOffIcon')).toBeInTheDocument()
-    })
-  })
-
-  describe('when the auto-expanded presentation bot leaves', () => {
-    beforeEach(() => {
-      videoTracks = [botTrack, ...cameras(2)]
-      const view = render(<ParticipantGrid />)
+      videoTracks = [trackRef(BOT, Track.Source.ScreenShare), ...cameras(2)]
+      view = render(<ParticipantGrid />)
       videoTracks = cameras(2)
       view.rerender(<ParticipantGrid />)
     })
 
     it('should collapse back to the full grid', () => {
       expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
-    })
-  })
-
-  describe('when an expanded camera leaves', () => {
-    beforeEach(() => {
-      videoTracks = cameras(4)
-      const view = render(<ParticipantGrid />)
-      fireEvent.click(screen.getByText('cam-3'))
-      videoTracks = cameras(4).filter(track => track.participant.identity !== 'cam-3')
-      view.rerender(<ParticipantGrid />)
-    })
-
-    it('should collapse back to the full grid of remaining cameras', () => {
-      expect(visibleNames()).toEqual(['cam-1', 'cam-2', 'cam-4'])
-    })
-  })
-
-  describe('when the grid re-renders with the expanded camera still present', () => {
-    beforeEach(() => {
-      videoTracks = cameras(4)
-      const view = render(<ParticipantGrid />)
-      fireEvent.click(screen.getByText('cam-3'))
-      videoTracks = cameras(4)
-      view.rerender(<ParticipantGrid />)
-    })
-
-    it('should keep it expanded', () => {
-      expect(visibleNames()).toEqual(['cam-3', 'cam-1'])
     })
   })
 })

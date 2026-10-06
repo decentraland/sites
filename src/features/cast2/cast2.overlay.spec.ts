@@ -1,48 +1,44 @@
 import { containRect, overlayRect } from './cast2.overlay'
+import type { MediaRect, OverlayLayout, OverlayRect } from './cast2.types'
 
-describe('overlayRect', () => {
-  describe('when the small bubble sits bottom-left on a 960x540 frame', () => {
-    it('should return the clamped even rectangle', () => {
-      expect(overlayRect({ x: 0, y: 1, size: 'small' }, 960, 540)).toEqual({ left: 18, top: 376, d: 144 })
-    })
+describe.each<[string, OverlayLayout, number, OverlayRect]>([
+  ['the small bubble sits bottom-left on a 960x540 frame', { x: 0, y: 1, size: 'small' }, 540, { left: 18, top: 376, d: 144 }],
+  ['the large bubble sits top-right on a 960x540 frame', { x: 1, y: 0, size: 'large' }, 540, { left: 700, top: 18, d: 240 }],
+  ['x lies beyond a 960x540 frame', { x: 5, y: 0.5, size: 'small' }, 540, { left: 796, top: 198, d: 144 }],
+  ['a 960x100 frame is too short for the bubble', { x: 0, y: 0, size: 'small' }, 100, { left: 18, top: 18, d: 62 }]
+])('when computing the overlay rectangle and %s', (_label, layout, height, expected) => {
+  let rect: OverlayRect
+
+  beforeEach(() => {
+    rect = overlayRect(layout, 960, height)
   })
 
-  describe('when the large bubble sits top-right on a 960x540 frame', () => {
-    it('should return the clamped even rectangle', () => {
-      expect(overlayRect({ x: 1, y: 0, size: 'large' }, 960, 540)).toEqual({ left: 700, top: 18, d: 240 })
-    })
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
-  describe('when x lies beyond the frame', () => {
-    it('should clamp it to the same rectangle as x = 1', () => {
-      expect(overlayRect({ x: 5, y: 0.5, size: 'small' }, 960, 540)).toEqual(overlayRect({ x: 1, y: 0.5, size: 'small' }, 960, 540))
-    })
-  })
-
-  describe('when the frame is too short for the bubble', () => {
-    it('should cap the diameter to the height minus both margins', () => {
-      expect(overlayRect({ x: 0, y: 0, size: 'small' }, 960, 100).d).toBe(62)
-    })
+  it('should return the clamped even rectangle', () => {
+    expect(rect).toEqual(expected)
   })
 })
 
-describe('containRect', () => {
-  describe('when a 16:9 media is contained in a square box', () => {
-    it('should letterbox it vertically', () => {
-      expect(containRect(1000, 1000, 1600, 900)).toEqual({ left: 0, top: 218.75, width: 1000, height: 562.5 })
-    })
+describe.each<[string, [number, number], MediaRect]>([
+  ['a 16:9 media is letterboxed in a square box', [1600, 900], { left: 0, top: 218.75, width: 1000, height: 562.5 }],
+  ['a 9:16 media is pillarboxed in a square box', [900, 1600], { left: 218.75, top: 0, width: 562.5, height: 1000 }],
+  ['the media has no width', [0, 900], { left: 0, top: 0, width: 1000, height: 1000 }],
+  ['the media has no height', [1600, 0], { left: 0, top: 0, width: 1000, height: 1000 }]
+])('when containing a media and %s', (_label, [mediaWidth, mediaHeight], expected) => {
+  let rect: MediaRect
+
+  beforeEach(() => {
+    rect = containRect(1000, 1000, mediaWidth, mediaHeight)
   })
 
-  describe('when a 9:16 media is contained in a square box', () => {
-    it('should pillarbox it horizontally', () => {
-      expect(containRect(1000, 1000, 900, 1600)).toEqual({ left: 218.75, top: 0, width: 562.5, height: 1000 })
-    })
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
-  describe('when a media dimension is zero', () => {
-    it('should return the whole box', () => {
-      expect(containRect(800, 600, 0, 900)).toEqual({ left: 0, top: 0, width: 800, height: 600 })
-      expect(containRect(800, 600, 1600, 0)).toEqual({ left: 0, top: 0, width: 800, height: 600 })
-    })
+  it('should return the rectangle the media occupies', () => {
+    expect(rect).toEqual(expected)
   })
 })

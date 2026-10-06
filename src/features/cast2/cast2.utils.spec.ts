@@ -16,191 +16,79 @@ import {
   saveStreamerToken
 } from './cast2.utils'
 
-describe('when checking isPresentationBot', () => {
-  let participant: Pick<Participant, 'identity' | 'metadata'>
+const RETRYABLE_CODES = [
+  'video-timeout',
+  'video-server-error',
+  'video-playback-interrupted',
+  'video-stream-error',
+  'audio-processing-failed'
+]
+const FINAL_CODES = ['video-not-found', 'video-permission-denied', 'video-invalid-format', 'unknown']
+const participant = (identity: string, metadata: string | undefined) => ({ identity, metadata }) as Participant
+const SETTINGS: DeviceSettings = { audioInputId: 'mic-1', audioOutputId: 'speaker-1', videoDeviceId: 'cam-1' }
 
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  describe('and the identity carries the presentation-bot prefix', () => {
-    beforeEach(() => {
-      participant = { identity: 'presentation-bot:room:uuid', metadata: undefined }
-    })
-
-    it('should recognise the participant as the presentation bot', () => {
-      expect(isPresentationBot(participant)).toBe(true)
-    })
-  })
-
-  describe('and a streamer identity claims the presentation role in its metadata', () => {
-    beforeEach(() => {
-      participant = { identity: 'stream:place:uuid', metadata: JSON.stringify({ role: 'presentation' }) }
-    })
-
-    it('should not recognise the participant as the presentation bot', () => {
-      expect(isPresentationBot(participant)).toBe(false)
-    })
-  })
-
-  describe('and the identity is empty', () => {
-    beforeEach(() => {
-      participant = { identity: '', metadata: undefined }
-    })
-
-    it('should not recognise the participant as the presentation bot', () => {
-      expect(isPresentationBot(participant)).toBe(false)
-    })
-  })
-})
-
-describe('when persisting the streamer token', () => {
+describe.each<[string, () => void, () => unknown, () => void, unknown]>([
+  ['the streamer token', () => saveStreamerToken('stream-token'), getStreamerToken, clearStreamerToken, 'stream-token'],
+  ['the device settings', () => saveDeviceSettings(SETTINGS), getDeviceSettings, clearDeviceSettings, SETTINGS]
+])('when persisting %s', (_label, save, read, clear, expected) => {
   beforeEach(() => {
     localStorage.clear()
   })
 
   afterEach(() => {
     jest.resetAllMocks()
-    jest.restoreAllMocks()
-  })
-
-  describe('and storage is available', () => {
-    beforeEach(() => {
-      saveStreamerToken('stream-token')
-    })
-
-    it('should read back the saved token', () => {
-      expect(getStreamerToken()).toBe('stream-token')
-    })
-
-    describe('and the token is cleared', () => {
-      beforeEach(() => {
-        clearStreamerToken()
-      })
-
-      it('should read back no token', () => {
-        expect(getStreamerToken()).toBeNull()
-      })
-    })
-  })
-
-  describe('and storage throws', () => {
-    let consoleError: jest.SpyInstance
-
-    beforeEach(() => {
-      consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
-      jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-        throw new Error('quota')
-      })
-      jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-        throw new Error('denied')
-      })
-      jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
-        throw new Error('denied')
-      })
-    })
-
-    it('should log instead of throwing when saving', () => {
-      expect(() => saveStreamerToken('stream-token')).not.toThrow()
-      expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to save streamer token', expect.any(Error))
-    })
-
-    it('should return null when reading', () => {
-      expect(getStreamerToken()).toBeNull()
-      expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to read streamer token', expect.any(Error))
-    })
-
-    it('should log instead of throwing when clearing', () => {
-      expect(() => clearStreamerToken()).not.toThrow()
-      expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to clear streamer token', expect.any(Error))
-    })
-  })
-})
-
-describe('when persisting device settings', () => {
-  let settings: DeviceSettings
-
-  beforeEach(() => {
-    localStorage.clear()
-    settings = { audioInputId: 'mic-1', audioOutputId: 'speaker-1', videoDeviceId: 'cam-1' }
-  })
-
-  afterEach(() => {
-    jest.resetAllMocks()
-    jest.restoreAllMocks()
   })
 
   describe('and nothing was saved', () => {
-    it('should read back no settings', () => {
-      expect(getDeviceSettings()).toBeNull()
+    it('should read back nothing', () => {
+      expect(read()).toBeNull()
     })
   })
 
-  describe('and settings were saved', () => {
+  describe('and it was saved', () => {
     beforeEach(() => {
-      saveDeviceSettings(settings)
+      save()
     })
 
-    it('should read back the saved settings', () => {
-      expect(getDeviceSettings()).toEqual(settings)
+    it('should read back the saved value', () => {
+      expect(read()).toEqual(expected)
     })
 
-    describe('and the settings are cleared', () => {
+    describe('and it was cleared', () => {
       beforeEach(() => {
-        clearDeviceSettings()
+        clear()
       })
 
-      it('should read back no settings', () => {
-        expect(getDeviceSettings()).toBeNull()
+      it('should read back nothing', () => {
+        expect(read()).toBeNull()
       })
-    })
-  })
-
-  describe('and the stored value is not valid JSON', () => {
-    let consoleError: jest.SpyInstance
-
-    beforeEach(() => {
-      consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
-      localStorage.setItem('dcl_cast_device_settings', '{not json')
-    })
-
-    it('should return null and log the failure', () => {
-      expect(getDeviceSettings()).toBeNull()
-      expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to read device settings', expect.any(Error))
-    })
-  })
-
-  describe('and storage throws', () => {
-    let consoleError: jest.SpyInstance
-
-    beforeEach(() => {
-      consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
-      jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-        throw new Error('quota')
-      })
-      jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
-        throw new Error('denied')
-      })
-    })
-
-    it('should log instead of throwing when saving', () => {
-      expect(() => saveDeviceSettings(settings)).not.toThrow()
-      expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to save device settings', expect.any(Error))
-    })
-
-    it('should log instead of throwing when clearing', () => {
-      expect(() => clearDeviceSettings()).not.toThrow()
-      expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to clear device settings', expect.any(Error))
     })
   })
 })
 
-describe('when generating an anonymous identity', () => {
-  let identity: ReturnType<typeof generateAnonymousIdentity>
+describe.each<[string, () => unknown, string]>([
+  ['saving the streamer token', () => saveStreamerToken('stream-token'), 'Failed to save streamer token'],
+  ['reading the streamer token', getStreamerToken, 'Failed to read streamer token'],
+  ['clearing the streamer token', clearStreamerToken, 'Failed to clear streamer token'],
+  ['saving the device settings', () => saveDeviceSettings(SETTINGS), 'Failed to save device settings'],
+  ['reading the device settings', getDeviceSettings, 'Failed to read device settings'],
+  ['clearing the device settings', clearDeviceSettings, 'Failed to clear device settings']
+])('when %s and storage throws', (_label, action, message) => {
+  let consoleError: jest.SpyInstance
+  let result: unknown
 
   beforeEach(() => {
-    jest.spyOn(Date, 'now').mockReturnValue(1700000000000)
-    identity = generateAnonymousIdentity('room-1')
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota')
+    })
+    jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('denied')
+    })
+    jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('denied')
+    })
+    result = action()
   })
 
   afterEach(() => {
@@ -208,150 +96,122 @@ describe('when generating an anonymous identity', () => {
     jest.restoreAllMocks()
   })
 
-  it('should scope the id to the room with an anon prefix and the current timestamp', () => {
-    expect(identity.id).toMatch(/^anon:room-1:1700000000000-[a-z0-9]+$/)
+  it('should log the failure', () => {
+    expect(consoleError).toHaveBeenCalledWith(`[cast2/localStorage] ${message}`, expect.any(Error))
   })
 
-  it('should give it an adjective-noun name', () => {
-    expect(identity.name).toMatch(/^[a-z]+-[a-z]+$/)
-  })
-
-  it('should give it a hex avatar color', () => {
-    expect(identity.avatar).toMatch(/^#[0-9A-F]{6}$/)
+  it('should return no value', () => {
+    expect(result ?? null).toBeNull()
   })
 })
 
-describe('when generating a random name', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-    jest.restoreAllMocks()
+describe('when the stored device settings are not valid JSON', () => {
+  let consoleError: jest.SpyInstance
+  let settings: DeviceSettings | null
+
+  beforeEach(() => {
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    localStorage.setItem('dcl_cast_device_settings', '{not json')
+    settings = getDeviceSettings()
   })
-
-  describe('and the random source returns its lowest value', () => {
-    beforeEach(() => {
-      jest.spyOn(Math, 'random').mockReturnValue(0)
-    })
-
-    it('should pick the first adjective and the first noun', () => {
-      expect(generateRandomName()).toBe('happy-rabbit')
-    })
-  })
-
-  describe('and the random source returns its highest value', () => {
-    beforeEach(() => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.9999)
-    })
-
-    it('should pick the last adjective and the last noun', () => {
-      expect(generateRandomName()).toBe('ancient-octopus')
-    })
-  })
-})
-
-describe('when creating a LiveKit identity', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  it('should return an anonymous identity id for the room', () => {
-    expect(createLiveKitIdentity('room-2')).toMatch(/^anon:room-2:\d+-[a-z0-9]+$/)
-  })
-})
-
-describe('when getting a display name', () => {
-  let participant: Participant
 
   afterEach(() => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
   })
 
-  describe('and the metadata carries a displayName', () => {
-    beforeEach(() => {
-      participant = { identity: '0xabc', metadata: JSON.stringify({ displayName: 'Alice' }) } as Participant
-    })
-
-    it('should return the displayName', () => {
-      expect(getDisplayName(participant)).toBe('Alice')
-    })
+  it('should read back no settings', () => {
+    expect(settings).toBeNull()
   })
 
-  describe('and the metadata has no displayName', () => {
-    beforeEach(() => {
-      participant = { identity: '0xabc', metadata: JSON.stringify({ role: 'streamer' }) } as Participant
-    })
-
-    it('should fall back to the identity', () => {
-      expect(getDisplayName(participant)).toBe('0xabc')
-    })
-  })
-
-  describe('and the metadata is not valid JSON', () => {
-    let consoleWarn: jest.SpyInstance
-
-    beforeEach(() => {
-      consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-      participant = { identity: '0xabc', metadata: '{bad' } as Participant
-    })
-
-    it('should fall back to the identity and warn', () => {
-      expect(getDisplayName(participant)).toBe('0xabc')
-      expect(consoleWarn).toHaveBeenCalledWith('[cast2/getDisplayName] Failed to parse metadata', expect.any(Error))
-    })
-  })
-
-  describe('and there is neither metadata nor identity', () => {
-    beforeEach(() => {
-      participant = { identity: '', metadata: undefined } as Participant
-    })
-
-    it('should return Anonymous', () => {
-      expect(getDisplayName(participant)).toBe('Anonymous')
-    })
+  it('should log the failure', () => {
+    expect(consoleError).toHaveBeenCalledWith('[cast2/localStorage] Failed to read device settings', expect.any(Error))
   })
 })
 
-describe('when parsing participant metadata', () => {
+describe.each<[string, () => unknown, unknown]>([
+  ['isPresentationBot with a presentation-bot identity', () => isPresentationBot({ identity: 'presentation-bot:room:uuid' }), true],
+  ['isPresentationBot with a streamer identity', () => isPresentationBot({ identity: 'stream:place:uuid' }), false],
+  ['isPresentationBot with an empty identity', () => isPresentationBot({ identity: '' }), false],
+  [
+    'isRetryableVideoErrorCode with the retryable codes',
+    () => RETRYABLE_CODES.map(isRetryableVideoErrorCode),
+    RETRYABLE_CODES.map(() => true)
+  ],
+  ['isRetryableVideoErrorCode with other codes', () => FINAL_CODES.map(isRetryableVideoErrorCode), FINAL_CODES.map(() => false)],
+  [
+    'parseParticipantMetadata with valid JSON',
+    () => parseParticipantMetadata({ metadata: '{"role":"presentation"}' }),
+    { role: 'presentation' }
+  ],
+  ['parseParticipantMetadata with empty metadata', () => parseParticipantMetadata({ metadata: '' }), null],
+  ['parseParticipantMetadata with invalid JSON', () => parseParticipantMetadata({ metadata: '{bad' }), null],
+  ['getDisplayName with a displayName in the metadata', () => getDisplayName(participant('0xabc', '{"displayName":"Alice"}')), 'Alice'],
+  ['getDisplayName without a displayName in the metadata', () => getDisplayName(participant('0xabc', '{"role":"streamer"}')), '0xabc'],
+  ['getDisplayName with invalid JSON metadata', () => getDisplayName(participant('0xabc', '{bad')), '0xabc'],
+  ['getDisplayName without metadata nor identity', () => getDisplayName(participant('', undefined)), 'Anonymous']
+])('when calling %s', (_label, call, expected) => {
+  let result: unknown
+
+  beforeEach(() => {
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    result = call()
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
+    jest.restoreAllMocks()
   })
 
-  describe('and the metadata is valid JSON', () => {
-    it('should return the parsed object', () => {
-      expect(parseParticipantMetadata({ metadata: JSON.stringify({ role: 'presentation' }) })).toEqual({ role: 'presentation' })
-    })
-  })
-
-  describe('and the metadata is empty', () => {
-    it('should return null', () => {
-      expect(parseParticipantMetadata({ metadata: '' })).toBeNull()
-    })
-  })
-
-  describe('and the metadata is not valid JSON', () => {
-    it('should return null', () => {
-      expect(parseParticipantMetadata({ metadata: '{bad' })).toBeNull()
-    })
+  it(`should return ${JSON.stringify(expected)}`, () => {
+    expect(result).toEqual(expected)
   })
 })
 
-describe('when checking whether a video error code is retryable', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
+describe.each([
+  ['lowest', 0, 'happy-rabbit'],
+  ['highest', 0.9999, 'ancient-octopus']
+])('when generating a random name and the random source returns its %s value', (_label, random, expected) => {
+  let name: string
+
+  beforeEach(() => {
+    jest.spyOn(Math, 'random').mockReturnValue(random)
+    name = generateRandomName()
   })
 
-  describe.each(['video-timeout', 'video-server-error', 'video-playback-interrupted', 'video-stream-error', 'audio-processing-failed'])(
-    'and the code is %s',
-    code => {
-      it('should be retryable', () => {
-        expect(isRetryableVideoErrorCode(code)).toBe(true)
-      })
+  afterEach(() => {
+    jest.resetAllMocks()
+    jest.restoreAllMocks()
+  })
+
+  it(`should return ${expected}`, () => {
+    expect(name).toBe(expected)
+  })
+})
+
+describe.each<[string, () => unknown, unknown]>([
+  ['a LiveKit identity', () => createLiveKitIdentity('room-2'), expect.stringMatching(/^anon:room-2:\d+-[a-z0-9]+$/)],
+  [
+    'an anonymous identity',
+    () => generateAnonymousIdentity('room-1'),
+    {
+      id: expect.stringMatching(/^anon:room-1:\d+-[a-z0-9]+$/),
+      name: expect.stringMatching(/^[a-z]+-[a-z]+$/),
+      avatar: expect.stringMatching(/^#[0-9A-F]{6}$/)
     }
-  )
+  ]
+])('when generating %s', (_label, generate, expected) => {
+  let identity: unknown
 
-  describe.each(['video-not-found', 'video-permission-denied', 'video-invalid-format', 'unknown'])('and the code is %s', code => {
-    it('should not be retryable', () => {
-      expect(isRetryableVideoErrorCode(code)).toBe(false)
-    })
+  beforeEach(() => {
+    identity = generate()
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should scope it to the room with an anon prefix', () => {
+    expect(identity).toEqual(expected)
   })
 })

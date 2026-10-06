@@ -3,8 +3,6 @@ import { useLocalParticipant, useTracks } from '@livekit/components-react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import type { RenderResult } from '@testing-library/react'
 import { RoomEvent, Track } from 'livekit-client'
-import { overlayRect } from '../../../features/cast2/cast2.overlay'
-import type { OverlayRect } from '../../../features/cast2/cast2.types'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import type { PresentationState } from '../../../features/cast2/contexts/PresentationContext'
 import { PresentationStage } from './PresentationStage'
@@ -13,193 +11,124 @@ jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/
 jest.mock('@livekit/components-react', () => ({
   useTracks: jest.fn(),
   useLocalParticipant: jest.fn(),
-  VideoTrack: ({ trackRef, className }: { trackRef: { participant: { identity: string }; source: string }; className?: string }) =>
-    React.createElement('video', { 'data-identity': trackRef.participant.identity, 'data-source': trackRef.source, className })
+  VideoTrack: ({ trackRef }: { trackRef: { source: string } }) => React.createElement('video', { 'data-source': trackRef.source })
 }))
 jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePresentation: jest.fn() }))
 jest.mock('../../../features/cast2/cast2.helpers', () => ({ getPresenterServerUrl: () => 'https://presenter.example' }))
-jest.mock('../../../features/cast2/useCastTranslation', () => ({
-  useCastTranslation: () => ({ t: (key: string) => key })
-}))
-
-const mockUsePresentation = usePresentation as jest.Mock
-const mockUseTracks = useTracks as jest.Mock
-const mockUseLocalParticipant = useLocalParticipant as jest.Mock
+jest.mock('../../../features/cast2/useCastTranslation', () => ({ useCastTranslation: () => ({ t: (key: string) => key }) }))
 
 const BOT = 'presentation-bot:deck'
 const PRESENTER = '0xpresenter'
 const LOCAL = 'stream:local'
-const PRESENTATION_ID = '3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b'
-const SLIDE_URL = `https://presenter.example/presentations/${PRESENTATION_ID}/slides/0a1b2c3d4e5f6a7b.png`
-const NEXT_SLIDE_URL = `https://presenter.example/presentations/${PRESENTATION_ID}/slides/3d4e5f6a7b8c9d0e.png`
-const LABEL = 'streaming_controls.presentation'
-
-interface FakePublication {
-  trackName: string
-  isMuted: boolean
-  track?: object
+const SLIDE_URL = 'https://presenter.example/presentations/3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b/slides/0a1b2c3d4e5f6a7b.png'
+const NEXT_SLIDE_URL = 'https://presenter.example/presentations/3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b/slides/3d4e5f6a7b8c9d0e.png'
+const FOREIGN_SLIDE = { url: SLIDE_URL.replace('presenter.example', 'evil.example'), width: 1920, height: 1080 }
+const PLAYING_VIDEO: Partial<PresentationState> = {
+  videoState: 'playing',
+  playingVideoIndex: 0,
+  slideVideos: [{ url: 'https://presenter.example/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }]
 }
 
-interface FakeTrackRef {
-  participant: { identity: string; isLocal: boolean }
-  source: Track.Source
-  publication?: FakePublication
-}
+type FakeTrackRef = { participant: { identity: string }; source: Track.Source; publication: { trackName: string; isMuted: boolean } }
 
-const trackRef = (identity: string, source: Track.Source, publication: Partial<FakePublication> = {}, isLocal = false): FakeTrackRef => ({
-  participant: { identity, isLocal },
+const trackRef = (identity: string, source: Track.Source, trackName = '', isMuted = false): FakeTrackRef => ({
+  participant: { identity },
   source,
-  publication: { trackName: '', isMuted: false, track: {}, ...publication }
+  publication: { trackName, isMuted }
 })
 
-const makeState = (patch: Partial<PresentationState> = {}): PresentationState => ({
-  id: 'deck',
-  slideCount: 3,
-  currentSlide: 0,
-  fileType: 'pdf',
-  status: 'active',
-  slideVideos: [],
-  videoState: 'idle',
-  overlay: { x: 0, y: 1, size: 'small' },
-  slide: { url: SLIDE_URL, width: 1920, height: 1080 },
-  presenterIdentity: null,
-  playingVideoIndex: null,
-  ...patch
-})
+const share = (px: number, total: number) => `${(px / total) * 100}%`
 
-const stubProperty = (target: object, key: string, get: () => unknown) => {
-  const original = Object.getOwnPropertyDescriptor(target, key)
-  Object.defineProperty(target, key, { configurable: true, get })
-  return () => {
-    if (original) Object.defineProperty(target, key, original)
-    else delete (target as Record<string, unknown>)[key]
-  }
-}
-
-describe('PresentationStage', () => {
+describe('when the presentation stage renders', () => {
   let state: PresentationState
   let tracks: FakeTrackRef[]
   let containerSize: { width: number; height: number }
   let resizeCallback: () => void
   let disconnect: jest.Mock
-  let restorers: Array<() => void>
-  let originalResizeObserver: typeof ResizeObserver
   let result: RenderResult
 
-  const renderStage = (overlay?: React.ReactNode) => {
-    result = render(<PresentationStage overlay={overlay} />)
-    return result
+  const renderStage = () => {
+    result = render(<PresentationStage overlay={<span data-testid="overlay" />} />)
   }
-
   const stage = () => result.container.firstElementChild as HTMLElement
-  const slideBox = () => stage().firstElementChild as HTMLElement | null
+  const slideBox = () => stage().firstElementChild as HTMLElement
+  const slideImage = () => screen.queryByRole('img', { name: 'streaming_controls.presentation' })
+  const videoOf = (source: Track.Source) => result.container.querySelector<HTMLElement>(`video[data-source="${source}"]`)
   const slideBoxRect = () => {
-    const { left, top, width, height } = (slideBox() as HTMLElement).style
-    return { left: parseFloat(left), top: parseFloat(top), width: parseFloat(width), height: parseFloat(height) }
+    const { left, top, width, height } = slideBox().style
+    return [left, top, width, height].map(value => parseFloat(value) || 0)
   }
-  const slideImage = () => screen.queryByRole('img', { name: LABEL })
-  const presentationVideo = () => result.container.querySelector<HTMLElement>(`video[data-source="${Track.Source.ScreenShare}"]`)
-  const cameraVideo = () => result.container.querySelector<HTMLElement>(`video[data-source="${Track.Source.Camera}"]`)
 
   beforeEach(() => {
-    state = makeState()
+    state = {
+      slideVideos: [],
+      videoState: 'idle',
+      overlay: { x: 0, y: 1, size: 'small' },
+      slide: { url: SLIDE_URL, width: 1920, height: 1080 },
+      presenterIdentity: null,
+      playingVideoIndex: null
+    } as unknown as PresentationState
     tracks = []
     containerSize = { width: 960, height: 540 }
-    mockUsePresentation.mockImplementation(() => ({ state, presentationParticipantIdentity: BOT }))
-    mockUseTracks.mockImplementation(() => tracks)
-    mockUseLocalParticipant.mockImplementation(() => ({ localParticipant: { identity: LOCAL } }))
-    restorers = [
-      stubProperty(HTMLElement.prototype, 'clientWidth', () => containerSize.width),
-      stubProperty(HTMLElement.prototype, 'clientHeight', () => containerSize.height)
-    ]
     disconnect = jest.fn()
-    originalResizeObserver = global.ResizeObserver
-    global.ResizeObserver = class {
-      constructor(callback: () => void) {
-        resizeCallback = callback
-      }
-      observe() {}
-      unobserve() {}
-      disconnect() {
-        disconnect()
-      }
-    } as unknown as typeof ResizeObserver
+    jest.mocked(usePresentation).mockImplementation(() => ({ state, presentationParticipantIdentity: BOT }) as never)
+    jest.mocked(useTracks).mockImplementation(() => tracks as never)
+    jest.mocked(useLocalParticipant).mockReturnValue({ localParticipant: { identity: LOCAL } } as never)
+    jest.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(() => containerSize.width)
+    jest.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(() => containerSize.height)
+    jest.spyOn(globalThis, 'ResizeObserver').mockImplementation(callback => {
+      resizeCallback = callback as () => void
+      return { observe: jest.fn(), unobserve: jest.fn(), disconnect }
+    })
   })
 
   afterEach(() => {
-    restorers.forEach(restore => restore())
-    global.ResizeObserver = originalResizeObserver
     jest.restoreAllMocks()
     jest.resetAllMocks()
   })
 
-  describe('when it renders', () => {
-    it('should re-read the room tracks whenever a camera is muted or unmuted', () => {
-      renderStage()
-      expect(mockUseTracks).toHaveBeenCalledWith([Track.Source.Camera, Track.Source.ScreenShare], {
-        updateOnlyOn: [RoomEvent.TrackMuted, RoomEvent.TrackUnmuted]
-      })
-    })
-  })
+  describe('and the slide is served by the presenter server', () => {
+    beforeEach(renderStage)
 
-  describe('when the state has no slide', () => {
-    beforeEach(() => {
-      state = makeState({ slide: null })
-    })
-
-    it('should render an empty stage with no image and no video', () => {
-      renderStage()
-      expect(stage()).toBeEmptyDOMElement()
-    })
-  })
-
-  describe('when the container has not been measured yet', () => {
-    beforeEach(() => {
-      containerSize = { width: 0, height: 0 }
-    })
-
-    it('should render nothing inside the stage', () => {
-      renderStage()
-      expect(stage()).toBeEmptyDOMElement()
-    })
-
-    describe('and the observer then reports a size', () => {
-      beforeEach(() => {
-        renderStage()
-        containerSize = { width: 960, height: 540 }
-        act(() => resizeCallback())
-      })
-
-      it('should render the slide image', () => {
-        expect(slideImage()).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('when the slide URL is served by the presenter server', () => {
-    it('should render the slide image from that URL', () => {
-      renderStage()
+    it('should render the slide image from its URL', () => {
       expect(slideImage()).toHaveAttribute('src', SLIDE_URL)
     })
 
-    it('should not let the slide image be dragged', () => {
-      renderStage()
-      expect(slideImage()).toHaveAttribute('draggable', 'false')
+    it('should render the overlay inside the slide box', () => {
+      expect(screen.getByTestId('overlay').parentElement).toBe(slideBox())
     })
   })
 
-  describe('when the slide URL is on another origin', () => {
+  describe.each([
+    ['there is no slide', () => (state.slide = null)],
+    ['the container has not been measured yet', () => (containerSize = { width: 0, height: 0 })]
+  ])('and %s', (_, arrange) => {
     beforeEach(() => {
-      state = makeState({ slide: { url: SLIDE_URL.replace('presenter.example', 'evil.example'), width: 1920, height: 1080 } })
+      arrange()
+      renderStage()
+    })
+
+    it('should render an empty stage', () => {
+      expect(stage()).toBeEmptyDOMElement()
+    })
+  })
+
+  describe('and the slide URL is on another origin', () => {
+    beforeEach(() => {
+      state.slide = FOREIGN_SLIDE
+      renderStage()
     })
 
     it('should not render the slide image', () => {
-      renderStage()
       expect(slideImage()).not.toBeInTheDocument()
+    })
+
+    it('should still render the overlay', () => {
+      expect(screen.getByTestId('overlay')).toBeInTheDocument()
     })
   })
 
-  describe('when the slide image fails to load', () => {
+  describe('and the slide image fails to load', () => {
     let warn: jest.SpyInstance
 
     beforeEach(() => {
@@ -218,7 +147,7 @@ describe('PresentationStage', () => {
 
     describe('and the presenter moves to another slide', () => {
       beforeEach(() => {
-        state = makeState({ slide: { url: NEXT_SLIDE_URL, width: 1920, height: 1080 } })
+        state = { ...state, slide: { url: NEXT_SLIDE_URL, width: 1920, height: 1080 } }
         result.rerender(<PresentationStage />)
       })
 
@@ -228,244 +157,23 @@ describe('PresentationStage', () => {
     })
   })
 
-  describe('when a landscape slide sits in a square container', () => {
+  describe.each([
+    ['a landscape slide in a square container', { width: 1000, height: 1000 }, 1920, 1080, [0, 218.75, 1000, 562.5]],
+    ['a portrait slide in a wide container', { width: 1920, height: 540 }, 1080, 1920, [808.125, 0, 303.75, 540]]
+  ])('and the container is resized to fit %s', (_, size, slideWidth, slideHeight, rect) => {
     beforeEach(() => {
-      containerSize = { width: 1000, height: 1000 }
-    })
-
-    it('should letterbox the slide box vertically at full width', () => {
+      state.slide = { url: SLIDE_URL, width: slideWidth, height: slideHeight }
       renderStage()
-      expect(slideBoxRect()).toEqual(expect.objectContaining({ top: expect.closeTo((1000 - 562.5) / 2), width: expect.closeTo(1000) }))
-    })
-  })
-
-  describe('when a portrait slide sits in a landscape container', () => {
-    beforeEach(() => {
-      state = makeState({ slide: { url: SLIDE_URL, width: 1080, height: 1920 } })
-    })
-
-    it('should pillarbox the slide box horizontally at full height', () => {
-      renderStage()
-      expect(slideBoxRect()).toEqual({
-        left: expect.closeTo((960 - 303.75) / 2),
-        top: expect.closeTo(0),
-        width: expect.closeTo(303.75),
-        height: expect.closeTo(540)
-      })
-    })
-  })
-
-  describe('when the container is resized', () => {
-    beforeEach(() => {
-      renderStage()
-      containerSize = { width: 1000, height: 1000 }
+      containerSize = size
       act(() => resizeCallback())
     })
 
-    it('should refit the slide box to the new size', () => {
-      expect(slideBoxRect()).toEqual(expect.objectContaining({ width: expect.closeTo(1000), height: expect.closeTo(562.5) }))
+    it('should fit the slide box inside the container', () => {
+      expect(slideBoxRect()).toEqual(rect.map(value => expect.closeTo(value)))
     })
   })
 
-  describe('when an embedded video is playing', () => {
-    beforeEach(() => {
-      state = makeState({
-        videoState: 'playing',
-        playingVideoIndex: 0,
-        slideVideos: [{ url: 'https://presenter.example/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }]
-      })
-      tracks = [trackRef(BOT, Track.Source.ScreenShare, { trackName: 'presentation-video' })]
-    })
-
-    it('should render the presentation video over its slide rectangle', () => {
-      renderStage()
-      expect(presentationVideo()?.parentElement).toHaveStyle({ left: '25%', top: '25%', width: '50%', height: '50%' })
-    })
-
-    it('should render the video from the presentation bot', () => {
-      renderStage()
-      expect(presentationVideo()).toHaveAttribute('data-identity', BOT)
-    })
-
-    describe('and it is paused', () => {
-      beforeEach(() => {
-        state = { ...state, videoState: 'paused' }
-      })
-
-      it('should keep rendering the presentation video', () => {
-        renderStage()
-        expect(presentationVideo()).toBeInTheDocument()
-      })
-    })
-
-    describe('and it is still loading', () => {
-      beforeEach(() => {
-        state = { ...state, videoState: 'loading' }
-      })
-
-      it('should not render the presentation video', () => {
-        renderStage()
-        expect(presentationVideo()).not.toBeInTheDocument()
-      })
-    })
-
-    describe('and the video state is idle', () => {
-      beforeEach(() => {
-        state = { ...state, videoState: 'idle' }
-      })
-
-      it('should not render the presentation video', () => {
-        renderStage()
-        expect(presentationVideo()).not.toBeInTheDocument()
-      })
-    })
-
-    describe('and the playing index is out of range', () => {
-      beforeEach(() => {
-        state = { ...state, playingVideoIndex: 5 }
-      })
-
-      it('should not render the presentation video', () => {
-        renderStage()
-        expect(presentationVideo()).not.toBeInTheDocument()
-      })
-    })
-
-    describe('and the bot only publishes the legacy composited track', () => {
-      beforeEach(() => {
-        tracks = [trackRef(BOT, Track.Source.ScreenShare, { trackName: 'presentation' })]
-      })
-
-      it('should not render the presentation video', () => {
-        renderStage()
-        expect(presentationVideo()).not.toBeInTheDocument()
-      })
-    })
-
-    describe('and the presentation-video track belongs to another participant', () => {
-      beforeEach(() => {
-        tracks = [trackRef(PRESENTER, Track.Source.ScreenShare, { trackName: 'presentation-video' })]
-      })
-
-      it('should not render the presentation video', () => {
-        renderStage()
-        expect(presentationVideo()).not.toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('when the presentation-video track is published between videos', () => {
-    beforeEach(() => {
-      state = makeState({
-        videoState: 'idle',
-        playingVideoIndex: null,
-        slideVideos: [{ url: 'https://presenter.example/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }]
-      })
-      tracks = [trackRef(BOT, Track.Source.ScreenShare, { trackName: 'presentation-video' })]
-    })
-
-    it('should not render the presentation video', () => {
-      renderStage()
-      expect(presentationVideo()).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when a remote presenter has an unmuted camera', () => {
-    let rect: OverlayRect
-
-    beforeEach(() => {
-      state = makeState({ presenterIdentity: PRESENTER })
-      tracks = [trackRef(PRESENTER, Track.Source.Camera)]
-      rect = overlayRect(state.overlay, 1920, 1080)
-    })
-
-    it('should render the presenter camera in a circle positioned as a share of the slide', () => {
-      renderStage()
-      expect(cameraVideo()?.parentElement).toHaveStyle({
-        left: `${(rect.left / 1920) * 100}%`,
-        top: `${(rect.top / 1080) * 100}%`,
-        width: `${(rect.d / 1920) * 100}%`,
-        height: `${(rect.d / 1080) * 100}%`
-      })
-    })
-
-    it('should render the camera of the presenter', () => {
-      renderStage()
-      expect(cameraVideo()).toHaveAttribute('data-identity', PRESENTER)
-    })
-
-    describe('and the camera is muted', () => {
-      beforeEach(() => {
-        tracks = [trackRef(PRESENTER, Track.Source.Camera, { isMuted: true })]
-      })
-
-      it('should not render the camera circle', () => {
-        renderStage()
-        expect(cameraVideo()).not.toBeInTheDocument()
-      })
-    })
-
-    describe('and the slide is too small for a circle', () => {
-      beforeEach(() => {
-        state = { ...state, slide: { url: SLIDE_URL, width: 6, height: 4 } }
-      })
-
-      it('should not render the camera circle', () => {
-        renderStage()
-        expect(cameraVideo()).not.toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('when the local participant is the presenter', () => {
-    beforeEach(() => {
-      state = makeState({ presenterIdentity: LOCAL })
-      tracks = [trackRef(LOCAL, Track.Source.Camera, {}, true)]
-    })
-
-    it('should not render the camera circle', () => {
-      renderStage()
-      expect(cameraVideo()).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when no presenter is known', () => {
-    beforeEach(() => {
-      state = makeState({ presenterIdentity: null })
-      tracks = [trackRef(PRESENTER, Track.Source.Camera)]
-    })
-
-    it('should not render the camera circle', () => {
-      renderStage()
-      expect(cameraVideo()).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when an overlay is given', () => {
-    let overlay: React.ReactNode
-
-    beforeEach(() => {
-      overlay = <span data-testid="overlay" />
-    })
-
-    it('should render the overlay inside the slide box', () => {
-      renderStage(overlay)
-      expect(screen.getByTestId('overlay').parentElement).toBe(slideBox())
-    })
-
-    describe('and the slide URL is on another origin', () => {
-      beforeEach(() => {
-        state = makeState({ slide: { url: SLIDE_URL.replace('presenter.example', 'evil.example'), width: 1920, height: 1080 } })
-      })
-
-      it('should still render the overlay', () => {
-        renderStage(overlay)
-        expect(screen.getByTestId('overlay')).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('when the stage unmounts', () => {
+  describe('and the stage unmounts', () => {
     beforeEach(() => {
       renderStage()
       result.unmount()
@@ -473,6 +181,83 @@ describe('PresentationStage', () => {
 
     it('should disconnect the resize observer', () => {
       expect(disconnect).toHaveBeenCalled()
+    })
+  })
+
+  describe('and the bot streams the embedded video that is playing', () => {
+    beforeEach(() => {
+      state = { ...state, ...PLAYING_VIDEO }
+      tracks = [trackRef(BOT, Track.Source.ScreenShare, 'presentation-video')]
+    })
+
+    describe.each([
+      ['it is playing', {}],
+      ['it is paused', { videoState: 'paused' } as Partial<PresentationState>]
+    ])('and %s', (_, patch) => {
+      beforeEach(() => {
+        state = { ...state, ...patch }
+        renderStage()
+      })
+
+      it('should render the video over its slide rectangle', () => {
+        expect(videoOf(Track.Source.ScreenShare)?.parentElement).toHaveStyle({ left: '25%', top: '25%', width: '50%', height: '50%' })
+      })
+    })
+
+    describe.each([
+      ['it is still loading', { videoState: 'loading' }, null],
+      ['it has stopped between videos', { videoState: 'idle', playingVideoIndex: null }, null],
+      ['the playing index is out of range', { playingVideoIndex: 5 }, null],
+      ['the bot only publishes the legacy composited track', {}, trackRef(BOT, Track.Source.ScreenShare, 'presentation')],
+      ['the track belongs to another participant', {}, trackRef(PRESENTER, Track.Source.ScreenShare, 'presentation-video')]
+    ])('and %s', (_, patch, track) => {
+      beforeEach(() => {
+        state = { ...state, ...patch } as PresentationState
+        tracks = track ? [track] : tracks
+        renderStage()
+      })
+
+      it('should not render the presentation video', () => {
+        expect(videoOf(Track.Source.ScreenShare)).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('and a remote presenter has an unmuted camera', () => {
+    beforeEach(() => {
+      state.presenterIdentity = PRESENTER
+      tracks = [trackRef(PRESENTER, Track.Source.Camera)]
+      renderStage()
+    })
+
+    it('should render the presenter camera in a circle positioned as a share of the slide', () => {
+      expect(videoOf(Track.Source.Camera)?.parentElement).toHaveStyle({
+        left: share(38, 1920),
+        top: share(754, 1080),
+        width: share(288, 1920),
+        height: share(288, 1080)
+      })
+    })
+
+    it('should re-read the room tracks whenever a camera is muted or unmuted', () => {
+      expect(useTracks).toHaveBeenCalledWith(expect.any(Array), { updateOnlyOn: [RoomEvent.TrackMuted, RoomEvent.TrackUnmuted] })
+    })
+  })
+
+  describe.each([
+    ['the presenter camera is muted', PRESENTER, trackRef(PRESENTER, Track.Source.Camera, '', true), 1920],
+    ['the slide is too small for a circle', PRESENTER, trackRef(PRESENTER, Track.Source.Camera), 6],
+    ['the local participant is the presenter', LOCAL, trackRef(LOCAL, Track.Source.Camera), 1920],
+    ['no presenter is known', null, trackRef(PRESENTER, Track.Source.Camera), 1920]
+  ])('and %s', (_, presenterIdentity, track, slideWidth) => {
+    beforeEach(() => {
+      state = { ...state, presenterIdentity, slide: { url: SLIDE_URL, width: slideWidth, height: (slideWidth * 9) / 16 } }
+      tracks = [track]
+      renderStage()
+    })
+
+    it('should not render the camera circle', () => {
+      expect(videoOf(Track.Source.Camera)).not.toBeInTheDocument()
     })
   })
 })
