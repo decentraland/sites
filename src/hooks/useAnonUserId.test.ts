@@ -36,13 +36,14 @@ jest.mock('react', () => ({
   useMemo: (fn: () => unknown) => fn()
 }))
 
-const VALID_UUID_1 = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
-const VALID_UUID_2 = 'f9e8d7c6-b5a4-3210-fedc-ba9876543210'
-const VALID_UUID_3 = '11111111-2222-3333-4444-555555555555'
+const VALID_UUID_1 = 'a1b2c3d4-e5f6-4890-abcd-ef1234567890'
+const VALID_UUID_2 = 'f9e8d7c6-b5a4-3210-aedc-ba9876543210'
+const VALID_UUID_3 = '11111111-2222-4333-8444-555555555555'
 
 describe('useAnonUserId', () => {
   afterEach(() => {
     localStorage.clear()
+    document.cookie = 'ajs_anonymous_id=; path=/; max-age=0'
     mockIsInitialized = true
     jest.restoreAllMocks()
   })
@@ -57,6 +58,32 @@ describe('useAnonUserId', () => {
 
     it('should return the URL param value', () => {
       expect(result).toBe(VALID_UUID_1)
+    })
+  })
+
+  describe.each([
+    ['unsupported version', '11111111-2222-0333-8444-555555555555'],
+    ['invalid variant', '11111111-2222-4333-4444-555555555555']
+  ])('when URL attribution has an %s', (_context, invalidId) => {
+    beforeEach(() => {
+      mockSearchParams = new URLSearchParams(`?anon_user_id=${invalidId}`)
+      localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
+    })
+
+    it('should fall back to the valid browser UUID', () => {
+      expect(useAnonUserId()).toBe(VALID_UUID_2)
+    })
+  })
+
+  describe('when the browser identity has an invalid UUID variant', () => {
+    beforeEach(() => {
+      mockSearchParams = new URLSearchParams('')
+      localStorage.setItem('ajs_anonymous_id', '11111111-2222-4333-4444-555555555555')
+    })
+
+    it('should omit gateway attribution without replacing the Segment identity', () => {
+      expect(useAnonUserId()).toBeUndefined()
+      expect(localStorage.getItem('ajs_anonymous_id')).toBe('11111111-2222-4333-4444-555555555555')
     })
   })
 
@@ -159,6 +186,17 @@ describe('useAnonUserId', () => {
       it('should return the now-available Segment anonymous ID', () => {
         expect(result).toBe(VALID_UUID_2)
       })
+    })
+  })
+
+  describe('when a shared cookie exists and localStorage disagrees', () => {
+    beforeEach(() => {
+      mockSearchParams = new URLSearchParams('')
+      document.cookie = `ajs_anonymous_id=${VALID_UUID_1}; path=/`
+      localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
+    })
+    it('should attribute a direct landing to the shared identity', () => {
+      expect(useAnonUserId()).toBe(VALID_UUID_1)
     })
   })
 

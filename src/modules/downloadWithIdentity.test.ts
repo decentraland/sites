@@ -277,11 +277,22 @@ describe('getDownloadLinkWithIdentity', () => {
 
 describe('resolveGatewayAnonUserId', () => {
   beforeEach(() => {
-    mockEnsureSegmentAnonymousId.mockReturnValue('generated-anon')
+    mockEnsureSegmentAnonymousId.mockReturnValue('11111111-1111-4111-8111-111111111111')
   })
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  describe('when Segment uses a custom non-UUID identity', () => {
+    beforeEach(() => {
+      mockEnsureSegmentAnonymousId.mockReturnValue('custom-segment-id')
+    })
+    it('should give the gateway a valid attribution UUID without replacing Segment identity', () => {
+      expect(resolveGatewayAnonUserId(undefined, { position: '10,20' })).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      )
+    })
   })
 
   describe('when an anon_user_id is already present', () => {
@@ -297,14 +308,14 @@ describe('resolveGatewayAnonUserId', () => {
     it('should mint one for a position param', () => {
       const result = resolveGatewayAnonUserId(undefined, { position: '10,20' })
 
-      expect(result).toBe('generated-anon')
+      expect(result).toBe('11111111-1111-4111-8111-111111111111')
       expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
     })
 
     it('should mint one for a realm param', () => {
       const result = resolveGatewayAnonUserId(undefined, { realm: 'myworld.dcl.eth' })
 
-      expect(result).toBe('generated-anon')
+      expect(result).toBe('11111111-1111-4111-8111-111111111111')
       expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
     })
   })
@@ -322,7 +333,7 @@ describe('resolveGatewayAnonUserId', () => {
     it('should mint one to force the gateway route (the referrer is baked into the installer)', () => {
       const result = resolveGatewayAnonUserId(undefined, {}, '0x24e5f44999c151f08609f8e27b2238c773c4d020')
 
-      expect(result).toBe('generated-anon')
+      expect(result).toBe('11111111-1111-4111-8111-111111111111')
       expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
     })
   })

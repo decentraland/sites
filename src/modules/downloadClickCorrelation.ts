@@ -1,4 +1,4 @@
-import { generateUuid } from './segmentAnonymousId'
+import { generateUuid } from './segmentAnonymousId.helpers'
 import type { DownloadClickCorrelation } from './downloadClickCorrelation.types'
 
 const STORAGE_KEY = 'downloadFunnel:lastClick'

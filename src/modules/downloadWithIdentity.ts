@@ -1,6 +1,7 @@
 import { Architecture } from '../types/download.types'
 import { triggerFileDownload } from './file'
 import { ensureSegmentAnonymousId } from './segmentAnonymousId'
+import { GATEWAY_UUID_RE, generateUuid } from './segmentAnonymousId.helpers'
 import { addQueryParamsToUrlString, calculateCDNReleaseLinksWithIdentity, extractDownloadLinkFromCDNReleaseOption } from './url'
 
 type DownloadWithIdentityParams = {
@@ -121,8 +122,8 @@ async function getDownloadLinkWithIdentity(params: DownloadWithIdentityParams): 
  * CDN-direct fallback ships a generic installer that drops them. The anonymous
  * gateway route requires an `anon_user_id` (it 400s without one), so when we
  * don't already have one AND deep-link params are present, mint+persist one via
- * `ensureSegmentAnonymousId` (idempotent — it becomes Segment's own anonymous
- * id) so the download routes through the gateway instead of falling back to the
+ * `ensureSegmentAnonymousId`. Custom Segment strings use a separate attribution
+ * UUID so the download routes through the gateway instead of falling back to the
  * CDN. With no deep-link params, behavior is unchanged (may return `undefined`).
  */
 function resolveGatewayAnonUserId(
@@ -135,7 +136,11 @@ function resolveGatewayAnonUserId(
   // so it must route through the gateway — the CDN-direct fallback would drop it.
   // Guarantee an anon id so the anonymous gateway route is used instead of the CDN.
   const requiresGateway = Boolean(deepLinkParams.position || deepLinkParams.realm || referrer)
-  return requiresGateway ? ensureSegmentAnonymousId() : undefined
+  if (!requiresGateway) return undefined
+  const segmentId = ensureSegmentAnonymousId()
+  // Segment permits custom strings; the anonymous gateway only accepts UUIDs.
+  // A separate attribution id preserves deep links without resetting Segment.
+  return GATEWAY_UUID_RE.test(segmentId) ? segmentId : generateUuid()
 }
 
 export { calculateDownloadUrl, getDownloadLinkWithIdentity, resolveGatewayAnonUserId }

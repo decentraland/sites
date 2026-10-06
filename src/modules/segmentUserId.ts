@@ -1,4 +1,4 @@
-import { safeParseStoredId } from './segmentAnonymousId'
+import { safeParseStoredId } from './segmentAnonymousId.helpers'
 
 const USER_ID_KEY = 'ajs_user_id'
 
