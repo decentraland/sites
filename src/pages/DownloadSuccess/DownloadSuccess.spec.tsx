@@ -24,7 +24,7 @@ jest.mock('../../modules/segmentBeacon', () => ({
   postSegmentEvent: (...args: unknown[]) => mockPostSegmentEvent(...args)
 }))
 jest.mock('../../modules/segmentAnonymousId', () => ({
-  ensureSegmentAnonymousId: () => 'anon-fixed'
+  ensureSegmentAnonymousId: () => '11111111-1111-4111-8111-111111111111'
 }))
 
 const findEventCall = (event: string) => mockPostSegmentEvent.mock.calls.find(([callEvent]) => callEvent === event)
@@ -90,7 +90,7 @@ const setVisibility = (hidden: boolean): void => {
   document.dispatchEvent(new Event('visibilitychange'))
 }
 
-const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
+const mockUseAnonUserId = jest.fn<string | undefined, []>(() => '22222222-2222-4222-8222-222222222222')
 jest.mock('../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anonUserId',
   useAnonUserId: () => mockUseAnonUserId()
@@ -164,7 +164,7 @@ jest.mock('../../components/LandingFooter', () => ({
 beforeEach(() => {
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
-  mockUseAnonUserId.mockReturnValue('anon-123')
+  mockUseAnonUserId.mockReturnValue('22222222-2222-4222-8222-222222222222')
   // Restore the identity passthrough wiped by resetAllMocks.
   mockAddQueryParams.mockImplementation((url: string) => url)
   mockCollectClientFingerprint.mockReturnValue({
@@ -211,13 +211,13 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
           os: 'Windows',
           arch: 'amd64',
-          anon_user_id: 'anon-123',
+          anon_user_id: '22222222-2222-4222-8222-222222222222',
           auth_state: 'anonymous',
           revisit: 0,
           fp_screen_width: expect.any(Number),
           fp_screen_height: expect.any(Number)
         }),
-        'anon-fixed'
+        '11111111-1111-4111-8111-111111111111'
       )
     })
 
@@ -237,14 +237,14 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           filename: 'Install-Decentraland.exe',
           os: 'Windows',
           arch: 'amd64',
-          anon_user_id: 'anon-123',
+          anon_user_id: '22222222-2222-4222-8222-222222222222',
           auth_state: 'anonymous',
           revisit: 0,
           bytes_transferred: 4 * 1024 * 1024,
           fp_screen_width: expect.any(Number),
           fp_device_pixel_ratio: expect.any(Number)
         }),
-        'anon-fixed'
+        '11111111-1111-4111-8111-111111111111'
       )
     })
 
@@ -332,7 +332,7 @@ describe('when the /download_success URL carries partner campaign params', () =>
           utm_source: 'shefi',
           utm_campaign: 'partner-q3'
         }),
-        'anon-fixed'
+        '11111111-1111-4111-8111-111111111111'
       )
     })
   })
@@ -348,7 +348,7 @@ describe('when the /download_success URL carries partner campaign params', () =>
           utm_source: 'shefi',
           utm_campaign: 'partner-q3'
         }),
-        'anon-fixed'
+        '11111111-1111-4111-8111-111111111111'
       )
     })
   })
@@ -374,9 +374,17 @@ describe('when the /download_success URL carries a mac_arch hint', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_started',
+        expect.objectContaining({ mac_arch: 'intel' }),
+        '11111111-1111-4111-8111-111111111111'
+      )
     })
-    expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.objectContaining({ mac_arch: 'intel' }), 'anon-fixed')
+    expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+      'download_success',
+      expect.objectContaining({ mac_arch: 'intel' }),
+      '11111111-1111-4111-8111-111111111111'
+    )
   })
 
   it('should forward the unknown bucket as-is (Mac with an unreadable GPU)', async () => {
@@ -385,7 +393,11 @@ describe('when the /download_success URL carries a mac_arch hint', () => {
     render(<DownloadSuccess />)
 
     await waitFor(() => {
-      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ mac_arch: 'unknown' }), 'anon-fixed')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith(
+        'download_started',
+        expect.objectContaining({ mac_arch: 'unknown' }),
+        '11111111-1111-4111-8111-111111111111'
+      )
     })
   })
 })
@@ -451,9 +463,15 @@ describe('when the /download_success URL carries first-launch deep-link params',
     mockUseAnonUserId.mockReturnValue(undefined)
     render(<DownloadSuccess />)
 
-    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })), {
-      timeout: 2000
-    })
+    await waitFor(
+      () =>
+        expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(
+          expect.objectContaining({ anonUserId: '11111111-1111-4111-8111-111111111111' })
+        ),
+      {
+        timeout: 2000
+      }
+    )
   })
 })
 
@@ -575,8 +593,8 @@ describe('when Segment has not finished lazy-loading at mount', () => {
     // Both events fire immediately via the beacon transport — no queueing on
     // Segment's isInitialized flag.
     await waitFor(() => {
-      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), 'anon-fixed')
-      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), 'anon-fixed')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.anything(), '11111111-1111-4111-8111-111111111111')
+      expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_success', expect.anything(), '11111111-1111-4111-8111-111111111111')
     })
   })
 })
@@ -640,7 +658,9 @@ describe('when the user clicks the footer re-download link', () => {
     const { findByRole } = render(<DownloadSuccess />)
     const link = await findByRole('link')
     link.click()
-    await waitFor(() => expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' })))
+    await waitFor(() =>
+      expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: '11111111-1111-4111-8111-111111111111' }))
+    )
   })
 
   it('should ignore a second click while a re-download is in flight', async () => {
@@ -739,7 +759,7 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
           href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
           os: 'Windows',
           arch: 'amd64',
-          anon_user_id: 'anon-123',
+          anon_user_id: '22222222-2222-4222-8222-222222222222',
           auth_state: 'anonymous',
           revisit: 0,
           reason: 'No download link available',
@@ -999,7 +1019,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
         startedFired: true,
         successFired: true,
         failedFired: false,
-        anonUserId: 'anon-123',
+        anonUserId: '22222222-2222-4222-8222-222222222222',
         msOnPage: expect.any(Number)
       })
     )
@@ -1021,7 +1041,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
       setVisibility(true)
     })
 
-    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: 'anon-fixed' }))
+    expect(mockSendDownloadFunnelExit).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: '11111111-1111-4111-8111-111111111111' }))
   })
 
   it('should report startedFired=false when the user leaves before the download events fire', async () => {
