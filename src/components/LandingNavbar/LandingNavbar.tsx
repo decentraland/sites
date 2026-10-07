@@ -4,12 +4,13 @@ import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
+import { isAnalyticsDisabledForSession } from '../../modules/analyticsSessionGate'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
 import { postSegmentEvent } from '../../modules/segmentBeacon'
+import { withTrackAuditFields } from '../../modules/trackAuditFields'
 import { assetUrl } from '../../utils/assetUrl'
 import { getAvatarBackgroundColor, getDisplayName } from '../../utils/avatarColor'
-import { isAnalyticsExemptPath } from '../../utils/isAnalyticsExemptPath'
 // Module-level cache for notification type→component map from ui2.
 // Lazy-loaded on first bell click so it doesn't affect initial bundle.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -287,10 +288,10 @@ const LandingNavbar = memo(function LandingNavbar({
         track(SegmentEvent.CLICK, properties)
         return
       }
-      // The beacon skips the exempt-path gate, so on a page that keeps analytics off until it
-      // boots (legal pages) a click made before then is not sent at all.
-      if (!isInitializedRef.current && isAnalyticsExemptPath(window.location.pathname)) return
-      postSegmentEvent(SegmentEvent.CLICK, properties, ensureSegmentAnonymousId())
+      // The beacon skips the exempt-path gate, so a session that started with analytics off
+      // (a cold load of a legal page) sends nothing, even after navigating in-app.
+      if (isAnalyticsDisabledForSession()) return
+      postSegmentEvent(SegmentEvent.CLICK, withTrackAuditFields(properties), ensureSegmentAnonymousId())
     },
     [track]
   )

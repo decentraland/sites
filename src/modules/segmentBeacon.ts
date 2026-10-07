@@ -136,7 +136,9 @@ const buildSegmentBeaconPayload = (input: SegmentBeaconInput): SegmentBeaconPayl
  *
  * Use this only for events fired immediately before a page departure. Normal
  * in-page tracking should keep using analytics-next through useDeferredTrack so
- * Segment can attach its full context.
+ * Segment can attach its full context: an event sent here skips analytics-next's
+ * enrichment (no `context.campaign` from the URL's UTMs) and never reaches
+ * Segment middleware or client-side destinations such as GA4.
  *
  * The identified `userId` (connected wallet) is resolved here from the SDK's own
  * `ajs_user_id` key so every beacon event carries the same wallet the SDK-sent

@@ -20,6 +20,7 @@ jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ Notif
 jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn() }))
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
 jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn(() => 'anon-id') }))
+jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsDisabledForSession: jest.fn(() => false) }))
 jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn() }))
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: jest.fn()
@@ -401,6 +402,7 @@ describe('when the visitor clicks a navbar link', () => {
     postSegmentEvent = jest.requireMock('../../modules/segmentBeacon').postSegmentEvent as jest.Mock
     ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
     ;(jest.requireMock('../../modules/segmentAnonymousId').ensureSegmentAnonymousId as jest.Mock).mockReturnValue('anon-id')
+    ;(jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsDisabledForSession as jest.Mock).mockReturnValue(false)
   })
 
   describe('and it loads the destination in the same tab', () => {
@@ -422,7 +424,10 @@ describe('when the visitor clicks a navbar link', () => {
           section: 'shop',
           element: 'item',
           menu: 'desktop',
-          href: 'https://decentraland.org/shop/items?category=wearable'
+          href: 'https://decentraland.org/shop/items?category=wearable',
+          track_called_at: expect.any(Number),
+          track_delivered_at: expect.any(Number),
+          track_deferred: true
         },
         'anon-id'
       )
@@ -623,43 +628,86 @@ describe('when the visitor clicks a navbar link', () => {
     })
   })
 
-  describe('and it is on a page that keeps analytics off until it loads', () => {
-    describe('and analytics has not loaded', () => {
-      beforeEach(async () => {
-        ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
-        window.history.pushState({}, '', '/privacy')
-        renderAt('/privacy')
-        const shopTab = desktopSection(/navbar\.shop$/i)
-        await user.hover(shopTab.parentElement!)
-        fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
-      })
+  describe('and the session started on a page that keeps analytics off', () => {
+    beforeEach(async () => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      ;(jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsDisabledForSession as jest.Mock).mockReturnValue(true)
+      renderAt('/credits-terms')
+      const shopTab = desktopSection(/navbar\.shop$/i)
+      await user.hover(shopTab.parentElement!)
+      fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
+    })
 
-      afterEach(() => {
-        window.history.pushState({}, '', '/')
-      })
+    it('should not send anything, even after moving in-app to a page that is not exempt', () => {
+      expect(postSegmentEvent).not.toHaveBeenCalled()
+      expect(track).not.toHaveBeenCalled()
+    })
+  })
 
-      it('should not send anything', () => {
-        expect(postSegmentEvent).not.toHaveBeenCalled()
-        expect(track).not.toHaveBeenCalled()
+  describe('and the session started elsewhere and moved to an exempt page before analytics loaded', () => {
+    beforeEach(async () => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      renderAt('/privacy')
+      const shopTab = desktopSection(/navbar\.shop$/i)
+      await user.hover(shopTab.parentElement!)
+      fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
+    })
+
+    it('should still send the click, since analytics is on for this session', () => {
+      expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe.each([
+    ['Cmd', { metaKey: true }],
+    ['Shift', { shiftKey: true }]
+  ])('and it is a %s+click with analytics ready', (_, modifier) => {
+    beforeEach(async () => {
+      renderAt('/events')
+      const shopTab = desktopSection(/navbar\.shop$/i)
+      await user.hover(shopTab.parentElement!)
+      fireEvent.click(
+        preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })),
+        modifier
+      )
+    })
+
+    it('should send it through analytics, since the page stays open', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(postSegmentEvent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and it is a Ctrl+click before analytics loads', () => {
+    beforeEach(async () => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      renderAt('/events')
+      const shopTab = desktopSection(/navbar\.shop$/i)
+      await user.hover(shopTab.parentElement!)
+      fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })), {
+        ctrlKey: true
       })
     })
 
-    describe('and analytics has loaded', () => {
-      beforeEach(async () => {
-        window.history.pushState({}, '', '/privacy')
-        renderAt('/privacy')
-        const shopTab = desktopSection(/navbar\.shop$/i)
-        await user.hover(shopTab.parentElement!)
-        fireEvent.click(preventNavigation(within(shopTab.parentElement!).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
-      })
+    it('should fall back to the beacon', () => {
+      expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      expect(track).not.toHaveBeenCalled()
+    })
+  })
 
-      afterEach(() => {
-        window.history.pushState({}, '', '/')
-      })
+  describe('and it is the logo of the minimal navbar', () => {
+    beforeEach(() => {
+      renderAt('/', { isLandingPage: true })
+      fireEvent.click(preventNavigation(screen.getByRole('link', { name: 'Decentraland Home' })))
+    })
 
-      it('should send the click as on any other page', () => {
-        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
-      })
+    it('should send one event as the home link in the bar', () => {
+      expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      expect(postSegmentEvent).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'logo', section: 'home', menu: 'bar' }),
+        'anon-id'
+      )
     })
   })
 
@@ -670,6 +718,7 @@ describe('when the visitor clicks a navbar link', () => {
     })
 
     it('should send it as the home link in the bar', () => {
+      expect(postSegmentEvent).toHaveBeenCalledTimes(1)
       expect(postSegmentEvent).toHaveBeenCalledWith(
         'Click',
         expect.objectContaining({ action: 'logo', section: 'home', element: 'item', menu: 'bar', href: 'https://decentraland.org/' }),

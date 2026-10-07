@@ -1,6 +1,7 @@
 import { DownloadPlace, SegmentEvent } from './segment'
 import { ensureSegmentAnonymousId } from './segmentAnonymousId'
 import { postSegmentEvent } from './segmentBeacon'
+import { withTrackAuditFields } from './trackAuditFields'
 import type { AuthState, DownloadTracker, DownloadTrackerContext } from './downloadTracking.types'
 
 /**
@@ -29,25 +30,6 @@ const buildBasePayload = (ctx: DownloadTrackerContext): Record<string, unknown> 
     payload.anon_user_id = ctx.anon_user_id
   }
   return payload
-}
-
-/**
- * Appends the `track_called_at`, `track_delivered_at`, and `track_deferred`
- * audit fields that `useDeferredTrack` normally injects. These events now
- * always bypass the queue (beacon transport), so `track_deferred` is always
- * `true` — mirrors the convention in `useDownloadClick`'s beacon path.
- */
-const withTrackAuditFields = (payload: Record<string, unknown>): Record<string, unknown> => {
-  const now = Date.now()
-  return {
-    ...payload,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    track_called_at: now,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    track_delivered_at: now,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    track_deferred: true
-  }
 }
 
 /**
