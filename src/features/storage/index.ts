@@ -12,6 +12,7 @@ export {
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,
   useListPlayersQuery,
@@ -27,6 +28,7 @@ export {
   getStorageErrorKey,
   getStorageErrorStatus,
   storageContextId,
+  toStorageValueFile,
   transformLandQueryResult,
   transformRentalsQueryResult,
   truncateAddress
@@ -48,6 +50,7 @@ export type {
   SceneKey,
   SceneValue,
   StorageContext,
+  StorageValueFile,
   World,
   WorldScene,
   WrapSignedFetchError
