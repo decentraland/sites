@@ -36,6 +36,18 @@ function readStorageItem(key: string): string | null {
   }
 }
 
+/** Writes a key, returning false when storage is unavailable or rejects the write. */
+function writeStorageItem(key: string, value: string): boolean {
+  try {
+    const storage = getStorage()
+    if (!storage) return false
+    storage.setItem(key, value)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Removes every key the predicate matches. A no-op when storage is unavailable. */
 function removeStorageItems(shouldRemove: (key: string) => boolean): void {
   try {
@@ -57,4 +69,4 @@ function removeStorageItems(shouldRemove: (key: string) => boolean): void {
   }
 }
 
-export { readStorageItem, removeStorageItems }
+export { readStorageItem, writeStorageItem, removeStorageItems }

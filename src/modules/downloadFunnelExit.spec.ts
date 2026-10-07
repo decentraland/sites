@@ -1,3 +1,5 @@
+jest.mock('@dcl/hooks', () => ({ getAnalytics: () => undefined }))
+
 import { sendDownloadFunnelExit } from './downloadFunnelExit'
 import { DEFAULT_SEGMENT_TRACK_URL } from './segmentConfig'
 import type { DownloadFunnelExitData } from './downloadFunnelExit.types'
@@ -35,6 +37,8 @@ describe('downloadFunnelExit', () => {
   const originalSendBeacon = navigator.sendBeacon
 
   beforeEach(() => {
+    localStorage.clear()
+    document.cookie = 'ajs_anonymous_id=; path=/; max-age=0'
     mockEnvValues = { SEGMENT_KEY: 'wk-test' }
     mockExempt = false
     mockFetch = jest.fn(() => Promise.resolve({ ok: true }))
@@ -77,6 +81,7 @@ describe('downloadFunnelExit', () => {
     // Read the body via the fetch fallback (a plain string) — jsdom's Blob has
     // no text(); the payload is byte-identical on both transports.
     mockSendBeacon.mockReturnValue(false)
+    document.cookie = 'ajs_anonymous_id=browser-id; path=/'
     sendDownloadFunnelExit(sampleData({ startedFired: true, successFired: true, failedFired: false }))
 
     const body = JSON.parse(mockFetch.mock.calls[0][1].body)
@@ -85,7 +90,7 @@ describe('downloadFunnelExit', () => {
       expect.objectContaining({
         writeKey: 'wk-test',
         event: 'download_funnel_exit',
-        anonymousId: 'anon-1'
+        anonymousId: 'browser-id'
       })
     )
     expect(body.properties).toEqual(
@@ -151,48 +156,31 @@ describe('downloadFunnelExit', () => {
     expect(body.properties.anon_user_id).toBeUndefined()
   })
 
-  it('should mint the fallback anonymousId from crypto.randomUUID when available', () => {
-    const cryptoObj = globalThis.crypto as { randomUUID?: () => string }
-    const originalRandomUUID = cryptoObj.randomUUID
-    Object.defineProperty(cryptoObj, 'randomUUID', {
-      value: () => 'uuid-from-crypto',
-      configurable: true,
-      writable: true
+  describe('when URL attribution belongs to another browser', () => {
+    beforeEach(() => {
+      document.cookie = 'ajs_anonymous_id=own-browser-id; path=/'
+      mockSendBeacon.mockReturnValue(false)
     })
 
-    try {
-      mockSendBeacon.mockReturnValue(false)
+    it('should use its own identity and keep the foreign id only as a property', () => {
+      sendDownloadFunnelExit(sampleData({ anonUserId: 'foreign-browser-id' }))
+      expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toEqual(
+        expect.objectContaining({
+          anonymousId: 'own-browser-id',
+          properties: expect.objectContaining({ anon_user_id: 'foreign-browser-id' })
+        })
+      )
+    })
+
+    it('should reuse its own identity when attribution is absent', () => {
       sendDownloadFunnelExit(sampleData({ anonUserId: undefined }))
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-      expect(body.anonymousId).toBe('uuid-from-crypto')
-    } finally {
-      Object.defineProperty(cryptoObj, 'randomUUID', {
-        value: originalRandomUUID,
-        configurable: true,
-        writable: true
-      })
-    }
-  })
-
-  it('should mint a UUID fallback anonymousId when crypto.randomUUID is unavailable', () => {
-    const cryptoObj = globalThis.crypto as { randomUUID?: () => string }
-    const originalRandomUUID = cryptoObj.randomUUID
-    Object.defineProperty(cryptoObj, 'randomUUID', { value: undefined, configurable: true, writable: true })
-
-    try {
-      mockSendBeacon.mockReturnValue(false)
-      sendDownloadFunnelExit(sampleData({ anonUserId: undefined }))
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-      expect(body.anonymousId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
-    } finally {
-      Object.defineProperty(cryptoObj, 'randomUUID', {
-        value: originalRandomUUID,
-        configurable: true,
-        writable: true
-      })
-    }
+      expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toEqual(
+        expect.objectContaining({
+          anonymousId: 'own-browser-id',
+          properties: expect.not.objectContaining({ anon_user_id: expect.anything() })
+        })
+      )
+    })
   })
 
   it('should transmit on an analytics-exempt path (conversion beacons bypass the exempt gate)', () => {
