@@ -553,8 +553,8 @@ describe('toStorageValueFile', () => {
       })
     })
 
-    it('should type a .json key as JSON', () => {
-      expect(toStorageValueFile('state.JSON', '{}').type).toBe('application/json')
+    it('should lowercase the extension and type it by that', () => {
+      expect(toStorageValueFile('State.JSON', '{}')).toMatchObject({ filename: 'State.json', type: 'application/json' })
     })
 
     it('should type a key with an unknown or no extension as plain text', () => {
@@ -574,7 +574,7 @@ describe('toStorageValueFile', () => {
 
     it('should not add a second .json extension', () => {
       expect(toStorageValueFile('scores.json', [1, 2]).filename).toBe('scores.json')
-      expect(toStorageValueFile('scores.JSON', [1, 2]).filename).toBe('scores.JSON')
+      expect(toStorageValueFile('scores.JSON', [1, 2]).filename).toBe('scores.json')
     })
   })
 })
