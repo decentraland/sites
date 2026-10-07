@@ -11,7 +11,6 @@ const WINDOWS_OPERA = { image: 'windows-opera-step1.webp', highlight: { x: 68.4,
 const MACOS_FIREFOX = { image: 'macos-firefox-step1.webp', highlight: { x: 77.28, y: 40.21 } }
 const MACOS_BRAVE = { image: 'macos-brave-step1.webp', highlight: { x: 64.47, y: 46.15 } }
 const WINDOWS_FIREFOX = { image: 'windows-firefox-step1.webp', highlight: { x: 76.46, y: 41.35 } }
-// Same toolbar as macOS Brave, so the same slot
 const WINDOWS_BRAVE = { image: 'windows-brave-step1.webp', highlight: { x: 63.64, y: 42.92 } }
 const WINDOWS_EDGE = { image: 'windows-edge-step1.webp', highlight: { x: 75.63, y: 36.98 } }
 
