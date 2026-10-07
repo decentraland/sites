@@ -2,7 +2,8 @@ import { act, renderHook } from '@testing-library/react'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
-import { ensureSegmentAnonymousId, generateUuid } from '../modules/segmentAnonymousId'
+import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
+import { generateUuid } from '../modules/segmentAnonymousId.helpers'
 import { postSegmentEvent } from '../modules/segmentBeacon'
 import { useDownloadClick } from './useDownloadClick'
 
@@ -13,10 +14,8 @@ jest.mock('@dcl/hooks', () => ({
   useAnalytics: () => ({ isInitialized: mockIsInitialized, track: mockTrack })
 }))
 
-jest.mock('../modules/segmentAnonymousId', () => ({
-  ensureSegmentAnonymousId: jest.fn(),
-  // `downloadClickCorrelation` (used by `useDownloadClick`) imports `generateUuid`
-  // from this same module, so the mock must keep exporting it.
+jest.mock('../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn() }))
+jest.mock('../modules/segmentAnonymousId.helpers', () => ({
   generateUuid: jest.fn(() => '11111111-1111-4111-8111-111111111111')
 }))
 
