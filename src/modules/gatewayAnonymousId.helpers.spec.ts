@@ -33,6 +33,11 @@ describe('when resolving gateway attribution', () => {
       expect(attributionId).toMatch(/^[0-9a-f-]{36}$/)
       expect(localStorage.getItem('ajs_anonymous_id')).toBe(JSON.stringify('custom-id'))
     })
+    it('should avoid rewriting an unchanged persisted mapping', () => {
+      const writes = jest.spyOn(Storage.prototype, 'setItem')
+      expect(resolve('custom-id')).toBe(attributionId)
+      expect(writes).not.toHaveBeenCalled()
+    })
     it('should reuse the persisted mapping after a page reload', () => {
       expect(createGatewayAnonymousIdResolver()('custom-id')).toBe(attributionId)
     })

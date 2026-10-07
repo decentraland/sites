@@ -2,6 +2,7 @@ import { Architecture } from '../types/download.types'
 import { triggerFileDownload } from './file'
 import { createGatewayAnonymousIdResolver } from './gatewayAnonymousId.helpers'
 import { ensureSegmentAnonymousId } from './segmentAnonymousId'
+import { UUID_V1_5_RE } from './segmentAnonymousId.helpers'
 import { addQueryParamsToUrlString, calculateCDNReleaseLinksWithIdentity, extractDownloadLinkFromCDNReleaseOption } from './url'
 
 const resolveGatewayAttributionId = createGatewayAnonymousIdResolver()
@@ -133,7 +134,7 @@ function resolveGatewayAnonUserId(
   deepLinkParams: { position?: string; realm?: string },
   referrer?: string | null
 ): string | undefined {
-  if (anonUserId) return anonUserId
+  if (anonUserId && UUID_V1_5_RE.test(anonUserId)) return anonUserId
   // A referrer (like position/realm) is baked into the installer by the gateway,
   // so it must route through the gateway — the CDN-direct fallback would drop it.
   // Guarantee an anon id so the anonymous gateway route is used instead of the CDN.

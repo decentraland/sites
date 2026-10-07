@@ -25,10 +25,12 @@ jest.mock('react-router-dom', () => ({
 
 // useAnonUserId reads `isInitialized` to refresh once Segment loads; default
 // to true for the existing assertions and override in the reactivity tests.
+let mockSdkId: string | undefined
 let mockIsInitialized = true
 
 jest.mock('@dcl/hooks', () => ({
-  useAnalytics: () => ({ isInitialized: mockIsInitialized })
+  useAnalytics: () => ({ isInitialized: mockIsInitialized }),
+  getAnalytics: () => (mockSdkId ? { instance: { user: () => ({ anonymousId: () => mockSdkId }) } } : undefined)
 }))
 
 // Mock useMemo to execute the factory immediately (no React runtime needed)
@@ -45,6 +47,7 @@ describe('useAnonUserId', () => {
     localStorage.clear()
     document.cookie = 'ajs_anonymous_id=; path=/; max-age=0'
     mockIsInitialized = true
+    mockSdkId = undefined
     jest.restoreAllMocks()
   })
 
@@ -179,6 +182,7 @@ describe('useAnonUserId', () => {
 
       beforeEach(() => {
         mockIsInitialized = true
+        mockSdkId = undefined
         mockSearchParams = new URLSearchParams('')
         localStorage.setItem('ajs_anonymous_id', VALID_UUID_2)
         result = useAnonUserId()
@@ -213,5 +217,19 @@ describe('useAnonUserId', () => {
     it('should return the URL param value taking priority over localStorage', () => {
       expect(result).toBe(VALID_UUID_3)
     })
+  })
+})
+
+describe('when the loaded SDK has a custom non-UUID identity', () => {
+  beforeEach(() => {
+    mockSdkId = 'custom-sdk-id'
+    mockSearchParams = new URLSearchParams()
+  })
+  afterEach(() => {
+    mockSdkId = undefined
+  })
+  it('should omit UUID-only URL attribution without replacing the SDK identity', () => {
+    expect(useAnonUserId()).toBeUndefined()
+    expect(mockSdkId).toBe('custom-sdk-id')
   })
 })

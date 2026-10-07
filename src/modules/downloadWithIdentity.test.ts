@@ -303,9 +303,19 @@ describe('resolveGatewayAnonUserId', () => {
 
   describe('when an anon_user_id is already present', () => {
     it('should return it verbatim without minting a new one', () => {
-      const result = resolveGatewayAnonUserId('existing-anon', { position: '10,20', realm: 'main' })
+      const result = resolveGatewayAnonUserId('22222222-2222-4222-8222-222222222222', { position: '10,20', realm: 'main' })
 
-      expect(result).toBe('existing-anon')
+      expect(result).toBe('22222222-2222-4222-8222-222222222222')
+      expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
+    })
+  })
+
+  describe.each(['invalid', '11111111-1111-7111-8111-111111111111'])('when unsupported attribution %s is supplied', supplied => {
+    it('should resolve the browser identity for a gateway download', () => {
+      expect(resolveGatewayAnonUserId(supplied, { position: '10,20' })).toBe('11111111-1111-4111-8111-111111111111')
+    })
+    it('should omit unsupported attribution without deep-link requirements', () => {
+      expect(resolveGatewayAnonUserId(supplied, {})).toBeUndefined()
       expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
     })
   })

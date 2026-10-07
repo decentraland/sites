@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAnalytics } from '@dcl/hooks'
 import { readSegmentAnonymousId } from '../modules/segmentAnonymousId'
-import { GATEWAY_UUID_RE } from '../modules/segmentAnonymousId.helpers'
+import { UUID_V1_5_RE } from '../modules/segmentAnonymousId.helpers'
 
 /** Query parameter name used across the download flow. */
 
@@ -32,13 +32,13 @@ function useAnonUserId(): string | undefined {
 
   return useMemo(() => {
     const fromUrl = searchParams.get(ANON_USER_ID_PARAM)
-    if (fromUrl && GATEWAY_UUID_RE.test(fromUrl)) {
+    if (fromUrl && UUID_V1_5_RE.test(fromUrl)) {
       return fromUrl
     }
 
     // The resolved SDK getter can mint or resync; it never adopts the URL id.
     const segmentId = readSegmentAnonymousId()
-    return segmentId && GATEWAY_UUID_RE.test(segmentId) ? segmentId : undefined
+    return segmentId && UUID_V1_5_RE.test(segmentId) ? segmentId : undefined
     // `isInitialized` participates in deps so the memo re-runs when Segment
     // starts loading and persisted identity can be re-read.
   }, [searchParams, isInitialized])

@@ -90,7 +90,7 @@ const setVisibility = (hidden: boolean): void => {
   document.dispatchEvent(new Event('visibilitychange'))
 }
 
-const mockUseAnonUserId = jest.fn<string | undefined, []>(() => 'anon-123')
+const mockUseAnonUserId = jest.fn<string | undefined, []>(() => '22222222-2222-4222-8222-222222222222')
 jest.mock('../../hooks/useAnonUserId', () => ({
   ANON_USER_ID_PARAM: 'anonUserId',
   useAnonUserId: () => mockUseAnonUserId()
@@ -164,7 +164,7 @@ jest.mock('../../components/LandingFooter', () => ({
 beforeEach(() => {
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
-  mockUseAnonUserId.mockReturnValue('anon-123')
+  mockUseAnonUserId.mockReturnValue('22222222-2222-4222-8222-222222222222')
   // Restore the identity passthrough wiped by resetAllMocks.
   mockAddQueryParams.mockImplementation((url: string) => url)
   mockCollectClientFingerprint.mockReturnValue({
@@ -211,7 +211,7 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           href: 'https://cdn.decentraland.org/launcher/signed/Install-Decentraland.exe?sig=abc',
           os: 'Windows',
           arch: 'amd64',
-          anon_user_id: 'anon-123',
+          anon_user_id: '22222222-2222-4222-8222-222222222222',
           auth_state: 'anonymous',
           revisit: 0,
           fp_screen_width: expect.any(Number),
@@ -237,7 +237,7 @@ describe('when DownloadSuccess mounts with os, place, and a successful url resol
           filename: 'Install-Decentraland.exe',
           os: 'Windows',
           arch: 'amd64',
-          anon_user_id: 'anon-123',
+          anon_user_id: '22222222-2222-4222-8222-222222222222',
           auth_state: 'anonymous',
           revisit: 0,
           bytes_transferred: 4 * 1024 * 1024,
@@ -759,7 +759,7 @@ describe('when DownloadSuccess mounts and the url resolution rejects', () => {
           href: 'https://cdn.decentraland.org/launcher/Install-Decentraland.exe',
           os: 'Windows',
           arch: 'amd64',
-          anon_user_id: 'anon-123',
+          anon_user_id: '22222222-2222-4222-8222-222222222222',
           auth_state: 'anonymous',
           revisit: 0,
           reason: 'No download link available',
@@ -1019,7 +1019,7 @@ describe('when the user leaves the page (download_funnel_exit)', () => {
         startedFired: true,
         successFired: true,
         failedFired: false,
-        anonUserId: 'anon-123',
+        anonUserId: '22222222-2222-4222-8222-222222222222',
         msOnPage: expect.any(Number)
       })
     )

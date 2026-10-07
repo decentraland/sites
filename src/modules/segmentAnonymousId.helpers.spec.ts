@@ -5,11 +5,14 @@ const COOKIE_ID = '11111111-1111-4111-8111-111111111111'
 const LOCAL_ID = '22222222-2222-4222-8222-222222222222'
 
 describe('when resolving the browser anonymous identity', () => {
+  let originalCookieDescriptor: PropertyDescriptor
   let originalRandomUUID: Crypto['randomUUID']
   let resolver: ReturnType<typeof createAnonymousIdResolver>
   let getSdkId: jest.Mock<string | undefined, []>
 
   beforeEach(() => {
+    originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie')!
+    Object.defineProperty(document, 'cookie', originalCookieDescriptor)
     // eslint-disable-next-line @typescript-eslint/unbound-method
     originalRandomUUID = crypto.randomUUID
     getSdkId = jest.fn(() => undefined)
@@ -18,6 +21,7 @@ describe('when resolving the browser anonymous identity', () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
+    Object.defineProperty(document, 'cookie', originalCookieDescriptor)
     Object.defineProperty(crypto, 'randomUUID', { value: originalRandomUUID, configurable: true })
     localStorage.clear()
     document.cookie = 'ajs_anonymous_id=; path=/; max-age=0'
@@ -33,7 +37,7 @@ describe('when resolving the browser anonymous identity', () => {
       resolver.ensure()
       expect(cookieWrites).toHaveBeenCalledWith(expect.stringMatching(/^ajs_anonymous_id=.*; domain=\.decentraland\.org$/))
       expect(cookieWrites).toHaveBeenCalledWith(
-        expect.stringMatching(/^__dcl_segment_domain__=; domain=\.decentraland\.org; path=\/; max-age=0$/)
+        expect.stringMatching(/^__dcl_segment_domain__[0-9a-f-]+=; domain=\.decentraland\.org; path=\/; max-age=0$/)
       )
       expect(document.cookie).not.toContain('__dcl_segment_domain__')
     })
@@ -208,6 +212,81 @@ describe('when resolving the browser anonymous identity', () => {
     })
     it('should keep one anonymous identity for every event in the page', () => {
       expect(resolver.ensure()).toBe(resolver.ensure())
+    })
+  })
+
+  describe('and an undecodable host cookie precedes a valid parent cookie', () => {
+    beforeEach(() => {
+      jest.spyOn(document, 'cookie', 'get').mockReturnValue(`ajs_anonymous_id=%FF; ajs_anonymous_id=${COOKIE_ID}`)
+      localStorage.setItem('ajs_anonymous_id', JSON.stringify(LOCAL_ID))
+    })
+    it('should skip the malformed entry and synchronize to the parent identity', () => {
+      expect(resolver.ensure()).toBe(COOKIE_ID)
+      expect(localStorage.getItem('ajs_anonymous_id')).toBe(JSON.stringify(COOKIE_ID))
+    })
+  })
+
+  describe.each([
+    ['"null"', undefined],
+    ['"a%22b"', 'a"b']
+  ])('and a raw quoted cookie contains %s', (raw, expected) => {
+    beforeEach(() => {
+      jest.spyOn(document, 'cookie', 'get').mockReturnValue(`ajs_anonymous_id=${raw}`)
+    })
+    it('should strip raw quotes before decoding like js-cookie', () => expect(resolver.read()).toBe(expected))
+  })
+
+  describe('and cookies are blocked while storage remains readable', () => {
+    let writes: ReturnType<typeof jest.spyOn>
+    beforeEach(() => {
+      jest.useFakeTimers()
+      localStorage.setItem('ajs_anonymous_id', JSON.stringify(LOCAL_ID))
+      writes = jest.spyOn(document, 'cookie', 'set').mockImplementation(() => undefined)
+    })
+    afterEach(() => jest.useRealTimers())
+    it('should throttle domain probes and retry after the recovery window', () => {
+      resolver.ensure()
+      writes.mockClear()
+      resolver.ensure()
+      expect(writes.mock.calls.filter(([value]: unknown[]) => String(value).startsWith('__dcl_segment_domain__'))).toHaveLength(0)
+      jest.advanceTimersByTime(5000)
+      resolver.ensure()
+      expect(writes.mock.calls.some(([value]: unknown[]) => String(value).startsWith('__dcl_segment_domain__'))).toBe(true)
+    })
+  })
+
+  describe('and a writable parent domain was already discovered', () => {
+    let writes: ReturnType<typeof jest.spyOn>
+    beforeEach(() => {
+      writes = jest.spyOn(document, 'cookie', 'set')
+      resolver.ensure()
+      writes.mockClear()
+      getSdkId.mockReturnValue('sdk-reset-id')
+    })
+    it('should reuse the cached parent for a changed identity without probing again', () => {
+      expect(resolver.ensure()).toBe('sdk-reset-id')
+      expect(writes).toHaveBeenCalledWith(expect.stringMatching(/^ajs_anonymous_id=sdk-reset-id;.*domain=\.decentraland\.org$/))
+      expect(writes.mock.calls.some(([value]: unknown[]) => String(value).startsWith('__dcl_segment_domain__'))).toBe(false)
+    })
+  })
+
+  describe('and a stale legacy probe exists', () => {
+    let writes: ReturnType<typeof jest.spyOn>
+    beforeEach(() => {
+      writes = jest.spyOn(document, 'cookie', 'set')
+      document.cookie = '__dcl_segment_domain__=stale; path=/'
+    })
+    afterEach(() => {
+      document.cookie = '__dcl_segment_domain__=; path=/; max-age=0'
+    })
+    it('should use a unique bounded probe and clean it after read-back', () => {
+      resolver.ensure()
+      expect(writes.mock.calls.some(([value]: unknown[]) => /^__dcl_segment_domain__[0-9a-f-]+=.*; max-age=5$/.test(String(value)))).toBe(
+        true
+      )
+      expect(writes.mock.calls.some(([value]: unknown[]) => /^__dcl_segment_domain__[0-9a-f-]+=;.*max-age=0$/.test(String(value)))).toBe(
+        true
+      )
     })
   })
 
