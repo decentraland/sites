@@ -411,14 +411,14 @@ const FILE_TYPES_BY_EXTENSION: Record<string, string> = {
 // Scenes store files as string values under keys named like files (`feedback-1.csv`),
 // so a string is saved verbatim under its key. Anything else is saved as JSON.
 const toStorageValueFile = (key: string, value: unknown): StorageValueFile => {
+  const extension = key.includes('.') ? key.slice(key.lastIndexOf('.') + 1).toLowerCase() : ''
   if (typeof value !== 'string') {
     return {
-      filename: key.endsWith('.json') ? key : `${key}.json`,
+      filename: extension === 'json' ? key : `${key}.json`,
       type: FILE_TYPES_BY_EXTENSION.json,
       content: JSON.stringify(value, null, 2)
     }
   }
-  const extension = key.includes('.') ? key.slice(key.lastIndexOf('.') + 1).toLowerCase() : ''
   return { filename: key, type: FILE_TYPES_BY_EXTENSION[extension] ?? 'text/plain', content: value }
 }
 

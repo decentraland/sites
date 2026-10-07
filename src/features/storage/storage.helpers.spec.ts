@@ -574,6 +574,7 @@ describe('toStorageValueFile', () => {
 
     it('should not add a second .json extension', () => {
       expect(toStorageValueFile('scores.json', [1, 2]).filename).toBe('scores.json')
+      expect(toStorageValueFile('scores.JSON', [1, 2]).filename).toBe('scores.JSON')
     })
   })
 })
