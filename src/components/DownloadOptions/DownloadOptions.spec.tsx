@@ -62,7 +62,7 @@ jest.mock('../../modules/downloadWithIdentity', () => ({
 
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
 
-jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn(() => 'anon-id') }))
+jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn(() => '11111111-1111-4111-8111-111111111111') }))
 
 jest.mock('../../modules/explorerDownloads', () => ({
   ExplorerDownloads: { get: () => ({ getTotalDownloads: () => Promise.resolve(0) }) }
@@ -421,8 +421,8 @@ describe('DownloadOptions', () => {
         await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
         expect(mockGetDownloadLinkWithIdentity).toHaveBeenCalledWith(
           expect.objectContaining({
-            anonUserId: 'anon-id',
-            queryParams: expect.objectContaining({ anon_user_id: 'anon-id' })
+            anonUserId: '11111111-1111-4111-8111-111111111111',
+            queryParams: expect.objectContaining({ anon_user_id: '11111111-1111-4111-8111-111111111111' })
           })
         )
       } finally {

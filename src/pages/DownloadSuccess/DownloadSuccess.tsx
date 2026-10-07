@@ -91,10 +91,8 @@ const DownloadSuccess = memo(() => {
   const getIdentityIdRef = useRef(getIdentityId)
   const anonUserIdRef = useRef(anonUserId)
   const authStateRef = useRef(authState)
-  // Holds the anon id actually used for a deep-link download — possibly minted
-  // by `resolveGatewayAnonUserId` when Segment hadn't booted — so the exit
-  // beacon reports the same id the download_started/_success rows carry and the
-  // warehouse join doesn't break for the deep-link cohort.
+  // Keep gateway attribution in the exit event's anon_user_id property. The
+  // envelope always uses browser identity, which can differ for custom SDK ids.
   const gatewayAnonUserIdRef = useRef<string | undefined>(undefined)
   getIdentityIdRef.current = getIdentityId
   anonUserIdRef.current = anonUserId

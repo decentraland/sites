@@ -24,11 +24,8 @@ jest.mock('@dcl/hooks', () => ({
 }))
 
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
-jest.mock('../../modules/segmentAnonymousId', () => ({
-  ensureSegmentAnonymousId: () => 'anon-fixed',
-  // `downloadClickCorrelation` (used by `useDownloadClick`, wired on the store-exit
-  // CTAs below) imports `generateUuid` from this same module, so the mock must
-  // keep exporting it — mirrors the fix in `useDownloadClick.spec.ts`.
+jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: () => 'anon-fixed' }))
+jest.mock('../../modules/segmentAnonymousId.helpers', () => ({
   generateUuid: () => '11111111-1111-4111-8111-111111111111'
 }))
 
