@@ -266,7 +266,7 @@ const LandingNavbar = memo(function LandingNavbar({
   const deferredTrack = useDeferredTrack()
 
   const trackNavbar = useCallback(
-    (action: string, link?: { section: string; href: string }, leavesPage = true) => {
+    (action: string, link?: { section: string; href: string }, { leavesPage = true }: { leavesPage?: boolean } = {}) => {
       const properties = { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link }
       if (isInitializedRef.current) {
         track(SegmentEvent.CLICK, properties)
@@ -287,8 +287,8 @@ const LandingNavbar = memo(function LandingNavbar({
   )
 
   const trackNavbarLink = useCallback(
-    (section: string, labelKey: string, href: string, leavesPage = true) =>
-      trackNavbar(toNavbarAction(labelKey), { section, href }, leavesPage),
+    (section: string, labelKey: string, href: string, options?: { leavesPage?: boolean }) =>
+      trackNavbar(toNavbarAction(labelKey), { section, href }, options),
     [trackNavbar]
   )
 
@@ -297,10 +297,10 @@ const LandingNavbar = memo(function LandingNavbar({
   const navbarLinkHandlers = useCallback(
     (section: string, labelKey: string, href: string) => ({
       onClick: (event: React.MouseEvent) => {
-        if (event.button === 0) trackNavbarLink(section, labelKey, href, isSameTabNavigation(event))
+        if (event.button === 0) trackNavbarLink(section, labelKey, href, { leavesPage: isSameTabNavigation(event) })
       },
       onAuxClick: (event: React.MouseEvent) => {
-        if (event.button === 1) trackNavbarLink(section, labelKey, href, false)
+        if (event.button === 1) trackNavbarLink(section, labelKey, href, { leavesPage: false })
       }
     }),
     [trackNavbarLink]
@@ -580,7 +580,7 @@ const LandingNavbar = memo(function LandingNavbar({
           {scrolled && onClickJumpIn ? (
             <NavJumpInButton
               onClick={e => {
-                trackNavbar('jump_in', undefined, false)
+                trackNavbar('jump_in', undefined, { leavesPage: false })
                 onClickJumpIn(e)
               }}
             >
