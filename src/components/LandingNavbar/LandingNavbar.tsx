@@ -152,7 +152,8 @@ const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
 // already on (.zone / .today / .org) — the Shop is served by-path at <domain>/shop, so this leaves this
 // app and the browser navigates for real. Still a plain href like the rest of the navbar's links.
 const CREDITS_URL = '/shop/credits'
-const HOME_URL = 'https://decentraland.org'
+// Same-origin for the same reason as CREDITS_URL: the logo keeps the visitor on .zone / .today instead of sending them to prod.
+const HOME_URL = '/'
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)

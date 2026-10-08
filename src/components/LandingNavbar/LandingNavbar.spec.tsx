@@ -552,10 +552,7 @@ describe('when the visitor clicks a navbar link', () => {
 
     it('should send it as the home link', () => {
       expect(track).toHaveBeenCalledTimes(1)
-      expect(track).toHaveBeenCalledWith(
-        'Click',
-        expect.objectContaining({ action: 'logo', section: 'home', href: 'https://decentraland.org' })
-      )
+      expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'logo', section: 'home', href: '/' }))
     })
   })
 
@@ -567,10 +564,7 @@ describe('when the visitor clicks a navbar link', () => {
 
     it('should send it as the home link', () => {
       expect(track).toHaveBeenCalledTimes(1)
-      expect(track).toHaveBeenCalledWith(
-        'Click',
-        expect.objectContaining({ action: 'logo', section: 'home', href: 'https://decentraland.org' })
-      )
+      expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'logo', section: 'home', href: '/' }))
     })
   })
 
