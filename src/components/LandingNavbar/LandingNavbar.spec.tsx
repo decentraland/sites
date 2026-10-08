@@ -562,7 +562,14 @@ describe('when the visitor clicks a navbar link', () => {
         expect(postSegmentEvent).toHaveBeenCalledTimes(1)
         expect(postSegmentEvent).toHaveBeenCalledWith(
           'Click',
-          { place: 'Landing Navbar', event: 'click', action: 'learn', section: 'learn', href: 'https://decentraland.org/blog/' },
+          {
+            place: 'Landing Navbar',
+            event: 'click',
+            action: 'learn',
+            section: 'learn',
+            href: 'https://decentraland.org/blog/',
+            track_deferred: true
+          },
           'anon-1'
         )
       })
