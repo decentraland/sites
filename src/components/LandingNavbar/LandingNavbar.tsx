@@ -265,6 +265,20 @@ const LandingNavbar = memo(function LandingNavbar({
     (section: string, labelKey: string, href: string) => trackNavbar(toNavbarAction(labelKey), { section, href }),
     [trackNavbar]
   )
+
+  // A middle click opens the link in a new tab without firing `click`, so it needs its own handler. Older
+  // browsers fired `click` for it too, hence the primary-button check that keeps it to one event.
+  const navbarLinkHandlers = useCallback(
+    (section: string, labelKey: string, href: string) => ({
+      onClick: (event: React.MouseEvent) => {
+        if (event.button === 0) trackNavbarLink(section, labelKey, href)
+      },
+      onAuxClick: (event: React.MouseEvent) => {
+        if (event.button === 1) trackNavbarLink(section, labelKey, href)
+      }
+    }),
+    [trackNavbarLink]
+  )
   const [mobileAccordion, setMobileAccordion] = useState<DropdownSection | null>(null)
   const [desktopDropdown, setDesktopDropdown] = useState<DropdownSection | null>(null)
   const [userCardOpen, setUserCardOpen] = useState(false)
@@ -495,7 +509,7 @@ const LandingNavbar = memo(function LandingNavbar({
                     href={item.url}
                     target={item.isExternal ? '_blank' : undefined}
                     rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                    onClick={() => trackNavbarLink(section, item.labelKey, item.url)}
+                    {...navbarLinkHandlers(section, item.labelKey, item.url)}
                   >
                     {l(item.labelKey)}
                     {item.isExternal && <ExternalLinkIcon />}
@@ -507,16 +521,13 @@ const LandingNavbar = memo(function LandingNavbar({
         })}
 
         <MobileMenuItem>
-          <MobileMenuLink
-            href={MENU_CONFIG.learn.url}
-            onClick={() => trackNavbarLink('learn', MENU_CONFIG.learn.labelKey, MENU_CONFIG.learn.url)}
-          >
+          <MobileMenuLink href={MENU_CONFIG.learn.url} {...navbarLinkHandlers('learn', MENU_CONFIG.learn.labelKey, MENU_CONFIG.learn.url)}>
             {l(MENU_CONFIG.learn.labelKey)}
           </MobileMenuLink>
         </MobileMenuItem>
       </>
     )
-  }, [l, mobileAccordion, pathname, toggleMobileAccordion, trackNavbarLink])
+  }, [l, mobileAccordion, navbarLinkHandlers, pathname, toggleMobileAccordion])
 
   // Minimal navbar: transparent, only logo + sign in (no tabs, no blur, no shadow)
   if (showMinimalNavbar) {
@@ -620,7 +631,7 @@ const LandingNavbar = memo(function LandingNavbar({
                             href={item.url}
                             target={item.isExternal ? '_blank' : undefined}
                             rel={item.isExternal ? 'noopener noreferrer' : undefined}
-                            onClick={() => trackNavbarLink(section, item.labelKey, item.url)}
+                            {...navbarLinkHandlers(section, item.labelKey, item.url)}
                           >
                             {l(item.labelKey)}
                             {item.isExternal && <ExternalLinkIcon />}
@@ -635,7 +646,7 @@ const LandingNavbar = memo(function LandingNavbar({
 
             <DesktopTabLink
               href={MENU_CONFIG.learn.url}
-              onClick={() => trackNavbarLink('learn', MENU_CONFIG.learn.labelKey, MENU_CONFIG.learn.url)}
+              {...navbarLinkHandlers('learn', MENU_CONFIG.learn.labelKey, MENU_CONFIG.learn.url)}
             >
               {l(MENU_CONFIG.learn.labelKey)}
             </DesktopTabLink>
@@ -753,11 +764,7 @@ const LandingNavbar = memo(function LandingNavbar({
                       </div>
                       <UserCardDivider />
                       {USER_MENU_ITEMS.map((item, i) => (
-                        <UserCardMenuItem
-                          key={item.labelKey}
-                          href={item.url}
-                          onClick={() => trackNavbarLink('user_menu', item.labelKey, item.url)}
-                        >
+                        <UserCardMenuItem key={item.labelKey} href={item.url} {...navbarLinkHandlers('user_menu', item.labelKey, item.url)}>
                           {i === 0 && <AccountIcon />}
                           {i === 1 && <WearableIcon />}
                           {i === 2 && <SettingsIcon />}
@@ -833,7 +840,7 @@ const LandingNavbar = memo(function LandingNavbar({
           <UserCardDivider />
           <UserCardMenu>
             {USER_MENU_ITEMS.map((item, i) => (
-              <UserCardMenuItem key={item.labelKey} href={item.url} onClick={() => trackNavbarLink('user_menu', item.labelKey, item.url)}>
+              <UserCardMenuItem key={item.labelKey} href={item.url} {...navbarLinkHandlers('user_menu', item.labelKey, item.url)}>
                 {i === 0 && <AccountIcon />}
                 {i === 1 && <WearableIcon />}
                 {i === 2 && <SettingsIcon />}
