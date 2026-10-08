@@ -14,8 +14,8 @@ const TRAILING_SLASHES = /\/+$/
  * Analytics is suppressed on exempt (pure legal/text) paths, so the key
  * resolves to `''` there. Without the bypass this reads the CURRENT path, so it
  * agrees with the once-per-session `isAnalyticsDisabledForSession()` only when
- * called at boot, as `main.tsx` does; code that runs later checks the session
- * gate instead of calling this without the bypass. Anything that
+ * called at boot, as `main.tsx` does; code that runs later must check the session
+ * gate (`isAnalyticsDisabledForSession()`) instead of calling this without the bypass. Anything that
  * emits to Segment resolves the key through this helper instead of reading
  * `SEGMENT_KEY` itself, so the exempt-path rule is defined once.
  *
