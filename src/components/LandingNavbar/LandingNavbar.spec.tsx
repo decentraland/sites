@@ -568,6 +568,8 @@ describe('when the visitor clicks a navbar link', () => {
             action: 'learn',
             section: 'learn',
             href: 'https://decentraland.org/blog/',
+            track_called_at: expect.any(Number),
+            track_delivered_at: expect.any(Number),
             track_deferred: true
           },
           'anon-1'

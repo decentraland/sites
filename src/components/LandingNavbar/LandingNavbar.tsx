@@ -282,9 +282,14 @@ const LandingNavbar = memo(function LandingNavbar({
       // One that replaces the page would be lost with it; the beacon survives the unload. It follows the same
       // rules that keep the SDK off: sessions that started on an exempt page, and bots.
       if (isAnalyticsDisabledForSession() || isBotClient(navigator.userAgent)) return
-      // Flagged like useDownloadClick's beacon clicks, so beacon-sent and SDK-sent clicks can be told apart.
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      postSegmentEvent(SegmentEvent.CLICK, { ...properties, track_deferred: true }, ensureSegmentAnonymousId())
+      // Same deferral fields as useDownloadClick's beacon and useDeferredTrack, so every deferred click carries them.
+      const calledAt = Date.now()
+      postSegmentEvent(
+        SegmentEvent.CLICK,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        { ...properties, track_called_at: calledAt, track_delivered_at: calledAt, track_deferred: true },
+        ensureSegmentAnonymousId()
+      )
     },
     [deferredTrack, track]
   )
