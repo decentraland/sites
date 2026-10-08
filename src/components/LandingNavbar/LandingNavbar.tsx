@@ -267,10 +267,13 @@ const LandingNavbar = memo(function LandingNavbar({
     [trackNavbar]
   )
 
-  // A middle click opens the link in a new tab without firing `click`, so it needs its own handler.
+  // A middle click opens the link in a new tab without firing `click`, so it needs its own handler. Older
+  // browsers fired `click` for it too, hence the primary-button check that keeps it to one event.
   const navbarLinkHandlers = useCallback(
     (section: string, labelKey: string, href: string) => ({
-      onClick: () => trackNavbarLink(section, labelKey, href),
+      onClick: (event: React.MouseEvent) => {
+        if (event.button === 0) trackNavbarLink(section, labelKey, href)
+      },
       onAuxClick: (event: React.MouseEvent) => {
         if (event.button === 1) trackNavbarLink(section, labelKey, href)
       }
