@@ -1,7 +1,8 @@
-import { memo } from 'react'
+import { memo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Logo } from 'decentraland-ui2'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useReloadEmptyImages } from '../../hooks/useReloadEmptyImages'
 import highlightIcon from '../../images/download/steps/highlight-icon.webp'
 import type { DownloadStepsStep } from './DownloadSuccess.types'
 import {
@@ -78,6 +79,9 @@ DownloadStepsCard.displayName = 'DownloadStepsCard'
 
 const DownloadStepsLayout = memo((props: DownloadStepsLayoutProps) => {
   const { loading, backdropContent, title, subtitle, steps, footer, afterContent } = props
+  const cardsRef = useRef<HTMLDivElement>(null)
+  // The installer download starts while the step images are still loading; Firefox cancels them when it does.
+  useReloadEmptyImages(cardsRef, !loading)
   const l = useFormatMessage()
 
   const defaultBackdropContent = (
@@ -103,7 +107,7 @@ const DownloadStepsLayout = memo((props: DownloadStepsLayoutProps) => {
           <DownloadStepsSubtitle variant="h5">{subtitle}</DownloadStepsSubtitle>
         </DownloadStepsHeader>
 
-        <DownloadStepsCards>
+        <DownloadStepsCards ref={cardsRef}>
           {steps.map((step, index) => (
             <DownloadStepsCard key={index} step={step} index={index} />
           ))}

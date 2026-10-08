@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { DownloadStepsLayout } from './DownloadStepsLayout'
 import type { DownloadStepsStep } from './DownloadSuccess.types'
 
@@ -135,6 +135,94 @@ describe('when rendering the steps layout', () => {
 
       expect(screen.getByTestId('backdrop')).toHaveAttribute('data-open', 'false')
       expect(within(screen.getByTestId('backdrop')).getByText('Custom progress')).toBeInTheDocument()
+    })
+  })
+
+  // Firefox cancels the image requests still in flight when the page starts the installer download (an anchor click
+  // navigation), and leaves those images empty: complete, but with no size and no load or error event.
+  describe('and the installer download cancelled the step images', () => {
+    let images: HTMLImageElement[]
+    let reloaded: string[]
+
+    const breakImage = (image: HTMLImageElement) => {
+      Object.defineProperty(image, 'complete', { value: true, configurable: true })
+      Object.defineProperty(image, 'naturalWidth', { value: 0, configurable: true })
+      const setAttribute = image.setAttribute.bind(image)
+      jest.spyOn(image, 'setAttribute').mockImplementation((name: string, value: string) => {
+        if (name === 'src') reloaded.push(value)
+        setAttribute(name, value)
+      })
+    }
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      reloaded = []
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('should request the empty images again once the download is over', () => {
+      const { container, rerender } = renderLayout({ loading: true })
+      images = [...container.querySelectorAll<HTMLImageElement>('img[loading="lazy"]')]
+      images.forEach(breakImage)
+
+      rerender(
+        <DownloadStepsLayout
+          loading={false}
+          title="Page title"
+          subtitle="Page subtitle"
+          steps={STEPS}
+          footer={<a href="/somewhere">Footer link</a>}
+          afterContent={<div data-testid="after" />}
+        />
+      )
+      act(() => {
+        jest.advanceTimersByTime(600)
+      })
+
+      expect(reloaded).toEqual(['one.webp', 'two.webp', 'three.webp'])
+    })
+
+    it('should leave the images alone while the download is still running', () => {
+      const { container } = renderLayout({ loading: true })
+      container.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach(breakImage)
+
+      act(() => {
+        jest.advanceTimersByTime(5000)
+      })
+
+      expect(reloaded).toEqual([])
+    })
+
+    it('should not touch images that loaded', () => {
+      const { container } = renderLayout({ loading: false })
+      container.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach(image => {
+        Object.defineProperty(image, 'complete', { value: true, configurable: true })
+        Object.defineProperty(image, 'naturalWidth', { value: 788, configurable: true })
+        jest.spyOn(image, 'setAttribute').mockImplementation((name: string) => {
+          if (name === 'src') reloaded.push(name)
+        })
+      })
+
+      act(() => {
+        jest.advanceTimersByTime(5000)
+      })
+
+      expect(reloaded).toEqual([])
+    })
+
+    it('should stop retrying after a few attempts when an image never loads', () => {
+      const { container } = renderLayout({ loading: false })
+      container.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach(breakImage)
+
+      act(() => {
+        jest.advanceTimersByTime(60000)
+      })
+
+      expect(reloaded.length).toBeGreaterThan(0)
+      expect(reloaded.length).toBeLessThanOrEqual(3 * 5)
     })
   })
 })
