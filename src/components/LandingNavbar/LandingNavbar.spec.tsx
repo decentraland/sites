@@ -494,6 +494,40 @@ describe('when the visitor clicks a navbar link', () => {
     })
   })
 
+  describe('and it is the Learn tab on desktop', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      const desktopLearn = screen.getAllByRole('link', { name: /navbar\.learn/i, hidden: true }).find(link => !mobileMenu.contains(link))!
+      fireEvent.click(preventNavigation(desktopLearn))
+    })
+
+    it('should send it under its own section', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'learn', section: 'learn', href: 'https://decentraland.org/blog/' })
+      )
+    })
+  })
+
+  describe('and it is a user menu entry in the mobile user card', () => {
+    beforeEach(async () => {
+      const { container } = renderAt('/events', { isSignedIn: true, address: '0x1234567890123456789012345678901234567890' })
+      await user.click(screen.getByRole('button', { name: 'User menu' }))
+      const mobileUserCard = container.ownerDocument.querySelector<HTMLElement>('[data-mobile-user-card]')!
+      fireEvent.click(preventNavigation(within(mobileUserCard).getByRole('link', { name: /navbar\.view_profile/i, hidden: true })))
+    })
+
+    it('should send it under the user menu section', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'view_profile', section: 'user_menu', href: 'https://decentraland.org/profile' })
+      )
+    })
+  })
+
   describe('and analytics has not finished loading', () => {
     beforeEach(async () => {
       ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
