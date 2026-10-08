@@ -6,9 +6,8 @@ import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
 import { isAnalyticsDisabledForSession } from '../../modules/analyticsSessionGate'
+import { postDeferredClick } from '../../modules/deferredClickBeacon'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
-import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
-import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { assetUrl } from '../../utils/assetUrl'
 import { getAvatarBackgroundColor, getDisplayName } from '../../utils/avatarColor'
 // Module-level cache for notification type→component map from ui2.
@@ -282,14 +281,7 @@ const LandingNavbar = memo(function LandingNavbar({
       // One that replaces the page would be lost with it; the beacon survives the unload. It follows the same
       // rules that keep the SDK off: sessions that started on an exempt page, and bots.
       if (isAnalyticsDisabledForSession() || isBotClient(navigator.userAgent)) return
-      // Same deferral fields as useDownloadClick's beacon and useDeferredTrack, so every deferred click carries them.
-      const calledAt = Date.now()
-      postSegmentEvent(
-        SegmentEvent.CLICK,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        { ...properties, track_called_at: calledAt, track_delivered_at: calledAt, track_deferred: true },
-        ensureSegmentAnonymousId()
-      )
+      postDeferredClick(properties)
     },
     [deferredTrack, track]
   )

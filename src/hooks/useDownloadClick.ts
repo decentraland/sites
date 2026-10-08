@@ -1,10 +1,9 @@
 import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
+import { postDeferredClick } from '../modules/deferredClickBeacon'
 import { recordDownloadClickCorrelation } from '../modules/downloadClickCorrelation'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { SegmentEvent } from '../modules/segment'
-import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
-import { postSegmentEvent } from '../modules/segmentBeacon'
 import { buildClickPayload } from './adapters/clickPayload.helpers'
 import { useDeferredTrack } from './useDeferredTrack'
 
@@ -59,20 +58,7 @@ function useDownloadClick(options: UseDownloadClickOptions = {}) {
         return
       }
 
-      const calledAt = Date.now()
-      postSegmentEvent(
-        SegmentEvent.CLICK,
-        {
-          ...payload,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          track_called_at: calledAt,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          track_delivered_at: Date.now(),
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          track_deferred: true
-        },
-        ensureSegmentAnonymousId()
-      )
+      postDeferredClick(payload)
     },
     [deferredTrack, recordCorrelation]
   )
