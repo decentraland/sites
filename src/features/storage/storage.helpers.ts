@@ -11,6 +11,7 @@ import type {
   RentalFields,
   RentalsQueryResult,
   StorageContext,
+  StorageValueFile,
   SubgraphEstate,
   SubgraphParcel,
   WrapSignedFetchError
@@ -402,6 +403,27 @@ const truncateAddress = (address: string): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
+const FILE_TYPES_BY_EXTENSION: Record<string, string> = {
+  csv: 'text/csv',
+  json: 'application/json'
+}
+
+// Scenes store files as string values under keys named like files (`feedback-1.csv`),
+// so a string is saved verbatim under its key. Anything else is saved as JSON.
+const toStorageValueFile = (key: string, value: unknown): StorageValueFile => {
+  const dot = key.lastIndexOf('.')
+  const extension = dot === -1 ? '' : key.slice(dot + 1).toLowerCase()
+  const filename = dot === -1 ? key : `${key.slice(0, dot)}.${extension}`
+  if (typeof value !== 'string') {
+    return {
+      filename: extension === 'json' ? filename : `${filename}.json`,
+      type: FILE_TYPES_BY_EXTENSION.json,
+      content: JSON.stringify(value, null, 2)
+    }
+  }
+  return { filename, type: FILE_TYPES_BY_EXTENSION[extension] ?? 'text/plain', content: value }
+}
+
 export {
   buildSignedFetchMetadata,
   createScopedSignedFetch,
@@ -419,6 +441,7 @@ export {
   parcelToLand,
   sendSignedFetch,
   storageContextId,
+  toStorageValueFile,
   transformLandQueryResult,
   transformRentalsQueryResult,
   truncateAddress,
