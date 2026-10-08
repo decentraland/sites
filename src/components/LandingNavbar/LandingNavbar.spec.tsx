@@ -510,6 +510,36 @@ describe('when the visitor clicks a navbar link', () => {
     })
   })
 
+  describe('and it is the logo', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      fireEvent.click(preventNavigation(screen.getByRole('link', { name: 'Decentraland Home' })))
+    })
+
+    it('should send it as the home link', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'logo', section: 'home', href: 'https://decentraland.org' })
+      )
+    })
+  })
+
+  describe('and it is the credits chip', () => {
+    beforeEach(() => {
+      renderAt('/events', { isSignedIn: true, creditsBalance: 120 })
+      fireEvent.click(preventNavigation(screen.getByRole('link', { name: /credits_balance/i })))
+    })
+
+    it('should send it under the user menu section', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'credits', section: 'user_menu', href: '/shop/credits' })
+      )
+    })
+  })
+
   describe('and it is a middle click', () => {
     beforeEach(() => {
       renderAt('/events')

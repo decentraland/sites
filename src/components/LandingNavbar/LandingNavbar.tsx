@@ -152,6 +152,7 @@ const PEER_BASE_URL = 'https://peer.decentraland.org/content/contents/'
 // already on (.zone / .today / .org) — the Shop is served by-path at <domain>/shop, so this leaves this
 // app and the browser navigates for real. Still a plain href like the rest of the navbar's links.
 const CREDITS_URL = '/shop/credits'
+const HOME_URL = 'https://decentraland.org'
 
 function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
@@ -531,7 +532,7 @@ const LandingNavbar = memo(function LandingNavbar({
     return (
       <NavBarRoot ref={navRef} className="minimal">
         <NavBarLeft style={{ gap: 16 }}>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+          <LogoLink href={HOME_URL} aria-label="Decentraland Home" {...navbarLinkHandlers('home', 'logo', HOME_URL)}>
             <DclLogo />
           </LogoLink>
           <img
@@ -584,7 +585,7 @@ const LandingNavbar = memo(function LandingNavbar({
     <>
       <NavBarRoot ref={navRef} className={isLandingPage && isSignedIn ? 'logged-landing' : ''}>
         <NavBarLeft>
-          <LogoLink href="https://decentraland.org" aria-label="Decentraland Home">
+          <LogoLink href={HOME_URL} aria-label="Decentraland Home" {...navbarLinkHandlers('home', 'logo', HOME_URL)}>
             <DclLogo />
           </LogoLink>
 
@@ -658,6 +659,7 @@ const LandingNavbar = memo(function LandingNavbar({
               {creditsBalance !== null && creditsBalance !== undefined && (
                 <CreditsChip
                   href={CREDITS_URL}
+                  {...navbarLinkHandlers('user_menu', 'credits', CREDITS_URL)}
                   aria-label={l('component.landing.navbar.credits_balance', { count: formatCredits(creditsBalance) })}
                 >
                   <CreditsIcon />
