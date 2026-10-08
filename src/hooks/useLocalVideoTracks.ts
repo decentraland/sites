@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { useTracks } from '@livekit/components-react'
-import { Track } from 'livekit-client'
+import { RoomEvent, Track } from 'livekit-client'
 
 const useLocalVideoTracks = () => {
   const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], {
-    updateOnlyOn: [],
+    updateOnlyOn: [RoomEvent.TrackMuted, RoomEvent.TrackUnmuted],
     onlySubscribed: false
   })
 

@@ -1,27 +1,21 @@
 import { useRemoteParticipants } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import { getDisplayName } from '../../../features/cast2/cast2.utils'
+import { getDisplayName, parseParticipantMetadata } from '../../../features/cast2/cast2.utils'
+import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
+import { PresentationStage } from '../PresentationStage/PresentationStage'
 import { ContentWrapper } from './WatcherViewContent.styled'
 
 export function WatcherViewContent() {
   const { t } = useCastTranslation()
   const remoteParticipants = useRemoteParticipants()
+  const presentation = usePresentationOptional()
 
-  // Check if there are streamers connected
-  const hasStreamers = remoteParticipants.some(p => {
-    try {
-      const metadata = p.metadata ? JSON.parse(p.metadata) : {}
-      return metadata.role === 'streamer'
-    } catch {
-      return false
-    }
-  })
+  const streamerParticipant = remoteParticipants.find(p => parseParticipantMetadata(p)?.role === 'streamer')
 
-  // Check if any streamer has active video
   const hasActiveVideo = remoteParticipants.some(p => {
     const hasCamera = Array.from(p.videoTrackPublications.values()).some(
       pub => pub.source === Track.Source.Camera && pub.track && !pub.isMuted
@@ -32,8 +26,16 @@ export function WatcherViewContent() {
     return hasCamera || hasScreenShare
   })
 
-  // If no streamers at all, show watcher empty state
-  if (!hasStreamers) {
+  if (presentation?.state.slide) {
+    return (
+      <ContentWrapper>
+        <LiveStreamCounter />
+        <PresentationStage />
+      </ContentWrapper>
+    )
+  }
+
+  if (!streamerParticipant) {
     return (
       <ContentWrapper>
         <EmptyStreamState type="watcher" message={t('empty_state.watcher_message')} />
@@ -41,17 +43,6 @@ export function WatcherViewContent() {
     )
   }
 
-  // Get streamer participant for name display
-  const streamerParticipant = remoteParticipants.find(p => {
-    try {
-      const metadata = p.metadata ? JSON.parse(p.metadata) : {}
-      return metadata.role === 'streamer'
-    } catch {
-      return false
-    }
-  })
-
-  // Always show LiveStreamCounter and grid when there are streamers
   return (
     <ContentWrapper>
       <LiveStreamCounter />
@@ -61,7 +52,7 @@ export function WatcherViewContent() {
         <EmptyStreamState
           type="streamer"
           message={t('empty_state.streamer_action')}
-          participantName={streamerParticipant ? getDisplayName(streamerParticipant) : undefined}
+          participantName={getDisplayName(streamerParticipant)}
         />
       )}
     </ContentWrapper>

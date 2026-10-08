@@ -38,7 +38,7 @@ export function StreamerViewWithChat({ onLeave, isTabMuted, onToggleTabMute }: S
   }, [isChatOpen, peopleOpen, setChatOpen])
 
   return (
-    <PresentationProvider>
+    <PresentationProvider canControl>
       <StreamerLayout>
         <MainContent>
           <VideoContainer $sidebarOpen={sidebarOpen}>
