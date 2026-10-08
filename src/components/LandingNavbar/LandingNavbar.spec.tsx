@@ -509,4 +509,35 @@ describe('when the visitor clicks a navbar link', () => {
       expect(track).not.toHaveBeenCalled()
     })
   })
+
+  describe('and it is a middle click', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const learn = within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', {
+        name: /navbar\.learn/i,
+        hidden: true
+      })
+      fireEvent(learn, new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+    })
+
+    it('should send one event for the link', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'learn', section: 'learn' }))
+    })
+  })
+
+  describe('and it is a right click', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const learn = within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', {
+        name: /navbar\.learn/i,
+        hidden: true
+      })
+      fireEvent(learn, new MouseEvent('auxclick', { bubbles: true, button: 2 }))
+    })
+
+    it('should not send anything', () => {
+      expect(track).not.toHaveBeenCalled()
+    })
+  })
 })
