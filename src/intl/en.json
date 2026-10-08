@@ -38,54 +38,45 @@
       "success": {
         "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
-        "subtitle_action_exploring": "exploring",
         "subtitle_action_creating": "creating",
         "step": "Step",
-        "footer": "Trouble with the download? Let's try that again: {link}",
         "footer_prefix": "Trouble with the download? Let's try that again:",
-        "footer_link_label": "Download again",
+        "started": {
+          "title": "Your download has started!",
+          "subtitle": "Follow these 3 steps to install Decentraland and jump in."
+        },
+        "footer_retry": "Download didn't start? {link}",
+        "footer_retry_link": "Try again",
+        "footer_help": "Need help? Go to {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "After the download is complete, go back to the {event} event page so you can jump in. Redirecting in {seconds} seconds.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "Open",
-              "text": "Open the <span>Decentraland</span> file from your Downloads Folder to launch the Setup Wizard."
+              "title": "Find your file",
+              "text": "Click the download icon in your browser toolbar, then open the Decentraland installer (.exe)."
             },
             "step2": {
               "title": "Install",
-              "text": "Follow the instructions in the Setup Wizard. When you click <span>Finish</span> the installation process will begin."
+              "text": "Follow the Setup Wizard and click Next until it finishes. If Windows asks for permission, click Yes."
             },
             "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your taskbar and will launch automatically."
+              "title": "Jump in!",
+              "text": "Once installed, Decentraland opens on its own. See you in-world!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "Open",
-              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
+              "title": "Find your file",
+              "text": "Click the download icon in your browser toolbar, then open Decentraland-Installer.dmg."
             },
             "step2": {
               "title": "Install",
-              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
+              "text": "Double-click the Decentraland icon in the window that opens. When the macOS security message appears, click Open."
             },
             "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "Open",
-              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
-            },
-            "step2": {
-              "title": "Install",
-              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
-            },
-            "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
+              "title": "Jump in!",
+              "text": "Once installed, Decentraland opens on its own. See you in-world!"
             }
           }
         }
