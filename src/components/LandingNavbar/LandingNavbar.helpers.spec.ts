@@ -74,11 +74,12 @@ describe('when deciding whether a navbar click replaces the current page', () =>
     if (target) link.setAttribute('target', target)
     return link
   }
-  const click = (currentTarget: EventTarget, keys: Partial<Record<'ctrlKey' | 'metaKey' | 'shiftKey', boolean>> = {}) => ({
+  const click = (currentTarget: EventTarget, keys: Partial<Record<'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey', boolean>> = {}) => ({
     currentTarget,
     ctrlKey: false,
     metaKey: false,
     shiftKey: false,
+    altKey: false,
     ...keys
   })
 
@@ -90,7 +91,7 @@ describe('when deciding whether a navbar click replaces the current page', () =>
     expect(isSameTabNavigation(click(linkWith('_blank')))).toBe(false)
   })
 
-  it.each(['ctrlKey', 'metaKey', 'shiftKey'] as const)('should keep the page when %s opens the link elsewhere', key => {
+  it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'] as const)('should keep the page when %s opens the link elsewhere', key => {
     expect(isSameTabNavigation(click(linkWith(), { [key]: true }))).toBe(false)
   })
 })

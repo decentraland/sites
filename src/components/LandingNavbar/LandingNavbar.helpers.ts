@@ -51,11 +51,17 @@ function toNavbarAction(labelKey: string): string {
 
 /**
  * Whether a primary click on a navbar link replaces the current page. A link that opens in a new tab
- * (`target="_blank"`, or ctrl/cmd/shift held) leaves this page alive, so its click can wait for analytics.
+ * (`target="_blank"`, or ctrl/cmd/shift held) or downloads it (alt/option held) leaves this page alive, so its click can wait for analytics.
  */
-function isSameTabNavigation(event: { currentTarget: EventTarget; ctrlKey: boolean; metaKey: boolean; shiftKey: boolean }): boolean {
+function isSameTabNavigation(event: {
+  currentTarget: EventTarget
+  ctrlKey: boolean
+  metaKey: boolean
+  shiftKey: boolean
+  altKey: boolean
+}): boolean {
   const target = event.currentTarget instanceof Element ? event.currentTarget.getAttribute('target') : null
-  return target !== '_blank' && !event.ctrlKey && !event.metaKey && !event.shiftKey
+  return target !== '_blank' && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey
 }
 
 export { isSameTabNavigation, isSectionActive, toNavbarAction, toNotificationLocale }
