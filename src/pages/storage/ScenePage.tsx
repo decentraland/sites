@@ -9,13 +9,21 @@ import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { SceneAddDialog, SceneEditDialog } from '../../components/storage/SceneDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
-import { getStorageErrorStatus, useClearSceneMutation, useDeleteSceneValueMutation, useListSceneKeysQuery } from '../../features/storage'
+import {
+  getStorageErrorStatus,
+  toStorageValueFile,
+  useClearSceneMutation,
+  useDeleteSceneValueMutation,
+  useLazyGetSceneValueQuery,
+  useListSceneKeysQuery
+} from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
+import { triggerBlobDownload } from '../../modules/file'
 import { SegmentEvent } from '../../modules/segment.types'
 import { SectionHeader } from './shared.styled'
 
@@ -29,6 +37,7 @@ function ScenePageContent() {
   const { currentData: sceneKeys, isLoading } = useListSceneKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteSceneValue] = useDeleteSceneValueMutation()
   const [clearScene] = useClearSceneMutation()
+  const [getSceneValue] = useLazyGetSceneValueQuery()
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
@@ -45,6 +54,20 @@ function ScenePageContent() {
     }
     setDeleteKey(null)
   }, [deleteSceneValue, deleteKey, identity, realm, position, track])
+
+  const handleDownload = useCallback(
+    async (key: string) => {
+      try {
+        const { value } = await getSceneValue({ identity, realm, position, key }).unwrap()
+        const { filename, type, content } = toStorageValueFile(key, value)
+        triggerBlobDownload(new Blob([content], { type }), filename)
+        track(SegmentEvent.STORAGE_SCENE_DOWNLOAD_SUCCESS)
+      } catch (error) {
+        track(SegmentEvent.STORAGE_SCENE_DOWNLOAD_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })
+      }
+    },
+    [getSceneValue, identity, realm, position, track]
+  )
 
   const handleConfirmClear = useCallback(async () => {
     try {
@@ -92,6 +115,7 @@ function ScenePageContent() {
           emptyLabel={t('component.storage.scene_page.no_keys')}
           onEdit={setEditKey}
           onDelete={setDeleteKey}
+          onDownload={handleDownload}
         />
       )}
 

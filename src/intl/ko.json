@@ -31,52 +31,43 @@
       "success": {
         "title": "거의 다 됐어요!",
         "subtitle": "방금 다운로드한 파일을 열어 Decentraland 설치를 완료하고 {action}을 시작하세요",
-        "subtitle_action_exploring": "탐험",
         "step": "단계",
-        "footer": "다운로드에 문제가 있나요? 다시 시도해 보세요: {link}",
-        "footer_link_label": "다시 다운로드",
+        "started": {
+          "title": "다운로드가 시작되었습니다!",
+          "subtitle": "아래 3단계를 따라 Decentraland를 설치하고 바로 입장하세요."
+        },
+        "footer_retry": "다운로드가 시작되지 않았나요? {link}",
+        "footer_retry_link": "다시 시도",
+        "footer_help": "도움이 필요하신가요? 다음 페이지로 이동하세요: {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "다운로드가 완료되면 {event} 이벤트 페이지로 돌아가서 입장하세요. {seconds}초 후 리디렉션됩니다.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "열기",
-              "text": "다운로드 폴더에서 <span>Decentraland</span> 파일을 열어 설치 마법사를 시작하세요."
+              "title": "파일 찾기",
+              "text": "브라우저 도구 모음의 다운로드 아이콘을 클릭한 다음 Decentraland 설치 프로그램(.exe)을 여세요."
             },
             "step2": {
               "title": "설치",
-              "text": "설치 마법사의 안내를 따르세요. <span>완료</span>를 클릭하면 설치가 시작됩니다."
+              "text": "설치 마법사에서 완료될 때까지 '다음'을 클릭하세요. Windows에서 권한을 요청하면 '예'를 클릭하세요."
             },
             "step3": {
-              "title": "탐험할 준비를 하세요!",
-              "text": "설치가 완료되면 Decentraland 앱이 작업 표시줄에 나타나고 자동으로 실행됩니다."
+              "title": "입장하세요!",
+              "text": "설치가 끝나면 Decentraland가 자동으로 열립니다. 월드에서 만나요!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "열기",
-              "text": "브라우저의 '최근 다운로드' 또는 '다운로드' 폴더에서 <span>Decentraland</span> 파일을 클릭하여 여세요."
+              "title": "파일 찾기",
+              "text": "브라우저 도구 모음의 다운로드 아이콘을 클릭한 다음 Decentraland-Installer.dmg를 여세요."
             },
             "step2": {
               "title": "설치",
-              "text": "이 창이 나타납니다. <span>Decentraland</span> 버튼을 더블클릭하여 설치를 시작하세요."
+              "text": "열린 창에서 Decentraland 아이콘을 더블클릭하세요. macOS 보안 메시지가 나타나면 '열기'를 클릭하세요."
             },
             "step3": {
-              "title": "탐험할 준비를 하세요!",
-              "text": "설치가 완료되면 Decentraland 앱이 Dock에 나타나고 자동으로 실행됩니다."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "열기",
-              "text": "브라우저의 '최근 다운로드' 또는 '다운로드' 폴더에서 <span>Decentraland</span> 파일을 클릭하여 여세요."
-            },
-            "step2": {
-              "title": "설치",
-              "text": "이 창이 나타납니다. <span>Decentraland</span> 버튼을 더블클릭하여 설치를 시작하세요."
-            },
-            "step3": {
-              "title": "탐험할 준비를 하세요!",
-              "text": "설치가 완료되면 Decentraland 앱이 Dock에 나타나고 자동으로 실행됩니다."
+              "title": "입장하세요!",
+              "text": "설치가 끝나면 Decentraland가 자동으로 열립니다. 월드에서 만나요!"
             }
           }
         }

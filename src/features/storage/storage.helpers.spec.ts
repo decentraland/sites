@@ -35,6 +35,7 @@ import {
   parcelToLand,
   sendSignedFetch,
   storageContextId,
+  toStorageValueFile,
   transformLandQueryResult,
   transformRentalsQueryResult,
   truncateAddress,
@@ -539,5 +540,41 @@ describe('graphql query builders', () => {
 
   it('getRentalsQuery returns a non-empty query string', () => {
     expect(getRentalsQuery()).toContain('query Rentals')
+  })
+})
+
+describe('toStorageValueFile', () => {
+  describe('when the value is a string', () => {
+    it('should keep the key as the filename and the string as the content', () => {
+      expect(toStorageValueFile('feedback-1.csv', 'id,rating\n1,5')).toEqual({
+        filename: 'feedback-1.csv',
+        type: 'text/csv',
+        content: 'id,rating\n1,5'
+      })
+    })
+
+    it('should lowercase the extension and type it by that', () => {
+      expect(toStorageValueFile('State.JSON', '{}')).toMatchObject({ filename: 'State.json', type: 'application/json' })
+    })
+
+    it('should type a key with an unknown or no extension as plain text', () => {
+      expect(toStorageValueFile('notes.md', 'x').type).toBe('text/plain')
+      expect(toStorageValueFile('greeting', 'hi').type).toBe('text/plain')
+    })
+  })
+
+  describe('when the value is not a string', () => {
+    it('should save it as pretty JSON with a .json filename', () => {
+      expect(toStorageValueFile('gameState', { level: 2 })).toEqual({
+        filename: 'gameState.json',
+        type: 'application/json',
+        content: '{\n  "level": 2\n}'
+      })
+    })
+
+    it('should not add a second .json extension', () => {
+      expect(toStorageValueFile('scores.json', [1, 2]).filename).toBe('scores.json')
+      expect(toStorageValueFile('scores.JSON', [1, 2]).filename).toBe('scores.json')
+    })
   })
 })

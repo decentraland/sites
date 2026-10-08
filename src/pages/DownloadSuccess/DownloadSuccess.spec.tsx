@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, waitFor } from '@testing-library/react'
+import { act, render, waitFor } from '@testing-library/react'
 import { DownloadSuccess } from './DownloadSuccess'
 
 const mockCalculateDownloadUrl = jest.fn()
@@ -52,6 +52,9 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 const mockAnalyticsPage = jest.fn()
+// Browser reported by the (mocked) detection hook; undefined = still resolving.
+let mockUserAgentData: { browser: { name: string } } | undefined
+let mockResolveBrowser: (browserName: string) => void
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({
@@ -66,6 +69,16 @@ jest.mock('@dcl/hooks', () => ({
       }
     }
   }),
+  // Only selects the Step 1 image: it must never reach the download flow.
+  useAdvancedUserAgentData: () => {
+    // Like the real hook: the result arrives later through a state update of the component that calls it.
+    const [, setTick] = jest.requireActual('react').useState(0)
+    mockResolveBrowser = (browserName: string) => {
+      mockUserAgentData = { browser: { name: browserName } }
+      setTick((tick: number) => tick + 1)
+    }
+    return [!mockUserAgentData, mockUserAgentData]
+  },
   // usePageView (this page is outside <Layout />, so it emits its own pageview)
   useAnalytics: () => ({ isInitialized: true, page: mockAnalyticsPage })
 }))
@@ -132,20 +145,29 @@ type LayoutProps = {
   loading?: boolean
   backdropContent?: React.ReactNode
   footer?: React.ReactNode
-  renderCardOverlay?: (step: unknown, index: number) => React.ReactNode
-  steps: unknown[]
+  steps: Array<{ image: string; imageFit: string; highlight?: { x: number; y: number } }>
   afterContent?: React.ReactNode
 }
 
-jest.mock('./DownloadSuccessLayout', () => ({
-  DownloadSuccessLayout: (props: LayoutProps) => (
-    <div data-testid="layout">
-      <div data-testid="backdrop">{props.backdropContent}</div>
-      <div data-testid="footer-slot">{props.footer}</div>
-      <div data-testid="step-overlay">{props.renderCardOverlay?.(props.steps[0], 0)}</div>
-      {props.afterContent}
-    </div>
-  )
+let mockLayoutProps: LayoutProps
+
+jest.mock('./DownloadStepsLayout', () => ({
+  DownloadStepsLayout: (props: LayoutProps) => {
+    mockLayoutProps = props
+    return (
+      <div data-testid="layout">
+        <div data-testid="backdrop">{props.backdropContent}</div>
+        <div data-testid="footer-slot">{props.footer}</div>
+        {props.afterContent}
+      </div>
+    )
+  }
+}))
+
+jest.mock('./DownloadSteps.styled', () => ({
+  DownloadStepsExternalIcon: () => <span />,
+  DownloadStepsFooterLine: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  DownloadStepsFooterLink: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>
 }))
 
 jest.mock('./DownloadSuccess.styled', () => ({
@@ -153,8 +175,7 @@ jest.mock('./DownloadSuccess.styled', () => ({
   DownloadBackdropText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   DownloadDetailContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DownloadProgressBar: () => <div />,
-  DownloadProgressContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  HighlightAnimation: () => <div />
+  DownloadProgressContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }))
 
 jest.mock('../../components/LandingFooter', () => ({
@@ -162,6 +183,7 @@ jest.mock('../../components/LandingFooter', () => ({
 }))
 
 beforeEach(() => {
+  mockUserAgentData = undefined
   // jest.resetAllMocks() in each suite's afterEach wipes implementations, so
   // re-establish the default anon id (resolved immediately) before every test.
   mockUseAnonUserId.mockReturnValue('22222222-2222-4222-8222-222222222222')
@@ -621,7 +643,7 @@ describe('when the user clicks the footer re-download link', () => {
 
   it('should fire download_started with the footer place and call streamOrFallback', async () => {
     const { findByRole } = render(<DownloadSuccess />)
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
     await waitFor(() => {
       expect(mockStreamOrFallback).toHaveBeenCalled()
@@ -656,7 +678,7 @@ describe('when the user clicks the footer re-download link', () => {
     window.history.replaceState({}, '', '/download_success?os=Windows&arch=amd64&position=10,20&realm=foo.eth')
     mockUseAnonUserId.mockReturnValue(undefined)
     const { findByRole } = render(<DownloadSuccess />)
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
     await waitFor(() =>
       expect(mockCalculateDownloadUrl).toHaveBeenCalledWith(expect.objectContaining({ anonUserId: '11111111-1111-4111-8111-111111111111' }))
@@ -668,7 +690,7 @@ describe('when the user clicks the footer re-download link', () => {
     let resolveStream: (() => void) | undefined
     mockStreamOrFallback.mockImplementation(() => new Promise<{ bytesTransferred?: number }>(r => (resolveStream = () => r({}))))
     const { findByRole } = render(<DownloadSuccess />)
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
     link.click()
     resolveStream?.()
@@ -688,7 +710,7 @@ describe('when the user clicks the footer re-download link', () => {
     })
     mockCalculateDownloadUrl.mockRejectedValueOnce(new Error('boom'))
 
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
 
     await waitFor(() => {
@@ -716,7 +738,7 @@ describe('when the user clicks the footer re-download link', () => {
     // tracker.failed line, not the fallback tracker path).
     mockStreamOrFallback.mockRejectedValueOnce(new Error('footer stream blew up'))
 
-    const link = await findByRole('link')
+    const link = await findByRole('link', { name: 'page.download.success.footer_retry_link' })
     link.click()
 
     await waitFor(() => {
@@ -1234,5 +1256,112 @@ describe('when DownloadSuccess mounts', () => {
     await waitFor(() => expect(findEventCall('download_started')).toBeDefined())
     const arrivedCalls = mockPostSegmentEvent.mock.calls.filter(([event]) => event === 'download_success_arrived')
     expect(arrivedCalls).toHaveLength(1)
+  })
+})
+
+describe('when choosing the step images by operating system and detected browser', () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    mockCalculateDownloadUrl.mockResolvedValue({ url: 'https://cdn.decentraland.org/launcher/signed/Install.bin', filename: 'Install.bin' })
+    mockStreamOrFallback.mockResolvedValue({ bytesTransferred: 1024 })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  const renderFor = (os: string, browserName?: string) => {
+    searchParamsInstance = new URLSearchParams(`os=${os}&place=landing-hero`)
+    mockUserAgentData = browserName === undefined ? undefined : { browser: { name: browserName } }
+
+    return render(<DownloadSuccess />)
+  }
+
+  // Images export their file name in jest (see jest.config.ts), so image and highlight are asserted together.
+  describe.each([
+    ['macos', 'Chrome', 'macos-chrome-step1.webp', { x: 75.82, y: 47.81 }],
+    ['macos', 'Opera', 'macos-opera-step1.webp', { x: 68.78, y: 35.21 }],
+    ['macos', 'Opera GX', 'macos-opera-step1.webp', { x: 68.78, y: 35.21 }],
+    ['macos', 'Safari', 'macos-safari-step1.webp', { x: 49.37, y: 26.25 }],
+    ['macos', 'Mobile Safari', 'macos-safari-step1.webp', { x: 49.37, y: 26.25 }],
+    ['macos', 'Edge', 'windows-edge-step1.webp', { x: 75.63, y: 36.98 }],
+    ['windows', 'Chrome', 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    ['windows', 'Opera', 'windows-opera-step1.webp', { x: 68.4, y: 38.75 }],
+    ['windows', 'Edge', 'windows-edge-step1.webp', { x: 75.63, y: 36.98 }],
+    ['windows', 'Safari', 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    // unknown and still resolving browsers fall back to Chrome of the OS
+    ['macos', undefined, 'macos-chrome-step1.webp', { x: 75.82, y: 47.81 }],
+    ['macos', 'Unknown', 'macos-chrome-step1.webp', { x: 75.82, y: 47.81 }],
+    ['windows', undefined, 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    ['windows', 'Unknown', 'windows-chrome-step1.webp', { x: 75, y: 45.42 }],
+    ['macos', 'Firefox', 'macos-firefox-step1.webp', { x: 77.28, y: 40.21 }],
+    ['macos', 'Brave', 'macos-brave-step1.webp', { x: 64.47, y: 46.15 }],
+    ['windows', 'Firefox', 'windows-firefox-step1.webp', { x: 76.46, y: 41.35 }],
+    ['windows', 'Brave', 'windows-brave-step1.webp', { x: 63.64, y: 42.92 }]
+  ])('and the OS is %s and the browser is %s', (os, browserName, image, highlight) => {
+    it('should pass its Step 1 image together with the highlight to the layout', () => {
+      renderFor(os, browserName)
+
+      expect(mockLayoutProps.steps[0]).toEqual(expect.objectContaining({ image, imageFit: 'cover', highlight }))
+    })
+  })
+
+  describe('and the OS is macOS', () => {
+    it('should use the macOS install image contained and the shared launch image covering', () => {
+      renderFor('macos', 'Chrome')
+
+      expect(mockLayoutProps.steps.slice(1).map(({ image, imageFit }) => [image, imageFit])).toEqual([
+        ['macos-step2.webp', 'contain'],
+        ['step3.webp', 'cover']
+      ])
+    })
+  })
+
+  describe('and the OS is Windows', () => {
+    it('should use the Windows install image covering and the shared launch image', () => {
+      renderFor('windows', 'Chrome')
+
+      expect(mockLayoutProps.steps.slice(1).map(({ image, imageFit }) => [image, imageFit])).toEqual([
+        ['windows-step2.webp', 'cover'],
+        ['step3.webp', 'cover']
+      ])
+    })
+  })
+
+  describe('and the steps are built', () => {
+    it('should highlight only the first step, whatever the translated copy (the old gate on a translated word is gone)', () => {
+      renderFor('macos', 'Chrome')
+
+      expect(mockLayoutProps.steps[0].highlight).toBeDefined()
+      expect(mockLayoutProps.steps.slice(1).every(step => step.highlight === undefined)).toBe(true)
+    })
+  })
+
+  describe('and the browser is detected after the page mounted', () => {
+    it('should switch the Step 1 image without starting the download again', async () => {
+      renderFor('windows')
+
+      await waitFor(() => expect(mockStreamOrFallback).toHaveBeenCalledTimes(1))
+      expect(mockLayoutProps.steps[0].image).toBe('windows-chrome-step1.webp')
+
+      act(() => mockResolveBrowser('Edge'))
+
+      await waitFor(() => expect(mockLayoutProps.steps[0].image).toBe('windows-edge-step1.webp'))
+      expect(mockCalculateDownloadUrl).toHaveBeenCalledTimes(1)
+      expect(mockStreamOrFallback).toHaveBeenCalledTimes(1)
+      expect(mockPostSegmentEvent.mock.calls.filter(([event]) => event === 'download_started')).toHaveLength(1)
+    })
+  })
+
+  describe('and rendering the footer', () => {
+    it('should link to the help page in a new tab without leaking the opener', async () => {
+      const { findByRole } = renderFor('macos', 'Chrome')
+
+      const help = await findByRole('link', { name: 'page.download.success.footer_help_link' })
+
+      expect(help).toHaveAttribute('href', '/help')
+      expect(help).toHaveAttribute('target', '_blank')
+      expect(help).toHaveAttribute('rel', 'noopener noreferrer')
+    })
   })
 })
