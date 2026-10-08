@@ -7,6 +7,7 @@ import { useCardActions } from '../../../hooks/useCardActions'
 import { useCreatorProfile } from '../../../hooks/useCreatorProfile'
 import { useRemindMe } from '../../../hooks/useRemindMe'
 import { optimizedImageUrl } from '../../../utils/imageUrl'
+import { getOccurrenceFinishAt } from '../../../utils/recurrence'
 import { formatLocalTime } from '../../../utils/whatsOnTime'
 import { resolveEventRealm } from '../../../utils/whatsOnUrl'
 import {
@@ -38,11 +39,12 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
   const { t } = useTranslation()
   const { hasValidIdentity } = useAuthIdentity()
   const { creatorName, avatarFace, backgroundColor } = useCreatorProfile(event.user, event.user_name, t('all_hangouts.unknown_creator'))
+  const finishAt = getOccurrenceFinishAt(event)
   const { copied, handleCopy, handleAddToCalendar } = useCardActions({
     name: event.name,
     description: event.description,
     startAt: event.start_at,
-    finishAt: event.finish_at,
+    finishAt,
     x: event.x,
     y: event.y,
     realm: resolveEventRealm(event.world, event.server)
@@ -77,7 +79,7 @@ const FutureCard = memo(({ event, onClick }: FutureCardProps) => {
             <CreatorNameHighlight>{creatorName}</CreatorNameHighlight>
           </CreatorName>
         </CreatorRow>
-        <LocalDateTimeTooltip startIso={event.start_at} finishIso={event.finish_at}>
+        <LocalDateTimeTooltip startIso={event.start_at} finishIso={finishAt}>
           <TimePill data-role="time-pill">
             <TimeIcon />
             <TimeLabel>{formatLocalTime(event.next_start_at || event.start_at)}</TimeLabel>
