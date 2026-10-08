@@ -1,10 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAnalytics } from '@dcl/hooks'
+import { isBotClient, useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
+import { isAnalyticsDisabledForSession } from '../../modules/analyticsSessionGate'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { assetUrl } from '../../utils/assetUrl'
 import { getAvatarBackgroundColor, getDisplayName } from '../../utils/avatarColor'
 // Module-level cache for notification type→component map from ui2.
@@ -255,12 +258,25 @@ const LandingNavbar = memo(function LandingNavbar({
   const { isInitialized, track } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Read through a ref (as useDownloadClick does) so a click sees Segment's current readiness even if it
+  // finished loading since the last render.
+  const isInitializedRef = useRef(isInitialized)
+  isInitializedRef.current = isInitialized
+
   const trackNavbar = useCallback(
     (action: string, link?: { section: string; href: string }) => {
-      if (!isInitialized) return
-      track(SegmentEvent.CLICK, { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link })
+      const properties = { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link }
+      if (isInitializedRef.current) {
+        track(SegmentEvent.CLICK, properties)
+        return
+      }
+      // Analytics loads once the page is idle and is ready only after Segment fetched its settings. Most navbar
+      // links leave the page, so a click before that would be lost with it; the beacon survives the unload. It
+      // follows the same rules that keep the SDK off: sessions that started on an exempt page, and bots.
+      if (isAnalyticsDisabledForSession() || isBotClient(navigator.userAgent)) return
+      postSegmentEvent(SegmentEvent.CLICK, properties, ensureSegmentAnonymousId())
     },
-    [isInitialized, track]
+    [track]
   )
 
   const trackNavbarLink = useCallback(

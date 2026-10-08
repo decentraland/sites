@@ -17,7 +17,10 @@ jest.mock('decentraland-ui2', () => ({
 }))
 jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ NotificationComponentByType: {} }))
 
-jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn() }))
+jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn(), isBotClient: jest.fn() }))
+jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsDisabledForSession: jest.fn() }))
+jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
+jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn() }))
 jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn() }))
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: jest.fn()
@@ -529,18 +532,86 @@ describe('when the visitor clicks a navbar link', () => {
   })
 
   describe('and analytics has not finished loading', () => {
-    beforeEach(async () => {
-      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+    let postSegmentEvent: jest.Mock
+    let isBotClient: jest.Mock
+    let isAnalyticsDisabledForSession: jest.Mock
+
+    const clickCreatorDocumentation = async () => {
       renderAt('/events')
       const createTab = desktopSection(/navbar\.create$/i)
       await user.hover(createTab.parentElement!)
       fireEvent.click(
         preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
       )
+    }
+
+    beforeEach(() => {
+      postSegmentEvent = jest.requireMock('../../modules/segmentBeacon').postSegmentEvent
+      isBotClient = jest.requireMock('@dcl/hooks').isBotClient
+      isAnalyticsDisabledForSession = jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsDisabledForSession
+      ;(jest.requireMock('../../modules/segmentAnonymousId').ensureSegmentAnonymousId as jest.Mock).mockReturnValue('anon-1')
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      isBotClient.mockReturnValue(false)
+      isAnalyticsDisabledForSession.mockReturnValue(false)
     })
 
-    it('should not send anything', () => {
-      expect(track).not.toHaveBeenCalled()
+    describe('and the visitor is a person in a session with analytics on', () => {
+      beforeEach(async () => {
+        await clickCreatorDocumentation()
+      })
+
+      it('should send the click through the beacon, which survives the page unloading', () => {
+        expect(track).not.toHaveBeenCalled()
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+        expect(postSegmentEvent).toHaveBeenCalledWith(
+          'Click',
+          {
+            place: 'Landing Navbar',
+            event: 'click',
+            action: 'creator_documentation',
+            section: 'create',
+            href: 'https://docs.decentraland.org/creator'
+          },
+          'anon-1'
+        )
+      })
+    })
+
+    describe('and the session started on an exempt page', () => {
+      beforeEach(async () => {
+        isAnalyticsDisabledForSession.mockReturnValue(true)
+        await clickCreatorDocumentation()
+      })
+
+      it('should not send anything', () => {
+        expect(track).not.toHaveBeenCalled()
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and the visitor is a bot', () => {
+      beforeEach(async () => {
+        isBotClient.mockReturnValue(true)
+        await clickCreatorDocumentation()
+      })
+
+      it('should not send anything', () => {
+        expect(track).not.toHaveBeenCalled()
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('and analytics is ready', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      fireEvent.click(preventNavigation(within(mobileMenu).getByRole('link', { name: /navbar\.learn/i, hidden: true })))
+    })
+
+    it('should send the click through analytics and not the beacon', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(jest.requireMock('../../modules/segmentBeacon').postSegmentEvent).not.toHaveBeenCalled()
     })
   })
 
