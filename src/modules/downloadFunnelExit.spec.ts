@@ -5,14 +5,14 @@ import { DEFAULT_SEGMENT_TRACK_URL } from './segmentConfig'
 import type { DownloadFunnelExitData } from './downloadFunnelExit.types'
 
 let mockEnvValues: Record<string, string>
-let mockExempt: boolean
+let mockSessionDisabled: boolean
 
 jest.mock('../config/env', () => ({
   getEnv: (key: string) => mockEnvValues[key] ?? ''
 }))
 
-jest.mock('../utils/isAnalyticsExemptPath', () => ({
-  isAnalyticsExemptPath: () => mockExempt
+jest.mock('./analyticsSessionGate', () => ({
+  isAnalyticsDisabledForSession: () => mockSessionDisabled
 }))
 
 const sampleData = (overrides: Partial<DownloadFunnelExitData> = {}): DownloadFunnelExitData => ({
@@ -40,7 +40,7 @@ describe('downloadFunnelExit', () => {
     localStorage.clear()
     document.cookie = 'ajs_anonymous_id=; path=/; max-age=0'
     mockEnvValues = { SEGMENT_KEY: 'wk-test' }
-    mockExempt = false
+    mockSessionDisabled = false
     mockFetch = jest.fn(() => Promise.resolve({ ok: true }))
     mockSendBeacon = jest.fn(() => true)
     ;(global as unknown as { fetch: jest.Mock }).fetch = mockFetch
@@ -183,8 +183,8 @@ describe('downloadFunnelExit', () => {
     })
   })
 
-  it('should transmit on an analytics-exempt path (conversion beacons bypass the exempt gate)', () => {
-    mockExempt = true
+  it('should transmit when the session started on an exempt path (conversion beacons bypass the exempt gate)', () => {
+    mockSessionDisabled = true
     sendDownloadFunnelExit(sampleData())
     expect(mockSendBeacon).toHaveBeenCalledWith(DEFAULT_SEGMENT_TRACK_URL, expect.any(Blob))
   })
