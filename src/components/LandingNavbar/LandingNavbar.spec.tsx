@@ -681,7 +681,7 @@ describe('when the visitor clicks a navbar link', () => {
       })
       fireEvent(learn, new MouseEvent('auxclick', { bubbles: true, button: 2 }))
       // Browsers do not send this today, but it exercises the primary-button guard on click too.
-      fireEvent.click(learn, { button: 2 })
+      fireEvent.click(preventNavigation(learn), { button: 2 })
     })
 
     it('should not send anything', () => {
