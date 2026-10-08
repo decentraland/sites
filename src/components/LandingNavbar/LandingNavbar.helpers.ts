@@ -49,4 +49,13 @@ function toNavbarAction(labelKey: string): string {
   return labelKey.slice(labelKey.lastIndexOf('.') + 1)
 }
 
-export { isSectionActive, toNavbarAction, toNotificationLocale }
+/**
+ * Whether a primary click on a navbar link replaces the current page. A link that opens in a new tab
+ * (`target="_blank"`, or ctrl/cmd/shift held) leaves this page alive, so its click can wait for analytics.
+ */
+function isSameTabNavigation(event: { currentTarget: EventTarget; ctrlKey: boolean; metaKey: boolean; shiftKey: boolean }): boolean {
+  const target = event.currentTarget instanceof Element ? event.currentTarget.getAttribute('target') : null
+  return target !== '_blank' && !event.ctrlKey && !event.metaKey && !event.shiftKey
+}
+
+export { isSameTabNavigation, isSectionActive, toNavbarAction, toNotificationLocale }

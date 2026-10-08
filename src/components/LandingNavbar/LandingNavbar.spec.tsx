@@ -536,13 +536,10 @@ describe('when the visitor clicks a navbar link', () => {
     let isBotClient: jest.Mock
     let isAnalyticsDisabledForSession: jest.Mock
 
-    const clickCreatorDocumentation = async () => {
+    const clickLearn = () => {
       renderAt('/events')
-      const createTab = desktopSection(/navbar\.create$/i)
-      await user.hover(createTab.parentElement!)
-      fireEvent.click(
-        preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
-      )
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      fireEvent.click(preventNavigation(within(mobileMenu).getByRole('link', { name: /navbar\.learn/i, hidden: true })))
     }
 
     beforeEach(() => {
@@ -557,7 +554,7 @@ describe('when the visitor clicks a navbar link', () => {
 
     describe('and the visitor is a person in a session with analytics on', () => {
       beforeEach(async () => {
-        await clickCreatorDocumentation()
+        clickLearn()
       })
 
       it('should send the click through the beacon, which survives the page unloading', () => {
@@ -565,22 +562,54 @@ describe('when the visitor clicks a navbar link', () => {
         expect(postSegmentEvent).toHaveBeenCalledTimes(1)
         expect(postSegmentEvent).toHaveBeenCalledWith(
           'Click',
-          {
-            place: 'Landing Navbar',
-            event: 'click',
-            action: 'creator_documentation',
-            section: 'create',
-            href: 'https://docs.decentraland.org/creator'
-          },
+          { place: 'Landing Navbar', event: 'click', action: 'learn', section: 'learn', href: 'https://decentraland.org/blog/' },
           'anon-1'
         )
+      })
+    })
+
+    describe('and the link opens in a new tab', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(async () => {
+        ;({ rerender } = renderAt('/events'))
+        const createTab = desktopSection(/navbar\.create$/i)
+        await user.hover(createTab.parentElement!)
+        fireEvent.click(
+          preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
+        )
+      })
+
+      it('should not use the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
+          // A new prop, since the memoized navbar would otherwise skip the render that reads the new readiness.
+          rerender(
+            <MemoryRouter initialEntries={['/events']}>
+              <LandingNavbar {...props} isSignedIn={false} onClickJumpIn={jest.fn()} />
+            </MemoryRouter>
+          )
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith(
+            'Click',
+            expect.objectContaining({ action: 'creator_documentation', section: 'create', track_deferred: true })
+          )
+        })
       })
     })
 
     describe('and the session started on an exempt page', () => {
       beforeEach(async () => {
         isAnalyticsDisabledForSession.mockReturnValue(true)
-        await clickCreatorDocumentation()
+        clickLearn()
       })
 
       it('should not send anything', () => {
@@ -592,7 +621,7 @@ describe('when the visitor clicks a navbar link', () => {
     describe('and the visitor is a bot', () => {
       beforeEach(async () => {
         isBotClient.mockReturnValue(true)
-        await clickCreatorDocumentation()
+        clickLearn()
       })
 
       it('should not send anything', () => {
