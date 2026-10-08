@@ -61,6 +61,8 @@ enum SegmentEvent {
   STORAGE_SCENE_DELETE_FAILURE = 'Storage Scene Delete Failure',
   STORAGE_SCENE_CLEAR_SUCCESS = 'Storage Scene Clear Success',
   STORAGE_SCENE_CLEAR_FAILURE = 'Storage Scene Clear Failure',
+  STORAGE_SCENE_DOWNLOAD_SUCCESS = 'Storage Scene Download Success',
+  STORAGE_SCENE_DOWNLOAD_FAILURE = 'Storage Scene Download Failure',
   STORAGE_PLAYER_SET_SUCCESS = 'Storage Player Set Success',
   STORAGE_PLAYER_SET_FAILURE = 'Storage Player Set Failure',
   STORAGE_PLAYER_DELETE_SUCCESS = 'Storage Player Delete Success',

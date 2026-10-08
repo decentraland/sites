@@ -32,6 +32,12 @@ interface SceneValue {
   value: unknown
 }
 
+interface StorageValueFile {
+  filename: string
+  type: string
+  content: string
+}
+
 interface GetSceneValueParams {
   key: string
 }
@@ -318,6 +324,7 @@ export type {
   SetPlayerValueParams,
   SetSceneValueParams,
   StorageContext,
+  StorageValueFile,
   StorageValueResponse,
   SubgraphAuthorization,
   SubgraphEstate,

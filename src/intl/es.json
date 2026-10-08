@@ -31,52 +31,43 @@
       "success": {
         "title": "¡Ya casi está!",
         "subtitle": "Abre el archivo que acabas de descargar para terminar de instalar Decentraland y comenzar a {action}",
-        "subtitle_action_exploring": "explorar",
         "step": "Paso",
-        "footer": "¿Problemas con la descarga? Intentemos de nuevo: {link}",
-        "footer_link_label": "Descargar de nuevo",
+        "started": {
+          "title": "¡Tu descarga ha comenzado!",
+          "subtitle": "Sigue estos 3 pasos para instalar Decentraland y entrar."
+        },
+        "footer_retry": "¿No empezó la descarga? {link}",
+        "footer_retry_link": "Inténtalo de nuevo",
+        "footer_help": "¿Necesitas ayuda? Ve a {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "Después de que se complete la descarga, vuelve a la página del evento {event} para poder entrar. Redireccionando en {seconds} segundos.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "Abrir",
-              "text": "Abre el archivo <span>Decentraland</span> desde tu carpeta de Descargas para iniciar el Asistente de Instalación."
+              "title": "Encuentra tu archivo",
+              "text": "Haz clic en el icono de descarga de la barra de herramientas de tu navegador y abre el instalador de Decentraland (.exe)."
             },
             "step2": {
-              "title": "Instalar",
-              "text": "Sigue las instrucciones del Asistente de Instalación. Cuando hagas clic en <span>Finalizar</span>, comenzará el proceso de instalación."
+              "title": "Instala",
+              "text": "Sigue el Asistente de Instalación y haz clic en Siguiente hasta que termine. Si Windows pide permiso, haz clic en Sí."
             },
             "step3": {
-              "title": "¡Prepárate para explorar!",
-              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu barra de tareas y se iniciará automáticamente."
+              "title": "¡Entra!",
+              "text": "Una vez instalado, Decentraland se abre solo. ¡Nos vemos dentro!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "Abrir",
-              "text": "Haz clic en el archivo <span>Decentraland</span> desde las 'Descargas recientes' de tu navegador o tu carpeta de 'Descargas' para abrirlo."
+              "title": "Encuentra tu archivo",
+              "text": "Haz clic en el icono de descarga de la barra de herramientas de tu navegador y abre Decentraland-Installer.dmg."
             },
             "step2": {
-              "title": "Instalar",
-              "text": "Debería aparecer esta ventana. Haz doble clic en el botón <span>Decentraland</span> para iniciar la instalación."
+              "title": "Instala",
+              "text": "Haz doble clic en el icono de Decentraland en la ventana que se abre. Cuando aparezca el mensaje de seguridad de macOS, haz clic en Abrir."
             },
             "step3": {
-              "title": "¡Prepárate para explorar!",
-              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu Dock y se iniciará automáticamente."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "Abrir",
-              "text": "Haz clic en el archivo <span>Decentraland</span> desde las 'Descargas recientes' de tu navegador o tu carpeta de 'Descargas' para abrirlo."
-            },
-            "step2": {
-              "title": "Instalar",
-              "text": "Debería aparecer esta ventana. Haz doble clic en el botón <span>Decentraland</span> para iniciar la instalación."
-            },
-            "step3": {
-              "title": "¡Prepárate para explorar!",
-              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu Dock y se iniciará automáticamente."
+              "title": "¡Entra!",
+              "text": "Una vez instalado, Decentraland se abre solo. ¡Nos vemos dentro!"
             }
           }
         }
