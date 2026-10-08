@@ -638,6 +638,79 @@ describe('when the visitor clicks a navbar link', () => {
         expect(postSegmentEvent).not.toHaveBeenCalled()
       })
     })
+
+    describe('and the visitor clicks Sign In', () => {
+      beforeEach(async () => {
+        renderAt('/events')
+        await user.click(screen.getAllByRole('button', { name: 'component.landing.navbar.sign_in' })[0])
+      })
+
+      it('should send it through the beacon, since signing in redirects away', () => {
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+        expect(postSegmentEvent).toHaveBeenCalledWith(
+          'Click',
+          expect.objectContaining({ action: 'sign_in', track_deferred: true }),
+          'anon-1'
+        )
+      })
+    })
+
+    describe('and the visitor clicks a section tab', () => {
+      let open: jest.SpyInstance
+
+      beforeEach(() => {
+        open = jest.spyOn(window, 'open').mockImplementation(() => null)
+        renderAt('/events')
+        fireEvent.click(desktopSection(/navbar\.discover$/i))
+      })
+
+      afterEach(() => {
+        open.mockRestore()
+      })
+
+      it('should send it through the beacon before the tab navigates in the same tab', () => {
+        expect(postSegmentEvent).toHaveBeenCalledWith(
+          'Click',
+          expect.objectContaining({ action: 'discover', section: 'discover', href: '/events', track_deferred: true }),
+          'anon-1'
+        )
+        expect(postSegmentEvent.mock.invocationCallOrder[0]).toBeLessThan(open.mock.invocationCallOrder[0])
+      })
+    })
+
+    describe('and the visitor clicks Jump In', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+      let onClickJumpIn: jest.Mock
+
+      beforeEach(async () => {
+        onClickJumpIn = jest.fn()
+        Object.defineProperty(window, 'scrollY', { configurable: true, value: 100 })
+        ;({ rerender } = renderAt('/', { isLandingPage: true, onClickJumpIn }))
+        fireEvent.scroll(window)
+        await user.click(screen.getByRole('button', { name: /jump_in/i }))
+      })
+
+      it('should queue it instead of using the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+        expect(onClickJumpIn).toHaveBeenCalledTimes(1)
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
+          rerender(
+            <MemoryRouter initialEntries={['/']}>
+              <LandingNavbar {...props} isSignedIn={false} isLandingPage onClickJumpIn={jest.fn()} />
+            </MemoryRouter>
+          )
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'jump_in', track_deferred: true }))
+        })
+      })
+    })
   })
 
   describe('and analytics is ready', () => {
@@ -650,6 +723,16 @@ describe('when the visitor clicks a navbar link', () => {
     it('should send the click through analytics and not the beacon', () => {
       expect(track).toHaveBeenCalledTimes(1)
       expect(jest.requireMock('../../modules/segmentBeacon').postSegmentEvent).not.toHaveBeenCalled()
+    })
+
+    it('should send the plain click payload, without deferral fields', () => {
+      expect(track).toHaveBeenCalledWith('Click', {
+        place: 'Landing Navbar',
+        event: 'click',
+        action: 'learn',
+        section: 'learn',
+        href: 'https://decentraland.org/blog/'
+      })
     })
   })
 
