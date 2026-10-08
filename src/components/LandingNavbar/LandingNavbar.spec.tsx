@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LandingNavbar } from './LandingNavbar'
 
@@ -376,6 +376,137 @@ describe('when the notification list is open', () => {
       renderAt('/events', { isSignedIn: true, notifications })
 
       expect(screen.getByText('component.landing.navbar.notifications_empty_new')).toBeInTheDocument()
+    })
+  })
+})
+
+describe('when the visitor clicks a navbar link', () => {
+  let user: ReturnType<typeof userEvent.setup>
+  let track: jest.Mock
+
+  const preventNavigation = (element: HTMLElement) => {
+    element.addEventListener('click', event => event.preventDefault())
+    return element
+  }
+
+  const desktopSection = (name: RegExp) =>
+    screen.getAllByRole('button', { name, hidden: true }).find(button => button.getAttribute('aria-haspopup') === 'true')!
+
+  beforeEach(() => {
+    user = userEvent.setup()
+    track = jest.fn()
+    ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
+  })
+
+  describe('and it is a desktop dropdown destination', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      const createTab = desktopSection(/navbar\.create$/i)
+      await user.hover(createTab.parentElement!)
+      fireEvent.click(
+        preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
+      )
+    })
+
+    it('should send one event with the link, its section and its destination', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith('Click', {
+        place: 'Landing Navbar',
+        event: 'click',
+        action: 'creator_documentation',
+        section: 'create',
+        href: 'https://docs.decentraland.org/creator'
+      })
+    })
+  })
+
+  describe('and it is a desktop section tab', () => {
+    let open: jest.SpyInstance
+
+    beforeEach(() => {
+      open = jest.spyOn(window, 'open').mockImplementation(() => null)
+      renderAt('/events')
+      fireEvent.click(desktopSection(/navbar\.create$/i))
+    })
+
+    afterEach(() => {
+      open.mockRestore()
+    })
+
+    it('should send the section with its first destination before navigating there', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'create', section: 'create', href: 'https://decentraland.org/create/' })
+      )
+      expect(track.mock.invocationCallOrder[0]).toBeLessThan(open.mock.invocationCallOrder[0])
+      expect(open).toHaveBeenCalledWith('https://decentraland.org/create/', '_self')
+    })
+  })
+
+  describe('and it is a mobile menu destination', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      await user.click(screen.getByRole('button', { name: 'Open menu' }))
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      fireEvent.click(preventNavigation(within(mobileMenu).getByRole('link', { name: /navbar\.wearables/i, hidden: true })))
+    })
+
+    it('should send it under its section', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'wearables', section: 'shop', href: 'https://decentraland.org/shop/items?category=wearable' })
+      )
+    })
+  })
+
+  describe('and it is the Learn link in the mobile menu', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      fireEvent.click(preventNavigation(within(mobileMenu).getByRole('link', { name: /navbar\.learn/i, hidden: true })))
+    })
+
+    it('should send it under its own section', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'learn', section: 'learn', href: 'https://decentraland.org/blog/' })
+      )
+    })
+  })
+
+  describe('and it is a user menu entry', () => {
+    beforeEach(async () => {
+      renderAt('/events', { isSignedIn: true, address: '0x1234567890123456789012345678901234567890' })
+      await user.click(screen.getByRole('button', { name: 'User menu' }))
+      const userMenu = screen.getByRole('button', { name: 'User menu' }).parentElement!
+      fireEvent.click(preventNavigation(within(userMenu).getByRole('link', { name: /navbar\.view_profile/i, hidden: true })))
+    })
+
+    it('should send it under the user menu section', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith(
+        'Click',
+        expect.objectContaining({ action: 'view_profile', section: 'user_menu', href: 'https://decentraland.org/profile' })
+      )
+    })
+  })
+
+  describe('and analytics has not finished loading', () => {
+    beforeEach(async () => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      renderAt('/events')
+      const createTab = desktopSection(/navbar\.create$/i)
+      await user.hover(createTab.parentElement!)
+      fireEvent.click(
+        preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
+      )
+    })
+
+    it('should not send anything', () => {
+      expect(track).not.toHaveBeenCalled()
     })
   })
 })

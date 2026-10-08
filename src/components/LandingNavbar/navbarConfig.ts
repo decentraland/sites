@@ -14,7 +14,7 @@ type MenuConfig = {
   discover: MenuSection
   shop: MenuSection
   create: MenuSection
-  learn: MenuSection
+  learn: MenuSection & { url: string }
 }
 
 const MENU_CONFIG: MenuConfig = {
