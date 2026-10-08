@@ -560,6 +560,52 @@ describe('when the visitor clicks a navbar link', () => {
     })
   })
 
+  describe('and it is a middle click on a desktop dropdown destination', () => {
+    beforeEach(async () => {
+      renderAt('/events')
+      const createTab = desktopSection(/navbar\.create$/i)
+      await user.hover(createTab.parentElement!)
+      const link = within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true })
+      fireEvent(link, new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+    })
+
+    it('should send one event for the link', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'creator_documentation', section: 'create' }))
+    })
+  })
+
+  describe('and it is a middle click on a user menu entry', () => {
+    beforeEach(async () => {
+      renderAt('/events', { isSignedIn: true, address: '0x1234567890123456789012345678901234567890' })
+      await user.click(screen.getByRole('button', { name: 'User menu' }))
+      const userMenu = screen.getByRole('button', { name: 'User menu' }).parentElement!
+      const link = within(userMenu).getByRole('link', { name: /navbar\.view_profile/i, hidden: true })
+      fireEvent(link, new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+    })
+
+    it('should send one event for the link', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'view_profile', section: 'user_menu' }))
+    })
+  })
+
+  describe('and the browser also fires click for the middle button', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const learn = within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', {
+        name: /navbar\.learn/i,
+        hidden: true
+      })
+      fireEvent(learn, new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+      fireEvent.click(preventNavigation(learn), { button: 1 })
+    })
+
+    it('should send only one event', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('and it is a right click', () => {
     beforeEach(() => {
       renderAt('/events')
