@@ -1,10 +1,9 @@
 import { useCallback, useRef } from 'react'
 import { useAnalytics } from '@dcl/hooks'
+import { postDeferredClick } from '../modules/deferredClickBeacon'
 import { recordDownloadClickCorrelation } from '../modules/downloadClickCorrelation'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { SegmentEvent } from '../modules/segment'
-import { ensureSegmentAnonymousId } from '../modules/segmentAnonymousId'
-import { postSegmentEvent } from '../modules/segmentBeacon'
 import { buildClickPayload } from './adapters/clickPayload.helpers'
 import { useDeferredTrack } from './useDeferredTrack'
 
@@ -27,9 +26,7 @@ interface UseDownloadClickOptions {
  * component-scoped queue because navigation would tear it down.
  *
  * `isInitialized` is read through a ref (same pattern as `useDeferredTrack`) so
- * the handler sees Segment's current readiness even if it booted since the last
- * render — closing the sub-render window where a stale `false` would beacon a
- * click that could have gone through analytics-next with full context.
+ * the returned handler keeps its identity when Segment becomes ready.
  */
 function useDownloadClick(options: UseDownloadClickOptions = {}) {
   const { recordCorrelation = true } = options
@@ -59,20 +56,7 @@ function useDownloadClick(options: UseDownloadClickOptions = {}) {
         return
       }
 
-      const calledAt = Date.now()
-      postSegmentEvent(
-        SegmentEvent.CLICK,
-        {
-          ...payload,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          track_called_at: calledAt,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          track_delivered_at: Date.now(),
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          track_deferred: true
-        },
-        ensureSegmentAnonymousId()
-      )
+      postDeferredClick(payload)
     },
     [deferredTrack, recordCorrelation]
   )

@@ -1,4 +1,4 @@
-import { isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
+import { isSameTabNavigation, isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
 
 describe('when deciding which navbar section owns the current page', () => {
   it('should light up Discover on the What is On calendar', () => {
@@ -65,5 +65,33 @@ describe('when naming the analytics action for a navbar link', () => {
 
   it('should return a key without dots unchanged', () => {
     expect(toNavbarAction('learn')).toBe('learn')
+  })
+})
+
+describe('when deciding whether a navbar click replaces the current page', () => {
+  const linkWith = (target?: string) => {
+    const link = document.createElement('a')
+    if (target) link.setAttribute('target', target)
+    return link
+  }
+  const click = (currentTarget: Element, keys: Partial<Record<'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey', boolean>> = {}) => ({
+    currentTarget,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    ...keys
+  })
+
+  it('should treat a plain click on a same-tab link as leaving the page', () => {
+    expect(isSameTabNavigation(click(linkWith()))).toBe(true)
+  })
+
+  it('should keep the page for a link that opens in a new tab', () => {
+    expect(isSameTabNavigation(click(linkWith('_blank')))).toBe(false)
+  })
+
+  it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'] as const)('should keep the page when %s opens the link elsewhere', key => {
+    expect(isSameTabNavigation(click(linkWith(), { [key]: true }))).toBe(false)
   })
 })
