@@ -1,4 +1,12 @@
-import { REFERRER_STORAGE_KEY, parseReferrer, readStoredReferrer, readUrlReferrer, resolveReferrer, storeReferrer } from './referrer'
+import {
+  REFERRER_STORAGE_KEY,
+  appendReferrer,
+  parseReferrer,
+  readStoredReferrer,
+  readUrlReferrer,
+  resolveReferrer,
+  storeReferrer
+} from './referrer'
 
 const VALID = '0x24e5f44999c151f08609f8e27b2238c773c4d020'
 const OTHER = '0x1111111111111111111111111111111111111111'
@@ -134,5 +142,36 @@ describe('when reading the referrer off the URL for a download CTA', () => {
     setSearch('?referrer=not-an-address')
     readUrlReferrer()
     expect(readStoredReferrer()).toBe(OTHER)
+  })
+})
+
+describe('when crediting a referrer on a link', () => {
+  const WALLET = '0x1111111111111111111111111111111111111111'
+
+  it('should leave the link untouched when there is nobody to credit', () => {
+    expect(appendReferrer('/places', undefined)).toBe('/places')
+    expect(appendReferrer('/places', null)).toBe('/places')
+  })
+
+  it('should keep a relative link relative, since auth validates the redirect it receives', () => {
+    expect(appendReferrer('/download', WALLET)).toBe(`/download?referrer=${WALLET}`)
+  })
+
+  it('should keep an absolute link absolute', () => {
+    expect(appendReferrer('https://decentraland.org/events?id=abc', WALLET)).toBe(
+      `https://decentraland.org/events?id=abc&referrer=${WALLET}`
+    )
+  })
+
+  it('should put the param before the hash rather than inside it', () => {
+    expect(appendReferrer('/download#requirements', WALLET)).toBe(`/download?referrer=${WALLET}#requirements`)
+  })
+
+  it('should replace an existing referrer instead of appending a second one', () => {
+    expect(appendReferrer('/places?referrer=0x2222222222222222222222222222222222222222', WALLET)).toBe(`/places?referrer=${WALLET}`)
+  })
+
+  it('should keep coordinates spelled with a comma, the way every deep link spells them', () => {
+    expect(appendReferrer('/jump?position=145,-6', WALLET)).toBe(`/jump?position=145,-6&referrer=${WALLET}`)
   })
 })
