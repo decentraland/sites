@@ -536,10 +536,23 @@ describe('when the visitor clicks a navbar link', () => {
     let isBotClient: jest.Mock
     let isAnalyticsDisabledForSession: jest.Mock
 
-    const clickLearn = () => {
-      renderAt('/events')
-      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
-      fireEvent.click(preventNavigation(within(mobileMenu).getByRole('link', { name: /navbar\.learn/i, hidden: true })))
+    const learnLink = () =>
+      within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', { name: /navbar\.learn/i, hidden: true })
+
+    const clickLearn = (init?: MouseEventInit) => {
+      const rendered = renderAt('/events')
+      fireEvent.click(preventNavigation(learnLink()), init)
+      return rendered
+    }
+
+    // A new prop, since the memoized navbar would otherwise skip the render that reads the new readiness.
+    const finishLoading = (rerender: ReturnType<typeof render>['rerender']) => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
+      rerender(
+        <MemoryRouter initialEntries={['/events']}>
+          <LandingNavbar {...props} isSignedIn={false} onClickJumpIn={jest.fn()} />
+        </MemoryRouter>
+      )
     }
 
     beforeEach(() => {
@@ -553,8 +566,10 @@ describe('when the visitor clicks a navbar link', () => {
     })
 
     describe('and the visitor is a person in a session with analytics on', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+
       beforeEach(async () => {
-        clickLearn()
+        ;({ rerender } = clickLearn())
       })
 
       it('should send the click through the beacon, which survives the page unloading', () => {
@@ -574,6 +589,69 @@ describe('when the visitor clicks a navbar link', () => {
           },
           'anon-1'
         )
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender)
+        })
+
+        it('should not send the click again through analytics', () => {
+          expect(track).not.toHaveBeenCalled()
+          expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+        })
+      })
+    })
+
+    describe.each([
+      ['ctrl', { ctrlKey: true }],
+      ['cmd', { metaKey: true }]
+    ])('and the visitor %s-clicks a same-tab link to open it in a new tab', (_key, init) => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(() => {
+        ;({ rerender } = clickLearn(init))
+      })
+
+      it('should queue it instead of using the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender)
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'learn', track_deferred: true }))
+        })
+      })
+    })
+
+    describe('and the visitor middle-clicks a link', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(() => {
+        ;({ rerender } = renderAt('/events'))
+        fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+      })
+
+      it('should queue it instead of using the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender)
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'learn', track_deferred: true }))
+        })
       })
     })
 
@@ -596,13 +674,7 @@ describe('when the visitor clicks a navbar link', () => {
 
       describe('and analytics finishes loading', () => {
         beforeEach(() => {
-          ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
-          // A new prop, since the memoized navbar would otherwise skip the render that reads the new readiness.
-          rerender(
-            <MemoryRouter initialEntries={['/events']}>
-              <LandingNavbar {...props} isSignedIn={false} onClickJumpIn={jest.fn()} />
-            </MemoryRouter>
-          )
+          finishLoading(rerender)
         })
 
         it('should send the queued click through analytics', () => {
