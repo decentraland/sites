@@ -74,7 +74,7 @@ describe('when deciding whether a navbar click replaces the current page', () =>
     if (target) link.setAttribute('target', target)
     return link
   }
-  const click = (currentTarget: EventTarget, keys: Partial<Record<'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey', boolean>> = {}) => ({
+  const click = (currentTarget: Element, keys: Partial<Record<'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey', boolean>> = {}) => ({
     currentTarget,
     ctrlKey: false,
     metaKey: false,
