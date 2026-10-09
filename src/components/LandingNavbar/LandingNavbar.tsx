@@ -258,8 +258,8 @@ const LandingNavbar = memo(function LandingNavbar({
   const { isInitialized, track } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Read through a ref (as useDownloadClick does) so a click sees Segment's current readiness even if it
-  // finished loading since the last render.
+  // Read through a ref (as useDownloadClick does) so trackNavbar keeps its identity when analytics becomes
+  // ready, instead of rebuilding every memoized handler.
   const isInitializedRef = useRef(isInitialized)
   isInitializedRef.current = isInitialized
 

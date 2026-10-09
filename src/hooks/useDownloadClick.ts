@@ -26,9 +26,7 @@ interface UseDownloadClickOptions {
  * component-scoped queue because navigation would tear it down.
  *
  * `isInitialized` is read through a ref (same pattern as `useDeferredTrack`) so
- * the handler sees Segment's current readiness even if it booted since the last
- * render — closing the sub-render window where a stale `false` would beacon a
- * click that could have gone through analytics-next with full context.
+ * the returned handler keeps its identity when Segment becomes ready.
  */
 function useDownloadClick(options: UseDownloadClickOptions = {}) {
   const { recordCorrelation = true } = options
