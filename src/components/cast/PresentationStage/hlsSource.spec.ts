@@ -1,17 +1,22 @@
 import HlsJs from 'hls.js'
 import { attachHls } from './hlsSource'
 
-jest.mock('hls.js', () => ({ __esModule: true, default: Object.assign(jest.fn(), { isSupported: jest.fn() }) }))
+jest.mock('hls.js', () => ({
+  __esModule: true,
+  default: Object.assign(jest.fn(), { isSupported: jest.fn(), Events: { ERROR: 'hlsError' } })
+}))
 
 const SRC = 'https://player.vimeo.com/external/123456.m3u8?s=abc'
 
 describe('when an HLS source is attached', () => {
   let video: HTMLVideoElement
-  let hls: { loadSource: jest.Mock; attachMedia: jest.Mock; destroy: jest.Mock }
+  let hls: { loadSource: jest.Mock; attachMedia: jest.Mock; destroy: jest.Mock; on: jest.Mock }
+  let onFatal: jest.Mock
 
   beforeEach(() => {
     video = document.createElement('video')
-    hls = { loadSource: jest.fn(), attachMedia: jest.fn(), destroy: jest.fn() }
+    hls = { loadSource: jest.fn(), attachMedia: jest.fn(), destroy: jest.fn(), on: jest.fn() }
+    onFatal = jest.fn()
     jest.mocked(HlsJs).mockImplementation(() => hls as never)
   })
 
@@ -25,7 +30,7 @@ describe('when an HLS source is attached', () => {
 
     beforeEach(async () => {
       jest.spyOn(video, 'canPlayType').mockReturnValue('maybe')
-      cleanup = await attachHls(video, SRC)
+      cleanup = await attachHls(video, SRC, onFatal)
     })
 
     it('should set the source on the video element', () => {
@@ -46,7 +51,7 @@ describe('when an HLS source is attached', () => {
 
     beforeEach(async () => {
       jest.spyOn(HlsJs, 'isSupported').mockReturnValue(true)
-      cleanup = await attachHls(video, SRC)
+      cleanup = await attachHls(video, SRC, onFatal)
     })
 
     it('should load the source', () => {
@@ -55,6 +60,24 @@ describe('when an HLS source is attached', () => {
 
     it('should attach the video element', () => {
       expect(hls.attachMedia).toHaveBeenCalledWith(video)
+    })
+
+    describe.each([
+      ['a fatal error', true, 1],
+      ['a recoverable error', false, 0]
+    ])('and hls.js reports %s', (_, fatal, calls) => {
+      beforeEach(() => {
+        const [event, listener] = hls.on.mock.calls[0]
+        listener(event, { fatal })
+      })
+
+      it(`should report ${calls} failure(s)`, () => {
+        expect(onFatal).toHaveBeenCalledTimes(calls)
+      })
+    })
+
+    it('should listen for hls.js errors', () => {
+      expect(hls.on).toHaveBeenCalledWith('hlsError', expect.any(Function))
     })
 
     describe('and the cleanup runs', () => {
@@ -73,7 +96,7 @@ describe('when an HLS source is attached', () => {
 
     beforeEach(() => {
       jest.spyOn(HlsJs, 'isSupported').mockReturnValue(false)
-      attached = attachHls(video, SRC)
+      attached = attachHls(video, SRC, onFatal)
     })
 
     it('should reject', async () => {

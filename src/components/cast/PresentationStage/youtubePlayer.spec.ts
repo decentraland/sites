@@ -1,5 +1,5 @@
 import { fireEvent } from '@testing-library/react'
-import type { ClientPlayerHandle, YouTubePlayer, YouTubePlayerEvents, YouTubePlayerOptions } from './PresentationStage.types'
+import type { ClientPlayerEvents, ClientPlayerHandle, YouTubePlayer, YouTubePlayerOptions } from './PresentationStage.types'
 
 const API_SRC = 'https://www.youtube.com/iframe_api'
 const VIDEO_ID = 'dQw4w9WgXcQ'
@@ -71,14 +71,56 @@ describe('when the YouTube IFrame API is loaded', () => {
       expect(retried).not.toBe(failed)
     })
   })
+
+  describe('and the API is already on the page', () => {
+    let loaded: Promise<void>
+
+    beforeEach(() => {
+      window.YT = { Player: jest.fn() }
+      loaded = loadYouTubeApi()
+    })
+
+    afterEach(() => {
+      delete window.YT
+    })
+
+    it('should resolve', async () => {
+      await expect(loaded).resolves.toBeUndefined()
+    })
+
+    it('should add no script tag', () => {
+      expect(apiScripts()).toHaveLength(0)
+    })
+  })
+
+  describe('and the page already has a ready callback', () => {
+    let previous: jest.Mock
+    let loaded: Promise<void>
+
+    beforeEach(() => {
+      previous = jest.fn()
+      window.onYouTubeIframeAPIReady = previous
+      loaded = loadYouTubeApi()
+      window.onYouTubeIframeAPIReady?.()
+    })
+
+    it('should still call the earlier callback', () => {
+      expect(previous).toHaveBeenCalled()
+    })
+
+    it('should resolve', async () => {
+      await expect(loaded).resolves.toBeUndefined()
+    })
+  })
 })
 
 describe('when a YouTube player is created', () => {
-  let createYouTubePlayer: (container: HTMLElement, id: string, events: YouTubePlayerEvents) => ClientPlayerHandle
+  let createYouTubePlayer: (container: HTMLElement, id: string, events: ClientPlayerEvents) => ClientPlayerHandle
   let player: jest.Mocked<YouTubePlayer>
   let Player: jest.Mock
   let container: HTMLDivElement
-  let events: jest.Mocked<YouTubePlayerEvents>
+  let handedParent: HTMLElement | null
+  let events: jest.Mocked<ClientPlayerEvents>
   let handle: ClientPlayerHandle
 
   const options = () => Player.mock.calls[0][1] as YouTubePlayerOptions
@@ -97,7 +139,13 @@ describe('when a YouTube player is created', () => {
       unMute: jest.fn(),
       destroy: jest.fn()
     }
-    Player = jest.fn().mockReturnValue(player)
+    Player = jest.fn().mockImplementation((element: HTMLElement) => {
+      const iframe = document.createElement('iframe')
+      handedParent = element.parentElement
+      element.replaceWith(iframe)
+      player.destroy.mockImplementation(() => iframe.replaceWith(element))
+      return player
+    })
     window.YT = { Player }
     container = document.createElement('div')
     document.body.append(container)
@@ -112,7 +160,7 @@ describe('when a YouTube player is created', () => {
   })
 
   it('should hand YT.Player a child it created inside the container', () => {
-    expect(Player.mock.calls[0][0].parentElement).toBe(container)
+    expect(handedParent).toBe(container)
   })
 
   it('should never hand YT.Player the container itself', () => {
@@ -144,6 +192,56 @@ describe('when a YouTube player is created', () => {
 
     it(`should call ${callback}`, () => {
       expect(events[callback]).toHaveBeenCalled()
+    })
+  })
+
+  describe.each([
+    ['unmuted', false],
+    ['muted', true]
+  ])('and autoplay is blocked for an attempt made while %s', (_, muted) => {
+    beforeEach(() => {
+      handle.setMuted(muted)
+      handle.play()
+      handle.setMuted(!muted)
+      options().events.onAutoplayBlocked()
+    })
+
+    it(`should report the attempt as ${muted ? 'muted' : 'unmuted'}`, () => {
+      expect(events.onAutoplayBlocked).toHaveBeenCalledWith(muted)
+    })
+  })
+
+  describe('and play is requested before the player answers', () => {
+    beforeEach(() => {
+      handle.play()
+    })
+
+    it('should report it as playing', () => {
+      expect(handle.isPlaying()).toBe(true)
+    })
+
+    describe.each([
+      ['the player reports it paused', () => options().events.onStateChange({ data: 2 })],
+      ['autoplay is blocked', () => options().events.onAutoplayBlocked()],
+      ['pause is requested', () => handle.pause()]
+    ])('and %s', (_, settle) => {
+      beforeEach(() => {
+        settle()
+      })
+
+      it('should no longer report it as playing', () => {
+        expect(handle.isPlaying()).toBe(false)
+      })
+    })
+
+    describe('and the player reports it buffering', () => {
+      beforeEach(() => {
+        options().events.onStateChange({ data: 3 })
+      })
+
+      it('should still report it as playing', () => {
+        expect(handle.isPlaying()).toBe(true)
+      })
     })
   })
 
@@ -210,8 +308,8 @@ describe('when a YouTube player is created', () => {
 })
 
 describe('when a YouTube player is created before the API has loaded', () => {
-  let createYouTubePlayer: (container: HTMLElement, id: string, events: YouTubePlayerEvents) => ClientPlayerHandle
-  let events: YouTubePlayerEvents
+  let createYouTubePlayer: (container: HTMLElement, id: string, events: ClientPlayerEvents) => ClientPlayerHandle
+  let events: ClientPlayerEvents
 
   beforeEach(async () => {
     jest.resetModules()

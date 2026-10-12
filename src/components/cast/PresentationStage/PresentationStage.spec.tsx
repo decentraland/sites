@@ -276,7 +276,7 @@ describe('when the presentation stage renders', () => {
     })
 
     it('should not render a video region', () => {
-      expect(slideBox().childElementCount).toBe(2)
+      expect(slideBox().querySelector('[style*="left: 25%"][style*="width: 50%"]')).not.toBeInTheDocument()
     })
 
     it('should not render the client video', () => {
