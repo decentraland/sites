@@ -37,8 +37,14 @@ beforeEach(() => {
   ;(jest.requireMock('../../hooks/adapters/useFormatMessage').useFormatMessage as jest.Mock).mockReturnValue((key: string) => key)
 })
 
+const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
+
+// The navbar shows Jump In only once the page has scrolled.
+const scrollPageTo = (value: number) => Object.defineProperty(window, 'scrollY', { configurable: true, value })
+
 afterEach(() => {
   jest.resetAllMocks()
+  if (originalScrollY) Object.defineProperty(window, 'scrollY', originalScrollY)
 })
 
 const renderAt = (pathname: string, extra: Partial<NavbarProps> = {}) =>
@@ -293,7 +299,7 @@ describe('when the landing navbar is minimal', () => {
   beforeEach(() => {
     onClickJumpIn = jest.fn()
     user = userEvent.setup()
-    Object.defineProperty(window, 'scrollY', { configurable: true, value: 100 })
+    scrollPageTo(100)
   })
 
   it('should invoke jump-in after scrolling', async () => {
@@ -776,7 +782,7 @@ describe('when the visitor clicks a navbar link', () => {
 
       beforeEach(async () => {
         onClickJumpIn = jest.fn()
-        Object.defineProperty(window, 'scrollY', { configurable: true, value: 100 })
+        scrollPageTo(100)
         ;({ rerender } = renderAt('/', { isLandingPage: true, onClickJumpIn }))
         fireEvent.scroll(window)
         await user.click(screen.getByRole('button', { name: /jump_in/i }))
