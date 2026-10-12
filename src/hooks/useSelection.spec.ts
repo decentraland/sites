@@ -1,6 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
 import type { RenderHookResult } from '@testing-library/react'
-// eslint-disable-next-line import/no-unresolved
 import { useSelection } from './useSelection'
 
 type Props = { ids: ReadonlyArray<string> }
@@ -10,7 +9,7 @@ describe('useSelection', () => {
   let hook: Hook
 
   beforeEach(() => {
-    hook = renderHook(({ ids }: Props) => useSelection(ids), { initialProps: { ids: ['a', 'b', 'c'] } })
+    hook = renderHook(({ ids }: Props) => useSelection(ids), { initialProps: { ids: ['a', 'b', 'c'] } as Props })
   })
 
   afterEach(() => {

@@ -17,7 +17,6 @@ import { triggerBlobDownload } from '../modules/file'
 import { storageClient } from '../services/storageClient'
 import { gunzipBlob } from '../utils/gunzipBlob'
 import { useAuthIdentity } from './useAuthIdentity'
-// eslint-disable-next-line import/no-unresolved
 import { useStorageExport } from './useStorageExport'
 import { useStorageScope } from './useStorageScope'
 import { useStorageTrack } from './useStorageTrack'
@@ -90,7 +89,6 @@ describe('useStorageExport with the real storage client', () => {
 
   describe('when the job finishes after polling', () => {
     beforeEach(async () => {
-      await advance(1000)
       await advance(1000)
     })
 

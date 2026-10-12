@@ -21,7 +21,6 @@ import { triggerBlobDownload } from '../modules/file'
 import { SegmentEvent } from '../modules/segment.types'
 import { gunzipBlob } from '../utils/gunzipBlob'
 import { useAuthIdentity } from './useAuthIdentity'
-// eslint-disable-next-line import/no-unresolved
 import { useStorageExport } from './useStorageExport'
 import { useStorageScope } from './useStorageScope'
 import { useStorageTrack } from './useStorageTrack'
