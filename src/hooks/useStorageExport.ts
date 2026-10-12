@@ -46,7 +46,7 @@ function useStorageExport(): UseStorageExportResult {
     }
   }, [])
 
-  const { currentData } = useGetExportQuery(job ? { identity, realm, position, id: job.id } : skipToken, {
+  const { currentData, error: pollError } = useGetExportQuery(job ? { identity, realm, position, id: job.id } : skipToken, {
     pollingInterval: POLL_INTERVAL_MS,
     refetchOnMountOrArgChange: true
   })
@@ -77,18 +77,23 @@ function useStorageExport(): UseStorageExportResult {
   )
 
   useEffect(() => {
-    if (!job || currentData?.id !== job.id) return
-    if (currentData.status !== 'done' && currentData.status !== 'failed') return
-    if (handledRef.current === job.request) return
+    if (!job || handledRef.current === job.request) return
+    const status = currentData?.id === job.id ? currentData.status : undefined
+    const settled = status === 'done' || status === 'failed'
+    if (!settled && !pollError) return
     handledRef.current = job.request
     setJob(null)
-    if (currentData.status === 'done') {
+    if (status === 'done') {
       void save(job)
       return
     }
-    setErrorKey(EXPORT_FAILED_KEY)
-    track(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: job.format })
-  }, [currentData, job, save, track])
+    if (status === 'failed') {
+      setErrorKey(EXPORT_FAILED_KEY)
+      track(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: job.format })
+      return
+    }
+    failWith(job.format, pollError)
+  }, [currentData, pollError, job, save, track, failWith])
 
   const startExport = useCallback(
     (selection: ExportSelection, format: ExportFormat) => {
