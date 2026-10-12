@@ -45,7 +45,7 @@ const ATTRIBUTION = {
 const OTHER_SITE_URLS = new Map([
   ['https://decentraland.org/shop', 'shop'],
   ['https://decentraland.org/marketplace', 'marketplace'],
-  ['https://decentraland.org/create', 'create'],
+  ['https://decentraland.org/create', 'creators-website'],
   ['https://decentraland.org/builder', 'builder'],
   ['https://decentraland.org/dao', 'dao-landing'],
   ['https://decentraland.org/governance', 'governance-ui']
