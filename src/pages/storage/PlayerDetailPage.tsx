@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -9,24 +9,32 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import { Box, Button, ButtonBase, CircularProgress, Typography } from 'decentraland-ui2'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
+import { ExportMenuButton } from '../../components/storage/ExportMenuButton'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { PlayerAddDialog, PlayerEditDialog } from '../../components/storage/PlayerDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import {
+  buildExportFile,
   getStorageErrorStatus,
+  toStorageValueFile,
   truncateAddress,
   useClearPlayerMutation,
   useDeletePlayerValueMutation,
+  useLazyGetPlayerValueQuery,
   useListPlayerKeysQuery
 } from '../../features/storage'
+import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { useSelection } from '../../hooks/useSelection'
+import { useStorageExport } from '../../hooks/useStorageExport'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
+import { triggerBlobDownload } from '../../modules/file'
 import { SegmentEvent } from '../../modules/segment.types'
-import { SectionHeader } from './shared.styled'
+import { ExportAlert, SectionActions, SectionHeader } from './shared.styled'
 
 function PlayerDetailPageContent() {
   useStorageRedirect()
@@ -43,6 +51,10 @@ function PlayerDetailPageContent() {
   )
   const [deletePlayerValue] = useDeletePlayerValueMutation()
   const [clearPlayer] = useClearPlayerMutation()
+  const [getPlayerValue] = useLazyGetPlayerValueQuery()
+  const keyIds = useMemo(() => keys?.map(({ key }) => key) ?? [], [keys])
+  const selection = useSelection(keyIds)
+  const { startExport, busy, errorKey, clearError } = useStorageExport()
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
@@ -59,6 +71,34 @@ function PlayerDetailPageContent() {
     }
     setDeleteKey(null)
   }, [deletePlayerValue, deleteKey, identity, realm, position, address, track])
+
+  const handleDownload = useCallback(
+    async (key: string) => {
+      try {
+        const { value } = await getPlayerValue({ identity, realm, position, address, key }).unwrap()
+        const { filename, type, content } = toStorageValueFile(key, value)
+        triggerBlobDownload(new Blob([content], { type }), filename)
+        track(SegmentEvent.STORAGE_PLAYER_DOWNLOAD_SUCCESS)
+      } catch (error) {
+        track(SegmentEvent.STORAGE_PLAYER_DOWNLOAD_FAILURE, { errorStatus: getStorageErrorStatus(error) ?? 'unknown' })
+      }
+    },
+    [getPlayerValue, identity, realm, position, address, track]
+  )
+
+  const handleExportSelected = useCallback(
+    (format: ExportFormat) => {
+      if (selection.allSelected) {
+        startExport({ world: { keys: [] }, players: { addresses: [address] } }, format)
+        return
+      }
+      const rows = (keys ?? []).filter(({ key }) => selection.selected.has(key)).map(({ key, value }) => ({ address, key, value }))
+      const { filename, type, content } = buildExportFile(format, [], rows)
+      triggerBlobDownload(new Blob([content], { type }), filename)
+      track(SegmentEvent.STORAGE_SELECTION_DOWNLOAD_SUCCESS, { format, count: rows.length })
+    },
+    [selection.allSelected, selection.selected, keys, address, startExport, track]
+  )
 
   const handleConfirmClear = useCallback(async () => {
     try {
@@ -105,8 +145,19 @@ function PlayerDetailPageContent() {
       </Box>
       <SectionHeader>
         <h2>{t('component.storage.player_page.keys_for', { address: truncateAddress(address) })}</h2>
-        <Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)} sx={{ mr: 1 }}>
+        <SectionActions>
+          {selection.allSelected || selection.count > 0 ? (
+            <ExportMenuButton
+              label={
+                selection.allSelected
+                  ? t('component.storage.common.download_all_selected')
+                  : t('component.storage.common.download_selected', { count: selection.count })
+              }
+              busy={busy}
+              onSelect={handleExportSelected}
+            />
+          ) : null}
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
             {t('component.storage.player_page.add')}
           </Button>
           {hasKeys ? (
@@ -114,15 +165,30 @@ function PlayerDetailPageContent() {
               {t('component.storage.player_page.clear_this_player')}
             </Button>
           ) : null}
-        </Box>
+        </SectionActions>
       </SectionHeader>
+      {errorKey ? (
+        <ExportAlert severity="error" onClose={clearError}>
+          {t(errorKey)}
+        </ExportAlert>
+      ) : null}
 
       {isLoading ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress aria-label={t('component.storage.player_page.loading_keys')} />
         </Box>
       ) : (
-        <KeyTable keys={keys ?? []} emptyLabel={t('component.storage.player_page.no_keys')} onEdit={setEditKey} onDelete={setDeleteKey} />
+        <KeyTable
+          keys={keys ?? []}
+          emptyLabel={t('component.storage.player_page.no_keys')}
+          onEdit={setEditKey}
+          onDelete={setDeleteKey}
+          onDownload={handleDownload}
+          selected={selection.selected}
+          allSelected={selection.allSelected}
+          onToggle={selection.toggle}
+          onToggleAll={selection.toggleAll}
+        />
       )}
 
       <PlayerAddDialog

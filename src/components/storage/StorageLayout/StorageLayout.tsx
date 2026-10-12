@@ -11,10 +11,23 @@ import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
-import { Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { Alert, Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import type { ExportFormat } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useStorageExport } from '../../../hooks/useStorageExport'
 import { useStorageScope } from '../../../hooks/useStorageScope'
-import { BackButton, LoaderBox, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot } from './StorageLayout.styled'
+import { ExportMenuButton } from '../ExportMenuButton'
+import {
+  BackButton,
+  HeaderActions,
+  LoaderBox,
+  ScopeChip,
+  ScopeRow,
+  StorageHeader,
+  StoragePageContainer,
+  StorageTabsRoot
+} from './StorageLayout.styled'
 
 interface StorageLayoutProps {
   children: ReactNode
@@ -31,6 +44,8 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { realm, position, isResolving, unresolved } = useStorageScope()
+  const { identity } = useAuthIdentity()
+  const { startExport, busy, errorKey, clearError } = useStorageExport()
 
   const activeTab = useMemo(() => {
     if (location.pathname.startsWith('/storage/scene')) return 'scene'
@@ -59,7 +74,10 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
     navigate('/storage/select')
   }, [navigate])
 
+  const handleDownloadAll = useCallback((format: ExportFormat) => startExport({}, format), [startExport])
+
   const scopeLabel = realm ?? position ?? ''
+  const canDownloadAll = Boolean(identity) && !isResolving && !unresolved && activeTab !== 'env'
 
   return (
     <StoragePageContainer>
@@ -83,7 +101,17 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
             ) : null}
           </ScopeRow>
         ) : null}
+        {canDownloadAll ? (
+          <HeaderActions>
+            <ExportMenuButton label={t('component.storage.common.download_all')} busy={busy} onSelect={handleDownloadAll} />
+          </HeaderActions>
+        ) : null}
       </StorageHeader>
+      {errorKey ? (
+        <Alert severity="error" onClose={clearError}>
+          {t(errorKey)}
+        </Alert>
+      ) : null}
       <StorageTabsRoot>
         <Tabs value={selectedTab} onChange={handleTabChange} aria-label="storage sections" variant="scrollable">
           {tabs.map(tab => (

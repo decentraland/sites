@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AddIcon from '@mui/icons-material/Add'
@@ -6,10 +6,12 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import { Box, Button, CircularProgress } from 'decentraland-ui2'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
+import { ExportMenuButton } from '../../components/storage/ExportMenuButton'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { SceneAddDialog, SceneEditDialog } from '../../components/storage/SceneDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import {
+  buildExportFile,
   getStorageErrorStatus,
   toStorageValueFile,
   useClearSceneMutation,
@@ -17,15 +19,18 @@ import {
   useLazyGetSceneValueQuery,
   useListSceneKeysQuery
 } from '../../features/storage'
+import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { useSelection } from '../../hooks/useSelection'
+import { useStorageExport } from '../../hooks/useStorageExport'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
 import { triggerBlobDownload } from '../../modules/file'
 import { SegmentEvent } from '../../modules/segment.types'
-import { SectionHeader } from './shared.styled'
+import { ExportAlert, SectionActions, SectionHeader } from './shared.styled'
 
 function ScenePageContent() {
   useStorageRedirect()
@@ -38,6 +43,9 @@ function ScenePageContent() {
   const [deleteSceneValue] = useDeleteSceneValueMutation()
   const [clearScene] = useClearSceneMutation()
   const [getSceneValue] = useLazyGetSceneValueQuery()
+  const sceneKeyIds = useMemo(() => sceneKeys?.map(({ key }) => key) ?? [], [sceneKeys])
+  const selection = useSelection(sceneKeyIds)
+  const { startExport, busy, errorKey, clearError } = useStorageExport()
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
@@ -79,6 +87,20 @@ function ScenePageContent() {
     setClearOpen(false)
   }, [clearScene, identity, realm, position, track])
 
+  const handleExportSelected = useCallback(
+    (format: ExportFormat) => {
+      if (selection.allSelected) {
+        startExport({ players: { addresses: [] } }, format)
+        return
+      }
+      const rows = (sceneKeys ?? []).filter(({ key }) => selection.selected.has(key))
+      const { filename, type, content } = buildExportFile(format, rows, [])
+      triggerBlobDownload(new Blob([content], { type }), filename)
+      track(SegmentEvent.STORAGE_SELECTION_DOWNLOAD_SUCCESS, { format, count: rows.length })
+    },
+    [selection.allSelected, selection.selected, sceneKeys, startExport, track]
+  )
+
   usePageViewTracking({
     name: t('page.storage.scene.title'),
     properties: { section: 'storage_scene', realm: realm ?? undefined, position: position ?? undefined }
@@ -93,8 +115,19 @@ function ScenePageContent() {
       </Helmet>
       <SectionHeader>
         <h2>{t('component.storage.scene_page.title')}</h2>
-        <Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)} sx={{ mr: 1 }}>
+        <SectionActions>
+          {selection.allSelected || selection.count > 0 ? (
+            <ExportMenuButton
+              label={
+                selection.allSelected
+                  ? t('component.storage.common.download_all_selected')
+                  : t('component.storage.common.download_selected', { count: selection.count })
+              }
+              busy={busy}
+              onSelect={handleExportSelected}
+            />
+          ) : null}
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
             {t('component.storage.scene_page.add')}
           </Button>
           {hasKeys ? (
@@ -102,8 +135,13 @@ function ScenePageContent() {
               {t('component.storage.scene_page.clear_all')}
             </Button>
           ) : null}
-        </Box>
+        </SectionActions>
       </SectionHeader>
+      {errorKey ? (
+        <ExportAlert severity="error" onClose={clearError}>
+          {t(errorKey)}
+        </ExportAlert>
+      ) : null}
 
       {isLoading ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
@@ -116,6 +154,10 @@ function ScenePageContent() {
           onEdit={setEditKey}
           onDelete={setDeleteKey}
           onDownload={handleDownload}
+          selected={selection.selected}
+          allSelected={selection.allSelected}
+          onToggle={selection.toggle}
+          onToggleAll={selection.toggleAll}
         />
       )}
 

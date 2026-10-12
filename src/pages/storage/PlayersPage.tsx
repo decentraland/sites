@@ -4,22 +4,26 @@ import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
-import { Box, Button, CircularProgress, Typography } from 'decentraland-ui2'
+import { Box, Button, Checkbox, CircularProgress, FormControlLabel, Typography } from 'decentraland-ui2'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
+import { ExportMenuButton } from '../../components/storage/ExportMenuButton'
 import { PlayerCard } from '../../components/storage/PlayerCard'
 import { SearchField } from '../../components/storage/SearchField'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import { useGetProfileNames } from '../../features/profile/profile.client'
 import { useClearAllPlayersMutation, useListPlayersQuery } from '../../features/storage'
+import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { useSelection } from '../../hooks/useSelection'
+import { useStorageExport } from '../../hooks/useStorageExport'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
 import { SegmentEvent } from '../../modules/segment.types'
 import { CardsGrid } from './SelectPage.styled'
-import { SectionHeader } from './shared.styled'
+import { ExportAlert, SectionActions, SectionHeader } from './shared.styled'
 
 function PlayersPageContent() {
   useStorageRedirect()
@@ -37,6 +41,8 @@ function PlayersPageContent() {
 
   const playerAddresses = useMemo(() => players ?? [], [players])
   const profileNames = useGetProfileNames(playerAddresses)
+  const selection = useSelection(playerAddresses)
+  const { startExport, busy, errorKey, clearError } = useStorageExport()
 
   const filteredPlayers = useMemo(() => {
     if (!query.trim()) return playerAddresses
@@ -55,6 +61,24 @@ function PlayersPageContent() {
     [navigate]
   )
 
+  const handleExportSelected = useCallback(
+    (format: ExportFormat) => {
+      startExport(
+        selection.allSelected ? { world: { keys: [] } } : { world: { keys: [] }, players: { addresses: [...selection.selected] } },
+        format
+      )
+    },
+    [selection.allSelected, selection.selected, startExport]
+  )
+
+  const handleToggleAll = useCallback(() => {
+    if (query.trim()) {
+      selection.toggleVisible(filteredPlayers)
+      return
+    }
+    selection.toggleAll()
+  }, [query, filteredPlayers, selection])
+
   const handleConfirmClearAll = useCallback(async () => {
     try {
       await clearAllPlayers({ identity, realm, position }).unwrap()
@@ -71,6 +95,9 @@ function PlayersPageContent() {
   })
 
   const hasPlayers = playerAddresses.length > 0
+  const everyVisibleSelected = filteredPlayers.length > 0 && filteredPlayers.every(selection.isSelected)
+  const selectAllChecked = selection.allSelected || everyVisibleSelected
+  const selectAllIndeterminate = !selectAllChecked && filteredPlayers.some(selection.isSelected)
 
   return (
     <StorageLayout>
@@ -79,12 +106,36 @@ function PlayersPageContent() {
       </Helmet>
       <SectionHeader>
         <h2>{t('component.storage.player_page.title')}</h2>
-        {hasPlayers ? (
-          <Button variant="outlined" color="error" startIcon={<DeleteSweepIcon />} onClick={() => setClearOpen(true)}>
-            {t('component.storage.player_page.clear_all_players')}
-          </Button>
-        ) : null}
+        <SectionActions>
+          {hasPlayers ? (
+            <FormControlLabel
+              control={<Checkbox checked={selectAllChecked} indeterminate={selectAllIndeterminate} onChange={handleToggleAll} />}
+              label={t('component.storage.common.select_all')}
+            />
+          ) : null}
+          {selection.allSelected || selection.count > 0 ? (
+            <ExportMenuButton
+              label={
+                selection.allSelected
+                  ? t('component.storage.common.download_all_selected')
+                  : t('component.storage.common.download_selected', { count: selection.count })
+              }
+              busy={busy}
+              onSelect={handleExportSelected}
+            />
+          ) : null}
+          {hasPlayers ? (
+            <Button variant="outlined" color="error" startIcon={<DeleteSweepIcon />} onClick={() => setClearOpen(true)}>
+              {t('component.storage.player_page.clear_all_players')}
+            </Button>
+          ) : null}
+        </SectionActions>
       </SectionHeader>
+      {errorKey ? (
+        <ExportAlert severity="error" onClose={clearError}>
+          {t(errorKey)}
+        </ExportAlert>
+      ) : null}
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t('component.storage.player_page.description')}
@@ -113,6 +164,8 @@ function PlayersPageContent() {
               address={address}
               displayName={profileNames.get(address.toLowerCase())}
               onClick={() => handleSelectPlayer(address)}
+              selected={selection.isSelected(address)}
+              onToggle={selection.toggle}
             />
           ))}
         </CardsGrid>
