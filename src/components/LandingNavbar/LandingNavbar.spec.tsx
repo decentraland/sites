@@ -711,6 +711,26 @@ describe('when the visitor clicks a navbar link', () => {
       })
     })
 
+    describe.each([
+      ['the session started on an exempt page', () => isAnalyticsDisabledForSession.mockReturnValue(true)],
+      ['the visitor is a bot', () => isBotClient.mockReturnValue(true)]
+    ])('and %s and the click keeps the page open', (_case, arrange) => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(() => {
+        arrange()
+        ;({ rerender } = renderAt('/events'))
+        fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+        finishLoading(rerender)
+      })
+
+      // Readiness is forced here only to prove the click was never queued: analytics stays off in these sessions.
+      it('should not queue it, so nothing is sent even once analytics is ready', () => {
+        expect(track).not.toHaveBeenCalled()
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+      })
+    })
+
     describe('and the visitor clicks Sign In', () => {
       beforeEach(async () => {
         renderAt('/events')

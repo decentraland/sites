@@ -272,15 +272,16 @@ const LandingNavbar = memo(function LandingNavbar({
         track(SegmentEvent.CLICK, properties)
         return
       }
+      // Analytics never loads for sessions that started on an exempt page or for bots, so neither path may
+      // send their clicks, and a queued one would wait forever.
+      if (isAnalyticsDisabledForSession() || isBotClient(navigator.userAgent)) return
       // Analytics loads once the page is idle and is ready only after Segment fetched its settings. A click
       // that stays on the page (new tab, Jump In) waits in the queue with the SDK's full context.
       if (!leavesPage) {
         deferredTrack(SegmentEvent.CLICK, properties)
         return
       }
-      // One that replaces the page would be lost with it; the beacon survives the unload. It follows the same
-      // rules that keep the SDK off: sessions that started on an exempt page, and bots.
-      if (isAnalyticsDisabledForSession() || isBotClient(navigator.userAgent)) return
+      // One that replaces the page would be lost with it; the beacon survives the unload.
       postDeferredClick(properties)
     },
     [deferredTrack, track]
