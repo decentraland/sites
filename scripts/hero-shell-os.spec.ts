@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { DownloadPlace } from '../src/modules/segment.types'
 
 const SCRIPT = readFileSync(join(__dirname, 'hero-shell-os.js'), 'utf8')
 
@@ -58,6 +59,23 @@ describe('when the hero shell OS script runs', () => {
     })
   })
 
+  describe('and Client Hints report macOS', () => {
+    it('should point the button straight at the macOS download', () => {
+      runScript({ userAgent: MAC_UA, platform: 'macOS' })
+
+      expect(getButton()?.dataset.os).toBe('macOS')
+    })
+  })
+
+  describe('and Client Hints report a platform without a desktop installer under a Windows user agent', () => {
+    it('should trust the Client Hints and leave the button on the download page', () => {
+      runScript({ userAgent: WINDOWS_UA, platform: 'Android' })
+
+      expect(getButton()?.getAttribute('href')).toBe('/download')
+      expect(getButton()?.dataset.os).toBeUndefined()
+    })
+  })
+
   describe('and the device is an iPad reporting a Macintosh user agent', () => {
     it('should leave the button on the download page', () => {
       runScript({ userAgent: MAC_UA, maxTouchPoints: 5 })
@@ -83,6 +101,15 @@ describe('when the hero shell OS script runs', () => {
       runScript({ userAgent: WINDOWS_UA, platform: 'Windows' })
 
       expect(getButton()?.getAttribute('href')).toBe('/download_success?os=Windows&place=landing-hero&utm_source=shefi&utm_campaign=q4')
+    })
+  })
+
+  describe('and the place it reports is checked against the app', () => {
+    it('should match the place the React hero sends', () => {
+      runScript({ userAgent: WINDOWS_UA, platform: 'Windows' })
+
+      const href = new URL(getButton()?.getAttribute('href') ?? '', 'https://decentraland.org')
+      expect(href.searchParams.get('place')).toBe(DownloadPlace.LANDING_HERO)
     })
   })
 

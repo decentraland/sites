@@ -12,9 +12,14 @@
   var platform = (nav.userAgentData && nav.userAgentData.platform) || ''
   var ua = nav.userAgent || ''
   var os = null
-  if (/windows/i.test(platform) || /windows nt/i.test(ua)) {
+  if (platform) {
+    // Client Hints win when present: a desktop-mode or spoofed user agent can claim
+    // Windows on a device whose platform says otherwise.
+    if (/^windows$/i.test(platform)) os = 'Windows'
+    else if (/^macos$/i.test(platform) && !(nav.maxTouchPoints > 1)) os = 'macOS'
+  } else if (/windows/i.test(ua)) {
     os = 'Windows'
-  } else if (/macos/i.test(platform) || (/macintosh/i.test(ua) && !(nav.maxTouchPoints > 1))) {
+  } else if (/macintosh/i.test(ua) && !(nav.maxTouchPoints > 1)) {
     // iPadOS reports a Macintosh user agent; touch points tell it apart.
     os = 'macOS'
   }
