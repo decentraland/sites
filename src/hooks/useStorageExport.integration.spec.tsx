@@ -39,6 +39,13 @@ const makeResponse = (body: unknown): Response =>
     blob: async () => (body instanceof Blob ? body : new Blob([JSON.stringify(body)]))
   }) as unknown as Response
 
+const makeErrorResponse = (status: number): Response =>
+  ({
+    ok: false,
+    status,
+    text: async () => 'error'
+  }) as unknown as Response
+
 const setupStore = () =>
   configureStore({
     reducer: { [storageClient.reducerPath]: storageClient.reducer },
@@ -114,6 +121,36 @@ describe('useStorageExport with the real storage client', () => {
 
       it('should not poll the job again', () => {
         expect(callsTo(JOB_URL)).toBe(pollsAtSave)
+      })
+    })
+  })
+
+  describe('when polling the job is rate limited', () => {
+    let pollsAtError: number
+
+    beforeEach(async () => {
+      signedFetchMock.mockImplementation(async (url: string) =>
+        url === JOB_URL ? makeErrorResponse(429) : makeResponse({ id: 'job-1', status: 'pending' })
+      )
+      await advance(1000)
+      pollsAtError = callsTo(JOB_URL)
+    })
+
+    it('should stop being busy', () => {
+      expect(hook.result.current.busy).toBe(false)
+    })
+
+    it('should set the rate limited error key', () => {
+      expect(hook.result.current.errorKey).toBe('component.storage.errors.rate_limited')
+    })
+
+    describe('and more time passes', () => {
+      beforeEach(async () => {
+        await advance(5000)
+      })
+
+      it('should not poll the job again', () => {
+        expect(callsTo(JOB_URL)).toBe(pollsAtError)
       })
     })
   })

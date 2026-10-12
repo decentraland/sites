@@ -43,6 +43,7 @@ describe('useStorageExport', () => {
   let unwrapMock: jest.Mock
   let trackMock: jest.Mock
   let pollData: PollData
+  let pollError: unknown
   let file: Blob
   let unzipped: Blob
   let hook: Hook
@@ -65,11 +66,14 @@ describe('useStorageExport', () => {
     file = new Blob(['gz'])
     unzipped = new Blob(['{}'])
     pollData = undefined
+    pollError = undefined
     unwrapMock = jest.fn().mockResolvedValue({ id: 'job-1', status: 'pending' })
     createMock = jest.fn().mockReturnValue({ unwrap: unwrapMock })
     trackMock = jest.fn()
     useCreateExportMutationMock.mockReturnValue([createMock, { isLoading: false }])
-    useGetExportQueryMock.mockImplementation((arg: unknown) => ({ currentData: arg === skipToken ? undefined : pollData }))
+    useGetExportQueryMock.mockImplementation((arg: unknown) =>
+      arg === skipToken ? { currentData: undefined, error: undefined } : { currentData: pollData, error: pollError }
+    )
     fetchExportFileMock.mockResolvedValue(file)
     gunzipBlobMock.mockResolvedValue(unzipped)
     useAuthIdentityMock.mockReturnValue({ identity })
@@ -190,6 +194,33 @@ describe('useStorageExport', () => {
         it('should reset the error key to null', () => {
           expect(hook.result.current.errorKey).toBeNull()
         })
+      })
+    })
+
+    describe('and the poll is rate limited', () => {
+      beforeEach(async () => {
+        pollError = { status: 429 }
+        await poll(undefined)
+      })
+
+      it('should set the rate limited error key', () => {
+        expect(hook.result.current.errorKey).toBe('component.storage.errors.rate_limited')
+      })
+
+      it('should stop being busy', () => {
+        expect(hook.result.current.busy).toBe(false)
+      })
+
+      it('should stop polling the job', () => {
+        expect(useGetExportQueryMock).toHaveBeenLastCalledWith(skipToken, expect.anything())
+      })
+
+      it('should not save anything', () => {
+        expect(triggerBlobDownloadMock).not.toHaveBeenCalled()
+      })
+
+      it('should track the export failure with the status', () => {
+        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: 'json', errorStatus: 429 })
       })
     })
 
