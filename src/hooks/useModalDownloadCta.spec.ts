@@ -14,7 +14,10 @@ const mockedBuildModalDownloadUrl = buildModalDownloadUrl as jest.MockedFunction
 
 const DIRECT_URL = 'http://localhost/download_success?os=Windows&place=download-modal'
 
-const clickOn = (button: HTMLAnchorElement, modifiers: Partial<Pick<MouseEvent, 'metaKey' | 'ctrlKey' | 'shiftKey' | 'button'>> = {}) =>
+const clickOn = (
+  button: HTMLAnchorElement,
+  modifiers: Partial<Pick<MouseEvent, 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey' | 'defaultPrevented' | 'button'>> = {}
+) =>
   ({
     currentTarget: button,
     preventDefault: jest.fn(),
@@ -73,6 +76,8 @@ describe('useModalDownloadCta', () => {
       ['cmd', { metaKey: true }],
       ['ctrl', { ctrlKey: true }],
       ['shift', { shiftKey: true }],
+      ['alt', { altKey: true }],
+      ['already handled', { defaultPrevented: true }],
       ['non-primary button', { button: 1 }]
     ])('and the click is a %s click', (_name, modifiers) => {
       it('should leave the click to the browser', () => {

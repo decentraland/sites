@@ -62,6 +62,8 @@ function detectDownloadOS(): DownloadOS {
 function detectDesktopInstallerOs(): OperativeSystem | null {
   if (typeof navigator === 'undefined') return null
   const os = detectDownloadOS()
+  // iPadOS reports a Macintosh user agent; touch points tell it apart. A touch-capable Mac
+  // is sent to the /download chooser too: the safe side of the trade-off.
   if (os === 'apple') return navigator.maxTouchPoints > 1 ? null : OperativeSystem.MACOS
   if (os === 'windows' && /windows/i.test(navigator.userAgent)) return OperativeSystem.WINDOWS
   return null
