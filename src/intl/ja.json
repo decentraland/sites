@@ -192,6 +192,7 @@
         "connected": "接続済み",
         "mute_cast": "ワールドにいる間、Castの音声をミュート",
         "unmute_cast": "Castの音声をオン",
+        "click_to_unmute": "クリックしてミュートを解除",
         "share_presentation": "プレゼンを共有",
         "stop_presentation": "プレゼンを停止",
         "uploading_presentation": "プレゼンをアップロード中...",

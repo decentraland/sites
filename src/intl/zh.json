@@ -192,6 +192,7 @@
         "connected": "已连接",
         "mute_cast": "在世界中时静音此Cast音频",
         "unmute_cast": "取消静音Cast音频",
+        "click_to_unmute": "点击取消静音",
         "share_presentation": "共享演示文稿",
         "stop_presentation": "停止演示",
         "uploading_presentation": "正在上传演示文稿...",

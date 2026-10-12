@@ -1,4 +1,4 @@
-import Hls from 'hls.js'
+import HlsJs from 'hls.js'
 import { attachHls } from './hlsSource'
 
 jest.mock('hls.js', () => ({ __esModule: true, default: Object.assign(jest.fn(), { isSupported: jest.fn() }) }))
@@ -12,7 +12,7 @@ describe('when an HLS source is attached', () => {
   beforeEach(() => {
     video = document.createElement('video')
     hls = { loadSource: jest.fn(), attachMedia: jest.fn(), destroy: jest.fn() }
-    jest.mocked(Hls).mockImplementation(() => hls as never)
+    jest.mocked(HlsJs).mockImplementation(() => hls as never)
   })
 
   afterEach(() => {
@@ -33,7 +33,7 @@ describe('when an HLS source is attached', () => {
     })
 
     it('should not load hls.js', () => {
-      expect(Hls).not.toHaveBeenCalled()
+      expect(HlsJs).not.toHaveBeenCalled()
     })
 
     it('should return a cleanup that does nothing', () => {
@@ -45,7 +45,7 @@ describe('when an HLS source is attached', () => {
     let cleanup: () => void
 
     beforeEach(async () => {
-      jest.mocked(Hls.isSupported).mockReturnValue(true)
+      jest.spyOn(HlsJs, 'isSupported').mockReturnValue(true)
       cleanup = await attachHls(video, SRC)
     })
 
@@ -72,7 +72,7 @@ describe('when an HLS source is attached', () => {
     let attached: Promise<() => void>
 
     beforeEach(() => {
-      jest.mocked(Hls.isSupported).mockReturnValue(false)
+      jest.spyOn(HlsJs, 'isSupported').mockReturnValue(false)
       attached = attachHls(video, SRC)
     })
 

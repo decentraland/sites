@@ -43,7 +43,7 @@ export function StreamerViewWithChat({ onLeave, isTabMuted, onToggleTabMute }: S
         <MainContent>
           <VideoContainer $sidebarOpen={sidebarOpen}>
             <VideoArea $sidebarOpen={sidebarOpen}>
-              <StreamerViewContent />
+              <StreamerViewContent isTabMuted={isTabMuted} />
               <PresentationControls />
             </VideoArea>
 

@@ -192,6 +192,7 @@
         "connected": "Conectado",
         "mute_cast": "Silenciar el audio de este Cast mientras estás en el Mundo",
         "unmute_cast": "Activar audio del Cast",
+        "click_to_unmute": "Haz clic para activar el sonido",
         "share_presentation": "Compartir Presentación",
         "stop_presentation": "Detener Presentación",
         "uploading_presentation": "Subiendo presentación...",

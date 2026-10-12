@@ -1,13 +1,13 @@
 import React from 'react'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { RenderResult } from '@testing-library/react'
 import type { SlideVideoInfo } from '../../../features/cast2/cast2.types'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import type { PresentationState } from '../../../features/cast2/contexts/PresentationContext'
 import { ClientVideo } from './ClientVideo'
 import { attachHls } from './hlsSource'
-import type { ClientPlayerHandle, YouTubePlayerEvents } from './PresentationStage.types'
 import { createYouTubePlayer, loadYouTubeApi } from './youtubePlayer'
+import type { ClientPlayerHandle, YouTubePlayerEvents } from './PresentationStage.types'
 
 jest.mock('decentraland-ui2', () => ({
   ...jest.requireActual('../../../__test-utils__/styledMock'),
@@ -385,7 +385,7 @@ describe('when a file client video renders', () => {
   const mount = (muted = false) => {
     result = render(<ClientVideo video={video} muted={muted} />)
   }
-  const canPlay = async (readyState = HTMLMediaElement.HAVE_ENOUGH_DATA) => {
+  const canPlay = async (readyState: number = HTMLMediaElement.HAVE_ENOUGH_DATA) => {
     Object.defineProperty(element(), 'readyState', { configurable: true, value: readyState })
     fireEvent.canPlay(element())
     await flush()
@@ -404,6 +404,7 @@ describe('when a file client video renders', () => {
   })
 
   afterEach(() => {
+    cleanup()
     jest.useRealTimers()
     jest.restoreAllMocks()
     jest.resetAllMocks()
@@ -598,11 +599,15 @@ describe('when an HLS client video renders', () => {
     video = { url: VIMEO_URL, geometry: GEOMETRY, source: 'client' }
     detach = jest.fn()
     warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    jest.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue()
+    jest.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined)
+    jest.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => undefined)
     jest.mocked(usePresentation).mockImplementation(() => ({ state }) as never)
     jest.mocked(attachHls).mockResolvedValue(detach)
   })
 
   afterEach(() => {
+    cleanup()
     jest.restoreAllMocks()
     jest.resetAllMocks()
   })

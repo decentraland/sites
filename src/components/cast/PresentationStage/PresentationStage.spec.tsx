@@ -268,7 +268,9 @@ describe('when the presentation stage renders', () => {
       state = {
         ...state,
         ...PLAYING_VIDEO,
-        slideVideos: [{ url: 'https://presenter.example/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 }, source: 'stream' }]
+        slideVideos: [
+          { url: 'https://presenter.example/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 }, source: 'stream' }
+        ]
       }
       renderStage()
     })

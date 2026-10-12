@@ -7,6 +7,7 @@ import { isAllowedSlideUrl } from '../../../features/cast2/cast2.slideUrl'
 import { PRESENTATION_VIDEO_TRACK } from '../../../features/cast2/cast2.utils'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
+import { ClientVideo } from './ClientVideo'
 import type { PresentationStageProps } from './PresentationStage.types'
 import { CameraCircle, CircleVideo, RegionVideo, SlideBox, SlideImage, StageContainer, VideoRegion } from './PresentationStage.styled'
 
@@ -15,8 +16,8 @@ const TRACK_OPTIONS = { updateOnlyOn: [RoomEvent.TrackMuted, RoomEvent.TrackUnmu
 
 const percent = (value: number, total: number): string => `${(value / total) * 100}%`
 
-/** Composites a client-composed (v2) presentation: slide image, embedded-video track and presenter camera. */
-function PresentationStage({ overlay }: PresentationStageProps) {
+/** Composites a client-composed (v2) presentation: slide image, embedded video (client-played or bot track) and presenter camera. */
+function PresentationStage({ overlay, muted = false }: PresentationStageProps) {
   const { t } = useCastTranslation()
   const { state, presentationParticipantIdentity } = usePresentation()
   const { localParticipant } = useLocalParticipant()
@@ -56,6 +57,7 @@ function PresentationStage({ overlay }: PresentationStageProps) {
     state.playingVideoIndex !== null && (state.videoState === 'playing' || state.videoState === 'paused')
       ? state.slideVideos[state.playingVideoIndex]
       : undefined
+  const isClientVideo = playingVideo?.source === 'client'
 
   // NOTE: the `!participant.isLocal` check was dropped (2026-10); the presenterIdentity guard already excludes the local participant.
   const cameraTrackRef =
@@ -72,7 +74,7 @@ function PresentationStage({ overlay }: PresentationStageProps) {
         {showSlide ? (
           <SlideImage src={slide.url} alt={t('streaming_controls.presentation')} draggable={false} onError={handleSlideError} />
         ) : null}
-        {playingVideo && videoTrackRef ? (
+        {playingVideo && (isClientVideo || videoTrackRef) ? (
           <VideoRegion
             style={{
               left: percent(playingVideo.geometry.x, slide.width),
@@ -81,7 +83,11 @@ function PresentationStage({ overlay }: PresentationStageProps) {
               height: percent(playingVideo.geometry.height, slide.height)
             }}
           >
-            <RegionVideo trackRef={videoTrackRef} />
+            {isClientVideo ? (
+              <ClientVideo key={`${state.playingVideoIndex}:${playingVideo.url}`} video={playingVideo} muted={muted} />
+            ) : (
+              videoTrackRef && <RegionVideo trackRef={videoTrackRef} />
+            )}
           </VideoRegion>
         ) : null}
         {cameraTrackRef && circle.d >= MIN_CIRCLE_DIAMETER ? (
