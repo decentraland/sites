@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distPath = resolve(__dirname, '..', 'dist', 'index.html')
+const readSource = relativePath => readFileSync(resolve(__dirname, '..', relativePath), 'utf-8').trim()
 
 if (!existsSync(distPath)) {
   console.error(`❌ Hero shell prerender failed: ${distPath} not found. Was the build step successful?`)
@@ -22,6 +23,12 @@ const dclLogoSvg = `<svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.or
 
 // JumpIn icon SVG — exact from decentraland-ui2 JumpInIcon
 const jumpInSvg = `<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0.75" y="0.75" width="22.5" height="22.5" rx="5.25" stroke="#FCFCFC" stroke-opacity="0.3" stroke-width="1.5"></rect><path d="M18.7111 11.065L14.034 6.39027C13.2002 5.55695 11.7971 6.14637 11.7971 7.32523V8.86994C11.7564 8.86994 11.7361 8.86994 11.6954 8.86994H7.25895C6.50654 8.86994 5.89648 9.45936 5.89648 10.2114V13.7683C5.89648 14.5203 6.50654 15.1301 7.25895 15.1301H11.6751C11.7158 15.1301 11.7361 15.1301 11.7768 15.1301V16.6748C11.7768 17.8536 13.2002 18.4431 14.0137 17.6097L18.6908 12.935C19.2195 12.4065 19.2195 11.5732 18.7111 11.065Z" fill="#FCFCFC"></path></svg>`
+
+// OS icons for the download button, same files the React Hero uses. Both ship hidden;
+// hero-shell-os.js tags the button with data-os and the CSS shows the matching one.
+const windowsIconSvg = readSource('src/images/microsoft-logo.svg').replace('<svg ', '<svg data-os-icon="Windows" aria-label="Windows" ')
+const macosIconSvg = readSource('src/images/apple-logo.svg').replace('<svg ', '<svg data-os-icon="macOS" aria-label="macOS" ')
+const shellOsScript = readSource('scripts/hero-shell-os.js')
 
 // ============================================================
 // ALL CSS values below copied 1:1 from Chrome DevTools Computed tab
@@ -143,6 +150,11 @@ const criticalCss = `
   #hero-shell .hero-download-btn .hero-os-icon {
     display: block; width: 32px; height: 32px; flex-shrink: 0;
   }
+  #hero-shell .hero-download-btn .hero-os-icon svg {
+    display: none; width: 32px; height: 32px; filter: brightness(0) invert(1);
+  }
+  #hero-shell .hero-download-btn[data-os="Windows"] [data-os-icon="Windows"],
+  #hero-shell .hero-download-btn[data-os="macOS"] [data-os-icon="macOS"] { display: block; }
   #hero-shell .hero-epic-btn {
     display: flex; align-items: center; justify-content: center; gap: 24px;
     width: 304px; height: 64px;
@@ -224,7 +236,7 @@ const heroHtml = `<div id="hero-shell-nav">
     <div class="hero-mobile-download"><div class="hero-mobile-download-btn"></div></div>
     <div class="hero-cta-wrapper">
       <div class="hero-buttons-row">
-        <a class="hero-download-btn" href="/download">DOWNLOAD FOR <span class="hero-os-icon"></span></a>
+        <a class="hero-download-btn" href="/download">DOWNLOAD FOR <span class="hero-os-icon">${windowsIconSvg}${macosIconSvg}</span></a>
         <a class="hero-epic-btn" href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">DOWNLOAD ON <img src="./epic_icon.svg" alt="Epic Games" /></a>
       </div>
     </div>
@@ -239,6 +251,9 @@ const heroHtml = `<div id="hero-shell-nav">
     </div>
   </div>
 </div>
+<script>
+${shellOsScript}
+</script>
 <script>
 (function(){var p=location.pathname;if(p.length>1&&p[p.length-1]==='/'){p=p.slice(0,-1);}if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
 </script>`
