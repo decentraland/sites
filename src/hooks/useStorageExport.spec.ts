@@ -44,6 +44,7 @@ describe('useStorageExport', () => {
   let trackMock: jest.Mock
   let pollData: PollData
   let pollError: unknown
+  let pollStartedAt: number
   let file: Blob
   let unzipped: Blob
   let hook: Hook
@@ -56,6 +57,7 @@ describe('useStorageExport', () => {
   }
   const poll = async (data: PollData): Promise<void> => {
     pollData = data
+    pollStartedAt = Date.now()
     await act(async () => {
       hook.rerender()
     })
@@ -67,12 +69,15 @@ describe('useStorageExport', () => {
     unzipped = new Blob(['{}'])
     pollData = undefined
     pollError = undefined
+    pollStartedAt = 0
     unwrapMock = jest.fn().mockResolvedValue({ id: 'job-1', status: 'pending' })
     createMock = jest.fn().mockReturnValue({ unwrap: unwrapMock })
     trackMock = jest.fn()
     useCreateExportMutationMock.mockReturnValue([createMock, { isLoading: false }])
     useGetExportQueryMock.mockImplementation((arg: unknown) =>
-      arg === skipToken ? { currentData: undefined, error: undefined } : { currentData: pollData, error: pollError }
+      arg === skipToken
+        ? { currentData: undefined, error: undefined, isError: false }
+        : { currentData: pollData, error: pollError, isError: pollError !== undefined, startedTimeStamp: pollStartedAt }
     )
     fetchExportFileMock.mockResolvedValue(file)
     gunzipBlobMock.mockResolvedValue(unzipped)
@@ -221,6 +226,40 @@ describe('useStorageExport', () => {
 
       it('should track the export failure with the status', () => {
         expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: 'json', errorStatus: 429 })
+      })
+
+      describe('and the same export is started again and the server returns the same job id', () => {
+        beforeEach(async () => {
+          await new Promise(resolve => setTimeout(resolve, 5))
+          await startJson()
+        })
+
+        it('should keep polling the job', () => {
+          expect(useGetExportQueryMock).toHaveBeenLastCalledWith(
+            { identity, realm: 'world.dcl.eth', position: '1,2', id: 'job-1' },
+            expect.objectContaining({ pollingInterval: 1000 })
+          )
+        })
+
+        it('should report busy', () => {
+          expect(hook.result.current.busy).toBe(true)
+        })
+
+        describe('and the poll returns done', () => {
+          beforeEach(async () => {
+            pollError = undefined
+            await poll({ id: 'job-1', status: 'done' })
+            await waitFor(() => expect(hook.result.current.busy).toBe(false))
+          })
+
+          it('should save the file', () => {
+            expect(triggerBlobDownloadMock).toHaveBeenCalledWith(unzipped, 'storage-export.json')
+          })
+
+          it('should leave no error', () => {
+            expect(hook.result.current.errorKey).toBeNull()
+          })
+        })
       })
     })
 

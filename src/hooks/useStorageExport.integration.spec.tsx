@@ -153,6 +153,28 @@ describe('useStorageExport with the real storage client', () => {
         expect(callsTo(JOB_URL)).toBe(pollsAtError)
       })
     })
+
+    describe('and the same export is started again while the error is still cached', () => {
+      beforeEach(async () => {
+        signedFetchMock.mockImplementation(async (url: string) => {
+          if (url === DOWNLOAD_URL) return makeResponse(new Blob(['gz']))
+          return makeResponse({ id: 'job-1', status: url === JOB_URL ? 'done' : 'pending' })
+        })
+        await advance(10)
+        await act(async () => {
+          hook.result.current.startExport({}, 'json')
+        })
+        await advance(1000)
+      })
+
+      it('should save the file once', () => {
+        expect(triggerBlobDownloadMock).toHaveBeenCalledTimes(1)
+      })
+
+      it('should leave no error', () => {
+        expect(hook.result.current.errorKey).toBeNull()
+      })
+    })
   })
 
   describe('when the component unmounts after the first poll', () => {
