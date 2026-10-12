@@ -69,7 +69,9 @@ describe('downloadConstants', () => {
       ['Linux', 'Mozilla/5.0 (X11; Linux x86_64)', 0, null],
       ['ChromeOS', 'Mozilla/5.0 (X11; CrOS x86_64 14541.0.0)', 0, null],
       ['Android', 'Mozilla/5.0 (Linux; Android 13)', 5, null],
-      ['an iPhone', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', 5, null]
+      ['an iPhone', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', 5, null],
+      ['an Xbox', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Xbox; Xbox One) AppleWebKit/537.36 Edge/44.18363', 0, null],
+      ['Windows Phone', 'Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Microsoft; Lumia 950) AppleWebKit/537.36', 0, null]
     ])('when the browser runs on %s it should return %s', (_label, userAgent, maxTouchPoints, expected) => {
       stubNavigator(userAgent, maxTouchPoints)
 

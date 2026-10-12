@@ -65,7 +65,10 @@ function detectDesktopInstallerOs(): OperativeSystem | null {
   // iPadOS reports a Macintosh user agent; touch points tell it apart. A touch-capable Mac
   // is sent to the /download chooser too: the safe side of the trade-off.
   if (os === 'apple') return navigator.maxTouchPoints > 1 ? null : OperativeSystem.MACOS
-  if (os === 'windows' && /windows/i.test(navigator.userAgent)) return OperativeSystem.WINDOWS
+  // Xbox and Windows Phone user agents also say Windows but cannot run the installer.
+  if (os === 'windows' && /windows/i.test(navigator.userAgent) && !/xbox|windows phone/i.test(navigator.userAgent)) {
+    return OperativeSystem.WINDOWS
+  }
   return null
 }
 
