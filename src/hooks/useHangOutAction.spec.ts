@@ -11,6 +11,7 @@ import { useHangOutAction } from './useHangOutAction'
 import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
 
+jest.mock('./useDownloadClick', () => ({ useDownloadClick: () => jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('./useWalletAddress', () => ({ useWalletAddress: jest.fn() }))

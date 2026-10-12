@@ -11,6 +11,7 @@ import { launchMobileApp } from '../../../utils/mobileAppLaunch'
 import { DiscoverJumpInProvider, useDiscoverJumpIn } from './DiscoverJumpInProvider'
 
 const mockTrack = jest.fn()
+jest.mock('../../../hooks/useDownloadClick', () => ({ useDownloadClick: () => jest.fn() }))
 jest.mock('../../../hooks/useDeferredTrack', () => ({ useDeferredTrack: () => mockTrack }))
 jest.mock('../../../hooks/useTotalDownloads', () => ({ useTotalDownloads: () => '+400K' }))
 jest.mock('../../../hooks/useAnonUserId', () => ({ useAnonUserId: jest.fn() }))

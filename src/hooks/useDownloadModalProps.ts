@@ -1,13 +1,14 @@
 import { getEnv } from '../config/env'
-import { DOWNLOAD_URLS, detectDesktopInstallerOs, detectDownloadOS } from '../modules/downloadConstants'
+import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
-import { buildModalDownloadUrl } from '../modules/url'
 import { useAnonUserId } from './useAnonUserId'
+import { useModalDownloadCta } from './useModalDownloadCta'
 import { useTotalDownloads } from './useTotalDownloads'
 
 interface DownloadModalProps {
   os: ReturnType<typeof detectDownloadOS>
   downloadUrl: string
+  onDownloadClick?: () => void
   epicUrl: string
   googlePlayUrl: string
   appStoreUrl: string
@@ -37,10 +38,12 @@ function useDownloadModalProps(deepLinkParams: { position?: string; realm?: stri
   // current origin by `buildTrackedDownloadUrl`, so the download stays on the
   // zone origin and keeps its identity) and fall back to the platform constant.
   const downloadBase = getEnv('DOWNLOAD_URL') ?? (downloadOs === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows)
+  const { downloadUrl, onDownloadClick } = useModalDownloadCta(downloadBase, downloadUrlParams)
 
   return {
     os: downloadOs,
-    downloadUrl: buildModalDownloadUrl(detectDesktopInstallerOs(), downloadBase, downloadUrlParams),
+    downloadUrl,
+    onDownloadClick,
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore,

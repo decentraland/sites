@@ -7,6 +7,7 @@ import { useAnonUserId } from './useAnonUserId'
 import { useDownloadModalProps } from './useDownloadModalProps'
 import { useTotalDownloads } from './useTotalDownloads'
 
+jest.mock('./useDownloadClick', () => ({ useDownloadClick: () => jest.fn() }))
 jest.mock('./useAnonUserId', () => ({ useAnonUserId: jest.fn() }))
 jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))

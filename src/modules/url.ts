@@ -58,10 +58,11 @@ const buildTrackedDownloadUrl = (base: string, params: Record<string, string | u
 }
 
 /**
- * Primary CTA of the "install first" DownloadModal. With a known desktop installer
- * it goes straight to `/download_success`, which starts the download, the same
- * one-click path the homepage hero takes. Without one it keeps `fallbackBase`
- * (the `/download` chooser). `params` carry the attribution and deep-link either way.
+ * Primary CTA URL of the "install first" DownloadModal. With a known desktop
+ * installer it goes straight to `/download_success`, which starts the download,
+ * the same one-click path the homepage hero takes. Without one it keeps
+ * `fallbackBase` (the `/download` chooser). `params` carry the attribution and
+ * deep-link either way, and never overwrite the routing params.
  */
 const buildModalDownloadUrl = (
   installerOs: OperativeSystem | null,
@@ -69,8 +70,12 @@ const buildModalDownloadUrl = (
   params: Record<string, string | undefined | null>
 ): string => {
   if (!installerOs) return buildTrackedDownloadUrl(fallbackBase, params)
-  const routing = new URLSearchParams({ os: installerOs, place: DownloadPlace.JUMP_IN_MODAL })
-  return buildTrackedDownloadUrl(`/download_success?${routing.toString()}`, params)
+  // NOTE: on desktop the env DOWNLOAD_URL is intentionally not used. The relative
+  // `/download_success` keeps the download on the current origin (stg stays on
+  // stg instead of hopping to the absolute decentraland.org URL in stg.json).
+  const routing = buildDownloadSuccessHref(installerOs, DownloadPlace.DOWNLOAD_MODAL)
+  const extra = Object.fromEntries(Object.entries(params).filter(([key]) => key !== 'os' && key !== 'place'))
+  return buildTrackedDownloadUrl(routing, extra)
 }
 
 const updateUrlWithLastValue = (url: string, paramKey: string, paramValue: string) => {

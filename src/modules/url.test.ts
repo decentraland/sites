@@ -126,7 +126,7 @@ describe('buildModalDownloadUrl', () => {
       expect(url.origin).toBe(window.location.origin)
       expect(url.pathname).toBe('/download_success')
       expect(url.searchParams.get('os')).toBe('Windows')
-      expect(url.searchParams.get('place')).toBe('jump-in-modal')
+      expect(url.searchParams.get('place')).toBe('download-modal')
       expect(url.searchParams.get('anon_user_id')).toBe('anon-1')
       expect(url.searchParams.get('utm_source')).toBe('shefi')
       expect(url.searchParams.get('position')).toBe('10,20')
@@ -139,6 +139,16 @@ describe('buildModalDownloadUrl', () => {
 
       expect(url.pathname).toBe('/download_success')
       expect(url.searchParams.get('os')).toBe('macOS')
+    })
+  })
+
+  describe('when the params carry routing keys', () => {
+    it('should keep the installer routing', () => {
+      const url = new URL(buildModalDownloadUrl(OperativeSystem.WINDOWS, '/download', { os: 'macOS', place: 'x', utm_source: 'a' }))
+
+      expect(url.searchParams.getAll('os')).toEqual(['Windows'])
+      expect(url.searchParams.getAll('place')).toEqual(['download-modal'])
+      expect(url.searchParams.get('utm_source')).toBe('a')
     })
   })
 
