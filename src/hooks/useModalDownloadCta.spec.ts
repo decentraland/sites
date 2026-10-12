@@ -14,8 +14,16 @@ const mockedBuildModalDownloadUrl = buildModalDownloadUrl as jest.MockedFunction
 
 const DIRECT_URL = 'http://localhost/download_success?os=Windows&place=download-modal'
 
-const clickOn = (button: HTMLAnchorElement) =>
-  ({ currentTarget: button, preventDefault: jest.fn() }) as unknown as React.MouseEvent<HTMLElement> & { preventDefault: jest.Mock }
+const clickOn = (button: HTMLAnchorElement, modifiers: Partial<Pick<MouseEvent, 'metaKey' | 'ctrlKey' | 'shiftKey' | 'button'>> = {}) =>
+  ({
+    currentTarget: button,
+    preventDefault: jest.fn(),
+    metaKey: false,
+    ctrlKey: false,
+    shiftKey: false,
+    button: 0,
+    ...modifiers
+  }) as unknown as React.MouseEvent<HTMLElement> & { preventDefault: jest.Mock }
 
 describe('useModalDownloadCta', () => {
   let assignSpy: jest.Mock
@@ -59,6 +67,24 @@ describe('useModalDownloadCta', () => {
       expect(mockTrackDownloadClick).toHaveBeenCalledWith(event)
       expect(event.preventDefault).toHaveBeenCalled()
       expect(assignSpy).toHaveBeenCalledWith(DIRECT_URL)
+    })
+
+    describe.each([
+      ['cmd', { metaKey: true }],
+      ['ctrl', { ctrlKey: true }],
+      ['shift', { shiftKey: true }],
+      ['non-primary button', { button: 1 }]
+    ])('and the click is a %s click', (_name, modifiers) => {
+      it('should leave the click to the browser', () => {
+        const { result } = renderHook(() => useModalDownloadCta('/download', {}))
+        const event = clickOn(document.createElement('a'), modifiers)
+
+        result.current.onDownloadClick?.(event)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(mockTrackDownloadClick).not.toHaveBeenCalled()
+        expect(assignSpy).not.toHaveBeenCalled()
+      })
     })
 
     it('should do nothing when called without a click event', () => {

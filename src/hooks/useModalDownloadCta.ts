@@ -23,6 +23,8 @@ function useModalDownloadCta(fallbackBase: string, params: Record<string, string
     // straight to the button's onClick, so the click event is always passed.
     (event?: React.MouseEvent<HTMLElement>) => {
       if (!installerOs || !event) return
+      // Let the browser handle new-tab and new-window clicks instead of replacing the current page.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
       // ui2's DownloadModal does not forward data-* props to its button, so the
       // attributes the click payload reads are set on it here.
       const button = event.currentTarget
