@@ -1,9 +1,12 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { dialogMockFactory } from '../__test-utils__/dialogMocks'
 import { StorageLayout } from './StorageLayout'
 
 const mockUseStorageScope = jest.fn()
+const mockUseAuthIdentity = jest.fn()
+const mockUseStorageExport = jest.fn()
 const mockNavigate = jest.fn()
 let mockPathname = '/storage/env'
 let mockSearch = ''
@@ -24,6 +27,12 @@ jest.mock('decentraland-ui2', () => {
     ({ children }: { children?: unknown }) =>
       h(tag, null, children)
   return {
+    ...dialogMockFactory(),
+    Alert: (props: Record<string, unknown>) =>
+      h('div', { role: 'alert' }, [
+        h('span', { key: 'message' }, props.children),
+        h('button', { key: 'close', type: 'button', onClick: props.onClose }, 'close alert')
+      ]),
     Box: pass('div'),
     CircularProgress: (props: Record<string, unknown>) => h('div', { role: 'progressbar', 'aria-label': props['aria-label'] }),
     // Expose a control that fires the real onChange so handleTabChange is exercised.
@@ -47,6 +56,7 @@ jest.mock('decentraland-ui2', () => {
   }
 })
 
+jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => null }))
 jest.mock('@mui/icons-material/ArrowBack', () => ({ __esModule: true, default: () => null }))
 jest.mock('@mui/icons-material/FmdGood', () => ({ __esModule: true, default: () => null }))
 jest.mock('@mui/icons-material/People', () => ({ __esModule: true, default: () => null }))
@@ -62,6 +72,7 @@ jest.mock('./StorageLayout.styled', () => {
   const pass = (tag: string) => (props: Record<string, unknown>) => h(tag, { onClick: props.onClick }, props.children)
   return {
     BackButton: pass('button'),
+    HeaderActions: pass('div'),
     LoaderBox: pass('div'),
     ScopeChip: pass('div'),
     ScopeRow: pass('div'),
@@ -79,10 +90,20 @@ jest.mock('../../../hooks/useStorageScope', () => ({
   useStorageScope: () => mockUseStorageScope()
 }))
 
+jest.mock('../../../hooks/useAuthIdentity', () => ({
+  useAuthIdentity: () => mockUseAuthIdentity()
+}))
+
+jest.mock('../../../hooks/useStorageExport', () => ({
+  useStorageExport: () => mockUseStorageExport()
+}))
+
 describe('StorageLayout', () => {
   beforeEach(() => {
     mockPathname = '/storage/env'
     mockSearch = ''
+    mockUseAuthIdentity.mockReturnValue({ identity: undefined, address: undefined })
+    mockUseStorageExport.mockReturnValue({ startExport: jest.fn(), busy: false, errorKey: null, clearError: jest.fn() })
   })
   afterEach(() => jest.resetAllMocks())
 
@@ -218,5 +239,127 @@ describe('StorageLayout', () => {
     )
     await userEvent.click(screen.getByRole('button', { name: 'component.storage.sidebar.back' }))
     expect(mockNavigate).toHaveBeenCalledWith('/storage/select')
+  })
+
+  describe('when a signed-in user is on the scene tab of a resolved scope', () => {
+    let startExport: jest.Mock
+
+    beforeEach(() => {
+      startExport = jest.fn()
+      mockPathname = '/storage/scene'
+      mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, address: '0xowner' })
+      mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+      mockUseStorageExport.mockReturnValue({ startExport, busy: false, errorKey: null, clearError: jest.fn() })
+    })
+
+    it('should render the download all button', () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      expect(screen.getByRole('button', { name: 'component.storage.common.download_all' })).toBeInTheDocument()
+    })
+
+    it('should export the whole scene when JSON is chosen', async () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      await userEvent.click(screen.getByRole('button', { name: 'component.storage.common.download_all' }))
+      await userEvent.click(screen.getByRole('menuitem', { name: 'component.storage.common.format_json' }))
+      expect(startExport).toHaveBeenCalledWith({}, 'json')
+    })
+
+    describe('and an export job is running', () => {
+      beforeEach(() => {
+        mockUseStorageExport.mockReturnValue({ startExport, busy: true, errorKey: null, clearError: jest.fn() })
+      })
+
+      it('should render the download all button as busy', () => {
+        render(
+          <StorageLayout>
+            <div>child-content</div>
+          </StorageLayout>
+        )
+        expect(screen.getByRole('button', { name: 'component.storage.common.download_all' })).toBeDisabled()
+      })
+    })
+  })
+
+  describe('when the user is on the players tab', () => {
+    beforeEach(() => {
+      mockPathname = '/storage/players/0xabc'
+      mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, address: '0xowner' })
+      mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+    })
+
+    it('should render the download all button', () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      expect(screen.getByRole('button', { name: 'component.storage.common.download_all' })).toBeInTheDocument()
+    })
+  })
+
+  describe.each([
+    ['the scope is resolving', '/storage/scene', true, { isResolving: true, unresolved: false }],
+    ['the scope is unresolved', '/storage/scene', true, { isResolving: false, unresolved: true }],
+    ['there is no identity', '/storage/scene', false, { isResolving: false, unresolved: false }],
+    ['the user is on the env tab', '/storage/env', true, { isResolving: false, unresolved: false }]
+  ])('when %s', (_context, pathname, signedIn, scopeState) => {
+    beforeEach(() => {
+      mockPathname = pathname
+      mockUseAuthIdentity.mockReturnValue(signedIn ? { identity: { authChain: [] }, address: '0xowner' } : { identity: undefined })
+      mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', ...scopeState })
+    })
+
+    it('should not render the download all button', () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      expect(screen.queryByRole('button', { name: 'component.storage.common.download_all' })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the export reports an error', () => {
+    let clearError: jest.Mock
+
+    beforeEach(() => {
+      clearError = jest.fn()
+      mockPathname = '/storage/scene'
+      mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, address: '0xowner' })
+      mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+      mockUseStorageExport.mockReturnValue({
+        startExport: jest.fn(),
+        busy: false,
+        errorKey: 'component.storage.errors.export_failed',
+        clearError
+      })
+    })
+
+    it('should render the translated error in an alert', () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.export_failed')
+    })
+
+    it('should clear the error when the alert is closed', async () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      await userEvent.click(screen.getByRole('button', { name: 'close alert' }))
+      expect(clearError).toHaveBeenCalledTimes(1)
+    })
   })
 })
