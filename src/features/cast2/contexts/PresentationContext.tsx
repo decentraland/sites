@@ -22,6 +22,8 @@ interface PresentationState {
   slide: SlideInfo | null
   presenterIdentity: string | null
   playingVideoIndex: number | null
+  videoPositionMs: number | null
+  videoPositionAt: number | null
 }
 
 interface PresentationContextValue {
@@ -59,7 +61,9 @@ const initialState: PresentationState = {
   overlay: null,
   slide: null,
   presenterIdentity: null,
-  playingVideoIndex: null
+  playingVideoIndex: null,
+  videoPositionMs: null,
+  videoPositionAt: null
 }
 
 const toOverlay = (value: unknown): OverlayLayout | null => {
@@ -90,6 +94,9 @@ const toPresenterIdentity = (value: unknown): string | null => (typeof value ===
 const toPlayingVideoIndex = (value: unknown): number | null =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null
 
+const toPositionNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null
+
 const isSlideVideo = (value: unknown): value is SlideVideoInfo => {
   if (typeof value !== 'object' || value === null) return false
   const { url, geometry } = value as Record<string, unknown>
@@ -98,7 +105,10 @@ const isSlideVideo = (value: unknown): value is SlideVideoInfo => {
   return [x, y, width, height].every(Number.isFinite)
 }
 
-const toSlideVideos = (value: unknown): SlideVideoInfo[] => (Array.isArray(value) && value.every(isSlideVideo) ? value : [])
+const toSlideVideos = (value: unknown): SlideVideoInfo[] =>
+  Array.isArray(value) && value.every(isSlideVideo)
+    ? value.map(({ url, geometry, source }) => ({ url, geometry, source: source === 'client' ? 'client' : 'stream' }))
+    : []
 
 const toIncomingState = (id: string, data: Record<string, unknown>): IncomingState => ({
   id,
@@ -110,7 +120,9 @@ const toIncomingState = (id: string, data: Record<string, unknown>): IncomingSta
   overlay: toOverlay(data.overlay),
   slide: toSlideInfo(data.slide),
   presenterIdentity: toPresenterIdentity(data.presenterIdentity),
-  playingVideoIndex: toPlayingVideoIndex(data.playingVideoIndex)
+  playingVideoIndex: toPlayingVideoIndex(data.playingVideoIndex),
+  videoPositionMs: toPositionNumber(data.videoPositionMs),
+  videoPositionAt: toPositionNumber(data.videoPositionAt)
 })
 
 const sameOverlay = (a: OverlayLayout | null, b: OverlayLayout): boolean =>
