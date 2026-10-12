@@ -24,14 +24,13 @@
     // iPadOS reports a Macintosh user agent; touch points tell it apart.
     os = 'macOS'
   }
-  if (!os) return
 
-  // Same href the React Hero builds (DownloadPlace.LANDING_HERO), with the same partner
-  // params: the allowlist and normalization mirror src/modules/campaignParams.ts, and the
-  // first value wins on a repeated key. A spec compares both against collectCampaignParams.
+  // Same partner params the React Hero forwards: the allowlist and normalization mirror
+  // src/modules/campaignParams.ts, and the first value wins on a repeated key. A spec compares both against collectCampaignParams.
+  // Built before the OS check so a platform with no installer keeps its attribution too.
   var keys = ['utm_org', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
   var search = new URLSearchParams(window.location.search)
-  var params = new URLSearchParams({ os: os, place: 'landing-hero' })
+  var campaign = new URLSearchParams()
   keys.forEach(function (key) {
     var value = (search.get(key) || '')
       .trim()
@@ -41,7 +40,17 @@
       .replace(/_+/g, '_')
       .replace(/^_+|_+$/g, '')
       .slice(0, 256)
-    if (value) params.set(key, value)
+    if (value) campaign.set(key, value)
+  })
+  if (!os) {
+    // Linux, ChromeOS, iPad and the like stay on the chooser, as withCampaignParams('/download') does.
+    if (campaign.toString()) button.setAttribute('href', '/download?' + campaign.toString())
+    return
+  }
+
+  var params = new URLSearchParams({ os: os, place: 'landing-hero' })
+  campaign.forEach(function (value, key) {
+    params.set(key, value)
   })
   button.setAttribute('href', '/download_success?' + params.toString())
   button.setAttribute('data-os', os)

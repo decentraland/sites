@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { collectCampaignParams } from '../src/modules/campaignParams'
+import { collectCampaignParams, withCampaignParams } from '../src/modules/campaignParams'
 import { DownloadPlace } from '../src/modules/segment.types'
 
 const SCRIPT = readFileSync(join(__dirname, 'hero-shell-os.js'), 'utf8')
@@ -135,6 +135,17 @@ describe('when the hero shell OS script runs', () => {
       runScript({ userAgent })
 
       expect(getButton()?.getAttribute('href')).toBe('/download')
+    })
+  })
+
+  describe('and the OS has no desktop installer but the page carries campaign params', () => {
+    it('should keep the attribution on the download page link, like the React hero', () => {
+      window.history.replaceState(null, '', '/?utm_source=Partner%20One&utm_campaign=q4&ref=abc')
+
+      runScript({ userAgent: LINUX_UA })
+
+      expect(getButton()?.getAttribute('href')).toBe(withCampaignParams('/download'))
+      expect(getButton()?.getAttribute('href')).toBe('/download?utm_source=partner_one&utm_campaign=q4')
     })
   })
 
