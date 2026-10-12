@@ -374,8 +374,7 @@ const storageEndpoints = storageClient.injectEndpoints({
         id: queryArgs.id,
         account: identityAddress(queryArgs.identity),
         storageContext: storageContextId(queryArgs)
-      }),
-      keepUnusedDataFor: 0
+      })
     }),
 
     getContributableDomains: build.query<ContributableDomain[], AuthParams>({
