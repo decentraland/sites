@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useLayoutEffect } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { RenderResult } from '@testing-library/react'
 import type { SlideVideoInfo } from '../../../features/cast2/cast2.types'
@@ -299,7 +299,7 @@ describe('when a YouTube client video renders', () => {
       await mount()
       ready()
       handle.play.mockClear()
-      act(() => events.onAutoplayBlocked(false))
+      act(() => events.onAutoplayBlocked())
     })
 
     it('should show the unmute button', () => {
@@ -331,7 +331,7 @@ describe('when a YouTube client video renders', () => {
         beforeEach(() => {
           handle.setMuted.mockClear()
           act(() => {
-            events.onAutoplayBlocked(false)
+            events.onAutoplayBlocked()
             jest.advanceTimersByTime(5000)
           })
         })
@@ -348,21 +348,30 @@ describe('when a YouTube client video renders', () => {
 
     describe('and the muted retry is refused too', () => {
       beforeEach(() => {
-        act(() => events.onAutoplayBlocked(true))
+        handle.play.mockClear()
+        act(() => events.onAutoplayBlocked())
       })
 
-      it('should destroy the player', () => {
-        expect(handle.destroy).toHaveBeenCalled()
+      it('should keep the player', () => {
+        expect(handle.destroy).not.toHaveBeenCalled()
       })
 
-      it('should render nothing', () => {
-        expect(result.container).toBeEmptyDOMElement()
+      it('should keep the unmute button', () => {
+        expect(screen.getByRole('button', UNMUTE)).toBeInTheDocument()
+      })
+
+      it('should keep the player muted', () => {
+        expect(handle.setMuted).toHaveBeenLastCalledWith(true)
+      })
+
+      it('should leave the next play attempt to the sync timer', () => {
+        expect(handle.play).not.toHaveBeenCalled()
       })
     })
 
     describe('and an earlier unmuted attempt is refused afterwards', () => {
       beforeEach(() => {
-        act(() => events.onAutoplayBlocked(false))
+        act(() => events.onAutoplayBlocked())
       })
 
       it('should keep the player', () => {
@@ -384,7 +393,7 @@ describe('when a YouTube client video renders', () => {
       state = { ...state, videoState: 'paused' }
       await mount()
       ready()
-      act(() => events.onAutoplayBlocked(false))
+      act(() => events.onAutoplayBlocked())
     })
 
     it('should show the unmute button', () => {
@@ -393,6 +402,42 @@ describe('when a YouTube client video renders', () => {
 
     it('should mute the player', () => {
       expect(handle.setMuted).toHaveBeenLastCalledWith(true)
+    })
+
+    it('should not play the player', () => {
+      expect(handle.play).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('and autoplay is blocked in the same commit that the presenter pauses', () => {
+    const RefuseOnCommit = ({ refuse }: { refuse: boolean }) => {
+      useLayoutEffect(() => {
+        if (refuse) events.onAutoplayBlocked()
+      }, [refuse])
+      return null
+    }
+
+    beforeEach(async () => {
+      result = render(
+        <>
+          <ClientVideo video={video} muted={false} />
+          <RefuseOnCommit refuse={false} />
+        </>
+      )
+      await flush()
+      ready()
+      handle.play.mockClear()
+      state = { ...state, videoState: 'paused' }
+      result.rerender(
+        <>
+          <ClientVideo video={video} muted={false} />
+          <RefuseOnCommit refuse />
+        </>
+      )
+    })
+
+    it('should show the unmute button', () => {
+      expect(screen.getByRole('button', UNMUTE)).toBeInTheDocument()
     })
 
     it('should not play the player', () => {

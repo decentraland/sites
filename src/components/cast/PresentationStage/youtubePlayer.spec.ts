@@ -206,8 +206,8 @@ describe('when a YouTube player is created', () => {
       options().events.onAutoplayBlocked()
     })
 
-    it(`should report the attempt as ${muted ? 'muted' : 'unmuted'}`, () => {
-      expect(events.onAutoplayBlocked).toHaveBeenCalledWith(muted)
+    it('should report the refusal without attributing it to the attempt', () => {
+      expect(events.onAutoplayBlocked).toHaveBeenCalledWith()
     })
   })
 
