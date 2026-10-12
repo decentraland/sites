@@ -708,7 +708,15 @@
         "key": "キー",
         "add": "追加",
         "owner": "オーナー",
-        "collaborator": "コラボレーター"
+        "collaborator": "コラボレーター",
+        "download_all": "すべてダウンロード",
+        "download_selected": "選択項目をダウンロード ({count})",
+        "download_all_selected": "選択したすべてをダウンロード",
+        "select_all": "すべて選択",
+        "select_row": "{name} を選択",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "ダウンロードを準備中…"
       },
       "role": {
         "owner": "オーナー",
@@ -870,7 +878,8 @@
         "payload_too_large": "値がこのストレージ領域には大きすぎます。",
         "rate_limited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
         "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。",
-        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。"
+        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。",
+        "export_failed": "エクスポートに失敗しました。もう一度お試しください。"
       }
     },
     "report": {

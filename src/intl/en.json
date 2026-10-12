@@ -848,7 +848,15 @@
         "key": "Key",
         "add": "Add",
         "owner": "Owner",
-        "collaborator": "Collaborator"
+        "collaborator": "Collaborator",
+        "download_all": "Download all",
+        "download_selected": "Download selected ({count})",
+        "download_all_selected": "Download all selected",
+        "select_all": "Select all",
+        "select_row": "Select {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Preparing download…"
       },
       "role": {
         "owner": "Owner",
@@ -1010,7 +1018,8 @@
         "payload_too_large": "Value is too large for this storage namespace.",
         "rate_limited": "Too many requests. Wait a moment and try again.",
         "server": "The storage service returned an error. Try again in a few minutes.",
-        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet."
+        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet.",
+        "export_failed": "The export failed. Please try again."
       }
     },
     "report": {

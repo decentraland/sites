@@ -1,31 +1,17 @@
 import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { dialogMockFactory } from '../__test-utils__/dialogMocks'
 import { KeyTable } from './KeyTable'
 
 type ChildrenProps = { children?: ReactNode }
-type IconButtonProps = ChildrenProps & { onClick?: () => void; 'aria-label'?: string }
-type CheckboxProps = { checked?: boolean; indeterminate?: boolean; onChange?: () => void; inputProps?: { 'aria-label'?: string } }
 
 jest.mock('@mui/icons-material/Delete', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/Download', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/Edit', () => ({ __esModule: true, default: () => <span /> }))
 
 jest.mock('decentraland-ui2', () => ({
-  Checkbox: ({ checked, indeterminate, onChange, inputProps }: CheckboxProps) => (
-    <input
-      type="checkbox"
-      checked={Boolean(checked)}
-      data-indeterminate={String(Boolean(indeterminate))}
-      onChange={onChange}
-      aria-label={inputProps?.['aria-label']}
-    />
-  ),
-  IconButton: ({ children, onClick, 'aria-label': ariaLabel }: IconButtonProps) => (
-    <button type="button" aria-label={ariaLabel} onClick={onClick}>
-      {children}
-    </button>
-  ),
+  ...dialogMockFactory(),
   Paper: ({ children }: ChildrenProps) => <div>{children}</div>,
   Table: ({ children }: ChildrenProps) => <table>{children}</table>,
   TableBody: ({ children }: ChildrenProps) => <tbody>{children}</tbody>,
