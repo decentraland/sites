@@ -551,12 +551,12 @@ describe('when the visitor clicks a navbar link', () => {
       return rendered
     }
 
-    // A new prop, since the memoized navbar would otherwise skip the render that reads the new readiness.
-    const finishLoading = (rerender: ReturnType<typeof render>['rerender']) => {
+    // A new onClickJumpIn, since the memoized navbar would otherwise skip the render that reads the new readiness.
+    const finishLoading = (rerender: ReturnType<typeof render>['rerender'], pathname = '/events', extra: Partial<NavbarProps> = {}) => {
       ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
       rerender(
-        <MemoryRouter initialEntries={['/events']}>
-          <LandingNavbar {...props} isSignedIn={false} onClickJumpIn={jest.fn()} />
+        <MemoryRouter initialEntries={[pathname]}>
+          <LandingNavbar {...props} isSignedIn={false} {...extra} onClickJumpIn={jest.fn()} />
         </MemoryRouter>
       )
     }
@@ -693,47 +693,37 @@ describe('when the visitor clicks a navbar link', () => {
       })
     })
 
-    describe('and the session started on an exempt page', () => {
-      beforeEach(() => {
-        isAnalyticsDisabledForSession.mockReturnValue(true)
-        clickLearn()
-      })
-
-      it('should not send anything', () => {
-        expect(track).not.toHaveBeenCalled()
-        expect(postSegmentEvent).not.toHaveBeenCalled()
-      })
-    })
-
-    describe('and the visitor is a bot', () => {
-      beforeEach(() => {
-        isBotClient.mockReturnValue(true)
-        clickLearn()
-      })
-
-      it('should not send anything', () => {
-        expect(track).not.toHaveBeenCalled()
-        expect(postSegmentEvent).not.toHaveBeenCalled()
-      })
-    })
-
     describe.each([
       ['the session started on an exempt page', () => isAnalyticsDisabledForSession.mockReturnValue(true)],
       ['the visitor is a bot', () => isBotClient.mockReturnValue(true)]
-    ])('and %s and the click keeps the page open', (_case, arrange) => {
-      let rerender: ReturnType<typeof render>['rerender']
-
+    ])('and %s', (_case, arrange) => {
       beforeEach(() => {
         arrange()
-        ;({ rerender } = renderAt('/events'))
-        fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
-        finishLoading(rerender)
       })
 
-      // Readiness is forced here only to prove the click was never queued: analytics stays off in these sessions.
-      it('should not queue it, so nothing is sent even once analytics is ready', () => {
-        expect(track).not.toHaveBeenCalled()
-        expect(postSegmentEvent).not.toHaveBeenCalled()
+      describe('and the click replaces the page', () => {
+        beforeEach(() => {
+          clickLearn()
+        })
+
+        it('should not send anything', () => {
+          expect(track).not.toHaveBeenCalled()
+          expect(postSegmentEvent).not.toHaveBeenCalled()
+        })
+      })
+
+      describe('and the click keeps the page open', () => {
+        beforeEach(() => {
+          const { rerender } = renderAt('/events')
+          fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+          finishLoading(rerender)
+        })
+
+        // Readiness is forced here only to prove the click was never queued: analytics stays off in these sessions.
+        it('should not queue it, so nothing is sent even once analytics is ready', () => {
+          expect(track).not.toHaveBeenCalled()
+          expect(postSegmentEvent).not.toHaveBeenCalled()
+        })
       })
     })
 
@@ -796,12 +786,7 @@ describe('when the visitor clicks a navbar link', () => {
 
       describe('and analytics finishes loading', () => {
         beforeEach(() => {
-          ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
-          rerender(
-            <MemoryRouter initialEntries={['/']}>
-              <LandingNavbar {...props} isSignedIn={false} isLandingPage onClickJumpIn={jest.fn()} />
-            </MemoryRouter>
-          )
+          finishLoading(rerender, '/', { isLandingPage: true })
         })
 
         it('should send the queued click once through analytics', () => {
