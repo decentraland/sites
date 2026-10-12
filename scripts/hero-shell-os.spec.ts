@@ -104,6 +104,16 @@ describe('when the hero shell OS script runs', () => {
     })
   })
 
+  describe('and a utm param is repeated', () => {
+    it('should keep the first value, like the React hero', () => {
+      window.history.replaceState(null, '', '/?utm_source=first&utm_source=second')
+
+      runScript({ userAgent: WINDOWS_UA, platform: 'Windows' })
+
+      expect(getButton()?.getAttribute('href')).toBe('/download_success?os=Windows&place=landing-hero&utm_source=first')
+    })
+  })
+
   describe('and the place it reports is checked against the app', () => {
     it('should match the place the React hero sends', () => {
       runScript({ userAgent: WINDOWS_UA, platform: 'Windows' })

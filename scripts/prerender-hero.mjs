@@ -26,9 +26,13 @@ const jumpInSvg = `<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24"
 
 // OS icons for the download button, same files the React Hero uses. Both ship hidden;
 // hero-shell-os.js tags the button with data-os and the CSS shows the matching one.
-const windowsIconSvg = readSource('src/images/microsoft-logo.svg').replace('<svg ', '<svg data-os-icon="Windows" aria-label="Windows" ')
-const macosIconSvg = readSource('src/images/apple-logo.svg').replace('<svg ', '<svg data-os-icon="macOS" aria-label="macOS" ')
+const windowsIconSvg = readSource('src/images/microsoft-logo.svg').replace('<svg ', '<svg data-os-icon="Windows" role="img" aria-label="Windows" ')
+const macosIconSvg = readSource('src/images/apple-logo.svg').replace('<svg ', '<svg data-os-icon="macOS" role="img" aria-label="macOS" ')
 const shellOsScript = readSource('scripts/hero-shell-os.js')
+if (/<\/script/i.test(shellOsScript)) {
+  console.error('❌ Hero shell prerender failed: scripts/hero-shell-os.js contains "</script", which would end the inline script early.')
+  process.exit(1)
+}
 
 // ============================================================
 // ALL CSS values below copied 1:1 from Chrome DevTools Computed tab
@@ -297,10 +301,8 @@ html = html.replace(
   /<!-- HERO_SHELL_START -->[\s\S]*?<!-- HERO_SHELL_END -->/,
   '<!-- HERO_SHELL_START --><!-- HERO_SHELL_END -->'
 )
-html = html.replace(
-  '<div id="root">',
-  `${finalHeroHtml}\n<div id="root">`
-)
+// Function replacement: a string would expand `$&` and friends found in the inlined JS or SVG.
+html = html.replace('<div id="root">', () => `${finalHeroHtml}\n<div id="root">`)
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
 
 // Inline the English locale into the HTML response so the main JS bundle

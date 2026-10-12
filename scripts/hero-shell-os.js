@@ -26,10 +26,10 @@
   if (!os) return
 
   // Same href the React Hero builds (DownloadPlace.LANDING_HERO). Partner utm_* params are
-  // forwarded as-is: /download_success applies the allowlist and normalization itself.
+  // forwarded as-is, first value wins on a repeated key like collectCampaignParams: /download_success applies the allowlist and normalization itself.
   var params = new URLSearchParams({ os: os, place: 'landing-hero' })
   new URLSearchParams(window.location.search).forEach(function (value, key) {
-    if (key.indexOf('utm_') === 0) params.set(key, value)
+    if (key.indexOf('utm_') === 0 && !params.has(key)) params.set(key, value)
   })
   button.setAttribute('href', '/download_success?' + params.toString())
   button.setAttribute('data-os', os)
