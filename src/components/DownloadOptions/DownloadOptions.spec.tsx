@@ -364,6 +364,73 @@ describe('DownloadOptions', () => {
       expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
     })
 
+    it('should offer the Windows amd64 installer while the architecture is Unknown', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Windows' }, cpu: { architecture: 'Unknown' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      const primary = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(primary).toHaveAttribute('href', 'https://cdn.decentraland.org/launcher/win.exe')
+    })
+
+    it('should offer the Windows amd64 installer on Windows ARM when no arm64 build is published', () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Windows' }, cpu: { architecture: 'arm64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      const primary = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(primary).toHaveAttribute('href', 'https://cdn.decentraland.org/launcher/win.exe')
+    })
+
+    it('should offer the matching arm64 installer on Windows ARM when it is published', () => {
+      mockGetCDNRelease.mockReturnValue({
+        Windows: { amd64: 'https://cdn.decentraland.org/launcher/win.exe', arm64: 'https://cdn.decentraland.org/launcher/win-arm64.exe' },
+        macOS: { arm64: 'https://cdn.decentraland.org/launcher/mac.dmg' }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'Windows' }, cpu: { architecture: 'arm64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      render(<DownloadOptions />)
+      const primary = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+      expect(primary).toHaveAttribute('href', 'https://cdn.decentraland.org/launcher/win-arm64.exe')
+    })
+
+    it('should serve the arm64 dmg and track arm64 on a Mac whose reported arch is not arm64', async () => {
+      mockUseAdvancedUserAgentData.mockReturnValue([
+        false,
+        { os: { name: 'macOS' }, cpu: { architecture: 'amd64' }, mobile: false }
+      ] as unknown as ReturnType<typeof useAdvancedUserAgentData>)
+      const { hrefSpy, restore } = installLocation('')
+      try {
+        render(<DownloadOptions />)
+        const primary = screen.getByText('page.download.download_for_short').closest('a') as HTMLAnchorElement
+        expect(primary).toHaveAttribute('href', 'https://cdn.decentraland.org/launcher/mac.dmg')
+        await userEvent.click(primary)
+        await waitFor(() => expect(hrefSpy).toHaveBeenCalled())
+        expect(hrefSpy.mock.calls[0][0]).toContain('arch=arm64')
+      } finally {
+        restore()
+      }
+    })
+
+    it('should render no primary button on a Windows user agent when the release has no links', () => {
+      mockGetCDNRelease.mockReturnValue({} as unknown as ReturnType<typeof getCDNRelease>)
+      setWindowsUserAgent()
+      render(<DownloadOptions />)
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+    })
+
+    it('should render no primary button on a Windows user agent when the Windows link map is empty', () => {
+      mockGetCDNRelease.mockReturnValue({ Windows: {}, macOS: {} } as unknown as ReturnType<typeof getCDNRelease>)
+      setWindowsUserAgent()
+      render(<DownloadOptions />)
+      expect(screen.queryByText('page.download.download_for_short')).not.toBeInTheDocument()
+    })
+
     it('should skip rendering a primary option whose CDN link is missing for the detected arch', () => {
       mockUseAdvancedUserAgentData.mockReturnValue([
         false,
