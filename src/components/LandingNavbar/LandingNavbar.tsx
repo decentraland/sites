@@ -35,6 +35,7 @@ import {
 import { isSameTabNavigation, isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
+import type { NavbarClickLink, NavbarClickOptions } from './LandingNavbar.types'
 import {
   AvatarButton,
   AvatarImage,
@@ -266,7 +267,7 @@ const LandingNavbar = memo(function LandingNavbar({
   const deferredTrack = useDeferredTrack()
 
   const trackNavbar = useCallback(
-    (action: string, link?: { section: string; href: string }, { leavesPage = true }: { leavesPage?: boolean } = {}) => {
+    (action: string, link?: NavbarClickLink, { leavesPage = true }: NavbarClickOptions = {}) => {
       const properties = { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link }
       if (isInitializedRef.current) {
         track(SegmentEvent.CLICK, properties)
@@ -288,7 +289,7 @@ const LandingNavbar = memo(function LandingNavbar({
   )
 
   const trackNavbarLink = useCallback(
-    (section: string, labelKey: string, href: string, options?: { leavesPage?: boolean }) =>
+    (section: string, labelKey: string, href: string, options?: NavbarClickOptions) =>
       trackNavbar(toNavbarAction(labelKey), { section, href }, options),
     [trackNavbar]
   )
