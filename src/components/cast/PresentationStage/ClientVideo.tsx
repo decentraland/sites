@@ -6,7 +6,7 @@ import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { attachHls } from './hlsSource'
 import { createYouTubePlayer, loadYouTubeApi } from './youtubePlayer'
 import type { ClientVideoProps } from './ClientVideo.types'
-import type { ClientPlayerHandle, YouTubePlayerEvents } from './PresentationStage.types'
+import type { ClientPlayerEvents, ClientPlayerHandle } from './PresentationStage.types'
 import { PlayerContainer, PlayerVideo, UnmuteSlot } from './ClientVideo.styled'
 
 const DRIFT_MS = 2000
@@ -14,12 +14,13 @@ const SYNC_INTERVAL_MS = 5000
 
 const videoElementPlayer = (
   video: HTMLVideoElement,
-  events: Pick<YouTubePlayerEvents, 'onAutoplayBlocked' | 'onError'>
+  events: Pick<ClientPlayerEvents, 'onAutoplayBlocked' | 'onError'>
 ): ClientPlayerHandle => ({
   play: () => {
+    const attemptWasMuted = video.muted
     video.play().catch((error: unknown) => {
       const name = error instanceof DOMException ? error.name : ''
-      if (name === 'NotAllowedError') events.onAutoplayBlocked()
+      if (name === 'NotAllowedError') events.onAutoplayBlocked(attemptWasMuted)
       else if (name !== 'AbortError') events.onError()
     })
   },
@@ -47,7 +48,7 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const handleRef = useRef<ClientPlayerHandle | null>(null)
   const endedRef = useRef(false)
-  const autoplayMutedRef = useRef(false)
+  const videoStateRef = useRef(videoState)
   const viewerUnmutedRef = useRef(false)
   const [ready, setReady] = useState(false)
   const [autoplayMuted, setAutoplayMuted] = useState(false)
@@ -61,23 +62,28 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
     console.warn('[presentation] client video failed', source?.kind)
     setFailed(true)
   }, [source])
-  const handleAutoplayBlocked = useCallback(() => {
-    const handle = handleRef.current
-    if (!handle || viewerUnmutedRef.current) return
-    if (autoplayMutedRef.current) {
-      handleFailure()
-      return
-    }
-    autoplayMutedRef.current = true
-    setAutoplayMuted(true)
-    handle.setMuted(true)
-    handle.play()
-  }, [handleFailure])
+  const handleAutoplayBlocked = useCallback(
+    (attemptWasMuted: boolean) => {
+      const handle = handleRef.current
+      if (!handle || viewerUnmutedRef.current) return
+      if (attemptWasMuted) {
+        handleFailure()
+        return
+      }
+      setAutoplayMuted(true)
+      handle.setMuted(true)
+      if (videoStateRef.current === 'playing') handle.play()
+    },
+    [handleFailure]
+  )
   const handleUnmute = () => {
     viewerUnmutedRef.current = true
-    autoplayMutedRef.current = false
     setAutoplayMuted(false)
   }
+
+  useEffect(() => {
+    videoStateRef.current = videoState
+  }, [videoState])
 
   useEffect(() => {
     const container = containerRef.current
@@ -90,6 +96,7 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
       if (!cancelled) handleFailure()
     }
     if (source.kind === 'youtube' && container) {
+      container.setAttribute('inert', '')
       loadYouTubeApi()
         .then(() => {
           if (!cancelled) handleRef.current = createYouTubePlayer(container, source.id, events)
@@ -98,7 +105,7 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
     } else if (element) {
       handleRef.current = videoElementPlayer(element, events)
       if (source.kind === 'hls') {
-        attachHls(element, source.src).then(release => {
+        attachHls(element, source.src, failUnlessCancelled).then(release => {
           if (cancelled) release()
           else releaseHls = release
         }, failUnlessCancelled)

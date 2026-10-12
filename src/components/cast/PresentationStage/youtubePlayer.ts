@@ -1,4 +1,4 @@
-import type { ClientPlayerHandle, YouTubePlayerEvents } from './PresentationStage.types'
+import type { ClientPlayerEvents, ClientPlayerHandle } from './PresentationStage.types'
 
 const API_SRC = 'https://www.youtube.com/iframe_api'
 const ENDED = 0
@@ -8,11 +8,12 @@ const BUFFERING = 3
 let apiPromise: Promise<void> | null = null
 
 /**
- * Loads the YouTube IFrame API script once.
+ * Loads the YouTube IFrame API script once, keeping any ready callback already on the page.
  *
- * @returns A promise shared by concurrent callers, cleared when the script fails.
+ * @returns A promise shared by concurrent callers, cleared when the script fails; resolved at once when the API is already loaded.
  */
 const loadYouTubeApi = (): Promise<void> => {
+  if (window.YT?.Player) return Promise.resolve()
   apiPromise ??= new Promise<void>((resolve, reject) => {
     const script = document.createElement('script')
     script.src = API_SRC
@@ -20,7 +21,11 @@ const loadYouTubeApi = (): Promise<void> => {
       apiPromise = null
       reject(new Error('YouTube IFrame API failed to load'))
     }
-    window.onYouTubeIframeAPIReady = () => resolve()
+    const previous = window.onYouTubeIframeAPIReady
+    window.onYouTubeIframeAPIReady = () => {
+      previous?.()
+      resolve()
+    }
     document.head.appendChild(script)
   })
   return apiPromise
@@ -31,13 +36,17 @@ const loadYouTubeApi = (): Promise<void> => {
  *
  * @param container - Element React renders; the player replaces a child created here, never the container.
  * @param id - The parsed 11-character video id.
- * @param events - Callbacks for ready, ended, error and autoplay refusal.
+ * @param events - Callbacks for ready, ended, error and autoplay refusal, which reports whether the refused attempt was muted.
+ * @returns A handle whose `isPlaying()` is true from a `play()` request until the player settles, so a second request is not sent.
  */
-const createYouTubePlayer = (container: HTMLElement, id: string, events: YouTubePlayerEvents): ClientPlayerHandle => {
+const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientPlayerEvents): ClientPlayerHandle => {
   const { YT } = window
   if (!YT) throw new Error('YouTube IFrame API is not loaded')
   const child = document.createElement('div')
   container.appendChild(child)
+  let muted = false
+  let attemptMuted = false
+  let playRequested = false
   const player = new YT.Player(child, {
     videoId: id,
     width: '100%',
@@ -46,24 +55,39 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: YouTube
     events: {
       onReady: () => events.onReady(),
       onStateChange: ({ data }) => {
+        if (data !== BUFFERING) playRequested = false
         if (data === ENDED) events.onEnded()
       },
       onError: () => events.onError(),
-      onAutoplayBlocked: () => events.onAutoplayBlocked()
+      onAutoplayBlocked: () => {
+        playRequested = false
+        events.onAutoplayBlocked(attemptMuted)
+      }
     }
   })
   return {
-    play: () => player.playVideo(),
-    pause: () => player.pauseVideo(),
+    play: () => {
+      playRequested = true
+      attemptMuted = muted
+      player.playVideo()
+    },
+    pause: () => {
+      playRequested = false
+      player.pauseVideo()
+    },
     seekTo: ms => player.seekTo(ms / 1000, true),
     currentTimeMs: () => player.getCurrentTime() * 1000,
     durationMs: () => {
       const seconds = player.getDuration()
       return seconds > 0 ? seconds * 1000 : null
     },
-    isPlaying: () => player.getPlayerState() === PLAYING,
+    isPlaying: () => playRequested || player.getPlayerState() === PLAYING,
     isBusy: () => player.getPlayerState() === BUFFERING,
-    setMuted: muted => (muted ? player.mute() : player.unMute()),
+    setMuted: value => {
+      muted = value
+      if (value) player.mute()
+      else player.unMute()
+    },
     destroy: () => {
       player.destroy()
       child.remove()

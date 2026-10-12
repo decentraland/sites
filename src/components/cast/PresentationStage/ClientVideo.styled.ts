@@ -17,6 +17,8 @@ const UnmuteSlot = styled('div')(({ theme }) => ({
   left: '50%',
   bottom: theme.spacing(2),
   transform: 'translateX(-50%)',
+  maxWidth: `calc(100% - ${theme.spacing(2)})`,
+  zIndex: 4,
   pointerEvents: 'auto'
 }))
 

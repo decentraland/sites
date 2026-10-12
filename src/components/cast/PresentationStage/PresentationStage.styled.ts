@@ -27,6 +27,7 @@ const SlideImage = styled('img')({
 const VideoRegion = styled('div')(({ theme }) => ({
   position: 'absolute',
   backgroundColor: theme.palette.common.black,
+  overflow: 'hidden',
   pointerEvents: 'none'
 }))
 

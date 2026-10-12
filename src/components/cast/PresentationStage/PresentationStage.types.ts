@@ -17,11 +17,11 @@ interface ClientPlayerHandle {
   destroy: () => void
 }
 
-interface YouTubePlayerEvents {
+interface ClientPlayerEvents {
   onReady: () => void
   onEnded: () => void
   onError: () => void
-  onAutoplayBlocked: () => void
+  onAutoplayBlocked: (attemptWasMuted: boolean) => void
 }
 
 interface YouTubePlayer {
@@ -62,4 +62,4 @@ declare global {
   }
 }
 
-export type { ClientPlayerHandle, PresentationStageProps, YouTubePlayer, YouTubePlayerEvents, YouTubePlayerOptions }
+export type { ClientPlayerEvents, ClientPlayerHandle, PresentationStageProps, YouTubePlayer, YouTubePlayerOptions }
