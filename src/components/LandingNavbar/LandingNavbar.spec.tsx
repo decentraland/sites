@@ -574,7 +574,7 @@ describe('when the visitor clicks a navbar link', () => {
     describe('and the visitor is a person in a session with analytics on', () => {
       let rerender: ReturnType<typeof render>['rerender']
 
-      beforeEach(async () => {
+      beforeEach(() => {
         ;({ rerender } = clickLearn())
       })
 
@@ -694,7 +694,7 @@ describe('when the visitor clicks a navbar link', () => {
     })
 
     describe('and the session started on an exempt page', () => {
-      beforeEach(async () => {
+      beforeEach(() => {
         isAnalyticsDisabledForSession.mockReturnValue(true)
         clickLearn()
       })
@@ -706,7 +706,7 @@ describe('when the visitor clicks a navbar link', () => {
     })
 
     describe('and the visitor is a bot', () => {
-      beforeEach(async () => {
+      beforeEach(() => {
         isBotClient.mockReturnValue(true)
         clickLearn()
       })
