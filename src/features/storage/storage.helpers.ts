@@ -113,53 +113,21 @@ const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: str
   }
 }
 
-const wrapSignedFetch = async <T>(signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<T> => {
+const performSignedFetch = async <T>(
+  signedFetch: SignedFetch,
+  url: string,
+  init: RequestInit,
+  read: (response: Response) => Promise<T>
+): Promise<T> => {
   try {
     const response = await signedFetch(url, init)
     if (!response.ok) {
       throw {
         status: response.status,
         data: await response.text().catch(() => undefined)
-      }
+      } satisfies WrapSignedFetchError
     }
-    return (await response.json()) as T
-  } catch (error) {
-    if (error && typeof error === 'object' && 'status' in error) throw error
-    throw {
-      status: 'FETCH_ERROR' as const,
-      error: error instanceof Error ? error.message : String(error)
-    }
-  }
-}
-
-const fetchSignedBlob = async (signedFetch: SignedFetch, url: string): Promise<Blob> => {
-  try {
-    const response = await signedFetch(url, { method: 'GET' })
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        data: await response.text().catch(() => undefined)
-      }
-    }
-    return await response.blob()
-  } catch (error) {
-    if (error && typeof error === 'object' && 'status' in error) throw error
-    throw {
-      status: 'FETCH_ERROR' as const,
-      error: error instanceof Error ? error.message : String(error)
-    }
-  }
-}
-
-const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: RequestInit): Promise<void> => {
-  try {
-    const response = await signedFetch(url, init)
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        data: await response.text().catch(() => undefined)
-      }
-    }
+    return await read(response)
   } catch (error) {
     if (error && typeof error === 'object' && 'status' in error) throw error
     throw {
@@ -168,6 +136,15 @@ const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: Requ
     } satisfies WrapSignedFetchError
   }
 }
+
+const wrapSignedFetch = <T>(signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<T> =>
+  performSignedFetch(signedFetch, url, init, response => response.json() as Promise<T>)
+
+const fetchSignedBlob = (signedFetch: SignedFetch, url: string): Promise<Blob> =>
+  performSignedFetch(signedFetch, url, { method: 'GET' }, response => response.blob())
+
+const sendSignedFetch = (signedFetch: SignedFetch, url: string, init: RequestInit): Promise<void> =>
+  performSignedFetch(signedFetch, url, init, async () => undefined)
 
 const STORAGE_ERROR_KEY_PREFIX = 'component.storage.errors'
 
