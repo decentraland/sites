@@ -20,6 +20,7 @@ interface PendingJob {
   id: string
   format: ExportFormat
   request: number
+  startedAt: number
 }
 
 const EXPORT_FAILED_KEY = 'component.storage.errors.export_failed'
@@ -46,7 +47,12 @@ function useStorageExport(): UseStorageExportResult {
     }
   }, [])
 
-  const { currentData, error: pollError } = useGetExportQuery(job ? { identity, realm, position, id: job.id } : skipToken, {
+  const {
+    currentData,
+    error: pollError,
+    isError,
+    startedTimeStamp
+  } = useGetExportQuery(job ? { identity, realm, position, id: job.id } : skipToken, {
     pollingInterval: POLL_INTERVAL_MS,
     refetchOnMountOrArgChange: true
   })
@@ -80,7 +86,8 @@ function useStorageExport(): UseStorageExportResult {
     if (!job || handledRef.current === job.request) return
     const status = currentData?.id === job.id ? currentData.status : undefined
     const settled = status === 'done' || status === 'failed'
-    if (!settled && !pollError) return
+    const failed = isError && (startedTimeStamp ?? 0) >= job.startedAt
+    if (!settled && !failed) return
     handledRef.current = job.request
     setJob(null)
     if (status === 'done') {
@@ -93,7 +100,7 @@ function useStorageExport(): UseStorageExportResult {
       return
     }
     failWith(job.format, pollError)
-  }, [currentData, pollError, job, save, track, failWith])
+  }, [currentData, pollError, isError, startedTimeStamp, job, save, track, failWith])
 
   const startExport = useCallback(
     (selection: ExportSelection, format: ExportFormat) => {
@@ -101,7 +108,7 @@ function useStorageExport(): UseStorageExportResult {
       setErrorKey(null)
       createExport({ identity, realm, position, format, selection })
         .unwrap()
-        .then(({ id }) => setJob({ id, format, request: ++requestRef.current }))
+        .then(({ id }) => setJob({ id, format, request: ++requestRef.current, startedAt: Date.now() }))
         .catch(error => failWith(format, error))
     },
     [busy, identity, realm, position, createExport, failWith]
