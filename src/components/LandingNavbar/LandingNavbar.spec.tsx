@@ -798,8 +798,10 @@ describe('when the visitor clicks a navbar link', () => {
           )
         })
 
-        it('should send the queued click through analytics', () => {
+        it('should send the queued click once through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
           expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'jump_in', track_deferred: true }))
+          expect(postSegmentEvent).not.toHaveBeenCalled()
         })
       })
     })
