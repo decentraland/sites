@@ -22,6 +22,7 @@ import {
 import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useLeaveGuard } from '../../hooks/useLeaveGuard'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useSelection } from '../../hooks/useSelection'
 import { useStorageExport } from '../../hooks/useStorageExport'
@@ -46,6 +47,7 @@ function ScenePageContent() {
   const sceneKeyIds = useMemo(() => sceneKeys?.map(({ key }) => key) ?? [], [sceneKeys])
   const selection = useSelection(sceneKeyIds)
   const { startExport, busy, errorKey, clearError } = useStorageExport()
+  useLeaveGuard(busy)
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)

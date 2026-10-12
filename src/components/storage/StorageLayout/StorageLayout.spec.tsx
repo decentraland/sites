@@ -57,6 +57,17 @@ jest.mock('decentraland-ui2', () => {
 })
 
 jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => null }))
+jest.mock('../ExportMenuButton/ExportMenuButton.styled', () => {
+  const h = React.createElement as unknown as (
+    type: string,
+    props?: Record<string, unknown> | null,
+    ...children: unknown[]
+  ) => React.ReactElement
+  return {
+    ExportMenuRoot: (props: Record<string, unknown>) => h('div', null, props.children),
+    ExportStatus: (props: Record<string, unknown>) => h('span', { role: props.role }, props.children)
+  }
+})
 jest.mock('@mui/icons-material/ArrowBack', () => ({ __esModule: true, default: () => null }))
 jest.mock('@mui/icons-material/FmdGood', () => ({ __esModule: true, default: () => null }))
 jest.mock('@mui/icons-material/People', () => ({ __esModule: true, default: () => null }))

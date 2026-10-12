@@ -142,6 +142,10 @@ jest.mock('./shared.styled', () => ({
 jest.mock('../../components/storage/StorageLayout', () => ({
   StorageLayout: ({ children }: ChildrenProps) => <div>{children}</div>
 }))
+jest.mock('../../components/storage/ExportMenuButton/ExportMenuButton.styled', () => ({
+  ExportMenuRoot: ({ children }: ChildrenProps) => <div>{children}</div>,
+  ExportStatus: ({ children, role }: ChildrenProps & { role?: string }) => <span role={role}>{children}</span>
+}))
 
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string, values?: Record<string, unknown>) => (values ? [key, ...Object.values(values)].join(' ') : key)
@@ -149,6 +153,7 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
 jest.mock('../../hooks/useAuthIdentity', () => ({ useAuthIdentity: () => ({ identity: undefined, address: '0xowner' }) }))
 jest.mock('../../hooks/usePageViewTracking', () => ({ usePageViewTracking: jest.fn() }))
 jest.mock('../../hooks/useSelection', () => ({ useSelection: (ids: string[]) => mockUseSelection(ids) }))
+jest.mock('../../hooks/useLeaveGuard', () => ({ useLeaveGuard: (busy: boolean) => mockUseLeaveGuard(busy) }))
 jest.mock('../../hooks/useStorageExport', () => ({ useStorageExport: () => mockUseStorageExport() }))
 jest.mock('../../hooks/useStorageRedirect', () => ({ useStorageRedirect: jest.fn() }))
 jest.mock('../../hooks/useStorageScope', () => ({

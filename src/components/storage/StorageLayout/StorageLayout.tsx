@@ -15,8 +15,10 @@ import { Alert, Box, CircularProgress, Tab, Tabs, Typography } from 'decentralan
 import type { ExportFormat } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useLeaveGuard, useLeavePrompt } from '../../../hooks/useLeaveGuard'
 import { useStorageExport } from '../../../hooks/useStorageExport'
 import { useStorageScope } from '../../../hooks/useStorageScope'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { ExportMenuButton } from '../ExportMenuButton'
 import {
   BackButton,
@@ -46,6 +48,8 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
   const { realm, position, isResolving, unresolved } = useStorageScope()
   const { identity } = useAuthIdentity()
   const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const confirmLeave = useLeaveGuard(busy)
+  const leavePrompt = useLeavePrompt()
 
   const activeTab = useMemo(() => {
     if (location.pathname.startsWith('/storage/scene')) return 'scene'
@@ -65,14 +69,14 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: 'env' | 'scene' | 'players') => {
-      navigate({ pathname: `/storage/${newValue}`, search: window.location.search })
+      confirmLeave(() => navigate({ pathname: `/storage/${newValue}`, search: window.location.search }))
     },
-    [navigate]
+    [confirmLeave, navigate]
   )
 
   const handleBack = useCallback(() => {
-    navigate('/storage/select')
-  }, [navigate])
+    confirmLeave(() => navigate('/storage/select'))
+  }, [confirmLeave, navigate])
 
   const handleDownloadAll = useCallback((format: ExportFormat) => startExport({}, format), [startExport])
 
@@ -136,6 +140,15 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
       ) : (
         children
       )}
+      <ConfirmDialog
+        open={leavePrompt.open}
+        title={t('component.storage.leave_dialog.title')}
+        message={t('component.storage.leave_dialog.message')}
+        confirmLabel={t('component.storage.leave_dialog.leave')}
+        cancelLabel={t('component.storage.leave_dialog.stay')}
+        onConfirm={leavePrompt.leave}
+        onCancel={leavePrompt.stay}
+      />
     </StoragePageContainer>
   )
 }

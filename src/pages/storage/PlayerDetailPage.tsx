@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -26,6 +27,7 @@ import {
 import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useLeaveGuard } from '../../hooks/useLeaveGuard'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useSelection } from '../../hooks/useSelection'
 import { useStorageExport } from '../../hooks/useStorageExport'
@@ -55,6 +57,7 @@ function PlayerDetailPageContent() {
   const keyIds = useMemo(() => keys?.map(({ key }) => key) ?? [], [keys])
   const selection = useSelection(keyIds)
   const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const confirmLeave = useLeaveGuard(busy)
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
@@ -114,6 +117,15 @@ function PlayerDetailPageContent() {
     navigate({ pathname: '/storage/players', search: window.location.search })
   }, [navigate])
 
+  const handleBackClick = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      event.preventDefault()
+      confirmLeave(handleBackToList)
+    },
+    [confirmLeave, handleBackToList]
+  )
+
   usePageViewTracking({
     name: t('page.storage.player_detail.title', { address: truncateAddress(address) }),
     properties: {
@@ -135,7 +147,7 @@ function PlayerDetailPageContent() {
         <ButtonBase
           component={Link}
           to={{ pathname: '/storage/players', search: window.location.search }}
-          onClick={handleBackToList}
+          onClick={handleBackClick}
           sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
           aria-label={t('component.storage.player_page.back_to_players')}
         >

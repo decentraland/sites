@@ -15,6 +15,7 @@ import { useClearAllPlayersMutation, useListPlayersQuery } from '../../features/
 import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useLeaveGuard } from '../../hooks/useLeaveGuard'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useSelection } from '../../hooks/useSelection'
 import { useStorageExport } from '../../hooks/useStorageExport'
@@ -43,6 +44,7 @@ function PlayersPageContent() {
   const profileNames = useGetProfileNames(playerAddresses)
   const selection = useSelection(playerAddresses)
   const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const confirmLeave = useLeaveGuard(busy)
 
   const filteredPlayers = useMemo(() => {
     if (!query.trim()) return playerAddresses
@@ -56,9 +58,9 @@ function PlayersPageContent() {
 
   const handleSelectPlayer = useCallback(
     (address: string) => {
-      navigate({ pathname: `/storage/players/${address}`, search: window.location.search })
+      confirmLeave(() => navigate({ pathname: `/storage/players/${address}`, search: window.location.search }))
     },
-    [navigate]
+    [confirmLeave, navigate]
   )
 
   const handleExportSelected = useCallback(

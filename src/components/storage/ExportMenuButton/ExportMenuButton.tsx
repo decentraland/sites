@@ -4,24 +4,28 @@ import type { FC, MouseEvent } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { Button, CircularProgress, Menu, MenuItem } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { ExportMenuRoot, ExportStatus } from './ExportMenuButton.styled'
 
 interface ExportMenuButtonProps {
   label: string
   busy?: boolean
-  disabled?: boolean
   onSelect: (format: 'json' | 'csv') => void
 }
 
 const ExportMenuButton: FC<ExportMenuButtonProps> = props => {
-  const { label, busy = false, disabled = false, onSelect } = props
+  const { label, busy = false, onSelect } = props
   const t = useFormatMessage()
   const menuId = useId()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const menuOpen = Boolean(anchorEl)
 
-  const handleOpen = useCallback((event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }, [])
+  const handleOpen = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      if (busy) return
+      setAnchorEl(event.currentTarget)
+    },
+    [busy]
+  )
 
   const handleClose = useCallback(() => {
     setAnchorEl(null)
@@ -37,19 +41,25 @@ const ExportMenuButton: FC<ExportMenuButtonProps> = props => {
 
   return (
     <>
-      <Button
-        variant="outlined"
-        size="small"
-        disabled={disabled || busy}
-        onClick={handleOpen}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        aria-controls={menuOpen ? menuId : undefined}
-        startIcon={busy ? <CircularProgress size={16} aria-label={t('component.storage.common.exporting')} /> : undefined}
-        endIcon={<ArrowDropDownIcon />}
-      >
-        {label}
-      </Button>
+      <ExportMenuRoot>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleOpen}
+          aria-disabled={busy || undefined}
+          aria-busy={busy || undefined}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          aria-controls={menuOpen ? menuId : undefined}
+          startIcon={busy ? <CircularProgress size={16} aria-hidden /> : undefined}
+          endIcon={<ArrowDropDownIcon />}
+        >
+          {label}
+        </Button>
+        <ExportStatus role="status">
+          {busy ? `${t('component.storage.common.exporting')} ${t('component.storage.common.keep_page_open')}` : null}
+        </ExportStatus>
+      </ExportMenuRoot>
       <Menu id={menuId} anchorEl={anchorEl} open={menuOpen} onClose={handleClose}>
         <MenuItem onClick={handleSelect('json')}>{t('component.storage.common.format_json')}</MenuItem>
         <MenuItem onClick={handleSelect('csv')}>{t('component.storage.common.format_csv')}</MenuItem>

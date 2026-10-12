@@ -716,7 +716,14 @@
         "select_row": "{name} 선택",
         "format_json": "JSON",
         "format_csv": "CSV",
-        "exporting": "다운로드 준비 중…"
+        "exporting": "다운로드 준비 중…",
+        "keep_page_open": "다운로드가 시작될 때까지 이 페이지를 열어 두세요."
+      },
+      "leave_dialog": {
+        "title": "내보내기가 진행 중인데 나가시겠어요?",
+        "message": "나가면 다운로드가 중지됩니다. 나중에 다시 시작하면 파일이 바로 준비됩니다.",
+        "stay": "머무르기",
+        "leave": "나가기"
       },
       "role": {
         "owner": "소유자",

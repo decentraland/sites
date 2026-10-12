@@ -1,5 +1,4 @@
 import { act, cleanup, renderHook } from '@testing-library/react'
-// eslint-disable-next-line import/no-unresolved
 import { useLeaveGuard, useLeavePrompt } from './useLeaveGuard'
 
 const renderGuard = (busy: boolean) => renderHook(({ busy: isBusy }) => useLeaveGuard(isBusy), { initialProps: { busy } })

@@ -716,7 +716,14 @@
         "select_row": "Seleccionar {name}",
         "format_json": "JSON",
         "format_csv": "CSV",
-        "exporting": "Preparando la descarga…"
+        "exporting": "Preparando la descarga…",
+        "keep_page_open": "Mantén esta página abierta hasta que empiece la descarga."
+      },
+      "leave_dialog": {
+        "title": "¿Salir mientras se ejecuta la exportación?",
+        "message": "Si sales, la descarga se detiene. Si vuelves a iniciarla más tarde, el archivo estará listo al instante.",
+        "stay": "Quedarme",
+        "leave": "Salir"
       },
       "role": {
         "owner": "Propietario",

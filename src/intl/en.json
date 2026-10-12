@@ -856,7 +856,14 @@
         "select_row": "Select {name}",
         "format_json": "JSON",
         "format_csv": "CSV",
-        "exporting": "Preparing download…"
+        "exporting": "Preparing download…",
+        "keep_page_open": "Keep this page open until the download starts."
+      },
+      "leave_dialog": {
+        "title": "Leave while your export is running?",
+        "message": "Leaving stops the download. Start it again later and the file will be ready right away.",
+        "stay": "Stay",
+        "leave": "Leave"
       },
       "role": {
         "owner": "Owner",
