@@ -53,6 +53,34 @@ const dialogMockFactory = (): Record<string, unknown> => ({
     return createElement('button', { type: 'button', onClick, disabled }, children)
   },
 
+  Checkbox: (props: Record<string, unknown>) => {
+    const { checked, indeterminate, onChange, disabled, inputProps } = props as {
+      checked?: boolean
+      indeterminate?: boolean
+      onChange?: () => void
+      disabled?: boolean
+      inputProps?: Record<string, unknown>
+    }
+    return createElement('input', {
+      ...inputProps,
+      type: 'checkbox',
+      checked: Boolean(checked),
+      disabled,
+      ['data-indeterminate']: String(Boolean(indeterminate)),
+      onChange
+    })
+  },
+
+  IconButton: ({ children, ...rest }: Record<string, unknown> & { children?: ReactNode }) =>
+    createElement('button', { type: 'button', ...stripVisualProps(rest) }, children),
+
+  Menu: (props: Record<string, unknown>) => {
+    const { open, children } = props as { open: boolean; children: ReactNode }
+    return open ? createElement('div', { role: 'menu' }, children) : null
+  },
+  MenuItem: ({ children, ...rest }: Record<string, unknown> & { children?: ReactNode }) =>
+    createElement('button', { type: 'button', role: 'menuitem', ...stripVisualProps(rest) }, children),
+
   Dialog: (props: Record<string, unknown>) => {
     const { open, children } = props as { open: boolean; children: ReactNode }
     return open ? createElement('div', null, children) : null

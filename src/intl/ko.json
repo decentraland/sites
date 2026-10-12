@@ -708,7 +708,15 @@
         "key": "키",
         "add": "추가",
         "owner": "소유자",
-        "collaborator": "협업자"
+        "collaborator": "협업자",
+        "download_all": "모두 다운로드",
+        "download_selected": "선택 항목 다운로드 ({count})",
+        "download_all_selected": "선택한 항목 모두 다운로드",
+        "select_all": "모두 선택",
+        "select_row": "{name} 선택",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "다운로드 준비 중…"
       },
       "role": {
         "owner": "소유자",
@@ -870,7 +878,8 @@
         "payload_too_large": "값이 이 스토리지 네임스페이스에 비해 너무 큽니다.",
         "rate_limited": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
         "server": "스토리지 서비스가 오류를 반환했습니다. 몇 분 후에 다시 시도하세요.",
-        "world_scene_unresolved": "이 월드의 씬 위치를 확인할 수 없습니다. 아직 배포된 씬이 없을 수 있습니다."
+        "world_scene_unresolved": "이 월드의 씬 위치를 확인할 수 없습니다. 아직 배포된 씬이 없을 수 있습니다.",
+        "export_failed": "내보내기에 실패했습니다. 다시 시도하세요."
       }
     },
     "report": {

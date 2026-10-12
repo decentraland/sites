@@ -708,7 +708,15 @@
         "key": "键",
         "add": "添加",
         "owner": "所有者",
-        "collaborator": "协作者"
+        "collaborator": "协作者",
+        "download_all": "全部下载",
+        "download_selected": "下载所选项 ({count})",
+        "download_all_selected": "下载全部所选项",
+        "select_all": "全选",
+        "select_row": "选择 {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "正在准备下载…"
       },
       "role": {
         "owner": "所有者",
@@ -870,7 +878,8 @@
         "payload_too_large": "值对该存储空间来说过大。",
         "rate_limited": "请求过多。请稍候后再试。",
         "server": "存储服务返回了错误。请几分钟后再试。",
-        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。"
+        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。",
+        "export_failed": "导出失败。请重试。"
       }
     },
     "report": {

@@ -703,7 +703,15 @@
         "key": "Clé",
         "add": "Ajouter",
         "owner": "Propriétaire",
-        "collaborator": "Collaborateur"
+        "collaborator": "Collaborateur",
+        "download_all": "Tout télécharger",
+        "download_selected": "Télécharger la sélection ({count})",
+        "download_all_selected": "Télécharger tous les éléments sélectionnés",
+        "select_all": "Tout sélectionner",
+        "select_row": "Sélectionner {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Préparation du téléchargement…"
       },
       "role": {
         "owner": "Propriétaire",
@@ -865,7 +873,8 @@
         "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
         "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
         "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes.",
-        "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée."
+        "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée.",
+        "export_failed": "L’exportation a échoué. Veuillez réessayer."
       }
     },
     "report": {
