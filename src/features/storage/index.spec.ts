@@ -5,6 +5,10 @@ import * as storage from './index'
 
 const expectedExports = [
   'storageEndpoints',
+  'fetchExportFile',
+  'useCreateExportMutation',
+  'useGetExportQuery',
+  'useLazyGetPlayerValueQuery',
   'useClearAllPlayersMutation',
   'useClearEnvMutation',
   'useClearPlayerMutation',
@@ -27,6 +31,7 @@ const expectedExports = [
   'useGetUserDCLNamesQuery',
   'useGetUserLandsQuery',
   'useGetUserRentalsQuery',
+  'buildExportFile',
   'getLandPosition',
   'getRoleLabelKey',
   'getStorageErrorKey',

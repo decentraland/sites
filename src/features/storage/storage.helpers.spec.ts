@@ -19,9 +19,11 @@ jest.mock('../../config/env', () => ({ getEnv: (key: string) => getEnvMock(key) 
 
 import signedFetchLib from 'decentraland-crypto-fetch'
 import {
+  buildExportFile,
   buildSignedFetchMetadata,
   createScopedSignedFetch,
   estateToLand,
+  fetchSignedBlob,
   fromRentalFields,
   getEstateRegistryAddress,
   getLandPosition,
@@ -42,7 +44,15 @@ import {
   wrapSignedFetch
 } from './storage.helpers'
 import { LandType, RoleType } from './storage.types'
-import type { LandQueryResult, RentalsQueryResult, SubgraphEstate, SubgraphParcel } from './storage.types'
+import type {
+  ExportPlayerRow,
+  ExportWorldRow,
+  LandQueryResult,
+  RentalsQueryResult,
+  StorageValueFile,
+  SubgraphEstate,
+  SubgraphParcel
+} from './storage.types'
 
 const signedFetchMock = signedFetchLib as unknown as jest.Mock
 
@@ -575,6 +585,164 @@ describe('toStorageValueFile', () => {
     it('should not add a second .json extension', () => {
       expect(toStorageValueFile('scores.json', [1, 2]).filename).toBe('scores.json')
       expect(toStorageValueFile('scores.JSON', [1, 2]).filename).toBe('scores.json')
+    })
+  })
+})
+
+describe('when building an export file', () => {
+  let world: ExportWorldRow[]
+  let players: ExportPlayerRow[]
+  let file: StorageValueFile
+
+  beforeEach(() => {
+    world = []
+    players = []
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('and the format is json', () => {
+    describe('and there are no rows', () => {
+      beforeEach(() => {
+        file = buildExportFile('json', world, players)
+      })
+
+      it('should name and type the file as a json export', () => {
+        expect(file).toMatchObject({ filename: 'storage-export.json', type: 'application/json' })
+      })
+
+      it('should hold empty world and players lists', () => {
+        expect(JSON.parse(file.content)).toEqual({ world: [], players: [] })
+      })
+    })
+
+    describe('and there are world and player rows', () => {
+      beforeEach(() => {
+        world = [{ key: 'a', value: { n: 1 } }]
+        players = [{ address: '0xa', key: 'k', value: 's' }]
+        file = buildExportFile('json', world, players)
+      })
+
+      it('should hold both lists with their values', () => {
+        expect(JSON.parse(file.content)).toEqual({
+          world: [{ key: 'a', value: { n: 1 } }],
+          players: [{ address: '0xa', key: 'k', value: 's' }]
+        })
+      })
+    })
+  })
+
+  describe('and the format is csv', () => {
+    describe('and there are no rows', () => {
+      beforeEach(() => {
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should hold only the header line', () => {
+        expect(file).toEqual({ filename: 'storage-export.csv', type: 'text/csv', content: 'scope,player_address,key,value\r\n' })
+      })
+    })
+
+    describe('and there is a world row', () => {
+      beforeEach(() => {
+        world = [{ key: 'a', value: { a: 1 } }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should write a world line with an empty address and the quoted JSON value', () => {
+        expect(file.content).toContain('world,,a,"{""a"":1}"\r\n')
+      })
+    })
+
+    describe('and there is a player row', () => {
+      beforeEach(() => {
+        players = [{ address: '0xa', key: 'k', value: 's' }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should write a player line with the address and the quoted JSON string', () => {
+        expect(file.content).toContain('player,0xa,k,"""s"""\r\n')
+      })
+    })
+
+    describe('and a key starts with a formula character', () => {
+      beforeEach(() => {
+        world = [{ key: '=SUM(A1)', value: 1 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should prefix the key cell with a quote', () => {
+        expect(file.content).toContain("world,,'=SUM(A1),1\r\n")
+      })
+    })
+
+    describe('and a key contains a comma', () => {
+      beforeEach(() => {
+        world = [{ key: 'a,b', value: 1 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should quote the key cell', () => {
+        expect(file.content).toContain('world,,"a,b",1\r\n')
+      })
+    })
+
+    describe('and a value starts with a formula character', () => {
+      beforeEach(() => {
+        world = [{ key: 'k', value: -5 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should leave the value cell unprefixed', () => {
+        expect(file.content).toContain('world,,k,-5\r\n')
+      })
+    })
+  })
+})
+
+describe('when fetching a signed blob', () => {
+  let signedFetch: jest.Mock
+
+  beforeEach(() => {
+    signedFetch = jest.fn()
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('and the response is ok', () => {
+    let blob: Blob
+
+    beforeEach(() => {
+      blob = new Blob(['gz'])
+      signedFetch.mockResolvedValueOnce({ ok: true, status: 200, blob: async () => blob } as unknown as Response)
+    })
+
+    it('should resolve to the response blob', async () => {
+      await expect(fetchSignedBlob(signedFetch, 'https://example/api')).resolves.toBe(blob)
+    })
+  })
+
+  describe('and the response is not ok', () => {
+    beforeEach(() => {
+      signedFetch.mockResolvedValueOnce(makeResponse('not ready', { status: 409 }))
+    })
+
+    it('should throw the status with the response text', async () => {
+      await expect(fetchSignedBlob(signedFetch, 'https://example/api')).rejects.toEqual({ status: 409, data: 'not ready' })
+    })
+  })
+
+  describe('and the request is rejected', () => {
+    beforeEach(() => {
+      signedFetch.mockRejectedValueOnce(new Error('network down'))
+    })
+
+    it('should throw a FETCH_ERROR with the error message', async () => {
+      await expect(fetchSignedBlob(signedFetch, 'https://example/api')).rejects.toEqual({ status: 'FETCH_ERROR', error: 'network down' })
     })
   })
 })
