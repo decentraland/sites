@@ -1,7 +1,7 @@
 import { getEnv } from '../config/env'
-import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
+import { DOWNLOAD_URLS, detectDesktopInstallerOs, detectDownloadOS } from '../modules/downloadConstants'
 import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
-import { buildTrackedDownloadUrl } from '../modules/url'
+import { buildModalDownloadUrl } from '../modules/url'
 import { useAnonUserId } from './useAnonUserId'
 import { useTotalDownloads } from './useTotalDownloads'
 
@@ -17,10 +17,11 @@ interface DownloadModalProps {
 /**
  * Builds the `DownloadModal` props for the "install first" fallback, shared by
  * every surface that raises it (homepage `useLaunchExplorer`, discover jump-in).
- * The primary CTA lands on `/download` carrying the deep-link (first-launch
- * position/realm) plus the tracking params (campaign utm_* + anon_user_id) so
- * attribution and the destination survive the hop and the funnel join stays
- * intact. `deepLinkParams` come from `buildDeepLinkOptions` (default-filtered).
+ * The primary CTA starts the download directly on Windows and macOS
+ * (`/download_success`) and lands on `/download` everywhere else, carrying the
+ * deep-link (first-launch position/realm) plus the tracking params (campaign
+ * utm_* + anon_user_id) so attribution and the destination survive the hop and
+ * the funnel join stays intact. `deepLinkParams` come from `buildDeepLinkOptions` (default-filtered).
  *
  * `enabled` defers the total-downloads fetch until the modal is actually shown —
  * a caller that mounts the modal permanently but opens it on demand (discover
@@ -39,7 +40,7 @@ function useDownloadModalProps(deepLinkParams: { position?: string; realm?: stri
 
   return {
     os: downloadOs,
-    downloadUrl: buildTrackedDownloadUrl(downloadBase, downloadUrlParams),
+    downloadUrl: buildModalDownloadUrl(detectDesktopInstallerOs(), downloadBase, downloadUrlParams),
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore,

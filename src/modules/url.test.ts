@@ -9,9 +9,11 @@ jest.mock('decentraland-ui2/dist/config', () => ({
 }))
 
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
+import { OperativeSystem } from '../types/download.types'
 import {
   addQueryParamsToUrlString,
   buildDownloadSuccessHref,
+  buildModalDownloadUrl,
   buildTrackedDownloadUrl,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
@@ -110,6 +112,41 @@ describe('buildTrackedDownloadUrl', () => {
   describe('when the base cannot be parsed as a url', () => {
     it('should return the raw base untouched', () => {
       expect(buildTrackedDownloadUrl('http://[', { position: '42,-5' })).toBe('http://[')
+    })
+  })
+})
+
+describe('buildModalDownloadUrl', () => {
+  const params = { anon_user_id: 'anon-1', utm_source: 'shefi', position: '10,20' }
+
+  describe('when the browser has a Windows installer', () => {
+    it('should go straight to the Windows download with the modal place and every param', () => {
+      const url = new URL(buildModalDownloadUrl(OperativeSystem.WINDOWS, 'https://decentraland.org/download', params))
+
+      expect(url.origin).toBe(window.location.origin)
+      expect(url.pathname).toBe('/download_success')
+      expect(url.searchParams.get('os')).toBe('Windows')
+      expect(url.searchParams.get('place')).toBe('jump-in-modal')
+      expect(url.searchParams.get('anon_user_id')).toBe('anon-1')
+      expect(url.searchParams.get('utm_source')).toBe('shefi')
+      expect(url.searchParams.get('position')).toBe('10,20')
+    })
+  })
+
+  describe('when the browser has a macOS installer', () => {
+    it('should go straight to the macOS download', () => {
+      const url = new URL(buildModalDownloadUrl(OperativeSystem.MACOS, '/download', params))
+
+      expect(url.pathname).toBe('/download_success')
+      expect(url.searchParams.get('os')).toBe('macOS')
+    })
+  })
+
+  describe('when there is no desktop installer for the browser', () => {
+    it('should keep the fallback download page with every param', () => {
+      const url = new URL(buildModalDownloadUrl(null, 'https://decentraland.org/download', params))
+
+      expect(url.toString()).toBe('https://decentraland.org/download?anon_user_id=anon-1&utm_source=shefi&position=10%2C20')
     })
   })
 })

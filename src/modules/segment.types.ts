@@ -98,6 +98,7 @@ enum DownloadPlace {
   COME_HANG_OUT = 'come-hang-out',
   COME_HANG_OUT_PLATFORM_SWITCH = 'come-hang-out-platform-switch',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
+  JUMP_IN_MODAL = 'jump-in-modal',
   PLAY_HERO = 'play-hero',
   PLAY_HERO_EPIC = 'play-hero-epic',
   PLAY_HERO_APP_STORE = 'play-hero-app-store',

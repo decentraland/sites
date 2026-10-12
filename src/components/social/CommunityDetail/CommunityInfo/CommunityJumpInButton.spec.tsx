@@ -35,6 +35,7 @@ jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({ useFormatMessa
 jest.mock('../../../../hooks/useAuthIdentity', () => ({ useAuthIdentity: jest.fn() }))
 jest.mock('../../../../hooks/useDeepLinkQueryParams', () => ({ useDeepLinkQueryParams: jest.fn(() => ({})) }))
 jest.mock('../../../../modules/downloadConstants', () => ({
+  detectDesktopInstallerOs: () => null,
   DOWNLOAD_URLS: {
     apple: 'https://dl.test/apple',
     windows: 'https://dl.test/windows',
