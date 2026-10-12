@@ -87,8 +87,12 @@ describe('when deciding whether a navbar click replaces the current page', () =>
     expect(isSameTabNavigation(click(linkWith()))).toBe(true)
   })
 
-  it('should keep the page for a link that opens in a new tab', () => {
-    expect(isSameTabNavigation(click(linkWith('_blank')))).toBe(false)
+  it.each(['_self', '_parent', '_top', '_SELF'])('should treat a %s link as leaving the page', target => {
+    expect(isSameTabNavigation(click(linkWith(target)))).toBe(true)
+  })
+
+  it.each(['_blank', 'docs'])('should keep the page for a %s link, which opens in another tab or window', target => {
+    expect(isSameTabNavigation(click(linkWith(target)))).toBe(false)
   })
 
   it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'] as const)('should keep the page when %s opens the link elsewhere', key => {
