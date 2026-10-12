@@ -17,7 +17,8 @@
     // Windows on a device whose platform says otherwise.
     if (/^windows$/i.test(platform)) os = 'Windows'
     else if (/^macos$/i.test(platform) && !(nav.maxTouchPoints > 1)) os = 'macOS'
-  } else if (/windows/i.test(ua)) {
+  } else if (/windows/i.test(ua) && !/xbox|windows phone/i.test(ua)) {
+    // Xbox and Windows Phone user agents also say Windows but cannot run the installer.
     os = 'Windows'
   } else if (/macintosh/i.test(ua) && !(nav.maxTouchPoints > 1)) {
     // iPadOS reports a Macintosh user agent; touch points tell it apart.
@@ -25,11 +26,22 @@
   }
   if (!os) return
 
-  // Same href the React Hero builds (DownloadPlace.LANDING_HERO). Partner utm_* params are
-  // forwarded as-is, first value wins on a repeated key like collectCampaignParams: /download_success applies the allowlist and normalization itself.
+  // Same href the React Hero builds (DownloadPlace.LANDING_HERO), with the same partner
+  // params: the allowlist and normalization mirror src/modules/campaignParams.ts, and the
+  // first value wins on a repeated key. A spec compares both against collectCampaignParams.
+  var keys = ['utm_org', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
+  var search = new URLSearchParams(window.location.search)
   var params = new URLSearchParams({ os: os, place: 'landing-hero' })
-  new URLSearchParams(window.location.search).forEach(function (value, key) {
-    if (key.indexOf('utm_') === 0 && !params.has(key)) params.set(key, value)
+  keys.forEach(function (key) {
+    var value = (search.get(key) || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_-]/g, '')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 256)
+    if (value) params.set(key, value)
   })
   button.setAttribute('href', '/download_success?' + params.toString())
   button.setAttribute('data-os', os)

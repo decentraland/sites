@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { collectCampaignParams } from '../src/modules/campaignParams'
 import { DownloadPlace } from '../src/modules/segment.types'
 
 const SCRIPT = readFileSync(join(__dirname, 'hero-shell-os.js'), 'utf8')
@@ -101,6 +102,39 @@ describe('when the hero shell OS script runs', () => {
       runScript({ userAgent: WINDOWS_UA, platform: 'Windows' })
 
       expect(getButton()?.getAttribute('href')).toBe('/download_success?os=Windows&place=landing-hero&utm_source=shefi&utm_campaign=q4')
+    })
+  })
+
+  describe('and the campaign params are messy', () => {
+    it.each([
+      ['mixed case and spaces', '?utm_source=Partner%20One&utm_medium=  CPC '],
+      ['punctuation and edge underscores', '?utm_campaign=__q4!!sale__&utm_term=a%2Fb'],
+      ['a value longer than the cap', `?utm_content=${'a'.repeat(300)}`],
+      ['keys outside the allowlist', '?utm_custom=x&utm_source=ok&ref=abc']
+    ])('should send what the React hero sends for %s', (_name, search) => {
+      window.history.replaceState(null, '', `/${search}`)
+      const expected = new URLSearchParams({ os: 'Windows', place: 'landing-hero', ...collectCampaignParams() })
+
+      runScript({ userAgent: WINDOWS_UA, platform: 'Windows' })
+
+      expect(getButton()?.getAttribute('href')).toBe(`/download_success?${expected.toString()}`)
+    })
+  })
+
+  describe('and the user agent is a Windows device without a desktop installer', () => {
+    it.each([
+      [
+        'Xbox',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Xbox; Xbox One) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edge/44.18363.8131'
+      ],
+      [
+        'Windows Phone',
+        'Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.15254'
+      ]
+    ])('should leave the %s button on the download page', (_name, userAgent) => {
+      runScript({ userAgent })
+
+      expect(getButton()?.getAttribute('href')).toBe('/download')
     })
   })
 
