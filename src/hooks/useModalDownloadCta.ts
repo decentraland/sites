@@ -22,9 +22,7 @@ function useModalDownloadCta(fallbackBase: string, params: Record<string, string
     // Optional only because ui2 types the prop as `() => void`; it wires it
     // straight to the button's onClick, so the click event is always passed.
     (event?: React.MouseEvent<HTMLElement>) => {
-      if (!installerOs || !event) return
-      // Let the browser handle new-tab, new-window and download-link (Alt) clicks instead of replacing the current page.
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+      if (!installerOs || !event || event.defaultPrevented) return
       // ui2's DownloadModal does not forward data-* props to its button, so the
       // attributes the click payload reads are set on it here.
       const button = event.currentTarget
@@ -33,6 +31,11 @@ function useModalDownloadCta(fallbackBase: string, params: Record<string, string
       button.dataset.downloadTarget = DownloadTarget.DESKTOP_INSTALLER
       button.dataset.os = installerOs
       trackDownloadClick(event)
+      // New-tab, new-window and download-link (Alt) clicks stay with the browser instead of
+      // replacing the current page. They are still counted as a Click, but the tab they open
+      // is noopener and starts without the click_id, so its download_* events do not join it.
+      // Middle clicks fire auxclick, never this handler, so they are not counted at all.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
       event.preventDefault()
       window.location.assign(downloadUrl)
     },

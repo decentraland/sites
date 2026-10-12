@@ -77,16 +77,27 @@ describe('useModalDownloadCta', () => {
       ['ctrl', { ctrlKey: true }],
       ['shift', { shiftKey: true }],
       ['alt', { altKey: true }],
-      ['already handled', { defaultPrevented: true }],
       ['non-primary button', { button: 1 }]
     ])('and the click is a %s click', (_name, modifiers) => {
-      it('should leave the click to the browser', () => {
+      it('should count the click and leave the navigation to the browser', () => {
         const { result } = renderHook(() => useModalDownloadCta('/download', {}))
         const event = clickOn(document.createElement('a'), modifiers)
 
         result.current.onDownloadClick?.(event)
 
+        expect(mockTrackDownloadClick).toHaveBeenCalledWith(event)
         expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(assignSpy).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and the click was already handled', () => {
+      it('should do nothing', () => {
+        const { result } = renderHook(() => useModalDownloadCta('/download', {}))
+        const event = clickOn(document.createElement('a'), { defaultPrevented: true })
+
+        result.current.onDownloadClick?.(event)
+
         expect(mockTrackDownloadClick).not.toHaveBeenCalled()
         expect(assignSpy).not.toHaveBeenCalled()
       })

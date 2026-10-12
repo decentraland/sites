@@ -15,7 +15,7 @@ jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 // URL only earns its keep if it reaches the modal's CTA href, and a stubbed
 // builder would assert nothing about that hop.
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: () => ({}) }))
-// Stands in for the installer routing (covered in url.spec.ts): it only joins base + params,
+// Stands in for the installer routing (covered in url.test.ts): it only joins base + params,
 // so these specs assert which installer OS the hook hands to the builder.
 const mockTrackedUrl = (base: string, params: Record<string, string | undefined | null>) => {
   const url = new URL(base, 'https://sites.test')
@@ -100,6 +100,19 @@ describe('useDownloadModalProps', () => {
     renderHook(() => useDownloadModalProps({}))
 
     expect(mockedBuildModalDownloadUrl).toHaveBeenCalledWith(OperativeSystem.MACOS, expect.any(String), expect.any(Object))
+  })
+
+  it('should return the direct download click handler when the browser has a desktop installer', () => {
+    mockedDetectInstallerOs.mockReturnValue(OperativeSystem.WINDOWS)
+    const { result } = renderHook(() => useDownloadModalProps({}))
+
+    expect(result.current.onDownloadClick).toEqual(expect.any(Function))
+  })
+
+  it('should not return a click handler when the browser has no desktop installer', () => {
+    const { result } = renderHook(() => useDownloadModalProps({}))
+
+    expect(result.current.onDownloadClick).toBeUndefined()
   })
 
   it('should fall back to the Windows installer on Windows when no env URL is set', () => {
