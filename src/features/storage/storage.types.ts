@@ -25,6 +25,7 @@ interface DeleteEnvParams {
 
 interface SceneKey {
   key: string
+  value: unknown
 }
 
 interface SceneValue {
@@ -53,6 +54,7 @@ interface DeleteSceneValueParams {
 
 interface PlayerKey {
   key: string
+  value: unknown
 }
 
 interface PlayerValue {
@@ -284,6 +286,51 @@ interface CollaboratorScenesResponse {
   pagination: { limit: number; offset: number; total: number }
 }
 
+type ExportFormat = 'json' | 'csv'
+type ExportJobStatus = 'pending' | 'running' | 'done' | 'failed'
+
+interface ExportSelection {
+  world?: { keys?: string[] }
+  players?: { addresses?: string[]; keys?: string[] }
+}
+
+interface CreateExportParams {
+  format: ExportFormat
+  selection: ExportSelection
+}
+
+interface CreateExportResponse {
+  id: string
+  status: ExportJobStatus
+}
+
+interface ExportJob {
+  id: string
+  status: ExportJobStatus
+  format: ExportFormat
+  selection: ExportSelection
+  createdAt: string
+  completedAt: string | null
+  expiresAt: string | null
+  sizeBytes: number | null
+  error: string | null
+}
+
+interface GetExportParams {
+  id: string
+}
+
+interface ExportWorldRow {
+  key: string
+  value: unknown
+}
+
+interface ExportPlayerRow {
+  address: string
+  key: string
+  value: unknown
+}
+
 type WrapSignedFetchError = { status: number; data?: unknown } | { status: 'FETCH_ERROR'; error: string }
 
 export { LandType, RoleType }
@@ -295,12 +342,21 @@ export type {
   ContributableDomain,
   ContributableDomainRaw,
   ContributableDomainsResponse,
+  CreateExportParams,
+  CreateExportResponse,
   DCLNamesResponse,
   DeleteEnvParams,
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  ExportFormat,
+  ExportJob,
+  ExportJobStatus,
+  ExportPlayerRow,
+  ExportSelection,
+  ExportWorldRow,
   GetCollaboratorScenesParams,
+  GetExportParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   Land,

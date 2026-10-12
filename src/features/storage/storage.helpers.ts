@@ -5,6 +5,9 @@ import { getEnv } from '../../config/env'
 import { isEns } from '../../utils/ens'
 import { LandType, RoleType } from './storage.types'
 import type {
+  ExportFormat,
+  ExportPlayerRow,
+  ExportWorldRow,
   Land,
   LandQueryResult,
   Rental,
@@ -120,6 +123,25 @@ const wrapSignedFetch = async <T>(signedFetch: SignedFetch, url: string, init: R
       }
     }
     return (await response.json()) as T
+  } catch (error) {
+    if (error && typeof error === 'object' && 'status' in error) throw error
+    throw {
+      status: 'FETCH_ERROR' as const,
+      error: error instanceof Error ? error.message : String(error)
+    }
+  }
+}
+
+const fetchSignedBlob = async (signedFetch: SignedFetch, url: string): Promise<Blob> => {
+  try {
+    const response = await signedFetch(url, { method: 'GET' })
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        data: await response.text().catch(() => undefined)
+      }
+    }
+    return await response.blob()
   } catch (error) {
     if (error && typeof error === 'object' && 'status' in error) throw error
     throw {
@@ -424,10 +446,33 @@ const toStorageValueFile = (key: string, value: unknown): StorageValueFile => {
   return { filename, type: FILE_TYPES_BY_EXTENSION[extension] ?? 'text/plain', content: value }
 }
 
+const EXPORT_CSV_HEADER = 'scope,player_address,key,value\r\n'
+
+const csvCell = (value: string): string => (/[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)
+
+const neutralizeFormula = (value: string): string => (/^[=+\-@\t\r]/.test(value) ? `'${value}` : value)
+
+const csvLine = (scope: string, address: string, key: string, value: unknown): string =>
+  `${scope},${csvCell(address)},${csvCell(neutralizeFormula(key))},${csvCell(JSON.stringify(value))}\r\n`
+
+/** Builds a `storage-export.<format>` file shaped like the export API's output. */
+const buildExportFile = (format: ExportFormat, world: ExportWorldRow[], players: ExportPlayerRow[]): StorageValueFile => ({
+  filename: `storage-export.${format}`,
+  type: FILE_TYPES_BY_EXTENSION[format],
+  content:
+    format === 'json'
+      ? JSON.stringify({ world, players })
+      : EXPORT_CSV_HEADER +
+        world.map(({ key, value }) => csvLine('world', '', key, value)).join('') +
+        players.map(({ address, key, value }) => csvLine('player', address, key, value)).join('')
+})
+
 export {
+  buildExportFile,
   buildSignedFetchMetadata,
   createScopedSignedFetch,
   estateToLand,
+  fetchSignedBlob,
   fromRentalFields,
   getEstateRegistryAddress,
   getLandPosition,

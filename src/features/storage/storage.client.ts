@@ -1,17 +1,21 @@
 import { getStorageApiUrl, getWorldsContentServerUrl, storageClient } from '../../services/storageClient'
 import { identityAddress } from '../../utils/identityScope'
-import { createScopedSignedFetch, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
+import { createScopedSignedFetch, fetchSignedBlob, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
 import type {
   AuthParams,
   ClearPlayerParams,
   CollaboratorScenesResponse,
   ContributableDomain,
   ContributableDomainsResponse,
+  CreateExportParams,
+  CreateExportResponse,
   DeleteEnvParams,
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  ExportJob,
   GetCollaboratorScenesParams,
+  GetExportParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   ListEnvKeysResponse,
@@ -105,7 +109,7 @@ const storageEndpoints = storageClient.injectEndpoints({
         const signedFetch = createScopedSignedFetch(identity, realm, position)
         try {
           const response = await wrapSignedFetch<ListStorageItemsResponse>(signedFetch, `${getStorageApiUrl()}/values`)
-          return { data: response.data.map(({ key }) => ({ key })) }
+          return { data: response.data.map(({ key, value }) => ({ key, value })) }
         } catch (error) {
           return { error: error as WrapSignedFetchError }
         }
@@ -216,7 +220,7 @@ const storageEndpoints = storageClient.injectEndpoints({
             signedFetch,
             `${getStorageApiUrl()}/players/${encodeURIComponent(address)}/values`
           )
-          return { data: response.data.map(({ key }) => ({ key })) }
+          return { data: response.data.map(({ key, value }) => ({ key, value })) }
         } catch (error) {
           return { error: error as WrapSignedFetchError }
         }
@@ -339,6 +343,41 @@ const storageEndpoints = storageClient.injectEndpoints({
       invalidatesTags: (_result, _error, args) => [{ type: 'Player' as const, id: storageContextId(args) }, 'PlayerKeys' as const]
     }),
 
+    createExport: build.mutation<CreateExportResponse, CreateExportParams & AuthParams & StorageContext>({
+      queryFn: async ({ identity, format, selection, realm, position }) => {
+        const signedFetch = createScopedSignedFetch(identity, realm, position)
+        try {
+          const response = await wrapSignedFetch<CreateExportResponse>(
+            signedFetch,
+            `${getStorageApiUrl()}/exports?format=${encodeURIComponent(format)}`,
+            { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(selection) }
+          )
+          return { data: response }
+        } catch (error) {
+          return { error: error as WrapSignedFetchError }
+        }
+      }
+    }),
+
+    getExport: build.query<ExportJob, GetExportParams & AuthParams & StorageContext>({
+      queryFn: async ({ identity, id, realm, position }) => {
+        const signedFetch = createScopedSignedFetch(identity, realm, position)
+        try {
+          const response = await wrapSignedFetch<ExportJob>(signedFetch, `${getStorageApiUrl()}/exports/${encodeURIComponent(id)}`)
+          return { data: response }
+        } catch (error) {
+          return { error: error as WrapSignedFetchError }
+        }
+      },
+      serializeQueryArgs: ({ queryArgs, endpointName }) => ({
+        endpointName,
+        id: queryArgs.id,
+        account: identityAddress(queryArgs.identity),
+        storageContext: storageContextId(queryArgs)
+      }),
+      keepUnusedDataFor: 0
+    }),
+
     getContributableDomains: build.query<ContributableDomain[], AuthParams>({
       serializeQueryArgs: ({ queryArgs }) => ({ account: identityAddress(queryArgs.identity) }),
       queryFn: async ({ identity }) => {
@@ -424,14 +463,17 @@ const {
   useClearEnvMutation,
   useClearPlayerMutation,
   useClearSceneMutation,
+  useCreateExportMutation,
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
   useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
+  useGetExportQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
   useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,
@@ -442,20 +484,28 @@ const {
   useSetSceneValueMutation
 } = storageEndpoints
 
+/** Downloads a finished export job's gzip file as a Blob. */
+const fetchExportFile = ({ identity, realm, position, id }: GetExportParams & AuthParams & StorageContext): Promise<Blob> =>
+  fetchSignedBlob(createScopedSignedFetch(identity, realm, position), `${getStorageApiUrl()}/exports/${encodeURIComponent(id)}/download`)
+
 export {
+  fetchExportFile,
   storageEndpoints,
   useClearAllPlayersMutation,
   useClearEnvMutation,
   useClearPlayerMutation,
   useClearSceneMutation,
+  useCreateExportMutation,
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
   useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
+  useGetExportQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
   useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,

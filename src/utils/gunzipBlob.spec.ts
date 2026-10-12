@@ -1,6 +1,5 @@
-import { DecompressionStream as NodeDecompressionStream } from 'node:stream/web'
+import * as nodeStreamWeb from 'node:stream/web'
 import { gzipSync } from 'node:zlib'
-// eslint-disable-next-line import/no-unresolved
 import { gunzipBlob } from './gunzipBlob'
 
 const globalWithStreams = globalThis as unknown as { DecompressionStream?: unknown }
@@ -10,9 +9,9 @@ describe('when gunzipping a gzip blob', () => {
   let gzipped: Blob
 
   beforeEach(async () => {
-    globalWithStreams.DecompressionStream = NodeDecompressionStream
+    globalWithStreams.DecompressionStream = (nodeStreamWeb as unknown as { DecompressionStream: unknown }).DecompressionStream
     original = '{"world":[{"key":"k","value":1}],"players":[]}'
-    gzipped = await new Response(gzipSync(original)).blob()
+    gzipped = await new Response(Uint8Array.from(gzipSync(original))).blob()
   })
 
   afterEach(() => {

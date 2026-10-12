@@ -746,3 +746,27 @@ describe('when fetching a signed blob', () => {
     })
   })
 })
+
+describe('when a signed request fails and its error body cannot be read', () => {
+  let signedFetch: jest.Mock
+
+  beforeEach(() => {
+    signedFetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.reject(new Error('stream closed'))
+    } as unknown as Response)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it.each([
+    ['wrapSignedFetch', (sf: jest.Mock) => wrapSignedFetch(sf, 'https://example/api')],
+    ['sendSignedFetch', (sf: jest.Mock) => sendSignedFetch(sf, 'https://example/api', { method: 'PUT' })],
+    ['fetchSignedBlob', (sf: jest.Mock) => fetchSignedBlob(sf, 'https://example/api')]
+  ])('should make %s throw the status with undefined data', async (_name, request) => {
+    await expect(request(signedFetch)).rejects.toEqual({ status: 500, data: undefined })
+  })
+})
