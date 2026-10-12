@@ -20,7 +20,7 @@ const videoElementPlayer = (
     const attemptWasMuted = video.muted
     video.play().catch((error: unknown) => {
       const name = error instanceof DOMException ? error.name : ''
-      if (name === 'NotAllowedError') events.onAutoplayBlocked(attemptWasMuted)
+      if (name === 'NotAllowedError' && !attemptWasMuted) events.onAutoplayBlocked()
       else if (name !== 'AbortError') events.onError()
     })
   },
@@ -49,6 +49,8 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
   const handleRef = useRef<ClientPlayerHandle | null>(null)
   const endedRef = useRef(false)
   const videoStateRef = useRef(videoState)
+  videoStateRef.current = videoState
+  const autoplayMutedRef = useRef(false)
   const viewerUnmutedRef = useRef(false)
   const [ready, setReady] = useState(false)
   const [autoplayMuted, setAutoplayMuted] = useState(false)
@@ -62,28 +64,18 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
     console.warn('[presentation] client video failed', source?.kind)
     setFailed(true)
   }, [source])
-  const handleAutoplayBlocked = useCallback(
-    (attemptWasMuted: boolean) => {
-      const handle = handleRef.current
-      if (!handle || viewerUnmutedRef.current) return
-      if (attemptWasMuted) {
-        handleFailure()
-        return
-      }
-      setAutoplayMuted(true)
-      handle.setMuted(true)
-      if (videoStateRef.current === 'playing') handle.play()
-    },
-    [handleFailure]
-  )
+  const handleAutoplayBlocked = useCallback(() => {
+    const handle = handleRef.current
+    if (!handle || viewerUnmutedRef.current || autoplayMutedRef.current) return
+    autoplayMutedRef.current = true
+    setAutoplayMuted(true)
+    handle.setMuted(true)
+    if (videoStateRef.current === 'playing') handle.play()
+  }, [])
   const handleUnmute = () => {
     viewerUnmutedRef.current = true
     setAutoplayMuted(false)
   }
-
-  useEffect(() => {
-    videoStateRef.current = videoState
-  }, [videoState])
 
   useEffect(() => {
     const container = containerRef.current

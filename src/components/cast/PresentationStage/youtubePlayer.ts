@@ -36,7 +36,7 @@ const loadYouTubeApi = (): Promise<void> => {
  *
  * @param container - Element React renders; the player replaces a child created here, never the container.
  * @param id - The parsed 11-character video id.
- * @param events - Callbacks for ready, ended, error and autoplay refusal, which reports whether the refused attempt was muted.
+ * @param events - Callbacks for ready, ended, error and autoplay refusal.
  * @returns A handle whose `isPlaying()` is true from a `play()` request until the player settles, so a second request is not sent.
  */
 const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientPlayerEvents): ClientPlayerHandle => {
@@ -44,8 +44,6 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientP
   if (!YT) throw new Error('YouTube IFrame API is not loaded')
   const child = document.createElement('div')
   container.appendChild(child)
-  let muted = false
-  let attemptMuted = false
   let playRequested = false
   const player = new YT.Player(child, {
     videoId: id,
@@ -61,14 +59,13 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientP
       onError: () => events.onError(),
       onAutoplayBlocked: () => {
         playRequested = false
-        events.onAutoplayBlocked(attemptMuted)
+        events.onAutoplayBlocked()
       }
     }
   })
   return {
     play: () => {
       playRequested = true
-      attemptMuted = muted
       player.playVideo()
     },
     pause: () => {
@@ -84,7 +81,6 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientP
     isPlaying: () => playRequested || player.getPlayerState() === PLAYING,
     isBusy: () => player.getPlayerState() === BUFFERING,
     setMuted: value => {
-      muted = value
       if (value) player.mute()
       else player.unMute()
     },

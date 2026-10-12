@@ -21,7 +21,7 @@ interface ClientPlayerEvents {
   onReady: () => void
   onEnded: () => void
   onError: () => void
-  onAutoplayBlocked: (attemptWasMuted: boolean) => void
+  onAutoplayBlocked: () => void
 }
 
 interface YouTubePlayer {
