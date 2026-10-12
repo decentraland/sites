@@ -283,7 +283,67 @@ describe('StorageLayout', () => {
             <div>child-content</div>
           </StorageLayout>
         )
-        expect(screen.getByRole('button', { name: 'component.storage.common.download_all' })).toBeDisabled()
+        expect(screen.getByRole('button', { name: 'component.storage.common.download_all' })).toHaveAttribute('aria-disabled', 'true')
+      })
+    })
+  })
+
+  describe('when the layout export is busy', () => {
+    let user: ReturnType<typeof userEvent.setup>
+
+    beforeEach(() => {
+      user = userEvent.setup()
+      mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+      mockUseStorageExport.mockReturnValue({ startExport: jest.fn(), busy: true, errorKey: null, clearError: jest.fn() })
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+    })
+
+    describe.each([
+      ['the tab is changed', 'change-tab', { pathname: '/storage/scene', search: window.location.search }],
+      ['back is pressed', 'component.storage.sidebar.back', '/storage/select']
+    ])('and %s', (_context, buttonName, target) => {
+      beforeEach(async () => {
+        await user.click(screen.getByRole('button', { name: buttonName }))
+      })
+
+      it('should open the leave dialog', () => {
+        expect(screen.getByText('component.storage.leave_dialog.title')).toBeInTheDocument()
+      })
+
+      it('should not navigate', () => {
+        expect(mockNavigate).not.toHaveBeenCalled()
+      })
+
+      describe('and Stay is chosen', () => {
+        beforeEach(async () => {
+          await user.click(screen.getByRole('button', { name: 'component.storage.leave_dialog.stay' }))
+        })
+
+        it('should close the leave dialog', () => {
+          expect(screen.queryByText('component.storage.leave_dialog.title')).not.toBeInTheDocument()
+        })
+
+        it('should not navigate', () => {
+          expect(mockNavigate).not.toHaveBeenCalled()
+        })
+      })
+
+      describe('and Leave is chosen', () => {
+        beforeEach(async () => {
+          await user.click(screen.getByRole('button', { name: 'component.storage.leave_dialog.leave' }))
+        })
+
+        it('should navigate to the requested destination', () => {
+          expect(mockNavigate).toHaveBeenCalledWith(target)
+        })
+
+        it('should close the leave dialog', () => {
+          expect(screen.queryByText('component.storage.leave_dialog.title')).not.toBeInTheDocument()
+        })
       })
     })
   })

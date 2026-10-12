@@ -44,14 +44,8 @@ const dialogMockFactory = (): Record<string, unknown> => ({
   Box: passthrough('div'),
   CircularProgress: () => createElement('div', { role: 'progressbar' }),
 
-  Button: (props: Record<string, unknown>) => {
-    const { children, onClick, disabled } = props as {
-      children?: ReactNode
-      onClick?: () => void
-      disabled?: boolean
-    }
-    return createElement('button', { type: 'button', onClick, disabled }, children)
-  },
+  Button: ({ children, ...rest }: Record<string, unknown> & { children?: ReactNode }) =>
+    createElement('button', { type: 'button', ...stripVisualProps(rest) }, children),
 
   Checkbox: (props: Record<string, unknown>) => {
     const { checked, indeterminate, onChange, disabled, inputProps } = props as {
@@ -87,6 +81,7 @@ const dialogMockFactory = (): Record<string, unknown> => ({
   },
   DialogActions: passthrough('div'),
   DialogContent: passthrough('div'),
+  DialogContentText: ({ children, id }: { children?: ReactNode; id?: string }) => createElement('div', { id }, children),
   DialogTitle: passthrough('h2'),
 
   TextField: (props: Record<string, unknown>) => {

@@ -29,6 +29,7 @@ const mockClearScene = jest.fn()
 const mockUseListSceneKeysQuery = jest.fn()
 const mockUseSelection = jest.fn()
 const mockUseStorageExport = jest.fn()
+const mockUseLeaveGuard = jest.fn()
 const mockTrack = jest.fn()
 const mockTriggerBlobDownload = jest.fn()
 
@@ -196,6 +197,11 @@ describe('ScenePage', () => {
       render(<ScenePage />)
       expect(mockUseSelection).toHaveBeenCalledWith(['a', 'b', 'feedback-1.csv'])
     })
+
+    it('should register the idle export with the leave guard', () => {
+      render(<ScenePage />)
+      expect(mockUseLeaveGuard).toHaveBeenCalledWith(false)
+    })
   })
 
   describe('when the header checkbox is clicked', () => {
@@ -268,7 +274,12 @@ describe('ScenePage', () => {
 
     it('should render the download selected button as busy', () => {
       render(<ScenePage />)
-      expect(screen.getByRole('button', { name: 'component.storage.common.download_selected 1' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'component.storage.common.download_selected 1' })).toHaveAttribute('aria-disabled', 'true')
+    })
+
+    it('should register the busy export with the leave guard', () => {
+      render(<ScenePage />)
+      expect(mockUseLeaveGuard).toHaveBeenCalledWith(true)
     })
   })
 

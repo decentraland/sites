@@ -10,9 +10,9 @@ jest.mock('decentraland-ui2', () => {
     ...children: unknown[]
   ) => React.ReactElement
   return {
-    Button: (props: Record<string, unknown>) =>
-      h('button', { type: 'button', onClick: props.onClick, disabled: props.disabled }, props.startIcon, props.children),
-    CircularProgress: (props: Record<string, unknown>) => h('div', { role: 'progressbar', 'aria-label': props['aria-label'] }),
+    Button: ({ startIcon, children, endIcon: _endIcon, variant: _variant, size: _size, ...rest }: Record<string, unknown>) =>
+      h('button', { type: 'button', ...rest }, startIcon, children),
+    CircularProgress: (props: Record<string, unknown>) => h('div', { role: 'progressbar', 'aria-hidden': props['aria-hidden'] }),
     Menu: (props: Record<string, unknown>) =>
       props.open
         ? h('div', { role: 'menu' }, [
@@ -33,14 +33,12 @@ jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
 describe('ExportMenuButton', () => {
   let onSelect: jest.Mock
   let busy: boolean
-  let disabled: boolean
 
-  const renderButton = () => render(<ExportMenuButton label="Download all" busy={busy} disabled={disabled} onSelect={onSelect} />)
+  const renderButton = () => render(<ExportMenuButton label="Download all" busy={busy} onSelect={onSelect} />)
 
   beforeEach(() => {
     onSelect = jest.fn()
     busy = false
-    disabled = false
   })
 
   afterEach(() => {
@@ -121,43 +119,62 @@ describe('ExportMenuButton', () => {
   })
 
   describe('when busy', () => {
+    let button: HTMLElement
+
     beforeEach(() => {
       busy = true
+      renderButton()
+      button = screen.getByRole('button', { name: 'Download all' })
     })
 
-    it('should disable the button', () => {
-      renderButton()
-
-      expect(screen.getByRole('button')).toBeDisabled()
+    it('should mark the button as aria-disabled', () => {
+      expect(button).toHaveAttribute('aria-disabled', 'true')
     })
 
-    it('should show a progressbar labelled as exporting', () => {
-      renderButton()
+    it('should mark the button as aria-busy', () => {
+      expect(button).toHaveAttribute('aria-busy', 'true')
+    })
 
-      expect(screen.getByRole('progressbar', { name: 'component.storage.common.exporting' })).toBeInTheDocument()
+    it('should not disable the button natively', () => {
+      expect(button).not.toBeDisabled()
+    })
+
+    it('should keep the button focusable', () => {
+      button.focus()
+
+      expect(button).toHaveFocus()
+    })
+
+    it('should not open the menu on click', async () => {
+      await userEvent.setup().click(button)
+
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    })
+
+    it('should announce the exporting and keep-open copy in the status region', () => {
+      expect(screen.getByRole('status')).toHaveTextContent('component.storage.common.exporting component.storage.common.keep_page_open')
+    })
+
+    it('should hide the spinner from assistive technology', () => {
+      expect(screen.getByRole('progressbar', { hidden: true })).toHaveAttribute('aria-hidden', 'true')
     })
   })
 
   describe('when not busy', () => {
-    it('should not show a progressbar', () => {
-      renderButton()
-
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-    })
-  })
-
-  describe('when disabled', () => {
     beforeEach(() => {
-      disabled = true
+      renderButton()
     })
 
-    it('should not open the menu on click', async () => {
-      const user = userEvent.setup()
-      renderButton()
+    it('should not show a progressbar', () => {
+      expect(screen.queryByRole('progressbar', { hidden: true })).not.toBeInTheDocument()
+    })
 
-      await user.click(screen.getByRole('button', { name: 'Download all' }))
+    it('should keep an empty status region mounted', () => {
+      expect(screen.getByRole('status')).toBeEmptyDOMElement()
+    })
 
-      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    it('should not mark the button as aria-disabled', () => {
+      expect(screen.getByRole('button', { name: 'Download all' })).not.toHaveAttribute('aria-disabled')
     })
   })
 })

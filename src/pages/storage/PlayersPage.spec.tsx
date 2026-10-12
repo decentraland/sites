@@ -23,6 +23,7 @@ const mockClearAllPlayers = jest.fn()
 const mockUseListPlayersQuery = jest.fn()
 const mockUseSelection = jest.fn()
 const mockUseStorageExport = jest.fn()
+const mockUseLeaveGuard = jest.fn()
 const mockTrack = jest.fn()
 const mockProfileNames = new Map([['0xbbb', 'Alice']])
 
@@ -140,11 +141,14 @@ describe('PlayersPage', () => {
   let startExport: jest.Mock
   let clearError: jest.Mock
   let selection: Selection
+  let confirmLeave: jest.Mock
 
   beforeEach(() => {
     startExport = jest.fn()
     clearError = jest.fn()
     selection = buildSelection()
+    confirmLeave = jest.fn((go: () => void) => go())
+    mockUseLeaveGuard.mockReturnValue(confirmLeave)
     mockUseListPlayersQuery.mockReturnValue({ currentData: PLAYERS, isLoading: false })
     mockUseSelection.mockImplementation(() => selection)
     mockUseStorageExport.mockImplementation(() => ({ startExport, busy: false, errorKey: null, clearError }))
@@ -158,6 +162,11 @@ describe('PlayersPage', () => {
     it('should select over the loaded players', () => {
       render(<PlayersPage />)
       expect(mockUseSelection).toHaveBeenCalledWith(PLAYERS)
+    })
+
+    it('should register the idle export with the leave guard', () => {
+      render(<PlayersPage />)
+      expect(mockUseLeaveGuard).toHaveBeenCalledWith(false)
     })
 
     it('should render the select all checkbox unchecked', () => {
@@ -263,7 +272,12 @@ describe('PlayersPage', () => {
 
     it('should render the download selected button as busy', () => {
       render(<PlayersPage />)
-      expect(screen.getByRole('button', { name: 'component.storage.common.download_selected 1' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'component.storage.common.download_selected 1' })).toHaveAttribute('aria-disabled', 'true')
+    })
+
+    it('should register the busy export with the leave guard', () => {
+      render(<PlayersPage />)
+      expect(mockUseLeaveGuard).toHaveBeenCalledWith(true)
     })
   })
 
@@ -296,6 +310,34 @@ describe('PlayersPage', () => {
       render(<PlayersPage />)
       await user.click(screen.getByRole('button', { name: 'component.storage.player_page.select_player 0xccc' }))
       expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/storage/players/0xccc', search: window.location.search })
+    })
+
+    describe('and the leave guard holds the navigation', () => {
+      beforeEach(async () => {
+        confirmLeave.mockImplementation(() => undefined)
+        const user = userEvent.setup()
+        render(<PlayersPage />)
+        await user.click(screen.getByRole('button', { name: 'component.storage.player_page.select_player 0xccc' }))
+      })
+
+      it('should route the navigation through the leave guard', () => {
+        expect(confirmLeave).toHaveBeenCalledTimes(1)
+      })
+
+      it('should not navigate before the guard lets it go', () => {
+        expect(mockNavigate).not.toHaveBeenCalled()
+      })
+
+      describe('and the guard lets it go', () => {
+        beforeEach(() => {
+          const [go] = confirmLeave.mock.calls[0] as [() => void]
+          go()
+        })
+
+        it('should navigate to the player detail', () => {
+          expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/storage/players/0xccc', search: window.location.search })
+        })
+      })
     })
   })
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { dialogMockFactory } from '../../components/storage/__test-utils__/dialogMocks'
 import { buildExportFile } from '../../features/storage/storage.helpers'
@@ -31,6 +31,7 @@ const mockClearPlayer = jest.fn()
 const mockUseListPlayerKeysQuery = jest.fn()
 const mockUseSelection = jest.fn()
 const mockUseStorageExport = jest.fn()
+const mockUseLeaveGuard = jest.fn()
 const mockTrack = jest.fn()
 const mockTriggerBlobDownload = jest.fn()
 
@@ -187,11 +188,14 @@ describe('PlayerDetailPage', () => {
   let startExport: jest.Mock
   let clearError: jest.Mock
   let selection: Selection
+  let confirmLeave: jest.Mock
 
   beforeEach(() => {
     startExport = jest.fn()
     clearError = jest.fn()
     selection = buildSelection()
+    confirmLeave = jest.fn((go: () => void) => go())
+    mockUseLeaveGuard.mockReturnValue(confirmLeave)
     mockUseListPlayerKeysQuery.mockReturnValue({ currentData: PLAYER_KEYS, isLoading: false })
     mockUseSelection.mockImplementation(() => selection)
     mockUseStorageExport.mockImplementation(() => ({ startExport, busy: false, errorKey: null, clearError }))
@@ -213,6 +217,11 @@ describe('PlayerDetailPage', () => {
     it('should select over the loaded keys', () => {
       render(<PlayerDetailPage />)
       expect(mockUseSelection).toHaveBeenCalledWith(['a', 'b', 'save.json'])
+    })
+
+    it('should register the idle export with the leave guard', () => {
+      render(<PlayerDetailPage />)
+      expect(mockUseLeaveGuard).toHaveBeenCalledWith(false)
     })
 
     it('should not render a download selected button', () => {
@@ -300,7 +309,12 @@ describe('PlayerDetailPage', () => {
 
     it('should render the download selected button as busy', () => {
       render(<PlayerDetailPage />)
-      expect(screen.getByRole('button', { name: 'component.storage.common.download_selected 1' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'component.storage.common.download_selected 1' })).toHaveAttribute('aria-disabled', 'true')
+    })
+
+    it('should register the busy export with the leave guard', () => {
+      render(<PlayerDetailPage />)
+      expect(mockUseLeaveGuard).toHaveBeenCalledWith(true)
     })
   })
 
@@ -383,6 +397,62 @@ describe('PlayerDetailPage', () => {
       render(<PlayerDetailPage />)
       await user.click(screen.getByRole('button', { name: 'component.storage.player_page.back_to_players' }))
       expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/storage/players', search: window.location.search })
+    })
+
+    describe('and the leave guard holds the navigation', () => {
+      let notPrevented: boolean
+
+      beforeEach(() => {
+        confirmLeave.mockImplementation(() => undefined)
+        render(<PlayerDetailPage />)
+        notPrevented = fireEvent.click(screen.getByRole('button', { name: 'component.storage.player_page.back_to_players' }))
+      })
+
+      it('should prevent the link default navigation', () => {
+        expect(notPrevented).toBe(false)
+      })
+
+      it('should route the navigation through the leave guard', () => {
+        expect(confirmLeave).toHaveBeenCalledTimes(1)
+      })
+
+      it('should not navigate before the guard lets it go', () => {
+        expect(mockNavigate).not.toHaveBeenCalled()
+      })
+
+      describe('and the guard lets it go', () => {
+        beforeEach(() => {
+          const [go] = confirmLeave.mock.calls[0] as [() => void]
+          go()
+        })
+
+        it('should navigate to the players list keeping the current search', () => {
+          expect(mockNavigate).toHaveBeenCalledWith({ pathname: '/storage/players', search: window.location.search })
+        })
+      })
+    })
+
+    describe.each(['metaKey', 'ctrlKey', 'shiftKey', 'altKey'])('and %s is held', modifier => {
+      let notPrevented: boolean
+
+      beforeEach(() => {
+        render(<PlayerDetailPage />)
+        notPrevented = fireEvent.click(screen.getByRole('button', { name: 'component.storage.player_page.back_to_players' }), {
+          [modifier]: true
+        })
+      })
+
+      it('should let the link handle the click', () => {
+        expect(notPrevented).toBe(true)
+      })
+
+      it('should not route the click through the leave guard', () => {
+        expect(confirmLeave).not.toHaveBeenCalled()
+      })
+
+      it('should not navigate programmatically', () => {
+        expect(mockNavigate).not.toHaveBeenCalled()
+      })
     })
   })
 
