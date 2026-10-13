@@ -7,6 +7,8 @@ import { StorageLayout } from './StorageLayout'
 const mockUseStorageScope = jest.fn()
 const mockUseAuthIdentity = jest.fn()
 const mockUseStorageExport = jest.fn()
+const mockUseListSceneKeysQuery = jest.fn()
+const mockUseListPlayersQuery = jest.fn()
 const mockNavigate = jest.fn()
 let mockPathname = '/storage/env'
 let mockSearch = ''
@@ -111,12 +113,19 @@ jest.mock('../../../hooks/useStorageExport', () => ({
   useStorageExport: () => mockUseStorageExport()
 }))
 
+jest.mock('../../../features/storage', () => ({
+  useListSceneKeysQuery: (args: unknown, options: unknown) => mockUseListSceneKeysQuery(args, options),
+  useListPlayersQuery: (args: unknown, options: unknown) => mockUseListPlayersQuery(args, options)
+}))
+
 describe('StorageLayout', () => {
   beforeEach(() => {
     mockPathname = '/storage/env'
     mockSearch = ''
     mockUseAuthIdentity.mockReturnValue({ identity: undefined, address: undefined })
     mockUseStorageExport.mockReturnValue({ startExport: jest.fn(), busy: false, errorKey: null, clearError: jest.fn() })
+    mockUseListSceneKeysQuery.mockReturnValue({ currentData: undefined })
+    mockUseListPlayersQuery.mockReturnValue({ currentData: undefined })
   })
   afterEach(() => jest.resetAllMocks())
 
@@ -263,6 +272,21 @@ describe('StorageLayout', () => {
       mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, address: '0xowner' })
       mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
       mockUseStorageExport.mockReturnValue({ startExport, busy: false, errorKey: null, clearError: jest.fn() })
+      mockUseListSceneKeysQuery.mockReturnValue({ currentData: [{ key: 'a', value: 1 }] })
+      mockUseListPlayersQuery.mockReturnValue({ currentData: [] })
+    })
+
+    it('should list the scene values and players of the current scope', () => {
+      render(
+        <StorageLayout>
+          <div>child-content</div>
+        </StorageLayout>
+      )
+      const args = { identity: { authChain: [] }, realm: 'w.dcl.eth', position: '5,5' }
+      expect([mockUseListSceneKeysQuery.mock.calls[0], mockUseListPlayersQuery.mock.calls[0]]).toEqual([
+        [args, { skip: false }],
+        [args, { skip: false }]
+      ])
     })
 
     it('should render the download all button', () => {
@@ -283,6 +307,71 @@ describe('StorageLayout', () => {
       await userEvent.click(screen.getByRole('button', { name: 'component.storage.common.download_all' }))
       await userEvent.click(screen.getByRole('menuitem', { name: 'component.storage.common.format_json' }))
       expect(startExport).toHaveBeenCalledWith({}, 'json')
+    })
+
+    describe('and the scope has no scene values and no players', () => {
+      beforeEach(() => {
+        mockUseListSceneKeysQuery.mockReturnValue({ currentData: [] })
+      })
+
+      it('should not render the download all button', () => {
+        render(
+          <StorageLayout>
+            <div>child-content</div>
+          </StorageLayout>
+        )
+        expect(screen.queryByRole('button', { name: 'component.storage.common.download_all' })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and only players have stored data', () => {
+      beforeEach(() => {
+        mockUseListSceneKeysQuery.mockReturnValue({ currentData: [] })
+        mockUseListPlayersQuery.mockReturnValue({ currentData: ['0xaaa'] })
+      })
+
+      it('should render the download all button', () => {
+        render(
+          <StorageLayout>
+            <div>child-content</div>
+          </StorageLayout>
+        )
+        expect(screen.getByRole('button', { name: 'component.storage.common.download_all' })).toBeInTheDocument()
+      })
+    })
+
+    describe('and the lists are still loading', () => {
+      beforeEach(() => {
+        mockUseListSceneKeysQuery.mockReturnValue({ currentData: undefined })
+        mockUseListPlayersQuery.mockReturnValue({ currentData: undefined })
+      })
+
+      it('should not render the download all button yet', () => {
+        render(
+          <StorageLayout>
+            <div>child-content</div>
+          </StorageLayout>
+        )
+        expect(screen.queryByRole('button', { name: 'component.storage.common.download_all' })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the env tab is active', () => {
+      beforeEach(() => {
+        mockPathname = '/storage/env'
+      })
+
+      it('should not list the scene values or players', () => {
+        render(
+          <StorageLayout>
+            <div>child-content</div>
+          </StorageLayout>
+        )
+        expect([mockUseListSceneKeysQuery.mock.calls[0][1], mockUseListPlayersQuery.mock.calls[0][1]]).toEqual([
+          { skip: true },
+          { skip: true }
+        ])
+      })
     })
 
     describe('and an export job is running', () => {
@@ -366,6 +455,7 @@ describe('StorageLayout', () => {
       mockPathname = '/storage/players/0xabc'
       mockUseAuthIdentity.mockReturnValue({ identity: { authChain: [] }, address: '0xowner' })
       mockUseStorageScope.mockReturnValue({ realm: 'w.dcl.eth', position: '5,5', isResolving: false, unresolved: false })
+      mockUseListPlayersQuery.mockReturnValue({ currentData: ['0xabc'] })
     })
 
     it('should render the download all button', () => {

@@ -12,6 +12,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import { Alert, Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { useListPlayersQuery, useListSceneKeysQuery } from '../../../features/storage'
 import type { ExportFormat } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
@@ -81,7 +82,10 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
   const handleDownloadAll = useCallback((format: ExportFormat) => startExport({}, format), [startExport])
 
   const scopeLabel = realm ?? position ?? ''
-  const canDownloadAll = Boolean(identity) && !isResolving && !unresolved && activeTab !== 'env'
+  const canExportScope = Boolean(identity) && !isResolving && !unresolved && activeTab !== 'env'
+  const { currentData: sceneKeys } = useListSceneKeysQuery({ identity, realm, position }, { skip: !canExportScope })
+  const { currentData: players } = useListPlayersQuery({ identity, realm, position }, { skip: !canExportScope })
+  const canDownloadAll = canExportScope && Boolean(sceneKeys?.length || players?.length)
 
   return (
     <StoragePageContainer>
