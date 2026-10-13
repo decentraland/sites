@@ -5,6 +5,7 @@ import {
   countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
   isJunkContactName,
   isMapPlaceholderImage,
@@ -525,5 +526,21 @@ describe('when building the destinations query args for a category', () => {
 describe('when listing the category options', () => {
   it('should put featured right after all', () => {
     expect(DISCOVER_CATEGORY_OPTIONS.slice(0, 3)).toEqual(['all', 'featured', 'social'])
+  })
+})
+
+describe('when isHiddenFeaturedPlace is called', () => {
+  const junk = { title: 'interactive-text demo', image: REAL_IMAGE }
+
+  it('should keep a highlighted row that the junk filter rejects', () => {
+    expect(isHiddenFeaturedPlace(makePlace({ ...junk, highlighted: true }))).toBe(false)
+  })
+
+  it('should hide a junk row that is not highlighted', () => {
+    expect(isHiddenFeaturedPlace(makePlace(junk))).toBe(true)
+  })
+
+  it('should keep a regular row', () => {
+    expect(isHiddenFeaturedPlace(makePlace({ title: 'Gallery', image: REAL_IMAGE, owner: '0xowner' }))).toBe(false)
   })
 })

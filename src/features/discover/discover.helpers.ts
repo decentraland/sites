@@ -212,6 +212,12 @@ function isHiddenPlace(place: DiscoverPlace): boolean {
   return place.world ? (place.user_count ?? 0) === 0 : true
 }
 
+// Junk filter for the curated Featured views (the rail and the Featured category): a row the team
+// highlighted stays visible even when the heuristic would hide it, as places-api does server-side.
+function isHiddenFeaturedPlace(place: DiscoverPlace): boolean {
+  return isHiddenPlace(place) && !placeIsFeatured(place)
+}
+
 // Canonical Segment payload for a SOCIAL_* event about a place. snake_case
 // keys per the tracking conventions; optional fields are omitted (not null) so
 // warehouse rows stay clean. `place` (the UI-surface key) is intentionally NOT
@@ -240,6 +246,7 @@ export {
   discoverDeepLinkOptions,
   isJunkContactName,
   discoverPlacePayload,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
   isMapPlaceholderImage,
   parsePositionParam,

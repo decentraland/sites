@@ -25,6 +25,7 @@ import {
   buildDetailPath,
   categoryQueryArgs,
   countGridTracks,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
   parseCategoryParam,
   placePlayers,
@@ -160,6 +161,8 @@ function DiscoverHomePage() {
   // back to the tab they were on. Read-only on purpose: the search box and the
   // category filter are component state too, and mirroring the tab into the URL
   // on every click would put three entries in the history for one glance.
+  // `?category=` follows the same rule: it seeds the filter on mount only, so a client-side navigation
+  // to /places?category=featured on an already-mounted page does not change it.
   const [section, setSection] = useState<ExploreSection>(() => readSectionParam(searchParams.get('tab')))
   // Switching tabs swaps the big Explore grid for the (often much shorter)
   // Favourites / My Places content, collapsing the page height — the browser
@@ -402,7 +405,7 @@ function DiscoverHomePage() {
     if (!showFeaturedRail) return []
     const shownInLiveRail = new Set(repeatAcrossSections ? [] : liveRail.map(c => c.id))
     return (featuredQuery.data?.data ?? [])
-      .filter(p => !isHiddenPlace(p))
+      .filter(p => !isHiddenFeaturedPlace(p))
       .filter(p => !shownInLiveRail.has(p.id))
       .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
   }, [showFeaturedRail, featuredQuery.data, liveRail, repeatAcrossSections])
@@ -430,8 +433,9 @@ function DiscoverHomePage() {
   // and the user scrolls past the same cards twice. Search and category filtering empty both rails,
   // so results are never hidden from a query.
   const exploreCards = useMemo<DiscoverPlace[]>(() => {
-    // Featured keeps the curated set as the server returns it: curation overrides the junk heuristic, like places-api does.
-    const kept = activeCategory === FEATURED_CATEGORY ? browseDestinations : browseDestinations.filter(p => !isHiddenPlace(p))
+    // The Featured category applies the same curated-aware rule as the Featured rail, so both views agree.
+    const isHidden = activeCategory === FEATURED_CATEGORY ? isHiddenFeaturedPlace : isHiddenPlace
+    const kept = browseDestinations.filter(p => !isHidden(p))
     if (repeatAcrossSections) return kept
     const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
     return kept.filter(p => !shownAbove.has(p.id))

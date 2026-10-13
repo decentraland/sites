@@ -8,7 +8,6 @@ export {
   useGetDiscoverWorldByNameQuery
 } from './discover.client'
 export {
-  DISCOVER_CATEGORIES,
   DISCOVER_CATEGORY_OPTIONS,
   FEATURED_CATEGORY,
   categoryQueryArgs,
@@ -18,6 +17,7 @@ export {
   countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
   isJunkContactName,
   parsePositionParam,

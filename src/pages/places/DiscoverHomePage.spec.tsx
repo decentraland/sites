@@ -251,8 +251,8 @@ describe('DiscoverHomePage', () => {
     mockDestinationsQuery.mockImplementation((args: unknown) => {
       if (args === skipToken) return { data: undefined, isLoading: false }
       const a = args as { only_highlighted?: boolean; owner?: string; limit?: number }
-      // The Featured CATEGORY reads the grid's page (limit 48), so only the rail's query lands here.
-      if (a.only_highlighted && a.limit !== 48) return featuredPlaces
+      // The Featured CATEGORY reads the grid's query (it always carries `offset`), so only the rail's lands here.
+      if (a.only_highlighted && !('offset' in a)) return featuredPlaces
       if (a.owner) return myDestinations
       // The rail and the grid are different cache entries (different `limit`); keying the stub the
       // same way is what lets a test notice the rail reading the wrong one.
@@ -654,7 +654,7 @@ describe('DiscoverHomePage', () => {
     const lastBrowseArgs = () =>
       mockDestinationsQuery.mock.calls
         .map(call => call[0] as Record<string, unknown>)
-        .filter(a => a && a !== (skipToken as unknown) && a.limit === 48)
+        .filter(a => a && a !== (skipToken as unknown) && 'offset' in a)
         .pop()
 
     const selectCategory = (value: string) =>
@@ -766,6 +766,14 @@ describe('DiscoverHomePage', () => {
 
         expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true }))
       })
+    })
+
+    it('should render a curated row in the Featured rail even when the junk filter would hide it', () => {
+      featuredPlaces = { data: { ok: true, total: 1, data: [hiddenButCurated()] }, isLoading: false }
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.getByRole('button', { name: 'Curated Placeholder' })).toBeInTheDocument()
     })
 
     describe('and the URL carries ?category=featured', () => {
