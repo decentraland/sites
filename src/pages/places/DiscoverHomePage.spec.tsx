@@ -454,13 +454,14 @@ describe('DiscoverHomePage', () => {
   })
 
   describe('when the category filter changes on desktop', () => {
-    it('should track the filter and collapse the curated rails', () => {
+    it('should track the filter, keep Live Now and drop the Featured rail', () => {
       render(<DiscoverHomePage />)
 
       fireEvent.change(screen.getByRole('combobox', { name: 'discover.explore.category.all' }), { target: { value: 'art' } })
 
       expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: 'art' })
-      expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+      expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+      expect(screen.queryByTestId('featured-card')).not.toBeInTheDocument()
       expect(mockDestinationsQuery).toHaveBeenCalledWith(expect.objectContaining({ categories: ['art'] }))
     })
   })
@@ -714,13 +715,11 @@ describe('DiscoverHomePage', () => {
         expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(['Live Plaza'])
       })
 
-      it('should hide Live Now under a regular category and while searching', () => {
+      it('should keep Live Now under a regular category and hide it while searching', () => {
         render(<DiscoverHomePage />)
-        selectCategory('featured')
         selectCategory('game')
-        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
 
-        selectCategory('featured')
         fireEvent.change(screen.getByPlaceholderText('discover.explore.search_placeholder'), { target: { value: 'gen' } })
         expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
       })
@@ -813,6 +812,22 @@ describe('DiscoverHomePage', () => {
         expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true }))
         expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
         expect(mockTrack).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and a regular category is selected with repetition off', () => {
+      it('should keep Live Now and leave the filtered grid whole', () => {
+        mockRepeat.mockReturnValue(false)
+        browseDestinations = {
+          data: { ok: true, total: 1, data: [createPlace({ id: 'live-a', title: 'Live Plaza', categories: ['social'] })] },
+          isLoading: false
+        }
+        render(<DiscoverHomePage />)
+
+        selectCategory('social')
+
+        expect(screen.getAllByTestId('live-card').length).toBeGreaterThan(0)
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(['Live Plaza'])
       })
     })
 

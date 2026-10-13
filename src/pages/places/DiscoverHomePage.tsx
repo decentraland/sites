@@ -292,17 +292,17 @@ function DiscoverHomePage() {
   )
   const isLoadingSection = (section === 'favourites' && favoritesQuery.isLoading) || (section === 'my' && myQuery.isLoading)
 
-  // Live Now + Featured stay visible on every tab (Live Now also under the Featured category) — only searching or
-  // filtering the Explore view collapses the page to a single results grid
-  // (search/category apply to the browse query, not the signed-in tabs).
+  // Live Now + Featured stay visible on every tab. On Explore, searching collapses both rails and a
+  // category collapses the Featured rail only (see `showLiveRail`); search/category apply to the browse
+  // query, not the signed-in tabs.
   const showHighlights = section !== 'all' || (!search && activeCategory === 'all')
   // With the rail off, `featuredCards` stays empty, which is also what stops
   // the Explore grid from subtracting it — so the curated picks lead the grid
   // instead of disappearing. See useHideFeaturedPlaces for the flag matrix.
   const showFeaturedRail = showHighlights && !hideFeatured
-  // Live Now is not a filter result: the Featured category narrows the Explore grid only, so the rail
-  // stays. Any other category, or a search, still collapses it.
-  const showLiveRail = section !== 'all' || (!search && (activeCategory === 'all' || activeCategory === FEATURED_CATEGORY))
+  // Live Now is not a filter result: a category narrows the Explore grid only, so the rail stays under
+  // every category. A search still collapses it.
+  const showLiveRail = section !== 'all' || !search
 
   // Mobile filter chip reflects a non-default category so the user can
   // see and clear active filters without reopening the drawer.
@@ -439,8 +439,8 @@ function DiscoverHomePage() {
     // The Featured category applies the same curated-aware rule as the Featured rail, so both views agree.
     const isHidden = activeCategory === FEATURED_CATEGORY ? isHiddenFeaturedPlace : isHiddenPlace
     const kept = browseDestinations.filter(p => !isHidden(p))
-    // Under Featured the grid is the whole category result, so Live Now never takes rows out of it.
-    if (repeatAcrossSections || activeCategory === FEATURED_CATEGORY) return kept
+    // Under a category the grid is the whole filtered result, so Live Now never takes rows out of it.
+    if (repeatAcrossSections || activeCategory !== 'all') return kept
     const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
     return kept.filter(p => !shownAbove.has(p.id))
   }, [browseDestinations, activeCategory, repeatAcrossSections, liveRail, featuredCards])
