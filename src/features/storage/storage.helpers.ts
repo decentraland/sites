@@ -141,8 +141,8 @@ const performSignedFetch = async <T>(
 const wrapSignedFetch = <T>(signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<T> =>
   performSignedFetch(signedFetch, url, init, response => response.json() as Promise<T>)
 
-const fetchSignedBlob = (signedFetch: SignedFetch, url: string): Promise<Blob> =>
-  performSignedFetch(signedFetch, url, { method: 'GET' }, response => response.blob())
+const fetchSignedBlob = (signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<Blob> =>
+  performSignedFetch(signedFetch, url, init, response => response.blob())
 
 const sendSignedFetch = (signedFetch: SignedFetch, url: string, init: RequestInit): Promise<void> =>
   performSignedFetch(signedFetch, url, init, async () => undefined)

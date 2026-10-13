@@ -287,37 +287,16 @@ interface CollaboratorScenesResponse {
 }
 
 type ExportFormat = 'json' | 'csv'
-type ExportJobStatus = 'pending' | 'running' | 'done' | 'failed'
 
 interface ExportSelection {
   world?: { keys?: string[] }
   players?: { addresses?: string[]; keys?: string[] }
 }
 
-interface CreateExportParams {
+interface ExportFileParams {
   format: ExportFormat
   selection: ExportSelection
-}
-
-interface CreateExportResponse {
-  id: string
-  status: ExportJobStatus
-}
-
-interface ExportJob {
-  id: string
-  status: ExportJobStatus
-  format: ExportFormat
-  selection: ExportSelection
-  createdAt: string
-  completedAt: string | null
-  expiresAt: string | null
-  sizeBytes: number | null
-  error: string | null
-}
-
-interface GetExportParams {
-  id: string
+  signal?: AbortSignal
 }
 
 interface ExportWorldRow {
@@ -350,21 +329,17 @@ export type {
   ContributableDomain,
   ContributableDomainRaw,
   ContributableDomainsResponse,
-  CreateExportParams,
-  CreateExportResponse,
   DCLNamesResponse,
   DeleteEnvParams,
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  ExportFileParams,
   ExportFormat,
-  ExportJob,
-  ExportJobStatus,
   ExportPlayerRow,
   ExportSelection,
   ExportWorldRow,
   GetCollaboratorScenesParams,
-  GetExportParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   Land,

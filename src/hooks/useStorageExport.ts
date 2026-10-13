@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { skipToken } from '@reduxjs/toolkit/query'
-import { fetchExportFile, getStorageErrorKey, getStorageErrorStatus, useCreateExportMutation, useGetExportQuery } from '../features/storage'
+import { fetchExportFile, getStorageErrorKey, getStorageErrorStatus } from '../features/storage'
 import type { ExportFormat, ExportSelection } from '../features/storage'
 import { triggerBlobDownload } from '../modules/file'
 import { SegmentEvent } from '../modules/segment.types'
-import { gunzipBlob } from '../utils/gunzipBlob'
 import { useAuthIdentity } from './useAuthIdentity'
 import { useStorageScope } from './useStorageScope'
 import { useStorageTrack } from './useStorageTrack'
@@ -16,102 +14,51 @@ interface UseStorageExportResult {
   clearError: () => void
 }
 
-interface PendingJob {
-  id: string
-  format: ExportFormat
-  request: number
-  startedAt: number
-}
-
 const EXPORT_FAILED_KEY = 'component.storage.errors.export_failed'
-const POLL_INTERVAL_MS = 1000
 
-/** Runs a storage export job: creates it, polls until it settles, then unzips and saves the file. */
+/** Streams a storage export for the selection and saves it, aborting it when the caller unmounts. */
 function useStorageExport(): UseStorageExportResult {
   const { identity } = useAuthIdentity()
   const { realm, position } = useStorageScope()
   const track = useStorageTrack()
-  const [createExport, { isLoading: isCreating }] = useCreateExportMutation()
-  const [job, setJob] = useState<PendingJob | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [busy, setBusy] = useState(false)
   const [errorKey, setErrorKey] = useState<string | null>(null)
-  const requestRef = useRef(0)
-  const handledRef = useRef(0)
-  const mountedRef = useRef(true)
-  const busy = job !== null || saving || isCreating
+  const controllerRef = useRef<AbortController | null>(null)
 
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-    }
-  }, [])
+  useEffect(() => () => controllerRef.current?.abort(), [])
 
-  const {
-    currentData,
-    error: pollError,
-    isError,
-    startedTimeStamp
-  } = useGetExportQuery(job ? { identity, realm, position, id: job.id } : skipToken, {
-    pollingInterval: POLL_INTERVAL_MS,
-    refetchOnMountOrArgChange: true
-  })
-
-  const failWith = useCallback(
-    (format: ExportFormat, error: unknown) => {
-      setErrorKey(getStorageErrorKey(error))
-      track(SegmentEvent.STORAGE_EXPORT_FAILURE, { format, errorStatus: getStorageErrorStatus(error) ?? 'unknown' })
-    },
-    [track]
-  )
-
-  const save = useCallback(
-    async ({ id, format }: PendingJob) => {
-      setSaving(true)
+  const runExport = useCallback(
+    async (selection: ExportSelection, format: ExportFormat) => {
+      const controller = new AbortController()
+      controllerRef.current = controller
+      setBusy(true)
+      setErrorKey(null)
       try {
-        const file = await gunzipBlob(await fetchExportFile({ identity, realm, position, id }))
-        if (!mountedRef.current) return
+        const file = await fetchExportFile({ identity, realm, position, format, selection, signal: controller.signal })
+        if (controller.signal.aborted) return
         triggerBlobDownload(file, `storage-export.${format}`)
         track(SegmentEvent.STORAGE_EXPORT_SUCCESS, { format })
       } catch (error) {
-        if (mountedRef.current) failWith(format, error)
+        if (controller.signal.aborted) return
+        const status = getStorageErrorStatus(error)
+        setErrorKey(status === 'FETCH_ERROR' ? EXPORT_FAILED_KEY : getStorageErrorKey(error))
+        track(SegmentEvent.STORAGE_EXPORT_FAILURE, { format, errorStatus: status ?? 'unknown' })
       } finally {
-        if (mountedRef.current) setSaving(false)
+        if (!controller.signal.aborted) {
+          controllerRef.current = null
+          setBusy(false)
+        }
       }
     },
-    [identity, realm, position, track, failWith]
+    [identity, realm, position, track]
   )
-
-  useEffect(() => {
-    if (!job || handledRef.current === job.request) return
-    const status = currentData?.id === job.id ? currentData.status : undefined
-    const settled = status === 'done' || status === 'failed'
-    const failed = isError && (startedTimeStamp ?? 0) >= job.startedAt
-    if (!settled && !failed) return
-    handledRef.current = job.request
-    setJob(null)
-    if (status === 'done') {
-      void save(job)
-      return
-    }
-    if (status === 'failed') {
-      setErrorKey(EXPORT_FAILED_KEY)
-      track(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: job.format })
-      return
-    }
-    failWith(job.format, pollError)
-  }, [currentData, pollError, isError, startedTimeStamp, job, save, track, failWith])
 
   const startExport = useCallback(
     (selection: ExportSelection, format: ExportFormat) => {
-      if (busy || !identity) return
-      setErrorKey(null)
-      createExport({ identity, realm, position, format, selection })
-        .unwrap()
-        .then(({ id }) => setJob({ id, format, request: ++requestRef.current, startedAt: Date.now() }))
-        .catch(error => failWith(format, error))
+      if (controllerRef.current || !identity) return
+      void runExport(selection, format)
     },
-    [busy, identity, realm, position, createExport, failWith]
+    [identity, runExport]
   )
 
   const clearError = useCallback(() => setErrorKey(null), [])

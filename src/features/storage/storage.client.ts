@@ -7,15 +7,12 @@ import type {
   CollaboratorScenesResponse,
   ContributableDomain,
   ContributableDomainsResponse,
-  CreateExportParams,
-  CreateExportResponse,
   DeleteEnvParams,
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
-  ExportJob,
+  ExportFileParams,
   GetCollaboratorScenesParams,
-  GetExportParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   ListEnvKeysResponse,
@@ -343,40 +340,6 @@ const storageEndpoints = storageClient.injectEndpoints({
       invalidatesTags: (_result, _error, args) => [{ type: 'Player' as const, id: storageContextId(args) }, 'PlayerKeys' as const]
     }),
 
-    createExport: build.mutation<CreateExportResponse, CreateExportParams & AuthParams & StorageContext>({
-      queryFn: async ({ identity, format, selection, realm, position }) => {
-        const signedFetch = createScopedSignedFetch(identity, realm, position)
-        try {
-          const response = await wrapSignedFetch<CreateExportResponse>(
-            signedFetch,
-            `${getStorageApiUrl()}/exports?format=${encodeURIComponent(format)}`,
-            { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(selection) }
-          )
-          return { data: response }
-        } catch (error) {
-          return { error: error as WrapSignedFetchError }
-        }
-      }
-    }),
-
-    getExport: build.query<ExportJob, GetExportParams & AuthParams & StorageContext>({
-      queryFn: async ({ identity, id, realm, position }) => {
-        const signedFetch = createScopedSignedFetch(identity, realm, position)
-        try {
-          const response = await wrapSignedFetch<ExportJob>(signedFetch, `${getStorageApiUrl()}/exports/${encodeURIComponent(id)}`)
-          return { data: response }
-        } catch (error) {
-          return { error: error as WrapSignedFetchError }
-        }
-      },
-      serializeQueryArgs: ({ queryArgs, endpointName }) => ({
-        endpointName,
-        id: queryArgs.id,
-        account: identityAddress(queryArgs.identity),
-        storageContext: storageContextId(queryArgs)
-      })
-    }),
-
     getContributableDomains: build.query<ContributableDomain[], AuthParams>({
       serializeQueryArgs: ({ queryArgs }) => ({ account: identityAddress(queryArgs.identity) }),
       queryFn: async ({ identity }) => {
@@ -462,13 +425,11 @@ const {
   useClearEnvMutation,
   useClearPlayerMutation,
   useClearSceneMutation,
-  useCreateExportMutation,
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
   useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
-  useGetExportQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
@@ -483,9 +444,25 @@ const {
   useSetSceneValueMutation
 } = storageEndpoints
 
-/** Downloads a finished export job's gzip file as a Blob. */
-const fetchExportFile = ({ identity, realm, position, id }: GetExportParams & AuthParams & StorageContext): Promise<Blob> =>
-  fetchSignedBlob(createScopedSignedFetch(identity, realm, position), `${getStorageApiUrl()}/exports/${encodeURIComponent(id)}/download`)
+/** Streams a storage export for the selection and resolves to the file. */
+const fetchExportFile = ({
+  identity,
+  realm,
+  position,
+  format,
+  selection,
+  signal
+}: ExportFileParams & AuthParams & StorageContext): Promise<Blob> =>
+  fetchSignedBlob(
+    createScopedSignedFetch(identity, realm, position),
+    `${getStorageApiUrl()}/exports?format=${encodeURIComponent(format)}`,
+    {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(selection),
+      signal
+    }
+  )
 
 export {
   fetchExportFile,
@@ -494,13 +471,11 @@ export {
   useClearEnvMutation,
   useClearPlayerMutation,
   useClearSceneMutation,
-  useCreateExportMutation,
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
   useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
-  useGetExportQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
