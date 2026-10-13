@@ -4,7 +4,6 @@ import type { ClientPlayerSource } from './cast2.types'
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/
 const DRIVE_PATH = /^\/file\/d\/([A-Za-z0-9_-]{10,128})\/view$/
 const VIMEO_HLS_PATH = /^\/external\/\d+\.m3u8$/
-const DRIVE_DOWNLOAD_URL = 'https://drive.usercontent.google.com/download'
 
 const parseUrl = (url: string): URL | null => {
   try {
@@ -18,9 +17,10 @@ const parseUrl = (url: string): URL | null => {
  * Maps a canonical client-video URL from the presenter server to a player source.
  *
  * @param url - `slideVideos[i].url` of an entry whose `source` is `'client'`.
+ * @param presenterServerUrl - Presenter server origin whose `/api/drive-video` relays Google Drive files.
  * @returns The player source, or `null` when the URL is not one of the three canonical forms.
  */
-const toClientPlayerSource = (url: string): ClientPlayerSource | null => {
+const toClientPlayerSource = (url: string, presenterServerUrl: string): ClientPlayerSource | null => {
   const parsed = parseUrl(url)
   if (!parsed || parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.port || parsed.hash) return null
   const { hostname, pathname, searchParams, href } = parsed
@@ -30,7 +30,7 @@ const toClientPlayerSource = (url: string): ClientPlayerSource | null => {
   }
   if (hostname === 'drive.google.com') {
     const id = DRIVE_PATH.exec(pathname)?.[1]
-    return id ? { kind: 'file', src: `${DRIVE_DOWNLOAD_URL}?${new URLSearchParams({ id, export: 'download', confirm: 't' })}` } : null
+    return id ? { kind: 'file', src: `${presenterServerUrl}/api/drive-video?${new URLSearchParams({ fileId: id })}` } : null
   }
   return hostname === 'player.vimeo.com' && VIMEO_HLS_PATH.test(pathname) ? { kind: 'hls', src: href } : null
 }

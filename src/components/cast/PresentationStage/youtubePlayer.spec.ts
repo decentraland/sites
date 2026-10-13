@@ -137,6 +137,7 @@ describe('when a YouTube player is created', () => {
       getPlayerState: jest.fn().mockReturnValue(-1),
       mute: jest.fn(),
       unMute: jest.fn(),
+      unloadModule: jest.fn(),
       destroy: jest.fn()
     }
     Player = jest.fn().mockImplementation((element: HTMLElement) => {
@@ -167,13 +168,32 @@ describe('when a YouTube player is created', () => {
     expect(Player.mock.calls[0][0]).not.toBe(container)
   })
 
-  it('should load the parsed id without controls, keyboard, related videos or fullscreen', () => {
+  it('should load the parsed id without controls, keyboard, related videos, fullscreen, annotations or captions', () => {
     expect(options()).toEqual(
       expect.objectContaining({
         videoId: VIDEO_ID,
-        playerVars: { controls: 0, disablekb: 1, playsinline: 1, rel: 0, fs: 0, origin: window.location.origin }
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          playsinline: 1,
+          rel: 0,
+          fs: 0,
+          iv_load_policy: 3,
+          cc_load_policy: 0,
+          origin: window.location.origin
+        }
       })
     )
+  })
+
+  describe('and the player loads a module', () => {
+    beforeEach(() => {
+      options().events.onApiChange()
+    })
+
+    it('should unload the captions module', () => {
+      expect(player.unloadModule).toHaveBeenCalledWith('captions')
+    })
   })
 
   it('should size the player to fill its region', () => {

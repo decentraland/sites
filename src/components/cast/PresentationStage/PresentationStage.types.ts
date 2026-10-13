@@ -33,6 +33,7 @@ interface YouTubePlayer {
   getPlayerState: () => number
   mute: () => void
   unMute: () => void
+  unloadModule: (module: string) => void
   destroy: () => void
 }
 
@@ -46,6 +47,7 @@ interface YouTubePlayerOptions {
     onStateChange: (event: { data: number }) => void
     onError: () => void
     onAutoplayBlocked: () => void
+    onApiChange: () => void
   }
 }
 

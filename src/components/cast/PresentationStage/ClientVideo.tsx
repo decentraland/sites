@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from 'decentraland-ui2'
 import { targetPositionMs, toClientPlayerSource } from '../../../features/cast2/cast2.clientVideo'
+import { getPresenterServerUrl } from '../../../features/cast2/cast2.helpers'
 import { usePresentation } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { attachHls } from './hlsSource'
@@ -43,7 +44,7 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
   const { t } = useCastTranslation()
   const { state } = usePresentation()
   const { videoState, videoPositionMs, videoPositionAt } = state
-  const source = useMemo(() => toClientPlayerSource(video.url), [video.url])
+  const source = useMemo(() => toClientPlayerSource(video.url, getPresenterServerUrl()), [video.url])
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const handleRef = useRef<ClientPlayerHandle | null>(null)

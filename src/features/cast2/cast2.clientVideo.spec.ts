@@ -8,7 +8,8 @@ const YOUTUBE_ID = 'dQw4w9WgXcQ'
 const YOUTUBE_URL = `https://www.youtube.com/watch?v=${YOUTUBE_ID}`
 const DRIVE_ID = '1AbCdEfGhIjKlMnOpQr_StUv-WxYz'
 const DRIVE_URL = `https://drive.google.com/file/d/${DRIVE_ID}/view`
-const DRIVE_SRC = `https://drive.usercontent.google.com/download?id=${DRIVE_ID}&export=download&confirm=t`
+const PRESENTER_SERVER_URL = 'https://cast-presenter.example.com'
+const DRIVE_SRC = `${PRESENTER_SERVER_URL}/api/drive-video?fileId=${DRIVE_ID}`
 const VIMEO_URL = 'https://player.vimeo.com/external/123456789.m3u8?s=0a1b2c&logging=false'
 const NOW = 1_760_270_410_000
 const ANCHOR_AT = 1_760_270_400_000
@@ -40,7 +41,7 @@ describe.each<[string, string, ClientPlayerSource | null]>([
   let source: ClientPlayerSource | null
 
   beforeEach(() => {
-    source = toClientPlayerSource(url)
+    source = toClientPlayerSource(url, PRESENTER_SERVER_URL)
   })
 
   afterEach(() => {

@@ -17,12 +17,13 @@ jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePr
 jest.mock('../../../features/cast2/useCastTranslation', () => ({ useCastTranslation: () => ({ t: (key: string) => key }) }))
 jest.mock('./youtubePlayer', () => ({ loadYouTubeApi: jest.fn(), createYouTubePlayer: jest.fn() }))
 jest.mock('./hlsSource', () => ({ attachHls: jest.fn() }))
+jest.mock('../../../features/cast2/cast2.helpers', () => ({ getPresenterServerUrl: () => 'https://presenter.example' }))
 
 const NOW = 1_700_000_000_000
 const GEOMETRY = { x: 0, y: 0, width: 960, height: 540 }
 const YOUTUBE_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 const DRIVE_URL = 'https://drive.google.com/file/d/1AbCdEfGhIjKlMnOp/view'
-const DRIVE_SRC = 'https://drive.usercontent.google.com/download?id=1AbCdEfGhIjKlMnOp&export=download&confirm=t'
+const DRIVE_SRC = 'https://presenter.example/api/drive-video?fileId=1AbCdEfGhIjKlMnOp'
 const VIMEO_URL = 'https://player.vimeo.com/external/123456.m3u8?s=abc'
 const UNMUTE = { name: 'streaming_controls.click_to_unmute' }
 const FAILURE = '[presentation] client video failed'
@@ -520,7 +521,7 @@ describe('when a file client video renders', () => {
   describe('and it is a Drive file', () => {
     beforeEach(() => mount())
 
-    it('should render a video element with the Drive download source', () => {
+    it('should render a video element with the Drive relay source of the presenter server', () => {
       expect(element()).toHaveAttribute('src', DRIVE_SRC)
     })
 
