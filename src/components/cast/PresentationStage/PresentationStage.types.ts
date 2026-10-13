@@ -33,7 +33,7 @@ interface YouTubePlayer {
   getPlayerState: () => number
   mute: () => void
   unMute: () => void
-  unloadModule: (module: string) => void
+  setOption: (module: string, option: string, value: object) => void
   destroy: () => void
 }
 

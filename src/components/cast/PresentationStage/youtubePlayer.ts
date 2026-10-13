@@ -72,7 +72,7 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientP
         playRequested = false
         events.onAutoplayBlocked()
       },
-      onApiChange: () => player.unloadModule('captions')
+      onApiChange: () => player.setOption('captions', 'track', {})
     }
   })
   return {

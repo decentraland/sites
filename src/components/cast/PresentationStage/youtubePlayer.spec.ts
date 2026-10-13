@@ -137,7 +137,7 @@ describe('when a YouTube player is created', () => {
       getPlayerState: jest.fn().mockReturnValue(-1),
       mute: jest.fn(),
       unMute: jest.fn(),
-      unloadModule: jest.fn(),
+      setOption: jest.fn(),
       destroy: jest.fn()
     }
     Player = jest.fn().mockImplementation((element: HTMLElement) => {
@@ -191,8 +191,8 @@ describe('when a YouTube player is created', () => {
       options().events.onApiChange()
     })
 
-    it('should unload the captions module', () => {
-      expect(player.unloadModule).toHaveBeenCalledWith('captions')
+    it('should clear the captions track', () => {
+      expect(player.setOption).toHaveBeenCalledWith('captions', 'track', {})
     })
   })
 
