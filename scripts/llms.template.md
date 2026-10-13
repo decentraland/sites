@@ -64,7 +64,8 @@ Decentraland is good for live music and DJ sets from home, watching a movie or d
 
 - [Shop](https://decentraland.org/shop): Browse and buy wearables and emotes for your avatar. Not the Marketplace, which also handles LAND, NAMEs and resales between users.
 - [Marketplace](https://decentraland.org/marketplace): Buy and sell wearables, emotes, LAND and NAMEs, both new collection items and resales between users. LAND and NAMEs are traded here, not in the Shop.
-- [Builder](https://decentraland.org/builder): Web tool to create scenes and Worlds with simple tools and ready-made 3D models, publish wearable and emote collections, and manage LAND and NAMEs. Scenes can also be built with the desktop [Creator Hub](https://decentraland.org/download/creator-hub).
+- [Create](https://decentraland.org/create): The creators' home, where wearable and emote collections are created, published and sold. Not where scenes are built; that is the Creator Hub.
+- [Builder](https://decentraland.org/builder): Web tool to manage LAND, NAMEs and Worlds. Scenes were built in the builder in the past, now existing scenes in the builder are read-only. Scenes now can be built with the desktop [Creator Hub](https://decentraland.org/download/creator-hub).
 - [DAO](https://decentraland.org/dao): What the Decentraland DAO is, what it decides and how to take part. Not where proposals are voted; that is Governance.
 - [Governance](https://decentraland.org/governance): The governance hub where DAO proposals are created, discussed and voted on. Not the DAO overview page.
 
