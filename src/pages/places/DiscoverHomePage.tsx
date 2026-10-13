@@ -292,7 +292,7 @@ function DiscoverHomePage() {
   )
   const isLoadingSection = (section === 'favourites' && favoritesQuery.isLoading) || (section === 'my' && myQuery.isLoading)
 
-  // Live Now + Featured stay visible on every tab — only searching or
+  // Live Now + Featured stay visible on every tab (Live Now also under the Featured category) — only searching or
   // filtering the Explore view collapses the page to a single results grid
   // (search/category apply to the browse query, not the signed-in tabs).
   const showHighlights = section !== 'all' || (!search && activeCategory === 'all')
@@ -300,6 +300,9 @@ function DiscoverHomePage() {
   // the Explore grid from subtracting it — so the curated picks lead the grid
   // instead of disappearing. See useHideFeaturedPlaces for the flag matrix.
   const showFeaturedRail = showHighlights && !hideFeatured
+  // Live Now is not a filter result: the Featured category narrows the Explore grid only, so the rail
+  // stays. Any other category, or a search, still collapses it.
+  const showLiveRail = section !== 'all' || (!search && (activeCategory === 'all' || activeCategory === FEATURED_CATEGORY))
 
   // Mobile filter chip reflects a non-default category so the user can
   // see and clear active filters without reopening the drawer.
@@ -328,7 +331,7 @@ function DiscoverHomePage() {
   // refetch there would refresh only the last-loaded page — never page 0, where the top four live. A
   // small separate page (different `limit`, so a different cache key) keeps the refresh contract.
   const liveFeedQuery = useGetDiscoverDestinationsQuery(
-    showHighlights ? { limit: LIVE_FEED_LIMIT, order_by: 'most_active', with_realms_detail: true, with_live_events: true } : skipToken,
+    showLiveRail ? { limit: LIVE_FEED_LIMIT, order_by: 'most_active', with_realms_detail: true, with_live_events: true } : skipToken,
     LIVE_REFRESH_OPTIONS
   )
 
@@ -340,12 +343,12 @@ function DiscoverHomePage() {
   // re-sorting by head count here is what turns that into "top four by people". `filter` already
   // returns a fresh array, so sorting it in place leaves the cache alone.
   const liveRail = useMemo(() => {
-    if (!showHighlights) return []
+    if (!showLiveRail) return []
     return (liveFeedQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p) && placePlayers(p) >= liveMinUsers)
       .sort((a, b) => placePlayers(b) - placePlayers(a))
       .slice(0, LIVE_NOW_LIMIT)
-  }, [showHighlights, liveMinUsers, liveFeedQuery.data])
+  }, [showLiveRail, liveMinUsers, liveFeedQuery.data])
 
   // Live Now carousel. Mobile snaps one card at a time and the dots below track
   // the swipe. Desktop lays the four cards in a row that outgrows any viewport
@@ -436,7 +439,8 @@ function DiscoverHomePage() {
     // The Featured category applies the same curated-aware rule as the Featured rail, so both views agree.
     const isHidden = activeCategory === FEATURED_CATEGORY ? isHiddenFeaturedPlace : isHiddenPlace
     const kept = browseDestinations.filter(p => !isHidden(p))
-    if (repeatAcrossSections) return kept
+    // Under Featured the grid is the whole category result, so Live Now never takes rows out of it.
+    if (repeatAcrossSections || activeCategory === FEATURED_CATEGORY) return kept
     const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
     return kept.filter(p => !shownAbove.has(p.id))
   }, [browseDestinations, activeCategory, repeatAcrossSections, liveRail, featuredCards])
@@ -444,7 +448,7 @@ function DiscoverHomePage() {
   // Wait for everything on first paint so the rails and the grid appear together. Polling / search
   // refetches use `isFetching`, not `isLoading`, so they don't re-trigger this gate.
   const isLoadingFeatured = showFeaturedRail && featuredQuery.isLoading
-  const isLoadingLiveFeed = showHighlights && liveFeedQuery.isLoading
+  const isLoadingLiveFeed = showLiveRail && liveFeedQuery.isLoading
   const isInitialLoading = isLoadingBrowse || isLoadingFeatured || isLoadingLiveFeed
   const isEmpty = !isInitialLoading && section === 'all' && featuredCards.length === 0 && exploreCards.length === 0
 
@@ -471,7 +475,7 @@ function DiscoverHomePage() {
       </Helmet>
 
       {/* LIVE NOW rail — glowing rounded container with the 4 busiest scenes. */}
-      {showHighlights && liveRail.length > 0 && (
+      {showLiveRail && liveRail.length > 0 && (
         <LiveNowSection>
           <LiveHeading>
             <LiveHeadingGlyph size="clamp(20px, 1.377vw, 26.4px)" />

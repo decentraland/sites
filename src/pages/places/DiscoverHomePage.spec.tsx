@@ -677,14 +677,14 @@ describe('DiscoverHomePage', () => {
     })
 
     describe('and it is selected', () => {
-      it('should query only highlighted rows, drop the rails and track the choice', () => {
+      it('should query only highlighted rows, keep Live Now, drop the Featured rail and track the choice', () => {
         render(<DiscoverHomePage />)
 
         selectCategory('featured')
 
         expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true, offset: 0 }))
         expect(lastBrowseArgs()).not.toHaveProperty('categories')
-        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
         expect(screen.queryByTestId('featured-card')).not.toBeInTheDocument()
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: 'featured' })
       })
@@ -698,6 +698,31 @@ describe('DiscoverHomePage', () => {
 
         expect(lastBrowseArgs()).not.toHaveProperty('only_highlighted')
         expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+      })
+
+      it('should keep Live Now and leave the grid whole when repetition is off', () => {
+        mockRepeat.mockReturnValue(false)
+        browseDestinations = {
+          data: { ok: true, total: 1, data: [createPlace({ id: 'live-a', title: 'Live Plaza', highlighted: true })] },
+          isLoading: false
+        }
+        render(<DiscoverHomePage />)
+
+        selectCategory('featured')
+
+        expect(screen.getAllByTestId('live-card').length).toBeGreaterThan(0)
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(['Live Plaza'])
+      })
+
+      it('should hide Live Now under a regular category and while searching', () => {
+        render(<DiscoverHomePage />)
+        selectCategory('featured')
+        selectCategory('game')
+        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+
+        selectCategory('featured')
+        fireEvent.change(screen.getByPlaceholderText('discover.explore.search_placeholder'), { target: { value: 'gen' } })
+        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
       })
 
       it('should render a curated row that the junk filter would hide', () => {
@@ -786,7 +811,7 @@ describe('DiscoverHomePage', () => {
 
         expect(screen.getByRole('combobox', { name: 'discover.explore.category.all' })).toHaveValue('featured')
         expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true }))
-        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
         expect(mockTrack).not.toHaveBeenCalled()
       })
     })
