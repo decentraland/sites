@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { RowActionsCell } from './KeyTable.styled'
+import { BulkActionsRow, RowActionsCell } from './KeyTable.styled'
 
 jest.mock('decentraland-ui2', () => {
   const actual = jest.requireActual('../../../__test-utils__/styledMock')
@@ -24,6 +24,14 @@ describe('KeyTable styled components', () => {
       )
 
       expect(screen.getByText('actions')).toBeInTheDocument()
+    })
+  })
+
+  describe('when rendering the bulk actions row', () => {
+    it('should forward its children', () => {
+      render(<BulkActionsRow>bulk</BulkActionsRow>)
+
+      expect(screen.getByText('bulk')).toBeInTheDocument()
     })
   })
 })

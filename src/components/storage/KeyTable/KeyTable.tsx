@@ -9,7 +9,7 @@ import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ActionIconButton } from '../_shared/ActionIconButton.styled'
 import { StorageEmptyState } from '../StorageEmptyState'
-import { RowActionsCell } from './KeyTable.styled'
+import { BulkActionsRow, RowActionsCell } from './KeyTable.styled'
 
 interface KeyTableProps {
   keys: { key: string }[]
@@ -51,7 +51,9 @@ const KeyTable: FC<KeyTableProps> = props => {
               </TableCell>
             ) : null}
             <TableCell>{t('component.storage.common.key')}</TableCell>
-            <TableCell align="right">{bulkActions}</TableCell>
+            <TableCell align="right">
+              <BulkActionsRow>{bulkActions}</BulkActionsRow>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

@@ -1,9 +1,9 @@
-import { TableCell, styled } from 'decentraland-ui2'
+import { Box, TableCell, styled } from 'decentraland-ui2'
 
 const RowActionsCell = styled(TableCell)({
   whiteSpace: 'nowrap',
   opacity: 0,
-  ['tr:hover > &, tr:focus-within > &']: {
+  ['tr:hover > &, tr:has(:focus-visible) > &']: {
     opacity: 1
   },
   ['@media (hover: none)']: {
@@ -11,4 +11,10 @@ const RowActionsCell = styled(TableCell)({
   }
 })
 
-export { RowActionsCell }
+const BulkActionsRow = styled(Box)({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center'
+})
+
+export { BulkActionsRow, RowActionsCell }

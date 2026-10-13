@@ -23,6 +23,7 @@ jest.mock('decentraland-ui2', () => ({
 }))
 
 jest.mock('./KeyTable.styled', () => ({
+  BulkActionsRow: ({ children }: ChildrenProps) => <div>{children}</div>,
   RowActionsCell: ({ children }: ChildrenProps) => <td data-testid="row-actions">{children}</td>
 }))
 jest.mock('../_shared/ActionIconButton.styled', () => ({ ActionIconButton: jest.requireMock('decentraland-ui2').IconButton }))
