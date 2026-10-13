@@ -60,7 +60,7 @@ describe('PlayerCard', () => {
   })
 
   describe('when onToggle is not provided', () => {
-    it('should not render a selection footer', () => {
+    it('should not render a selection checkbox', () => {
       render(<PlayerCard address={address} onClick={onClick} />)
 
       expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
@@ -83,6 +83,16 @@ describe('PlayerCard', () => {
       render(<PlayerCard address={address} onClick={onClick} onToggle={onToggle} />)
 
       expect(screen.getByRole('checkbox', { name: 'component.storage.common.select_row' })).toBeInTheDocument()
+    })
+
+    it('should render the checkbox before the card area and outside it', () => {
+      render(<PlayerCard address={address} onClick={onClick} onToggle={onToggle} />)
+
+      const checkbox = screen.getByRole('checkbox', { name: 'component.storage.common.select_row' })
+      const cardArea = screen.getByRole('button', { name: 'component.storage.player_page.select_player' })
+
+      expect(cardArea).not.toContainElement(checkbox)
+      expect(checkbox.compareDocumentPosition(cardArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     })
 
     describe('and the card is selected', () => {
