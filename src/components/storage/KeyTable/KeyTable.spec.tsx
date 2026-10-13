@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { dialogMockFactory } from '../__test-utils__/dialogMocks'
 import { KeyTable } from './KeyTable'
@@ -20,6 +20,15 @@ jest.mock('decentraland-ui2', () => ({
   TableHead: ({ children }: ChildrenProps) => <thead>{children}</thead>,
   TableRow: ({ children }: ChildrenProps) => <tr>{children}</tr>,
   Typography: ({ children }: ChildrenProps) => <p>{children}</p>
+}))
+
+jest.mock('./KeyTable.styled', () => ({
+  RowActionsCell: ({ children }: ChildrenProps) => <td data-testid="row-actions">{children}</td>
+}))
+jest.mock('../_shared/ActionIconButton.styled', () => ({ ActionIconButton: jest.requireMock('decentraland-ui2').IconButton }))
+jest.mock('../StorageEmptyState/StorageEmptyState.styled', () => ({
+  EmptyCard: ({ children }: ChildrenProps) => <div>{children}</div>,
+  EmptyLabel: ({ children }: ChildrenProps) => <p>{children}</p>
 }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
@@ -66,6 +75,32 @@ describe('KeyTable', () => {
       render(<KeyTable keys={[{ key: 'gameState' }]} emptyLabel="" onEdit={onEdit} onDelete={onDelete} />)
 
       expect(screen.queryByRole('button', { name: 'download gameState' })).not.toBeInTheDocument()
+    })
+
+    it('should not label the actions column', () => {
+      render(<KeyTable keys={[{ key: 'gameState' }]} emptyLabel="" onEdit={onEdit} onDelete={onDelete} />)
+
+      expect(screen.queryByText('component.storage.common.actions')).not.toBeInTheDocument()
+    })
+
+    it('should render the row actions in the hover-revealed cell', () => {
+      render(<KeyTable keys={[{ key: 'gameState' }]} emptyLabel="" onEdit={onEdit} onDelete={onDelete} />)
+
+      expect(within(screen.getByTestId('row-actions')).getByRole('button', { name: 'edit gameState' })).toBeInTheDocument()
+    })
+
+    it('should render the bulk actions in the header row', () => {
+      const { container } = render(
+        <KeyTable
+          keys={[{ key: 'gameState' }]}
+          emptyLabel=""
+          onEdit={onEdit}
+          onDelete={onDelete}
+          bulkActions={<button type="button">bulk delete</button>}
+        />
+      )
+
+      expect(within(container.querySelector('thead') as HTMLElement).getByRole('button', { name: 'bulk delete' })).toBeInTheDocument()
     })
 
     it('should call onDownload with the row key', async () => {

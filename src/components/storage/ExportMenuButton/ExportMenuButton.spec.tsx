@@ -25,6 +25,19 @@ jest.mock('decentraland-ui2', () => {
 })
 
 jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => null }))
+jest.mock('@mui/icons-material/Download', () => ({ __esModule: true, default: () => null }))
+
+jest.mock('../_shared/ActionIconButton.styled', () => {
+  const h = React.createElement as unknown as (
+    type: string,
+    props?: Record<string, unknown> | null,
+    ...children: unknown[]
+  ) => React.ReactElement
+  return {
+    ActionIconButton: ({ children, ...rest }: Record<string, unknown>) =>
+      h('button', { type: 'button', 'data-icon': 'true', ...rest }, children)
+  }
+})
 
 jest.mock('./ExportMenuButton.styled', () => {
   const h = React.createElement as unknown as (
@@ -187,6 +200,54 @@ describe('ExportMenuButton', () => {
 
     it('should not mark the button as aria-disabled', () => {
       expect(screen.getByRole('button', { name: 'Download all' })).not.toHaveAttribute('aria-disabled')
+    })
+  })
+
+  describe('when rendered as an icon', () => {
+    let button: HTMLElement
+
+    beforeEach(() => {
+      render(<ExportMenuButton variant="icon" label="Download all" busy={busy} onSelect={onSelect} />)
+      button = screen.getByRole('button', { name: 'Download all' })
+    })
+
+    it('should render an icon button named by the label', () => {
+      expect(button).toHaveAttribute('data-icon', 'true')
+    })
+
+    it('should not print the label as text', () => {
+      expect(button).toHaveTextContent('')
+    })
+
+    describe('and it is clicked', () => {
+      beforeEach(async () => {
+        await userEvent.setup().click(button)
+      })
+
+      it('should open the format menu', () => {
+        expect(screen.getByRole('menu')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('when rendered as a busy icon', () => {
+    let button: HTMLElement
+
+    beforeEach(() => {
+      render(<ExportMenuButton variant="icon" label="Download all" busy onSelect={onSelect} />)
+      button = screen.getByRole('button', { name: 'Download all' })
+    })
+
+    it('should mark the icon button as aria-busy', () => {
+      expect(button).toHaveAttribute('aria-busy', 'true')
+    })
+
+    it('should show a hidden spinner inside the icon button', () => {
+      expect(button).toContainElement(screen.getByRole('progressbar', { hidden: true }))
+    })
+
+    it('should announce the exporting copy in the status region', () => {
+      expect(screen.getByRole('status')).toHaveTextContent('component.storage.common.exporting component.storage.common.keep_page_open')
     })
   })
 })

@@ -18,6 +18,7 @@ type KeyTableMockProps = {
   allSelected?: boolean
   onToggle?: (key: string) => void
   onToggleAll?: () => void
+  bulkActions?: ReactNode
 }
 type FormDialogMockProps = { open: boolean; onClose: () => void; onSuccess: () => void; onError: (error: unknown) => void }
 type ConfirmDialogMockProps = { open: boolean; title: string; onConfirm: () => void; onCancel: () => void }
@@ -54,7 +55,9 @@ jest.mock('decentraland-crypto-fetch', () => ({ __esModule: true, default: jest.
 jest.mock('../../config/env', () => ({ getEnv: () => 'https://example.invalid' }))
 jest.mock('@mui/icons-material/Add', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/Delete', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/DeleteSweep', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/Download', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('react-helmet-async', () => ({ Helmet: () => null }))
 
 jest.mock('decentraland-ui2', () => ({
@@ -64,6 +67,7 @@ jest.mock('decentraland-ui2', () => ({
 
 jest.mock('../../features/storage', () => ({
   buildExportFile: jest.requireActual('../../features/storage/storage.helpers').buildExportFile,
+  deleteSelection: jest.requireActual('../../features/storage/storage.helpers').deleteSelection,
   getStorageErrorStatus: jest.requireActual('../../features/storage/storage.helpers').getStorageErrorStatus,
   toStorageValueFile: jest.requireActual('../../features/storage/storage.helpers').toStorageValueFile,
   useClearSceneMutation: () => [mockClearScene],
@@ -73,11 +77,23 @@ jest.mock('../../features/storage', () => ({
 }))
 
 jest.mock('../../components/storage/KeyTable', () => ({
-  KeyTable: ({ keys, emptyLabel, onEdit, onDelete, onDownload, selected, allSelected, onToggle, onToggleAll }: KeyTableMockProps) =>
+  KeyTable: ({
+    keys,
+    emptyLabel,
+    onEdit,
+    onDelete,
+    onDownload,
+    selected,
+    allSelected,
+    onToggle,
+    onToggleAll,
+    bulkActions
+  }: KeyTableMockProps) =>
     keys.length === 0 ? (
       <p>{emptyLabel}</p>
     ) : (
       <div>
+        {bulkActions}
         <input type="checkbox" aria-label="select all rows" checked={Boolean(allSelected)} onChange={() => onToggleAll?.()} />
         {keys.map(({ key }) => (
           <div key={key}>
@@ -126,6 +142,9 @@ jest.mock('./shared.styled', () => ({
 }))
 jest.mock('../../components/storage/StorageLayout', () => ({
   StorageLayout: ({ children }: ChildrenProps) => <div>{children}</div>
+}))
+jest.mock('../../components/storage/_shared/ActionIconButton.styled', () => ({
+  ActionIconButton: jest.requireMock('decentraland-ui2').IconButton
 }))
 jest.mock('../../components/storage/ExportMenuButton/ExportMenuButton.styled', () => ({
   ExportMenuRoot: ({ children }: ChildrenProps) => <div>{children}</div>,
@@ -195,7 +214,17 @@ describe('ScenePage', () => {
   describe('when nothing is selected', () => {
     it('should not render a download selected button', () => {
       render(<ScenePage />)
-      expect(screen.queryByRole('button', { name: /component\.storage\.common\.download_(all_)?selected/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /component\.storage\.common\.download_(all|selected)/ })).not.toBeInTheDocument()
+    })
+
+    it('should not render a bulk delete action', () => {
+      render(<ScenePage />)
+      expect(screen.queryByRole('button', { name: /component\.storage\.common\.delete_(all|selected)/ })).not.toBeInTheDocument()
+    })
+
+    it('should not render a clear all button', () => {
+      render(<ScenePage />)
+      expect(screen.queryByRole('button', { name: 'component.storage.scene_page.clear_all' })).not.toBeInTheDocument()
     })
 
     it('should select over the loaded keys', () => {
@@ -263,7 +292,7 @@ describe('ScenePage', () => {
       const user = userEvent.setup()
       render(<ScenePage />)
 
-      await user.click(screen.getByRole('button', { name: 'component.storage.common.download_all_selected' }))
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.download_all' }))
       await user.click(screen.getByRole('menuitem', { name: 'component.storage.common.format_json' }))
 
       expect(startExport).toHaveBeenCalledWith({ players: { addresses: [] } }, 'json')
@@ -452,62 +481,112 @@ describe('ScenePage', () => {
     })
   })
 
-  describe('when clearing the scene is requested', () => {
+  describe('when keys a and b are selected and the bulk delete is requested', () => {
     let user: ReturnType<typeof userEvent.setup>
+    const DIALOG = 'component.storage.common.delete_selected_dialog.title'
 
     beforeEach(async () => {
+      const selected = new Set(['a', 'b'])
+      selection = buildSelection({ selected, count: 2, isSelected: id => selected.has(id) })
       user = userEvent.setup()
       render(<ScenePage />)
-      await user.click(screen.getByRole('button', { name: 'component.storage.scene_page.clear_all' }))
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.delete_selected 2' }))
+    })
+
+    describe('and it is confirmed and succeeds', () => {
+      beforeEach(async () => {
+        mockDeleteSceneValue.mockReturnValue({ unwrap: () => Promise.resolve() })
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
+      })
+
+      it('should delete each selected key in the current scope', () => {
+        expect(mockDeleteSceneValue.mock.calls).toEqual([
+          [{ identity: undefined, realm: 'flutterecho.dcl.eth', position: '0,-1', key: 'a' }],
+          [{ identity: undefined, realm: 'flutterecho.dcl.eth', position: '0,-1', key: 'b' }]
+        ])
+      })
+
+      it('should not clear the whole scene', () => {
+        expect(mockClearScene).not.toHaveBeenCalled()
+      })
+
+      it('should track the success with the deleted count', () => {
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_SCENE_DELETE_SUCCESS, { count: 2 })
+      })
+
+      it('should clear the selection and close the dialog', () => {
+        expect(selection.clear).toHaveBeenCalledTimes(1)
+        expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and it is confirmed and a delete fails', () => {
+      beforeEach(async () => {
+        mockDeleteSceneValue.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
+      })
+
+      it('should track the failure with the attempted count', () => {
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_SCENE_DELETE_FAILURE, { count: 2 })
+      })
+    })
+
+    describe('and it is cancelled', () => {
+      beforeEach(async () => {
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'cancel' }))
+      })
+
+      it('should close the dialog without deleting', () => {
+        expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
+        expect(mockDeleteSceneValue).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('when every key is selected and the bulk delete is requested', () => {
+    let user: ReturnType<typeof userEvent.setup>
+    const DIALOG = 'component.storage.scene_page.clear_dialog.title'
+
+    beforeEach(async () => {
+      selection = buildSelection({
+        selected: new Set(SCENE_KEYS.map(({ key }) => key)),
+        allSelected: true,
+        count: 3,
+        isSelected: () => true
+      })
+      user = userEvent.setup()
+      render(<ScenePage />)
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.delete_all' }))
     })
 
     describe('and it is confirmed and succeeds', () => {
       beforeEach(async () => {
         mockClearScene.mockReturnValue({ unwrap: () => Promise.resolve() })
-        await user.click(
-          within(screen.getByRole('dialog', { name: 'component.storage.scene_page.clear_dialog.title' })).getByRole('button', {
-            name: 'confirm'
-          })
-        )
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
       })
 
       it('should clear the scene in the current scope', () => {
         expect(mockClearScene).toHaveBeenCalledWith({ identity: undefined, realm: 'flutterecho.dcl.eth', position: '0,-1' })
       })
 
+      it('should not delete key by key', () => {
+        expect(mockDeleteSceneValue).not.toHaveBeenCalled()
+      })
+
       it('should track the success and close the dialog', () => {
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_SCENE_CLEAR_SUCCESS)
-        expect(screen.queryByRole('dialog', { name: 'component.storage.scene_page.clear_dialog.title' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
       })
     })
 
     describe('and it is confirmed and fails', () => {
       beforeEach(async () => {
         mockClearScene.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
-        await user.click(
-          within(screen.getByRole('dialog', { name: 'component.storage.scene_page.clear_dialog.title' })).getByRole('button', {
-            name: 'confirm'
-          })
-        )
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
       })
 
       it('should track the failure', () => {
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_SCENE_CLEAR_FAILURE)
-      })
-    })
-
-    describe('and it is cancelled', () => {
-      beforeEach(async () => {
-        await user.click(
-          within(screen.getByRole('dialog', { name: 'component.storage.scene_page.clear_dialog.title' })).getByRole('button', {
-            name: 'cancel'
-          })
-        )
-      })
-
-      it('should close the dialog without clearing', () => {
-        expect(screen.queryByRole('dialog', { name: 'component.storage.scene_page.clear_dialog.title' })).not.toBeInTheDocument()
-        expect(mockClearScene).not.toHaveBeenCalled()
       })
     })
   })

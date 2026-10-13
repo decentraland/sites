@@ -18,6 +18,7 @@ type KeyTableMockProps = {
   allSelected?: boolean
   onToggle?: (key: string) => void
   onToggleAll?: () => void
+  bulkActions?: ReactNode
 }
 type FormDialogMockProps = { open: boolean; onClose: () => void; onSuccess: () => void; onError: (error: unknown) => void }
 type ConfirmDialogMockProps = { open: boolean; title: string; onConfirm: () => void; onCancel: () => void }
@@ -57,7 +58,9 @@ jest.mock('../../config/env', () => ({ getEnv: () => 'https://example.invalid' }
 jest.mock('@mui/icons-material/Add', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/ArrowBack', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/Delete', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('@mui/icons-material/DeleteSweep', () => ({ __esModule: true, default: () => <span /> }))
+jest.mock('@mui/icons-material/Download', () => ({ __esModule: true, default: () => <span /> }))
 jest.mock('react-helmet-async', () => ({ Helmet: () => null }))
 jest.mock('react-router-dom', () => ({
   Link: ({ children }: ChildrenProps) => <a href="/storage/players">{children}</a>,
@@ -78,6 +81,7 @@ jest.mock('decentraland-ui2', () => ({
 
 jest.mock('../../features/storage', () => ({
   buildExportFile: jest.requireActual('../../features/storage/storage.helpers').buildExportFile,
+  deleteSelection: jest.requireActual('../../features/storage/storage.helpers').deleteSelection,
   getStorageErrorStatus: jest.requireActual('../../features/storage/storage.helpers').getStorageErrorStatus,
   toStorageValueFile: jest.requireActual('../../features/storage/storage.helpers').toStorageValueFile,
   truncateAddress: jest.requireActual('../../features/storage/storage.helpers').truncateAddress,
@@ -88,11 +92,23 @@ jest.mock('../../features/storage', () => ({
 }))
 
 jest.mock('../../components/storage/KeyTable', () => ({
-  KeyTable: ({ keys, emptyLabel, onEdit, onDelete, onDownload, selected, allSelected, onToggle, onToggleAll }: KeyTableMockProps) =>
+  KeyTable: ({
+    keys,
+    emptyLabel,
+    onEdit,
+    onDelete,
+    onDownload,
+    selected,
+    allSelected,
+    onToggle,
+    onToggleAll,
+    bulkActions
+  }: KeyTableMockProps) =>
     keys.length === 0 ? (
       <p>{emptyLabel}</p>
     ) : (
       <div>
+        {bulkActions}
         <input type="checkbox" aria-label="select all rows" checked={Boolean(allSelected)} onChange={() => onToggleAll?.()} />
         {keys.map(({ key }) => (
           <div key={key}>
@@ -141,6 +157,9 @@ jest.mock('./shared.styled', () => ({
 }))
 jest.mock('../../components/storage/StorageLayout', () => ({
   StorageLayout: ({ children }: ChildrenProps) => <div>{children}</div>
+}))
+jest.mock('../../components/storage/_shared/ActionIconButton.styled', () => ({
+  ActionIconButton: jest.requireMock('decentraland-ui2').IconButton
 }))
 jest.mock('../../components/storage/ExportMenuButton/ExportMenuButton.styled', () => ({
   ExportMenuRoot: ({ children }: ChildrenProps) => <div>{children}</div>,
@@ -231,7 +250,17 @@ describe('PlayerDetailPage', () => {
 
     it('should not render a download selected button', () => {
       render(<PlayerDetailPage />)
-      expect(screen.queryByRole('button', { name: /component\.storage\.common\.download_(all_)?selected/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /component\.storage\.common\.download_(all|selected)/ })).not.toBeInTheDocument()
+    })
+
+    it('should not render a bulk delete action', () => {
+      render(<PlayerDetailPage />)
+      expect(screen.queryByRole('button', { name: /component\.storage\.common\.delete_(all|selected)/ })).not.toBeInTheDocument()
+    })
+
+    it('should not render a clear this player button', () => {
+      render(<PlayerDetailPage />)
+      expect(screen.queryByRole('button', { name: 'component.storage.player_page.clear_this_player' })).not.toBeInTheDocument()
     })
   })
 
@@ -298,7 +327,7 @@ describe('PlayerDetailPage', () => {
       const user = userEvent.setup()
       render(<PlayerDetailPage />)
 
-      await user.click(screen.getByRole('button', { name: 'component.storage.common.download_all_selected' }))
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.download_all' }))
       await user.click(screen.getByRole('menuitem', { name: 'component.storage.common.format_csv' }))
 
       expect(startExport).toHaveBeenCalledWith({ world: { keys: [] }, players: { addresses: ['0xabc'] } }, 'csv')
@@ -481,11 +510,6 @@ describe('PlayerDetailPage', () => {
       render(<PlayerDetailPage />)
       expect(screen.getByText('component.storage.player_page.no_keys')).toBeInTheDocument()
     })
-
-    it('should not offer to clear the player', () => {
-      render(<PlayerDetailPage />)
-      expect(screen.queryByRole('button', { name: 'component.storage.player_page.clear_this_player' })).not.toBeInTheDocument()
-    })
   })
 
   describe.each([
@@ -582,23 +606,88 @@ describe('PlayerDetailPage', () => {
     })
   })
 
-  describe('when clearing the player is requested', () => {
+  describe('when keys a and b are selected and the bulk delete is requested', () => {
     let user: ReturnType<typeof userEvent.setup>
+    const DIALOG = 'component.storage.common.delete_selected_dialog.title'
 
     beforeEach(async () => {
+      const selected = new Set(['a', 'b'])
+      selection = buildSelection({ selected, count: 2, isSelected: id => selected.has(id) })
       user = userEvent.setup()
       render(<PlayerDetailPage />)
-      await user.click(screen.getByRole('button', { name: 'component.storage.player_page.clear_this_player' }))
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.delete_selected 2' }))
+    })
+
+    describe('and it is confirmed and succeeds', () => {
+      beforeEach(async () => {
+        mockDeletePlayerValue.mockReturnValue({ unwrap: () => Promise.resolve() })
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
+      })
+
+      it('should delete each selected key of the route player', () => {
+        expect(mockDeletePlayerValue.mock.calls).toEqual([
+          [{ identity: undefined, realm: 'flutterecho.dcl.eth', position: '0,-1', address: '0xabc', key: 'a' }],
+          [{ identity: undefined, realm: 'flutterecho.dcl.eth', position: '0,-1', address: '0xabc', key: 'b' }]
+        ])
+      })
+
+      it('should not clear the whole player', () => {
+        expect(mockClearPlayer).not.toHaveBeenCalled()
+      })
+
+      it('should track the success with the deleted count', () => {
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_PLAYER_DELETE_SUCCESS, { count: 2 })
+      })
+
+      it('should clear the selection and close the dialog', () => {
+        expect(selection.clear).toHaveBeenCalledTimes(1)
+        expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and it is confirmed and a delete fails', () => {
+      beforeEach(async () => {
+        mockDeletePlayerValue.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
+      })
+
+      it('should track the failure with the attempted count', () => {
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_PLAYER_DELETE_FAILURE, { count: 2 })
+      })
+    })
+
+    describe('and it is cancelled', () => {
+      beforeEach(async () => {
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'cancel' }))
+      })
+
+      it('should close the dialog without deleting', () => {
+        expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
+        expect(mockDeletePlayerValue).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('when every key is selected and the bulk delete is requested', () => {
+    let user: ReturnType<typeof userEvent.setup>
+    const DIALOG = 'component.storage.player_page.clear_player_dialog.title'
+
+    beforeEach(async () => {
+      selection = buildSelection({
+        selected: new Set(PLAYER_KEYS.map(({ key }) => key)),
+        allSelected: true,
+        count: 3,
+        isSelected: () => true
+      })
+      user = userEvent.setup()
+      render(<PlayerDetailPage />)
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.delete_all' }))
     })
 
     describe('and it is confirmed and succeeds', () => {
       beforeEach(async () => {
         mockClearPlayer.mockReturnValue({ unwrap: () => Promise.resolve() })
-        await user.click(
-          within(screen.getByRole('dialog', { name: 'component.storage.player_page.clear_player_dialog.title' })).getByRole('button', {
-            name: 'confirm'
-          })
-        )
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
       })
 
       it('should clear the route player in the current scope', () => {
@@ -612,37 +701,18 @@ describe('PlayerDetailPage', () => {
 
       it('should track the success and close the dialog', () => {
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_PLAYER_CLEAR_SUCCESS)
-        expect(screen.queryByRole('dialog', { name: 'component.storage.player_page.clear_player_dialog.title' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
       })
     })
 
     describe('and it is confirmed and fails', () => {
       beforeEach(async () => {
         mockClearPlayer.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
-        await user.click(
-          within(screen.getByRole('dialog', { name: 'component.storage.player_page.clear_player_dialog.title' })).getByRole('button', {
-            name: 'confirm'
-          })
-        )
+        await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
       })
 
       it('should track the failure', () => {
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE)
-      })
-    })
-
-    describe('and it is cancelled', () => {
-      beforeEach(async () => {
-        await user.click(
-          within(screen.getByRole('dialog', { name: 'component.storage.player_page.clear_player_dialog.title' })).getByRole('button', {
-            name: 'cancel'
-          })
-        )
-      })
-
-      it('should close the dialog without clearing', () => {
-        expect(screen.queryByRole('dialog', { name: 'component.storage.player_page.clear_player_dialog.title' })).not.toBeInTheDocument()
-        expect(mockClearPlayer).not.toHaveBeenCalled()
       })
     })
   })

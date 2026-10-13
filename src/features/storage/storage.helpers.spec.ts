@@ -22,6 +22,7 @@ import {
   buildExportFile,
   buildSignedFetchMetadata,
   createScopedSignedFetch,
+  deleteSelection,
   estateToLand,
   fetchSignedBlob,
   fromRentalFields,
@@ -768,5 +769,89 @@ describe('when a signed request fails and its error body cannot be read', () => 
     ['fetchSignedBlob', (sf: jest.Mock) => fetchSignedBlob(sf, 'https://example/api')]
   ])('should make %s throw the status with undefined data', async (_name, request) => {
     await expect(request(signedFetch)).rejects.toEqual({ status: 500, data: undefined })
+  })
+})
+
+describe('deleteSelection', () => {
+  let deleteOne: jest.Mock
+  let clearAll: jest.Mock
+  let allSelected: boolean
+
+  const run = () => deleteSelection({ allSelected, ids: ['a', 'b'], deleteOne, clearAll })
+
+  beforeEach(() => {
+    deleteOne = jest.fn().mockResolvedValue(undefined)
+    clearAll = jest.fn().mockResolvedValue(undefined)
+    allSelected = false
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when only some items are selected', () => {
+    it('should delete each selected id', async () => {
+      await run()
+
+      expect(deleteOne.mock.calls).toEqual([['a'], ['b']])
+    })
+
+    it('should not clear everything', async () => {
+      await run()
+
+      expect(clearAll).not.toHaveBeenCalled()
+    })
+
+    it('should resolve true when every delete succeeds', async () => {
+      await expect(run()).resolves.toBe(true)
+    })
+
+    describe('and one delete fails', () => {
+      beforeEach(() => {
+        deleteOne.mockImplementation((id: string) => (id === 'b' ? Promise.reject({ status: 500 }) : Promise.resolve()))
+      })
+
+      it('should still attempt every delete', async () => {
+        await run()
+
+        expect(deleteOne).toHaveBeenCalledTimes(2)
+      })
+
+      it('should resolve false', async () => {
+        await expect(run()).resolves.toBe(false)
+      })
+    })
+  })
+
+  describe('when everything is selected', () => {
+    beforeEach(() => {
+      allSelected = true
+    })
+
+    it('should clear everything with a single call', async () => {
+      await run()
+
+      expect(clearAll).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not delete item by item', async () => {
+      await run()
+
+      expect(deleteOne).not.toHaveBeenCalled()
+    })
+
+    it('should resolve true when the clear succeeds', async () => {
+      await expect(run()).resolves.toBe(true)
+    })
+
+    describe('and the clear fails', () => {
+      beforeEach(() => {
+        clearAll.mockRejectedValue({ status: 500 })
+      })
+
+      it('should resolve false', async () => {
+        await expect(run()).resolves.toBe(false)
+      })
+    })
   })
 })
