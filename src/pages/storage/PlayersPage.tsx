@@ -126,6 +126,7 @@ function PlayersPageContent() {
             variant="button"
             allSelected={selection.allSelected}
             count={selection.count}
+            total={playerAddresses.length}
             busy={busy}
             onDownload={handleExportSelected}
             onDelete={() => setBulkDeleteOpen(true)}

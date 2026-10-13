@@ -30,6 +30,7 @@ This is one of the few areas with two distinct base clients (`storageClient` for
 The storage pages redirect to `/auth` without a valid identity and sign every request, so verify them against a stubbed API:
 
 - Generate a throwaway identity in Node with `@dcl/crypto`'s `Authenticator.initializeAuthChain` and a `viem/accounts` key, then seed it with `addInitScript` as `localStorage['single-sign-on-<address>']`.
+- Call `localStorage.clear()` in the same init script before seeding. The Playwright profile persists between runs, and a stale active-address pointer from an earlier identity redirects to `/auth`.
 - `page.route('https://storage.decentraland.zone/**', …)` (dev `STORAGE_API_URL`): answer `OPTIONS` with permissive CORS headers and return `{ data, pagination }` for `/env`, `/values`, `/players`.
 - Use `?realm=main&position=0,0` so a non-ENS realm skips world base-parcel resolution.
 - Playwright MCP only reads scripts under the worktree's `.playwright-mcp/`. It is not gitignored, so delete it afterwards.

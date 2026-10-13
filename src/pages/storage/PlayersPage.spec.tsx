@@ -271,6 +271,13 @@ describe('PlayersPage', () => {
       render(<PlayersPage />)
       expect(screen.getByRole('checkbox', { name: SELECT_ALL })).toBeChecked()
     })
+
+    it('should label the bulk actions as download all and delete all', () => {
+      render(<PlayersPage />)
+      expect(
+        ['component.storage.common.download_all', 'component.storage.common.delete_all'].map(name => screen.queryByRole('button', { name }))
+      ).not.toContain(null)
+    })
   })
 
   describe('when every player is selected and CSV is chosen', () => {

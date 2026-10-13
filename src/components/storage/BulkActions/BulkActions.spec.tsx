@@ -27,7 +27,7 @@ describe('BulkActions', () => {
   let props: BulkActionsProps
 
   beforeEach(() => {
-    props = { variant: 'icon', allSelected: false, count: 0, onDelete: jest.fn(), onDownload: jest.fn(), busy: false }
+    props = { variant: 'icon', allSelected: false, count: 0, total: 3, onDelete: jest.fn(), onDownload: jest.fn(), busy: false }
   })
 
   afterEach(() => {
@@ -101,6 +101,24 @@ describe('BulkActions', () => {
   describe('when everything is selected', () => {
     beforeEach(() => {
       props.allSelected = true
+      props.count = 3
+    })
+
+    it('should label the delete action as delete all', () => {
+      render(<BulkActions {...props} />)
+
+      expect(screen.getByRole('button', { name: 'component.storage.common.delete_all' })).toBeInTheDocument()
+    })
+
+    it('should label the download action as download all', () => {
+      render(<BulkActions {...props} />)
+
+      expect(screen.getByRole('button', { name: 'export component.storage.common.download_all' })).toBeInTheDocument()
+    })
+  })
+
+  describe('when every item is selected by hand', () => {
+    beforeEach(() => {
       props.count = 3
     })
 

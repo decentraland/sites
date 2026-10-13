@@ -153,6 +153,7 @@ function ScenePageContent() {
               variant="icon"
               allSelected={selection.allSelected}
               count={selection.count}
+              total={sceneKeyIds.length}
               busy={busy}
               onDownload={handleExportSelected}
               onDelete={() => setBulkDeleteOpen(true)}

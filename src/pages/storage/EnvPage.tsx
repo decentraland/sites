@@ -109,6 +109,7 @@ function EnvPageContent() {
               variant="icon"
               allSelected={selection.allSelected}
               count={selection.count}
+              total={envKeyIds.length}
               onDelete={() => setBulkDeleteOpen(true)}
             />
           }

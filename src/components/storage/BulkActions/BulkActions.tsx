@@ -12,21 +12,21 @@ interface BulkActionsProps {
   variant: 'icon' | 'button'
   allSelected: boolean
   count: number
+  total: number
   onDelete: () => void
   onDownload?: (format: 'json' | 'csv') => void
   busy?: boolean
 }
 
 const BulkActions: FC<BulkActionsProps> = props => {
-  const { variant, allSelected, count, onDelete, onDownload, busy = false } = props
+  const { variant, allSelected, count, total, onDelete, onDownload, busy = false } = props
   const t = useFormatMessage()
 
   if (!allSelected && count === 0) return null
 
-  const downloadLabel = allSelected
-    ? t('component.storage.common.download_all')
-    : t('component.storage.common.download_selected', { count })
-  const deleteLabel = allSelected ? t('component.storage.common.delete_all') : t('component.storage.common.delete_selected', { count })
+  const everything = allSelected || count === total
+  const downloadLabel = everything ? t('component.storage.common.download_all') : t('component.storage.common.download_selected', { count })
+  const deleteLabel = everything ? t('component.storage.common.delete_all') : t('component.storage.common.delete_selected', { count })
 
   return (
     <>

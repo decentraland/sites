@@ -193,6 +193,7 @@ function PlayerDetailPageContent() {
               variant="icon"
               allSelected={selection.allSelected}
               count={selection.count}
+              total={keyIds.length}
               busy={busy}
               onDownload={handleExportSelected}
               onDelete={() => setBulkDeleteOpen(true)}
