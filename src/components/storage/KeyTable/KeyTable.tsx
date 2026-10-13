@@ -1,12 +1,15 @@
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import DeleteIcon from '@mui/icons-material/Delete'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import DownloadIcon from '@mui/icons-material/Download'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import EditIcon from '@mui/icons-material/Edit'
-import { Checkbox, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from 'decentraland-ui2'
+import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { ActionIconButton } from '../_shared/ActionIconButton.styled'
+import { StorageEmptyState } from '../StorageEmptyState'
+import { RowActionsCell } from './KeyTable.styled'
 
 interface KeyTableProps {
   keys: { key: string }[]
@@ -18,19 +21,14 @@ interface KeyTableProps {
   allSelected?: boolean
   onToggle?: (key: string) => void
   onToggleAll?: () => void
+  bulkActions?: ReactNode
 }
 
 const KeyTable: FC<KeyTableProps> = props => {
-  const { keys, emptyLabel, onEdit, onDelete, onDownload, selected, allSelected = false, onToggle, onToggleAll } = props
+  const { keys, emptyLabel, onEdit, onDelete, onDownload, selected, allSelected = false, onToggle, onToggleAll, bulkActions } = props
   const t = useFormatMessage()
 
-  if (keys.length === 0) {
-    return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <Typography color="text.secondary">{emptyLabel}</Typography>
-      </Paper>
-    )
-  }
+  if (keys.length === 0) return <StorageEmptyState label={emptyLabel} />
 
   const isSelected = (key: string) => allSelected || Boolean(selected?.has(key))
   const headerChecked = keys.every(item => isSelected(item.key))
@@ -53,7 +51,7 @@ const KeyTable: FC<KeyTableProps> = props => {
               </TableCell>
             ) : null}
             <TableCell>{t('component.storage.common.key')}</TableCell>
-            <TableCell align="right">{t('component.storage.common.actions')}</TableCell>
+            <TableCell align="right">{bulkActions}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -70,19 +68,19 @@ const KeyTable: FC<KeyTableProps> = props => {
                 </TableCell>
               ) : null}
               <TableCell>{item.key}</TableCell>
-              <TableCell align="right">
+              <RowActionsCell align="right">
                 {onDownload ? (
-                  <IconButton aria-label={`download ${item.key}`} color="primary" onClick={() => onDownload(item.key)}>
+                  <ActionIconButton aria-label={`download ${item.key}`} onClick={() => onDownload(item.key)}>
                     <DownloadIcon />
-                  </IconButton>
+                  </ActionIconButton>
                 ) : null}
-                <IconButton aria-label={`edit ${item.key}`} color="primary" onClick={() => onEdit(item.key)}>
+                <ActionIconButton aria-label={`edit ${item.key}`} onClick={() => onEdit(item.key)}>
                   <EditIcon />
-                </IconButton>
-                <IconButton aria-label={`delete ${item.key}`} color="error" onClick={() => onDelete(item.key)}>
+                </ActionIconButton>
+                <ActionIconButton aria-label={`delete ${item.key}`} onClick={() => onDelete(item.key)}>
                   <DeleteIcon />
-                </IconButton>
-              </TableCell>
+                </ActionIconButton>
+              </RowActionsCell>
             </TableRow>
           ))}
         </TableBody>

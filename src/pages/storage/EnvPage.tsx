@@ -1,23 +1,29 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AddIcon from '@mui/icons-material/Add'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import { Box, Button, CircularProgress } from 'decentraland-ui2'
+import { BulkActions } from '../../components/storage/BulkActions'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
 import { EnvAddDialog, EnvEditDialog } from '../../components/storage/EnvDialogs'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { StorageLayout } from '../../components/storage/StorageLayout'
-import { getStorageErrorStatus, useClearEnvMutation, useDeleteEnvMutation, useListEnvKeysQuery } from '../../features/storage'
+import {
+  deleteSelection,
+  getStorageErrorStatus,
+  useClearEnvMutation,
+  useDeleteEnvMutation,
+  useListEnvKeysQuery
+} from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
+import { useSelection } from '../../hooks/useSelection'
 import { useStorageRedirect } from '../../hooks/useStorageRedirect'
 import { useStorageScope } from '../../hooks/useStorageScope'
 import { useStorageTrack } from '../../hooks/useStorageTrack'
 import { SegmentEvent } from '../../modules/segment.types'
-import { SectionHeader } from './shared.styled'
+import { SectionActions, SectionHeader } from './shared.styled'
 
 function EnvPageContent() {
   useStorageRedirect()
@@ -29,11 +35,13 @@ function EnvPageContent() {
   const { currentData: envKeys, isLoading } = useListEnvKeysQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [deleteEnv] = useDeleteEnvMutation()
   const [clearEnv] = useClearEnvMutation()
+  const envKeyIds = useMemo(() => envKeys?.map(({ key }) => key) ?? [], [envKeys])
+  const selection = useSelection(envKeyIds)
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
   const [deleteKey, setDeleteKey] = useState<string | null>(null)
-  const [clearOpen, setClearOpen] = useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteKey) return
@@ -46,22 +54,27 @@ function EnvPageContent() {
     setDeleteKey(null)
   }, [deleteEnv, deleteKey, identity, realm, position, track])
 
-  const handleConfirmClear = useCallback(async () => {
-    try {
-      await clearEnv({ identity, realm, position }).unwrap()
-      track(SegmentEvent.STORAGE_ENV_CLEAR_SUCCESS)
-    } catch {
-      track(SegmentEvent.STORAGE_ENV_CLEAR_FAILURE)
+  const handleConfirmBulkDelete = useCallback(async () => {
+    const { allSelected, selected, clear } = selection
+    const ok = await deleteSelection({
+      allSelected,
+      ids: [...selected],
+      deleteOne: key => deleteEnv({ identity, realm, position, key }).unwrap(),
+      clearAll: () => clearEnv({ identity, realm, position }).unwrap()
+    })
+    if (allSelected) {
+      track(ok ? SegmentEvent.STORAGE_ENV_CLEAR_SUCCESS : SegmentEvent.STORAGE_ENV_CLEAR_FAILURE)
+    } else {
+      track(ok ? SegmentEvent.STORAGE_ENV_DELETE_SUCCESS : SegmentEvent.STORAGE_ENV_DELETE_FAILURE, { count: selected.size })
     }
-    setClearOpen(false)
-  }, [clearEnv, identity, realm, position, track])
+    clear()
+    setBulkDeleteOpen(false)
+  }, [selection, deleteEnv, clearEnv, identity, realm, position, track])
 
   usePageViewTracking({
     name: t('page.storage.env.title'),
     properties: { section: 'storage_env', realm: realm ?? undefined, position: position ?? undefined }
   })
-
-  const hasKeys = (envKeys?.length ?? 0) > 0
 
   return (
     <StorageLayout>
@@ -70,16 +83,11 @@ function EnvPageContent() {
       </Helmet>
       <SectionHeader>
         <h2>{t('component.storage.env_page.title')}</h2>
-        <Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)} sx={{ mr: 1 }}>
+        <SectionActions>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
             {t('component.storage.env_page.add')}
           </Button>
-          {hasKeys ? (
-            <Button variant="outlined" color="error" startIcon={<DeleteSweepIcon />} onClick={() => setClearOpen(true)}>
-              {t('component.storage.env_page.clear_all')}
-            </Button>
-          ) : null}
-        </Box>
+        </SectionActions>
       </SectionHeader>
 
       {isLoading ? (
@@ -87,7 +95,24 @@ function EnvPageContent() {
           <CircularProgress />
         </Box>
       ) : (
-        <KeyTable keys={envKeys ?? []} emptyLabel={t('component.storage.env_page.no_keys')} onEdit={setEditKey} onDelete={setDeleteKey} />
+        <KeyTable
+          keys={envKeys ?? []}
+          emptyLabel={t('component.storage.env_page.no_keys')}
+          onEdit={setEditKey}
+          onDelete={setDeleteKey}
+          selected={selection.selected}
+          allSelected={selection.allSelected}
+          onToggle={selection.toggle}
+          onToggleAll={selection.toggleAll}
+          bulkActions={
+            <BulkActions
+              variant="icon"
+              allSelected={selection.allSelected}
+              count={selection.count}
+              onDelete={() => setBulkDeleteOpen(true)}
+            />
+          }
+        />
       )}
 
       <EnvAddDialog
@@ -121,13 +146,21 @@ function EnvPageContent() {
         onCancel={() => setDeleteKey(null)}
       />
       <ConfirmDialog
-        open={clearOpen}
-        title={t('component.storage.env_page.clear_dialog.title')}
-        message={t('component.storage.env_page.clear_dialog.message')}
+        open={bulkDeleteOpen}
+        title={
+          selection.allSelected
+            ? t('component.storage.env_page.clear_dialog.title')
+            : t('component.storage.common.delete_selected_dialog.title')
+        }
+        message={
+          selection.allSelected
+            ? t('component.storage.env_page.clear_dialog.message')
+            : t('component.storage.common.delete_selected_dialog.message', { count: selection.count })
+        }
         confirmLabel={t('component.storage.common.confirm')}
         cancelLabel={t('component.storage.common.cancel')}
-        onConfirm={handleConfirmClear}
-        onCancel={() => setClearOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        onCancel={() => setBulkDeleteOpen(false)}
       />
     </StorageLayout>
   )

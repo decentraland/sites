@@ -5,6 +5,7 @@ import { getEnv } from '../../config/env'
 import { isEns } from '../../utils/ens'
 import { LandType, RoleType } from './storage.types'
 import type {
+  DeleteSelectionParams,
   ExportFormat,
   ExportPlayerRow,
   ExportWorldRow,
@@ -444,10 +445,22 @@ const buildExportFile = (format: ExportFormat, world: ExportWorldRow[], players:
         players.map(({ address, key, value }) => csvLine('player', address, key, value)).join('')
 })
 
+const deleteSelection = async ({ allSelected, ids, deleteOne, clearAll }: DeleteSelectionParams): Promise<boolean> => {
+  if (allSelected) {
+    return clearAll().then(
+      () => true,
+      () => false
+    )
+  }
+  const results = await Promise.allSettled(ids.map(id => deleteOne(id)))
+  return results.every(({ status }) => status === 'fulfilled')
+}
+
 export {
   buildExportFile,
   buildSignedFetchMetadata,
   createScopedSignedFetch,
+  deleteSelection,
   estateToLand,
   fetchSignedBlob,
   fromRentalFields,

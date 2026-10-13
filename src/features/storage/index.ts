@@ -28,6 +28,7 @@ export {
 export { assetsEndpoints, useGetUserDCLNamesQuery, useGetUserLandsQuery, useGetUserRentalsQuery } from './assets.client'
 export {
   buildExportFile,
+  deleteSelection,
   getLandPosition,
   getRoleLabelKey,
   getStorageErrorKey,

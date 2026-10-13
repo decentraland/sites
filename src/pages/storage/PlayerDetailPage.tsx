@@ -6,16 +6,15 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import AddIcon from '@mui/icons-material/Add'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import { Box, Button, ButtonBase, CircularProgress, Typography } from 'decentraland-ui2'
+import { BulkActions } from '../../components/storage/BulkActions'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
-import { ExportMenuButton } from '../../components/storage/ExportMenuButton'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { PlayerAddDialog, PlayerEditDialog } from '../../components/storage/PlayerDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import {
   buildExportFile,
+  deleteSelection,
   getStorageErrorStatus,
   toStorageValueFile,
   truncateAddress,
@@ -62,7 +61,7 @@ function PlayerDetailPageContent() {
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
   const [deleteKey, setDeleteKey] = useState<string | null>(null)
-  const [clearOpen, setClearOpen] = useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteKey) return
@@ -103,15 +102,22 @@ function PlayerDetailPageContent() {
     [selection.allSelected, selection.selected, keys, address, startExport, track]
   )
 
-  const handleConfirmClear = useCallback(async () => {
-    try {
-      await clearPlayer({ identity, realm, position, address }).unwrap()
-      track(SegmentEvent.STORAGE_PLAYER_CLEAR_SUCCESS)
-    } catch {
-      track(SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE)
+  const handleConfirmBulkDelete = useCallback(async () => {
+    const { allSelected, selected, clear } = selection
+    const ok = await deleteSelection({
+      allSelected,
+      ids: [...selected],
+      deleteOne: key => deletePlayerValue({ identity, realm, position, address, key }).unwrap(),
+      clearAll: () => clearPlayer({ identity, realm, position, address }).unwrap()
+    })
+    if (allSelected) {
+      track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE)
+    } else {
+      track(ok ? SegmentEvent.STORAGE_PLAYER_DELETE_SUCCESS : SegmentEvent.STORAGE_PLAYER_DELETE_FAILURE, { count: selected.size })
     }
-    setClearOpen(false)
-  }, [clearPlayer, identity, realm, position, address, track])
+    clear()
+    setBulkDeleteOpen(false)
+  }, [selection, deletePlayerValue, clearPlayer, identity, realm, position, address, track])
 
   const handleBackToList = useCallback(() => {
     navigate({ pathname: '/storage/players', search: window.location.search })
@@ -136,8 +142,6 @@ function PlayerDetailPageContent() {
     }
   })
 
-  const hasKeys = (keys?.length ?? 0) > 0
-
   return (
     <StorageLayout>
       <Helmet>
@@ -158,25 +162,9 @@ function PlayerDetailPageContent() {
       <SectionHeader>
         <h2>{t('component.storage.player_page.keys_for', { address: truncateAddress(address) })}</h2>
         <SectionActions>
-          {selection.allSelected || selection.count > 0 ? (
-            <ExportMenuButton
-              label={
-                selection.allSelected
-                  ? t('component.storage.common.download_all_selected')
-                  : t('component.storage.common.download_selected', { count: selection.count })
-              }
-              busy={busy}
-              onSelect={handleExportSelected}
-            />
-          ) : null}
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
             {t('component.storage.player_page.add')}
           </Button>
-          {hasKeys ? (
-            <Button variant="outlined" color="error" startIcon={<DeleteSweepIcon />} onClick={() => setClearOpen(true)}>
-              {t('component.storage.player_page.clear_this_player')}
-            </Button>
-          ) : null}
         </SectionActions>
       </SectionHeader>
       {errorKey ? (
@@ -200,6 +188,16 @@ function PlayerDetailPageContent() {
           allSelected={selection.allSelected}
           onToggle={selection.toggle}
           onToggleAll={selection.toggleAll}
+          bulkActions={
+            <BulkActions
+              variant="icon"
+              allSelected={selection.allSelected}
+              count={selection.count}
+              busy={busy}
+              onDownload={handleExportSelected}
+              onDelete={() => setBulkDeleteOpen(true)}
+            />
+          }
         />
       )}
 
@@ -236,13 +234,21 @@ function PlayerDetailPageContent() {
         onCancel={() => setDeleteKey(null)}
       />
       <ConfirmDialog
-        open={clearOpen}
-        title={t('component.storage.player_page.clear_player_dialog.title')}
-        message={t('component.storage.player_page.clear_player_dialog.message', { address: truncateAddress(address) })}
+        open={bulkDeleteOpen}
+        title={
+          selection.allSelected
+            ? t('component.storage.player_page.clear_player_dialog.title')
+            : t('component.storage.common.delete_selected_dialog.title')
+        }
+        message={
+          selection.allSelected
+            ? t('component.storage.player_page.clear_player_dialog.message', { address: truncateAddress(address) })
+            : t('component.storage.common.delete_selected_dialog.message', { count: selection.count })
+        }
         confirmLabel={t('component.storage.common.confirm')}
         cancelLabel={t('component.storage.common.cancel')}
-        onConfirm={handleConfirmClear}
-        onCancel={() => setClearOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        onCancel={() => setBulkDeleteOpen(false)}
       />
     </StorageLayout>
   )

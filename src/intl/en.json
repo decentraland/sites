@@ -844,14 +844,18 @@
         "delete": "Delete",
         "close": "Close",
         "loading": "Loading",
-        "actions": "Actions",
         "key": "Key",
         "add": "Add",
         "owner": "Owner",
         "collaborator": "Collaborator",
         "download_all": "Download all",
         "download_selected": "Download selected ({count})",
-        "download_all_selected": "Download all selected",
+        "delete_selected": "Delete selected ({count})",
+        "delete_all": "Delete all",
+        "delete_selected_dialog": {
+          "title": "Delete selected items?",
+          "message": "This will permanently delete {count} selected items."
+        },
         "select_all": "Select all",
         "select_row": "Select {name}",
         "format_json": "JSON",
@@ -920,7 +924,6 @@
       "env_page": {
         "title": "Environment Variables",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No environment variables found",
         "add_dialog": {
           "title": "Add Environment Variable",
@@ -945,7 +948,6 @@
       "scene_page": {
         "title": "Scene Storage",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No scene values found",
         "add_dialog": {
           "title": "Add Scene Value",
@@ -969,7 +971,6 @@
       "player_page": {
         "title": "Player Storage",
         "add": "Add",
-        "clear_all_players": "Clear All Players",
         "description": "Browse players with stored data, or search by name or address.",
         "search_players": "Search by name or address…",
         "no_players": "No players found",
@@ -982,7 +983,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Load keys",
         "keys_for": "Keys for {address}",
-        "clear_this_player": "Clear this player",
         "no_keys": "No keys found for this player",
         "loading_keys": "Loading player keys",
         "add_dialog": {

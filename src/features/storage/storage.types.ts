@@ -331,12 +331,20 @@ interface ExportPlayerRow {
   value: unknown
 }
 
+interface DeleteSelectionParams {
+  allSelected: boolean
+  ids: ReadonlyArray<string>
+  deleteOne: (id: string) => Promise<unknown>
+  clearAll: () => Promise<unknown>
+}
+
 type WrapSignedFetchError = { status: number; data?: unknown } | { status: 'FETCH_ERROR'; error: string }
 
 export { LandType, RoleType }
 export type {
   AuthParams,
   ClearPlayerParams,
+  DeleteSelectionParams,
   CollaboratorScene,
   CollaboratorScenesResponse,
   ContributableDomain,

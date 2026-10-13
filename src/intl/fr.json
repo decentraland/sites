@@ -699,14 +699,18 @@
         "delete": "Supprimer",
         "close": "Fermer",
         "loading": "Chargement",
-        "actions": "Actions",
         "key": "Clé",
         "add": "Ajouter",
         "owner": "Propriétaire",
         "collaborator": "Collaborateur",
         "download_all": "Tout télécharger",
         "download_selected": "Télécharger la sélection ({count})",
-        "download_all_selected": "Télécharger tous les éléments sélectionnés",
+        "delete_selected": "Supprimer la sélection ({count})",
+        "delete_all": "Tout supprimer",
+        "delete_selected_dialog": {
+          "title": "Supprimer les éléments sélectionnés ?",
+          "message": "Cela supprimera définitivement {count} éléments sélectionnés."
+        },
         "select_all": "Tout sélectionner",
         "select_row": "Sélectionner {name}",
         "format_json": "JSON",
@@ -775,7 +779,6 @@
       "env_page": {
         "title": "Variables d’environnement",
         "add": "Ajouter",
-        "clear_all": "Tout effacer",
         "no_keys": "Aucune variable d’environnement trouvée",
         "add_dialog": {
           "title": "Ajouter une variable d’environnement",
@@ -800,7 +803,6 @@
       "scene_page": {
         "title": "Stockage de scène",
         "add": "Ajouter",
-        "clear_all": "Tout effacer",
         "no_keys": "Aucune valeur de scène trouvée",
         "add_dialog": {
           "title": "Ajouter une valeur de scène",
@@ -824,7 +826,6 @@
       "player_page": {
         "title": "Stockage de joueur",
         "add": "Ajouter",
-        "clear_all_players": "Effacer tous les joueurs",
         "description": "Parcourez les joueurs avec des données stockées, ou recherchez par nom ou adresse.",
         "search_players": "Rechercher par nom ou adresse…",
         "no_players": "Aucun joueur trouvé",
@@ -837,7 +838,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Charger les clés",
         "keys_for": "Clés de {address}",
-        "clear_this_player": "Effacer ce joueur",
         "no_keys": "Aucune clé trouvée pour ce joueur",
         "loading_keys": "Chargement des clés du joueur",
         "add_dialog": {

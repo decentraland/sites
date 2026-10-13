@@ -57,6 +57,8 @@ jest.mock('decentraland-ui2', () => {
 })
 
 jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => null }))
+jest.mock('@mui/icons-material/Download', () => ({ __esModule: true, default: () => null }))
+jest.mock('../_shared/ActionIconButton.styled', () => ({ ActionIconButton: jest.requireMock('decentraland-ui2').IconButton }))
 jest.mock('../ExportMenuButton/ExportMenuButton.styled', () => {
   const h = React.createElement as unknown as (
     type: string,

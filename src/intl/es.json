@@ -704,14 +704,18 @@
         "delete": "Eliminar",
         "close": "Cerrar",
         "loading": "Cargando",
-        "actions": "Acciones",
         "key": "Clave",
         "add": "Agregar",
         "owner": "Propietario",
         "collaborator": "Colaborador",
         "download_all": "Descargar todo",
         "download_selected": "Descargar selección ({count})",
-        "download_all_selected": "Descargar todos los seleccionados",
+        "delete_selected": "Borrar selección ({count})",
+        "delete_all": "Borrar todo",
+        "delete_selected_dialog": {
+          "title": "¿Borrar los elementos seleccionados?",
+          "message": "Esto borrará de forma permanente {count} elementos seleccionados."
+        },
         "select_all": "Seleccionar todo",
         "select_row": "Seleccionar {name}",
         "format_json": "JSON",
@@ -780,7 +784,6 @@
       "env_page": {
         "title": "Variables de entorno",
         "add": "Agregar",
-        "clear_all": "Borrar todo",
         "no_keys": "No se encontraron variables de entorno",
         "add_dialog": {
           "title": "Agregar variable de entorno",
@@ -805,7 +808,6 @@
       "scene_page": {
         "title": "Almacenamiento de escena",
         "add": "Agregar",
-        "clear_all": "Borrar todo",
         "no_keys": "No se encontraron valores de escena",
         "add_dialog": {
           "title": "Agregar valor de escena",
@@ -829,7 +831,6 @@
       "player_page": {
         "title": "Almacenamiento de jugador",
         "add": "Agregar",
-        "clear_all_players": "Borrar todos los jugadores",
         "description": "Explorá los jugadores con datos guardados o buscalos por nombre o dirección.",
         "search_players": "Buscar por nombre o dirección…",
         "no_players": "No se encontraron jugadores",
@@ -842,7 +843,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Cargar claves",
         "keys_for": "Claves de {address}",
-        "clear_this_player": "Borrar este jugador",
         "no_keys": "No se encontraron claves para este jugador",
         "loading_keys": "Cargando claves del jugador",
         "add_dialog": {

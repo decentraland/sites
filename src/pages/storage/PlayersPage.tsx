@@ -2,16 +2,15 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
-import { Box, Button, Checkbox, CircularProgress, FormControlLabel, Typography } from 'decentraland-ui2'
+import { Box, Checkbox, CircularProgress, FormControlLabel, Typography } from 'decentraland-ui2'
+import { BulkActions } from '../../components/storage/BulkActions'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
-import { ExportMenuButton } from '../../components/storage/ExportMenuButton'
 import { PlayerCard } from '../../components/storage/PlayerCard'
 import { SearchField } from '../../components/storage/SearchField'
+import { StorageEmptyState } from '../../components/storage/StorageEmptyState'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import { useGetProfileNames } from '../../features/profile/profile.client'
-import { useClearAllPlayersMutation, useListPlayersQuery } from '../../features/storage'
+import { deleteSelection, useClearAllPlayersMutation, useClearPlayerMutation, useListPlayersQuery } from '../../features/storage'
 import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
@@ -36,9 +35,10 @@ function PlayersPageContent() {
 
   const { currentData: players, isLoading } = useListPlayersQuery({ identity, realm, position }, { skip: !identity || blocked })
   const [clearAllPlayers] = useClearAllPlayersMutation()
+  const [clearPlayer] = useClearPlayerMutation()
 
   const [query, setQuery] = useState('')
-  const [clearOpen, setClearOpen] = useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const playerAddresses = useMemo(() => players ?? [], [players])
   const profileNames = useGetProfileNames(playerAddresses)
@@ -81,15 +81,22 @@ function PlayersPageContent() {
     selection.toggleAll()
   }, [query, filteredPlayers, selection])
 
-  const handleConfirmClearAll = useCallback(async () => {
-    try {
-      await clearAllPlayers({ identity, realm, position }).unwrap()
-      track(SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_SUCCESS)
-    } catch {
-      track(SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_FAILURE)
+  const handleConfirmBulkDelete = useCallback(async () => {
+    const { allSelected, selected, clear } = selection
+    const ok = await deleteSelection({
+      allSelected,
+      ids: [...selected],
+      deleteOne: playerAddress => clearPlayer({ identity, realm, position, address: playerAddress }).unwrap(),
+      clearAll: () => clearAllPlayers({ identity, realm, position }).unwrap()
+    })
+    if (allSelected) {
+      track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_FAILURE)
+    } else {
+      track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE, { count: selected.size })
     }
-    setClearOpen(false)
-  }, [clearAllPlayers, identity, realm, position, track])
+    clear()
+    setBulkDeleteOpen(false)
+  }, [selection, clearPlayer, clearAllPlayers, identity, realm, position, track])
 
   usePageViewTracking({
     name: t('page.storage.players.title'),
@@ -115,22 +122,14 @@ function PlayersPageContent() {
               label={t('component.storage.common.select_all')}
             />
           ) : null}
-          {selection.allSelected || selection.count > 0 ? (
-            <ExportMenuButton
-              label={
-                selection.allSelected
-                  ? t('component.storage.common.download_all_selected')
-                  : t('component.storage.common.download_selected', { count: selection.count })
-              }
-              busy={busy}
-              onSelect={handleExportSelected}
-            />
-          ) : null}
-          {hasPlayers ? (
-            <Button variant="outlined" color="error" startIcon={<DeleteSweepIcon />} onClick={() => setClearOpen(true)}>
-              {t('component.storage.player_page.clear_all_players')}
-            </Button>
-          ) : null}
+          <BulkActions
+            variant="button"
+            allSelected={selection.allSelected}
+            count={selection.count}
+            busy={busy}
+            onDownload={handleExportSelected}
+            onDelete={() => setBulkDeleteOpen(true)}
+          />
         </SectionActions>
       </SectionHeader>
       {errorKey ? (
@@ -143,21 +142,25 @@ function PlayersPageContent() {
         {t('component.storage.player_page.description')}
       </Typography>
 
-      <SearchField
-        value={query}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
-        onClear={() => setQuery('')}
-        placeholder={t('component.storage.player_page.search_players')}
-      />
+      {hasPlayers ? (
+        <SearchField
+          value={query}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
+          onClear={() => setQuery('')}
+          placeholder={t('component.storage.player_page.search_players')}
+        />
+      ) : null}
 
       {isLoading ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress aria-label={t('component.storage.player_page.loading_players')} />
         </Box>
       ) : filteredPlayers.length === 0 ? (
-        <Typography color="text.secondary">
-          {query ? t('component.storage.player_page.no_search_results', { query }) : t('component.storage.player_page.no_players')}
-        </Typography>
+        <StorageEmptyState
+          label={
+            hasPlayers ? t('component.storage.player_page.no_search_results', { query }) : t('component.storage.player_page.no_players')
+          }
+        />
       ) : (
         <CardsGrid>
           {filteredPlayers.map(address => (
@@ -174,13 +177,21 @@ function PlayersPageContent() {
       )}
 
       <ConfirmDialog
-        open={clearOpen}
-        title={t('component.storage.player_page.clear_all_dialog.title')}
-        message={t('component.storage.player_page.clear_all_dialog.message')}
+        open={bulkDeleteOpen}
+        title={
+          selection.allSelected
+            ? t('component.storage.player_page.clear_all_dialog.title')
+            : t('component.storage.common.delete_selected_dialog.title')
+        }
+        message={
+          selection.allSelected
+            ? t('component.storage.player_page.clear_all_dialog.message')
+            : t('component.storage.common.delete_selected_dialog.message', { count: selection.count })
+        }
         confirmLabel={t('component.storage.common.confirm')}
         cancelLabel={t('component.storage.common.cancel')}
-        onConfirm={handleConfirmClearAll}
-        onCancel={() => setClearOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        onCancel={() => setBulkDeleteOpen(false)}
       />
     </StorageLayout>
   )
