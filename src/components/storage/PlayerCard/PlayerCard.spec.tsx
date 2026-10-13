@@ -17,7 +17,6 @@ jest.mock('decentraland-ui2', () => {
   return {
     ...actual,
     Card: pass('div'),
-    CardActions: pass('footer'),
     CardActionArea: (props: Record<string, unknown>) =>
       h('button', { type: 'button', onClick: props.onClick, 'aria-label': props['aria-label'] }, props.children),
     CardContent: pass('div'),
@@ -33,8 +32,6 @@ jest.mock('decentraland-ui2', () => {
     Typography: pass('span')
   }
 })
-
-jest.mock('@mui/icons-material/FmdGood', () => ({ __esModule: true, default: () => null }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string) => key

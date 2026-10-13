@@ -60,9 +60,10 @@ jest.mock('../../features/storage', () => ({
 }))
 jest.mock('../../features/profile/profile.client', () => ({ useGetProfileNames: () => mockProfileNames }))
 
-jest.mock('../../components/storage/_shared/StorageCard.styled', () => ({
-  CardFooter: ({ children }: ChildrenProps) => <footer>{children}</footer>
-}))
+jest.mock('../../components/storage/PlayerCard/PlayerCard.styled', () => {
+  const ui = jest.requireMock('decentraland-ui2')
+  return { CardArea: ui.CardActionArea, SelectCheckbox: ui.Checkbox, SelectableCardRow: ui.Box }
+})
 jest.mock('../../components/storage/SearchField', () => ({
   SearchField: ({ value, onChange, onClear, placeholder }: SearchFieldMockProps) => (
     <div>
