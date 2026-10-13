@@ -2,36 +2,29 @@ jest.mock('decentraland-crypto-fetch', () => ({ __esModule: true, default: jest.
 jest.mock('../config/env', () => ({ getEnv: () => 'https://storage' }))
 jest.mock('../features/storage', () => ({
   ...jest.requireActual('../features/storage'),
-  useCreateExportMutation: jest.fn(),
-  useGetExportQuery: jest.fn(),
   fetchExportFile: jest.fn()
 }))
-jest.mock('../utils/gunzipBlob', () => ({ gunzipBlob: jest.fn() }))
 jest.mock('../modules/file', () => ({ triggerBlobDownload: jest.fn() }))
 jest.mock('./useAuthIdentity', () => ({ useAuthIdentity: jest.fn() }))
 jest.mock('./useStorageScope', () => ({ useStorageScope: jest.fn() }))
 jest.mock('./useStorageTrack', () => ({ useStorageTrack: jest.fn() }))
 
-import { skipToken } from '@reduxjs/toolkit/query'
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import type { RenderHookResult } from '@testing-library/react'
 import type { AuthIdentity } from '@dcl/crypto'
-import { fetchExportFile, getStorageErrorKey, useCreateExportMutation, useGetExportQuery } from '../features/storage'
+import { fetchExportFile } from '../features/storage'
+import type { ExportSelection } from '../features/storage'
 import { triggerBlobDownload } from '../modules/file'
 import { SegmentEvent } from '../modules/segment.types'
-import { gunzipBlob } from '../utils/gunzipBlob'
 import { useAuthIdentity } from './useAuthIdentity'
 import { useStorageExport } from './useStorageExport'
 import { useStorageScope } from './useStorageScope'
 import { useStorageTrack } from './useStorageTrack'
 
 type Hook = RenderHookResult<ReturnType<typeof useStorageExport>, unknown>
-type PollData = { id: string; status: string } | undefined
+type Deferred = { resolve: (blob: Blob) => void; reject: (error: unknown) => void }
 
-const useCreateExportMutationMock = useCreateExportMutation as jest.Mock
-const useGetExportQueryMock = useGetExportQuery as jest.Mock
 const fetchExportFileMock = fetchExportFile as jest.Mock
-const gunzipBlobMock = gunzipBlob as jest.Mock
 const triggerBlobDownloadMock = triggerBlobDownload as jest.Mock
 const useAuthIdentityMock = useAuthIdentity as jest.Mock
 const useStorageScopeMock = useStorageScope as jest.Mock
@@ -39,308 +32,163 @@ const useStorageTrackMock = useStorageTrack as jest.Mock
 
 describe('useStorageExport', () => {
   let identity: AuthIdentity
-  let createMock: jest.Mock
-  let unwrapMock: jest.Mock
-  let trackMock: jest.Mock
-  let pollData: PollData
-  let pollError: unknown
-  let pollStartedAt: number
+  let selection: ExportSelection
   let file: Blob
-  let unzipped: Blob
+  let trackMock: jest.Mock
+  let pending: Deferred
   let hook: Hook
 
-  const renderExportHook = (): Hook => renderHook(() => useStorageExport())
-  const startJson = async (): Promise<void> => {
+  const start = async (format: 'json' | 'csv' = 'json'): Promise<void> => {
     await act(async () => {
-      hook.result.current.startExport({}, 'json')
+      hook.result.current.startExport(selection, format)
     })
   }
-  const poll = async (data: PollData): Promise<void> => {
-    pollData = data
-    pollStartedAt = Date.now()
+  const settle = async (outcome: (deferred: Deferred) => void): Promise<void> => {
     await act(async () => {
-      hook.rerender()
+      outcome(pending)
     })
   }
 
   beforeEach(() => {
     identity = { authChain: [], ephemeralIdentity: {}, expiration: new Date(Date.now() + 60_000) } as unknown as AuthIdentity
-    file = new Blob(['gz'])
-    unzipped = new Blob(['{}'])
-    pollData = undefined
-    pollError = undefined
-    pollStartedAt = 0
-    unwrapMock = jest.fn().mockResolvedValue({ id: 'job-1', status: 'pending' })
-    createMock = jest.fn().mockReturnValue({ unwrap: unwrapMock })
+    selection = { world: { keys: [] }, players: { addresses: ['0xa'] } }
+    file = new Blob(['{}'])
     trackMock = jest.fn()
-    useCreateExportMutationMock.mockReturnValue([createMock, { isLoading: false }])
-    useGetExportQueryMock.mockImplementation((arg: unknown) =>
-      arg === skipToken
-        ? { currentData: undefined, error: undefined, isError: false }
-        : { currentData: pollData, error: pollError, isError: pollError !== undefined, startedTimeStamp: pollStartedAt }
+    fetchExportFileMock.mockImplementation(
+      () =>
+        new Promise<Blob>((resolve, reject) => {
+          pending = { resolve, reject }
+        })
     )
-    fetchExportFileMock.mockResolvedValue(file)
-    gunzipBlobMock.mockResolvedValue(unzipped)
     useAuthIdentityMock.mockReturnValue({ identity })
-    useStorageScopeMock.mockReturnValue({ realm: 'world.dcl.eth', position: '1,2' })
+    useStorageScopeMock.mockReturnValue({ realm: 'world.dcl.eth', position: '0,0' })
     useStorageTrackMock.mockReturnValue(trackMock)
-    hook = renderExportHook()
+    hook = renderHook(() => useStorageExport())
   })
 
   afterEach(() => {
+    hook.unmount()
     jest.resetAllMocks()
+  })
+
+  describe('when nothing has been started', () => {
+    it('should be idle with no error', () => {
+      expect({ busy: hook.result.current.busy, errorKey: hook.result.current.errorKey }).toEqual({ busy: false, errorKey: null })
+    })
   })
 
   describe('when an export is started', () => {
     beforeEach(async () => {
-      await startJson()
+      await start('csv')
     })
 
-    it('should create the export with the identity, scope, format and selection', () => {
-      expect(createMock).toHaveBeenCalledWith({ identity, realm: 'world.dcl.eth', position: '1,2', format: 'json', selection: {} })
+    it('should request the file for the selection in the current scope with an abort signal', () => {
+      expect(fetchExportFileMock).toHaveBeenCalledWith({
+        identity,
+        realm: 'world.dcl.eth',
+        position: '0,0',
+        format: 'csv',
+        selection,
+        signal: expect.any(AbortSignal)
+      })
     })
 
-    it('should report busy', () => {
+    it('should be busy while the file streams', () => {
       expect(hook.result.current.busy).toBe(true)
     })
 
-    it('should poll the created job every second', () => {
-      expect(useGetExportQueryMock).toHaveBeenLastCalledWith(
-        { identity, realm: 'world.dcl.eth', position: '1,2', id: 'job-1' },
-        expect.objectContaining({ pollingInterval: 1000 })
-      )
-    })
-
-    describe('and the poll returns running', () => {
+    describe('and it is started again before the file arrives', () => {
       beforeEach(async () => {
-        await poll({ id: 'job-1', status: 'running' })
+        await start('json')
       })
 
-      it('should stay busy without saving anything', () => {
-        expect({ busy: hook.result.current.busy, saved: triggerBlobDownloadMock.mock.calls.length }).toEqual({ busy: true, saved: 0 })
+      it('should not send a second request', () => {
+        expect(fetchExportFileMock).toHaveBeenCalledTimes(1)
       })
     })
 
-    describe('and the poll returns done', () => {
+    describe('and the file arrives', () => {
       beforeEach(async () => {
-        await poll({ id: 'job-1', status: 'done' })
-        await waitFor(() => expect(hook.result.current.busy).toBe(false))
+        await settle(({ resolve }) => resolve(file))
       })
 
-      it('should fetch the job file with the identity and scope', () => {
-        expect(fetchExportFileMock).toHaveBeenCalledWith({ identity, realm: 'world.dcl.eth', position: '1,2', id: 'job-1' })
+      it('should save it as storage-export with the chosen format', () => {
+        expect(triggerBlobDownloadMock).toHaveBeenCalledWith(file, 'storage-export.csv')
       })
 
-      it('should unzip the fetched file', () => {
-        expect(gunzipBlobMock).toHaveBeenCalledWith(file)
+      it('should track the success with the format', () => {
+        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_SUCCESS, { format: 'csv' })
       })
 
-      it('should save the unzipped file named after the format', () => {
-        expect(triggerBlobDownloadMock).toHaveBeenCalledWith(unzipped, 'storage-export.json')
-      })
-
-      it('should track the export success with the format', () => {
-        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_SUCCESS, { format: 'json' })
-      })
-
-      describe('and the component re-renders with the same done data', () => {
-        beforeEach(async () => {
-          await poll({ id: 'job-1', status: 'done' })
-        })
-
-        it('should fetch and save the file exactly once', () => {
-          expect([fetchExportFileMock.mock.calls.length, triggerBlobDownloadMock.mock.calls.length]).toEqual([1, 1])
-        })
-      })
-
-      describe('and the same export is started again and the server returns the same job id', () => {
-        beforeEach(async () => {
-          await startJson()
-          await waitFor(() => expect(triggerBlobDownloadMock).toHaveBeenCalledTimes(2))
-          await waitFor(() => expect(hook.result.current.busy).toBe(false))
-        })
-
-        it('should save the file once per click', () => {
-          expect(fetchExportFileMock).toHaveBeenCalledTimes(2)
-        })
-
-        it('should end the second export not busy', () => {
-          expect(hook.result.current.busy).toBe(false)
-        })
-      })
-    })
-
-    describe('and the poll returns failed', () => {
-      beforeEach(async () => {
-        await poll({ id: 'job-1', status: 'failed' })
-      })
-
-      it('should set the export failed error key', () => {
-        expect(hook.result.current.errorKey).toBe('component.storage.errors.export_failed')
-      })
-
-      it('should stop being busy', () => {
+      it('should be idle again', () => {
         expect(hook.result.current.busy).toBe(false)
       })
+    })
 
-      it('should not save anything', () => {
-        expect(triggerBlobDownloadMock).not.toHaveBeenCalled()
+    describe('and another export of the scene is already streaming', () => {
+      beforeEach(async () => {
+        await settle(({ reject }) => reject({ status: 429 }))
       })
 
-      it('should track the export failure', () => {
-        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, expect.objectContaining({ format: 'json' }))
+      it('should show the rate limit message', () => {
+        expect(hook.result.current.errorKey).toBe('component.storage.errors.rate_limited')
       })
 
-      describe('and the error is cleared', () => {
+      it('should track the failure with the status', () => {
+        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: 'csv', errorStatus: 429 })
+      })
+
+      it('should not save anything and be idle again', () => {
+        expect({ saved: triggerBlobDownloadMock.mock.calls.length, busy: hook.result.current.busy }).toEqual({ saved: 0, busy: false })
+      })
+
+      describe('and the error is dismissed', () => {
         beforeEach(() => {
           act(() => hook.result.current.clearError())
         })
 
-        it('should reset the error key to null', () => {
+        it('should clear the message', () => {
           expect(hook.result.current.errorKey).toBeNull()
         })
       })
     })
 
-    describe('and the poll is rate limited', () => {
+    describe('and the stream breaks', () => {
       beforeEach(async () => {
-        pollError = { status: 429 }
-        await poll(undefined)
+        await settle(({ reject }) => reject({ status: 'FETCH_ERROR', error: 'network error' }))
       })
 
-      it('should set the rate limited error key', () => {
-        expect(hook.result.current.errorKey).toBe('component.storage.errors.rate_limited')
-      })
-
-      it('should stop being busy', () => {
-        expect(hook.result.current.busy).toBe(false)
-      })
-
-      it('should stop polling the job', () => {
-        expect(useGetExportQueryMock).toHaveBeenLastCalledWith(skipToken, expect.anything())
-      })
-
-      it('should not save anything', () => {
-        expect(triggerBlobDownloadMock).not.toHaveBeenCalled()
-      })
-
-      it('should track the export failure with the status', () => {
-        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: 'json', errorStatus: 429 })
-      })
-
-      describe('and the same export is started again and the server returns the same job id', () => {
-        beforeEach(async () => {
-          await new Promise(resolve => setTimeout(resolve, 5))
-          await startJson()
-        })
-
-        it('should keep polling the job', () => {
-          expect(useGetExportQueryMock).toHaveBeenLastCalledWith(
-            { identity, realm: 'world.dcl.eth', position: '1,2', id: 'job-1' },
-            expect.objectContaining({ pollingInterval: 1000 })
-          )
-        })
-
-        it('should report busy', () => {
-          expect(hook.result.current.busy).toBe(true)
-        })
-
-        describe('and the poll returns done', () => {
-          beforeEach(async () => {
-            pollError = undefined
-            await poll({ id: 'job-1', status: 'done' })
-            await waitFor(() => expect(hook.result.current.busy).toBe(false))
-          })
-
-          it('should save the file', () => {
-            expect(triggerBlobDownloadMock).toHaveBeenCalledWith(unzipped, 'storage-export.json')
-          })
-
-          it('should leave no error', () => {
-            expect(hook.result.current.errorKey).toBeNull()
-          })
-        })
+      it('should show the export failed message', () => {
+        expect(hook.result.current.errorKey).toBe('component.storage.errors.export_failed')
       })
     })
 
-    describe('and the poll returns another job id', () => {
+    describe('and the server rejects the signature', () => {
       beforeEach(async () => {
-        await poll({ id: 'job-2', status: 'done' })
+        await settle(({ reject }) => reject({ status: 401 }))
       })
 
-      it('should ignore it', () => {
-        expect(fetchExportFileMock).not.toHaveBeenCalled()
+      it('should show the mapped storage error', () => {
+        expect(hook.result.current.errorKey).toBe('component.storage.errors.unauthorized')
       })
     })
 
-    describe('and another export is started while busy', () => {
-      beforeEach(async () => {
-        await startJson()
-      })
-
-      it('should ignore the second request', () => {
-        expect(createMock).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    describe('and the file download fails with a 409', () => {
-      beforeEach(async () => {
-        fetchExportFileMock.mockRejectedValueOnce({ status: 409 })
-        await poll({ id: 'job-1', status: 'done' })
-        await waitFor(() => expect(hook.result.current.busy).toBe(false))
-      })
-
-      it('should set the error key mapped from the status', () => {
-        expect(hook.result.current.errorKey).toBe(getStorageErrorKey({ status: 409 }))
-      })
-
-      it('should not save anything', () => {
-        expect(triggerBlobDownloadMock).not.toHaveBeenCalled()
-      })
-
-      it('should track the export failure with the status', () => {
-        expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: 'json', errorStatus: 409 })
-      })
-    })
-
-    describe('and the component unmounts while the file is being fetched', () => {
-      let resolveFile: (blob: Blob) => void
+    describe('and the hook unmounts before the file arrives', () => {
+      let signal: AbortSignal
 
       beforeEach(async () => {
-        fetchExportFileMock.mockReturnValueOnce(
-          new Promise<Blob>(resolve => {
-            resolveFile = resolve
-          })
-        )
-        await poll({ id: 'job-1', status: 'done' })
+        signal = (fetchExportFileMock.mock.calls[0][0] as { signal: AbortSignal }).signal
         hook.unmount()
-        await act(async () => {
-          resolveFile(file)
-        })
+        await settle(({ reject }) => reject({ status: 'FETCH_ERROR', error: 'aborted' }))
       })
 
-      it('should not save the file', () => {
-        expect(triggerBlobDownloadMock).not.toHaveBeenCalled()
+      it('should abort the request', () => {
+        expect(signal.aborted).toBe(true)
       })
-    })
-  })
 
-  describe('when creating the export is rate limited', () => {
-    beforeEach(async () => {
-      unwrapMock.mockRejectedValueOnce({ status: 429 })
-      await startJson()
-    })
-
-    it('should set the rate limited error key', () => {
-      expect(hook.result.current.errorKey).toBe('component.storage.errors.rate_limited')
-    })
-
-    it('should not be busy', () => {
-      expect(hook.result.current.busy).toBe(false)
-    })
-
-    it('should track the export failure with the status', () => {
-      expect(trackMock).toHaveBeenCalledWith(SegmentEvent.STORAGE_EXPORT_FAILURE, { format: 'json', errorStatus: 429 })
+      it('should neither save nor track anything', () => {
+        expect({ saved: triggerBlobDownloadMock.mock.calls.length, tracked: trackMock.mock.calls.length }).toEqual({ saved: 0, tracked: 0 })
+      })
     })
   })
 
@@ -348,11 +196,11 @@ describe('useStorageExport', () => {
     beforeEach(async () => {
       useAuthIdentityMock.mockReturnValue({ identity: undefined })
       hook.rerender()
-      await startJson()
+      await start()
     })
 
-    it('should not create an export', () => {
-      expect(createMock).not.toHaveBeenCalled()
+    it('should not request anything', () => {
+      expect(fetchExportFileMock).not.toHaveBeenCalled()
     })
   })
 })

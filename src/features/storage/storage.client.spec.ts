@@ -353,132 +353,66 @@ describe('when two accounts read the same storage realm and position', () => {
   })
 })
 
-describe('when creating an export', () => {
-  let store: ReturnType<typeof setupStore>
+describe('when fetching an export file', () => {
   let selection: { world: { keys: string[] }; players: { addresses: string[] } }
+  let controller: AbortController
 
   beforeEach(() => {
-    store = setupStore()
     selection = { world: { keys: [] }, players: { addresses: ['0xa'] } }
+    controller = new AbortController()
   })
 
   afterEach(() => {
-    store.dispatch(storageClient.util.resetApiState())
     jest.resetAllMocks()
   })
 
-  describe('and the server accepts the job', () => {
+  describe('and the server streams the file', () => {
+    let file: Blob
+
     beforeEach(() => {
-      signedFetchMock.mockResolvedValueOnce(makeResponse({ id: 'job-1', status: 'pending' }, { status: 202 }))
+      file = new Blob(['scope,player_address,key,value\r\n'])
+      signedFetchMock.mockResolvedValueOnce(makeResponse(file))
     })
 
-    it('should POST the selection as JSON to the export endpoint with the format', async () => {
-      await store.dispatch(storageEndpoints.endpoints.createExport.initiate({ identity, format: 'csv', selection, ...ctx }))
+    it('should POST the selection as JSON to the export endpoint with the format and the abort signal', async () => {
+      await fetchExportFile({ identity, format: 'csv', selection, signal: controller.signal, ...ctx })
       expect(signedFetchMock).toHaveBeenCalledWith(
         'https://storage/exports?format=csv',
-        expect.objectContaining({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(selection) })
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selection),
+          signal: controller.signal
+        })
       )
     })
 
-    it('should return the job id and status', async () => {
-      const result = await store.dispatch(storageEndpoints.endpoints.createExport.initiate({ identity, format: 'csv', selection, ...ctx }))
-      expect(result).toEqual({ data: { id: 'job-1', status: 'pending' } })
+    it('should resolve to the streamed file', async () => {
+      await expect(fetchExportFile({ identity, format: 'csv', selection, ...ctx })).resolves.toBe(file)
     })
   })
 
-  describe('and the server rate-limits the request', () => {
+  describe('and another export of the scene is already streaming', () => {
     beforeEach(() => {
-      signedFetchMock.mockResolvedValueOnce(makeResponse('slow down', { status: 429 }))
+      signedFetchMock.mockResolvedValueOnce(makeResponse('busy', { status: 429 }))
     })
 
-    it('should surface the 429 status as the error', async () => {
-      const result = await store.dispatch(storageEndpoints.endpoints.createExport.initiate({ identity, format: 'json', selection, ...ctx }))
-      expect((result as { error: { status: number } }).error.status).toBe(429)
+    it('should reject with the 429 status', async () => {
+      await expect(fetchExportFile({ identity, format: 'json', selection, ...ctx })).rejects.toMatchObject({ status: 429 })
     })
   })
-})
 
-describe('when reading an export job', () => {
-  let store: ReturnType<typeof setupStore>
-  let job: Record<string, unknown>
-
-  beforeEach(() => {
-    store = setupStore()
-    job = {
-      id: 'job-1',
-      status: 'done',
-      format: 'json',
-      selection: {},
-      createdAt: '2026-10-12T00:00:00.000Z',
-      completedAt: '2026-10-12T00:00:01.000Z',
-      expiresAt: null,
-      sizeBytes: 10,
-      error: null
-    }
-  })
-
-  afterEach(() => {
-    store.dispatch(storageClient.util.resetApiState())
-    jest.resetAllMocks()
-  })
-
-  describe('and the job exists', () => {
+  describe('and the stream breaks while the body is read', () => {
     beforeEach(() => {
-      signedFetchMock.mockResolvedValueOnce(makeResponse(job))
+      signedFetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        blob: () => Promise.reject(new TypeError('network error'))
+      } as unknown as Response)
     })
 
-    it('should GET the job by id and return it', async () => {
-      const result = await store.dispatch(storageEndpoints.endpoints.getExport.initiate({ identity, id: 'job-1', ...ctx }))
-      expect([signedFetchMock.mock.calls[0][0], result.data]).toEqual(['https://storage/exports/job-1', job])
+    it('should reject with a fetch error', async () => {
+      await expect(fetchExportFile({ identity, format: 'json', selection, ...ctx })).rejects.toMatchObject({ status: 'FETCH_ERROR' })
     })
-  })
-
-  describe('and the server rejects the request', () => {
-    beforeEach(() => {
-      signedFetchMock.mockResolvedValueOnce(makeResponse('gone', { status: 404 }))
-    })
-
-    it('should surface the status as the error', async () => {
-      const result = await store.dispatch(storageEndpoints.endpoints.getExport.initiate({ identity, id: 'job-1', ...ctx }))
-      expect((result.error as { status: number }).status).toBe(404)
-    })
-  })
-
-  describe('and another account or another job is read afterwards', () => {
-    let otherIdentity: typeof identity
-
-    beforeEach(() => {
-      otherIdentity = { ...identity, authChain: [{ type: 'SIGNER', payload: '0xother', signature: '' }] } as typeof identity
-      signedFetchMock.mockResolvedValue(makeResponse(job))
-    })
-
-    it('should fetch each one instead of serving the cached job', async () => {
-      await store.dispatch(storageEndpoints.endpoints.getExport.initiate({ identity, id: 'job-1', ...ctx }))
-      await store.dispatch(storageEndpoints.endpoints.getExport.initiate({ identity: otherIdentity, id: 'job-1', ...ctx }))
-      await store.dispatch(storageEndpoints.endpoints.getExport.initiate({ identity, id: 'job-2', ...ctx }))
-      expect(signedFetchMock).toHaveBeenCalledTimes(3)
-    })
-  })
-})
-
-describe('when fetching an export file', () => {
-  let file: Blob
-
-  beforeEach(() => {
-    file = new Blob(['gz'])
-    signedFetchMock.mockResolvedValueOnce(makeResponse(file))
-  })
-
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  it('should GET the download through the signed fetch', async () => {
-    await fetchExportFile({ identity, id: 'job-1', ...ctx })
-    expect(signedFetchMock).toHaveBeenCalledWith('https://storage/exports/job-1/download', expect.objectContaining({ method: 'GET' }))
-  })
-
-  it('should resolve to the downloaded blob', async () => {
-    await expect(fetchExportFile({ identity, id: 'job-1', ...ctx })).resolves.toBe(file)
   })
 })
