@@ -815,6 +815,30 @@ describe('DiscoverHomePage', () => {
       })
     })
 
+    describe('and a regular category is selected', () => {
+      const liveTitles = () => screen.getAllByTestId('live-card').map(card => card.textContent)
+
+      it('should show the same Live Now cards as All and no Featured rail', () => {
+        render(<DiscoverHomePage />)
+        const underAll = liveTitles()
+
+        selectCategory('social')
+
+        expect(liveTitles()).toEqual(underAll)
+        expect(screen.queryByTestId('featured-card')).not.toBeInTheDocument()
+      })
+
+      it('should not request a new live feed when the category changes', () => {
+        const liveFeedCalls = () => mockDestinationsQuery.mock.calls.filter(([a]) => a && (a as { limit?: number }).limit === 40)
+        render(<DiscoverHomePage />)
+        const before = new Set(liveFeedCalls().map(([a]) => JSON.stringify(a)))
+
+        selectCategory('social')
+
+        expect(new Set(liveFeedCalls().map(([a]) => JSON.stringify(a)))).toEqual(before)
+      })
+    })
+
     describe('and a regular category is selected with repetition off', () => {
       it('should keep Live Now and leave the filtered grid whole', () => {
         mockRepeat.mockReturnValue(false)

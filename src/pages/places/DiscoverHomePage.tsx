@@ -84,8 +84,8 @@ import {
 //                      the category dropdown (All, Featured, then the categories).
 //   4. EXPLORE ALL   — the main grid: the /destinations feed as-is, deduped
 //                      against the two rails above.
-// The curated rails (1+2) only render on the default view — searching or
-// filtering collapses the page to the grid. Favourites is a signed places-api
+// Searching collapses both curated rails (1+2) to the grid; a category collapses only the Featured
+// rail, Live Now stays. Favourites is a signed places-api
 // read; My places lists the signed-in wallet's own places + worlds.
 //
 // NOTE: no periodic polling — the LIVE feed loads once per mount and only
@@ -300,8 +300,9 @@ function DiscoverHomePage() {
   // the Explore grid from subtracting it — so the curated picks lead the grid
   // instead of disappearing. See useHideFeaturedPlaces for the flag matrix.
   const showFeaturedRail = showHighlights && !hideFeatured
-  // Live Now is not a filter result: a category narrows the Explore grid only, so the rail stays under
-  // every category. A search still collapses it.
+  // NOTE: 2026-10-13 (Braian) a category no longer collapses Live Now; it used to share the Featured
+  // rail's gate. Live Now is global (the same top four as All) and the category narrows the Explore
+  // grid only. Search still collapses it. Revisit if a category-scoped Live Now is ever wanted.
   const showLiveRail = section !== 'all' || !search
 
   // Mobile filter chip reflects a non-default category so the user can
