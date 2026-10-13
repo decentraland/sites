@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention -- Segment payload keys are snake_case */
 import { isValidEthAddress } from '../../utils/avatar'
-import type { DiscoverPlace, PlaceCreatorSource } from './discover.types'
+import type { DiscoverPlace, GetDiscoverDestinationsArgs, PlaceCreatorSource } from './discover.types'
 
 // Canonical category set used by the EXPLORE tab. Order mirrors what the
 // places-api exposes and what users expect from the standalone decentraland.social
@@ -9,6 +9,27 @@ import type { DiscoverPlace, PlaceCreatorSource } from './discover.types'
 const DISCOVER_CATEGORIES = ['social', 'music', 'art', 'game', 'fashion', 'education', 'shop', 'sports', 'business'] as const
 
 type DiscoverCategory = (typeof DISCOVER_CATEGORIES)[number]
+
+// "Featured" is not a places-api category: it filters on the curated `highlighted` flag
+// (`only_highlighted=true`), so it lives beside the real categories only in the UI.
+const FEATURED_CATEGORY = 'featured' as const
+
+type DiscoverCategoryFilter = DiscoverCategory | 'all' | typeof FEATURED_CATEGORY
+
+// One list for the desktop dropdown and the mobile drawer. Featured sits right after All.
+const DISCOVER_CATEGORY_OPTIONS: readonly DiscoverCategoryFilter[] = ['all', FEATURED_CATEGORY, ...DISCOVER_CATEGORIES]
+
+// `?category=` seed: `featured` or a known category, case and whitespace insensitive. Anything else is All.
+function parseCategoryParam(raw: string | null): DiscoverCategoryFilter {
+  const value = raw?.trim().toLowerCase()
+  return DISCOVER_CATEGORY_OPTIONS.find(option => option === value) ?? 'all'
+}
+
+function categoryQueryArgs(filter: DiscoverCategoryFilter): Pick<GetDiscoverDestinationsArgs, 'categories' | 'only_highlighted'> {
+  if (filter === 'all') return {}
+  if (filter === FEATURED_CATEGORY) return { only_highlighted: true }
+  return { categories: [filter] }
+}
 
 // Place positions come back as "x,y" strings; the API expects the same shape.
 // Negative coordinates are routine (Genesis Plaza is `-3,-2`).
@@ -209,6 +230,10 @@ function discoverPlacePayload(place: DiscoverPlace): Record<string, string | num
 
 export {
   DISCOVER_CATEGORIES,
+  DISCOVER_CATEGORY_OPTIONS,
+  FEATURED_CATEGORY,
+  categoryQueryArgs,
+  parseCategoryParam,
   buildDetailPath,
   buildJumpLandingHref,
   countGridTracks,
@@ -227,4 +252,4 @@ export {
   placeHasPeople,
   placePlayers
 }
-export type { DiscoverCategory }
+export type { DiscoverCategory, DiscoverCategoryFilter }

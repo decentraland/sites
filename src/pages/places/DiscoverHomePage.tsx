@@ -20,15 +20,18 @@ import { LiveEventCard } from '../../components/places/LiveEventCard'
 import { PlaceCard } from '../../components/places/PlaceCard'
 import { SceneJumpInModal } from '../../components/places/SceneJumpInModal'
 import {
-  DISCOVER_CATEGORIES,
+  DISCOVER_CATEGORY_OPTIONS,
+  FEATURED_CATEGORY,
   buildDetailPath,
+  categoryQueryArgs,
   countGridTracks,
   isHiddenPlace,
+  parseCategoryParam,
   placePlayers,
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery
 } from '../../features/discover'
-import type { DiscoverCategory, DiscoverPlace, ExploreSection } from '../../features/discover'
+import type { DiscoverCategoryFilter, DiscoverPlace, ExploreSection } from '../../features/discover'
 import { useHideFeaturedPlaces, useLiveMinUsers, useRepeatAcrossSections } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
@@ -77,7 +80,7 @@ import {
 //   1. LIVE NOW      — glowing rounded rail with the 4 busiest scenes.
 //   2. FEATURED      — places-api curated `highlighted` places.
 //   3. TOOLBAR       — Explore all / Favourites / My places tabs + search +
-//                      the category dropdown.
+//                      the category dropdown (All, Featured, then the categories).
 //   4. EXPLORE ALL   — the main grid: the /destinations feed as-is, deduped
 //                      against the two rails above.
 // The curated rails (1+2) only render on the default view — searching or
@@ -134,13 +137,13 @@ function DiscoverHomePage() {
   // entry per filter set. Filter handlers reset it synchronously.
   const [browseOffset, setBrowseOffset] = useState(0)
   const search = useDeferredValue(searchInput.trim())
-  const [activeCategory, setActiveCategory] = useState<DiscoverCategory | 'all'>('all')
+  const [activeCategory, setActiveCategory] = useState<DiscoverCategoryFilter>(() => parseCategoryParam(searchParams.get('category')))
   // Track filter changes for the DISCOVER analytics funnel. Single handlers so
   // every surface that changes them (desktop dropdowns, mobile drawer, chips)
   // emits the same event shape.
   const track = useDeferredTrack()
   const changeCategory = useCallback(
-    (next: DiscoverCategory | 'all') => {
+    (next: DiscoverCategoryFilter) => {
       track(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: next })
       setActiveCategory(next)
       // Reset pagination in the SAME commit — the effect below would lag one
@@ -247,7 +250,7 @@ function DiscoverHomePage() {
       offset: browseOffset,
       order_by: 'most_active' as const,
       search: search || undefined,
-      categories: activeCategory === 'all' ? undefined : [activeCategory],
+      ...categoryQueryArgs(activeCategory),
       // Real-time user counts on every row (the grid's presence pills) and `live` (an event running
       // there, from the events API) for the red badge and its tooltip.
       with_realms_detail: true,
@@ -427,11 +430,12 @@ function DiscoverHomePage() {
   // and the user scrolls past the same cards twice. Search and category filtering empty both rails,
   // so results are never hidden from a query.
   const exploreCards = useMemo<DiscoverPlace[]>(() => {
-    const kept = browseDestinations.filter(p => !isHiddenPlace(p))
+    // Featured keeps the curated set as the server returns it: curation overrides the junk heuristic, like places-api does.
+    const kept = activeCategory === FEATURED_CATEGORY ? browseDestinations : browseDestinations.filter(p => !isHiddenPlace(p))
     if (repeatAcrossSections) return kept
     const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
     return kept.filter(p => !shownAbove.has(p.id))
-  }, [browseDestinations, repeatAcrossSections, liveRail, featuredCards])
+  }, [browseDestinations, activeCategory, repeatAcrossSections, liveRail, featuredCards])
 
   // Wait for everything on first paint so the rails and the grid appear together. Polling / search
   // refetches use `isFetching`, not `isLoading`, so they don't re-trigger this gate.
@@ -596,11 +600,10 @@ function DiscoverHomePage() {
                 {section === 'all' && (
                   <FilterSelect
                     value={activeCategory}
-                    onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategory | 'all')}
+                    onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategoryFilter)}
                     aria-label={t('discover.explore.category.all')}
                   >
-                    <MenuItem value="all">{t('discover.explore.category.all')}</MenuItem>
-                    {DISCOVER_CATEGORIES.map(c => (
+                    {DISCOVER_CATEGORY_OPTIONS.map(c => (
                       <MenuItem key={c} value={c}>
                         {t(`discover.explore.category.${c}`)}
                       </MenuItem>
@@ -719,11 +722,10 @@ function DiscoverHomePage() {
             <DrawerSectionLabel>{t('discover.explore.category.label')}</DrawerSectionLabel>
             <DrawerSelect
               value={activeCategory}
-              onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategory | 'all')}
+              onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategoryFilter)}
               aria-label={t('discover.explore.category.all')}
             >
-              <MenuItem value="all">{t('discover.explore.category.all')}</MenuItem>
-              {DISCOVER_CATEGORIES.map(c => (
+              {DISCOVER_CATEGORY_OPTIONS.map(c => (
                 <MenuItem key={c} value={c}>
                   {t(`discover.explore.category.${c}`)}
                 </MenuItem>
