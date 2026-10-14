@@ -39,4 +39,14 @@ function isSectionActive(section: DropdownSection, pathname: string): boolean {
   })
 }
 
-export { isSectionActive, toNotificationLocale }
+/**
+ * The analytics `action` for a navbar link: the last segment of its i18n key
+ * (`component.landing.navbar.creator_documentation` -> `creator_documentation`).
+ * The key is stable across locales and copy edits, so the warehouse can group
+ * clicks by it without depending on what the link happens to say.
+ */
+function toNavbarAction(labelKey: string): string {
+  return labelKey.slice(labelKey.lastIndexOf('.') + 1)
+}
+
+export { isSectionActive, toNavbarAction, toNotificationLocale }

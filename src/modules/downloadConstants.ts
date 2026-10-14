@@ -1,4 +1,5 @@
 import publicLinks from '../config/publicLinks.json'
+import { OperativeSystem } from '../types/download.types'
 import { collectCampaignParams } from './campaignParams'
 import { buildGooglePlayUrl } from './googlePlayUrl'
 
@@ -52,6 +53,25 @@ function detectDownloadOS(): DownloadOS {
   return 'windows'
 }
 
+/**
+ * The desktop installer this browser can run, or null when there is none to start
+ * straight away. Stricter than `detectDownloadOS`, which defaults every unknown
+ * platform (Linux, ChromeOS) to 'windows' and reads an iPad's Macintosh user agent
+ * as 'apple'.
+ */
+function detectDesktopInstallerOs(): OperativeSystem | null {
+  if (typeof navigator === 'undefined') return null
+  const os = detectDownloadOS()
+  // iPadOS reports a Macintosh user agent; touch points tell it apart. A touch-capable Mac
+  // is sent to the /download chooser too: the safe side of the trade-off.
+  if (os === 'apple') return navigator.maxTouchPoints > 1 ? null : OperativeSystem.MACOS
+  // Xbox and Windows Phone user agents also say Windows but cannot run the installer.
+  if (os === 'windows' && /windows/i.test(navigator.userAgent) && !/xbox|windows phone/i.test(navigator.userAgent)) {
+    return OperativeSystem.WINDOWS
+  }
+  return null
+}
+
 function getDownloadUrl(os: DownloadOS): string {
   switch (os) {
     case 'apple':
@@ -65,5 +85,5 @@ function getDownloadUrl(os: DownloadOS): string {
   }
 }
 
-export { DOWNLOAD_URLS, detectDownloadOS, getDownloadUrl }
+export { DOWNLOAD_URLS, detectDesktopInstallerOs, detectDownloadOS, getDownloadUrl }
 export type { DownloadOS }

@@ -31,52 +31,43 @@
       "success": {
         "title": "もう少しで完了です！",
         "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",
-        "subtitle_action_exploring": "探検",
         "step": "ステップ",
-        "footer": "ダウンロードに問題がありますか？もう一度試しましょう：{link}",
-        "footer_link_label": "再ダウンロード",
+        "started": {
+          "title": "ダウンロードを開始しました！",
+          "subtitle": "次の3ステップでDecentralandをインストールして、世界に飛び込みましょう。"
+        },
+        "footer_retry": "ダウンロードが始まりませんか？{link}",
+        "footer_retry_link": "もう一度試す",
+        "footer_help": "お困りですか？{link}をご覧ください",
+        "footer_help_link": "decentraland.org/help",
         "event": "ダウンロード完了後、{event}のイベントページに戻って入場してください。{seconds}秒後にリダイレクトされます。",
         "steps": {
           "windows": {
             "step1": {
-              "title": "開く",
-              "text": "ダウンロードフォルダから<span>Decentraland</span>ファイルを開いてセットアップウィザードを起動します。"
+              "title": "ファイルを探す",
+              "text": "ブラウザのツールバーにあるダウンロードアイコンをクリックし、Decentralandインストーラー（.exe）を開きます。"
             },
             "step2": {
               "title": "インストール",
-              "text": "セットアップウィザードの指示に従ってください。<span>完了</span>をクリックするとインストールが始まります。"
+              "text": "セットアップウィザードの指示に従い、完了するまで「次へ」をクリックします。Windowsが許可を求めたら「はい」をクリックします。"
             },
             "step3": {
-              "title": "探検の準備をしましょう！",
-              "text": "インストールが完了すると、Decentralandアプリがタスクバーに表示され、自動的に起動します。"
+              "title": "いざ、出発！",
+              "text": "インストールが完了すると、Decentralandが自動的に起動します。ワールドでお会いしましょう！"
             }
           },
           "macOS": {
             "step1": {
-              "title": "開く",
-              "text": "ブラウザの「最近のダウンロード」または「ダウンロード」フォルダから<span>Decentraland</span>ファイルをクリックして開きます。"
+              "title": "ファイルを探す",
+              "text": "ブラウザのツールバーにあるダウンロードアイコンをクリックし、Decentraland-Installer.dmgを開きます。"
             },
             "step2": {
               "title": "インストール",
-              "text": "このウィンドウが表示されます。<span>Decentraland</span>ボタンをダブルクリックしてインストールを開始します。"
+              "text": "開いたウィンドウでDecentralandのアイコンをダブルクリックします。macOSのセキュリティメッセージが表示されたら、「開く」をクリックします。"
             },
             "step3": {
-              "title": "探検の準備をしましょう！",
-              "text": "インストールが完了すると、DecentralandアプリがDockに表示され、自動的に起動します。"
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "開く",
-              "text": "ブラウザの「最近のダウンロード」または「ダウンロード」フォルダから<span>Decentraland</span>ファイルをクリックして開きます。"
-            },
-            "step2": {
-              "title": "インストール",
-              "text": "このウィンドウが表示されます。<span>Decentraland</span>ボタンをダブルクリックしてインストールを開始します。"
-            },
-            "step3": {
-              "title": "探検の準備をしましょう！",
-              "text": "インストールが完了すると、DecentralandアプリがDockに表示され、自動的に起動します。"
+              "title": "いざ、出発！",
+              "text": "インストールが完了すると、Decentralandが自動的に起動します。ワールドでお会いしましょう！"
             }
           }
         }

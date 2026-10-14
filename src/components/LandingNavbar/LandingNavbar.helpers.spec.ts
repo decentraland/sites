@@ -1,4 +1,4 @@
-import { isSectionActive, toNotificationLocale } from './LandingNavbar.helpers'
+import { isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
 
 describe('when deciding which navbar section owns the current page', () => {
   it('should light up Discover on the What is On calendar', () => {
@@ -55,5 +55,15 @@ describe('when narrowing a site locale for ui2 notifications', () => {
     ['a regional variant', 'es-AR']
   ])('should fall back to english for %s', (_label, locale) => {
     expect(toNotificationLocale(locale)).toBe('en')
+  })
+})
+
+describe('when naming the analytics action for a navbar link', () => {
+  it('should use the last segment of its i18n key', () => {
+    expect(toNavbarAction('component.landing.navbar.creator_documentation')).toBe('creator_documentation')
+  })
+
+  it('should return a key without dots unchanged', () => {
+    expect(toNavbarAction('learn')).toBe('learn')
   })
 })

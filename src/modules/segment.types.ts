@@ -61,6 +61,8 @@ enum SegmentEvent {
   STORAGE_SCENE_DELETE_FAILURE = 'Storage Scene Delete Failure',
   STORAGE_SCENE_CLEAR_SUCCESS = 'Storage Scene Clear Success',
   STORAGE_SCENE_CLEAR_FAILURE = 'Storage Scene Clear Failure',
+  STORAGE_SCENE_DOWNLOAD_SUCCESS = 'Storage Scene Download Success',
+  STORAGE_SCENE_DOWNLOAD_FAILURE = 'Storage Scene Download Failure',
   STORAGE_PLAYER_SET_SUCCESS = 'Storage Player Set Success',
   STORAGE_PLAYER_SET_FAILURE = 'Storage Player Set Failure',
   STORAGE_PLAYER_DELETE_SUCCESS = 'Storage Player Delete Success',
@@ -102,6 +104,8 @@ enum DownloadPlace {
   PLAY_HERO_GOOGLE_PLAY = 'play-hero-google-play',
   PLAY_EXPERIMENTAL_WEB = 'play-experimental-web',
   DOWNLOAD_PAGE = 'download-page',
+  // The "install first" DownloadModal raised by Jump In / Hang Out CTAs across the site.
+  DOWNLOAD_MODAL = 'download-modal',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
   CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',

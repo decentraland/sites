@@ -2,6 +2,8 @@ import type { FC } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import DeleteIcon from '@mui/icons-material/Delete'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import DownloadIcon from '@mui/icons-material/Download'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
@@ -11,9 +13,10 @@ interface KeyTableProps {
   emptyLabel: string
   onEdit: (key: string) => void
   onDelete: (key: string) => void
+  onDownload?: (key: string) => void
 }
 
-const KeyTable: FC<KeyTableProps> = ({ keys, emptyLabel, onEdit, onDelete }) => {
+const KeyTable: FC<KeyTableProps> = ({ keys, emptyLabel, onEdit, onDelete, onDownload }) => {
   const t = useFormatMessage()
 
   if (keys.length === 0) {
@@ -38,6 +41,11 @@ const KeyTable: FC<KeyTableProps> = ({ keys, emptyLabel, onEdit, onDelete }) => 
             <TableRow key={item.key}>
               <TableCell>{item.key}</TableCell>
               <TableCell align="right">
+                {onDownload ? (
+                  <IconButton aria-label={`download ${item.key}`} color="primary" onClick={() => onDownload(item.key)}>
+                    <DownloadIcon />
+                  </IconButton>
+                ) : null}
                 <IconButton aria-label={`edit ${item.key}`} color="primary" onClick={() => onEdit(item.key)}>
                   <EditIcon />
                 </IconButton>

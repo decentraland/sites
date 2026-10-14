@@ -1,0 +1,4 @@
+matches:
+  # This JSON document has no extension, so the uploader cannot infer its MIME type.
+  - match: ".well-known/apple-app-site-association"
+    contentType: application/json
