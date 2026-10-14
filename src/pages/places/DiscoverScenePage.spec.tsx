@@ -91,6 +91,11 @@ jest.mock('../../hooks/usePageViewTracking', () => ({
   usePageViewTracking: (...args: unknown[]) => mockUsePageViewTracking(...args)
 }))
 
+const mockShareUrl = jest.fn((target: string) => `http://localhost${target}`)
+jest.mock('../../hooks/useShareUrl', () => ({
+  useShareUrl: (target: string) => mockShareUrl(target)
+}))
+
 const DEFAULT_CREATOR = {
   creatorName: 'CreatorName',
   creatorAddress: undefined,
@@ -245,6 +250,13 @@ describe('DiscoverScenePage', () => {
       expect(watcher).toHaveAttribute('data-count', '7')
       expect(watcher).toHaveAttribute('data-place', '10,20')
       expect(watcher.getAttribute('data-streaming')).toContain('https://decentraland.zone/bevy-web/?position=10%2C20')
+    })
+
+    it('should offer a share action built from the canonical detail path', () => {
+      render(<DiscoverScenePage kind="place" />)
+
+      expect(screen.getByRole('button', { name: 'discover.scene.share' })).toBeInTheDocument()
+      expect(mockShareUrl).toHaveBeenCalledWith('/places/place/10,20')
     })
 
     it('should render the chat dock next to the viewer with the scene title', () => {
