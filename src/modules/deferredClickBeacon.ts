@@ -1,5 +1,4 @@
 import { SegmentEvent } from './segment'
-import { ensureSegmentAnonymousId } from './segmentAnonymousId'
 import { postSegmentEvent } from './segmentBeacon'
 
 /**
@@ -10,19 +9,15 @@ import { postSegmentEvent } from './segmentBeacon'
  */
 function postDeferredClick(properties: Record<string, unknown>): void {
   const calledAt = Date.now()
-  postSegmentEvent(
-    SegmentEvent.CLICK,
-    {
-      ...properties,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      track_called_at: calledAt,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      track_delivered_at: Date.now(),
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      track_deferred: true
-    },
-    ensureSegmentAnonymousId()
-  )
+  postSegmentEvent(SegmentEvent.CLICK, {
+    ...properties,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_called_at: calledAt,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_delivered_at: Date.now(),
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    track_deferred: true
+  })
 }
 
 export { postDeferredClick }

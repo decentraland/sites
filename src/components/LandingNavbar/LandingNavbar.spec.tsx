@@ -20,7 +20,6 @@ jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ Notif
 jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn(), isBotClient: jest.fn() }))
 jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsDisabledForSession: jest.fn() }))
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
-jest.mock('../../modules/segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn() }))
 jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn() }))
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: jest.fn()
@@ -565,7 +564,6 @@ describe('when the visitor clicks a navbar link', () => {
       postSegmentEvent = jest.requireMock('../../modules/segmentBeacon').postSegmentEvent
       isBotClient = jest.requireMock('@dcl/hooks').isBotClient
       isAnalyticsDisabledForSession = jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsDisabledForSession
-      ;(jest.requireMock('../../modules/segmentAnonymousId').ensureSegmentAnonymousId as jest.Mock).mockReturnValue('anon-1')
       ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
       isBotClient.mockReturnValue(false)
       isAnalyticsDisabledForSession.mockReturnValue(false)
@@ -581,20 +579,16 @@ describe('when the visitor clicks a navbar link', () => {
       it('should send the click through the beacon, which survives the page unloading', () => {
         expect(track).not.toHaveBeenCalled()
         expect(postSegmentEvent).toHaveBeenCalledTimes(1)
-        expect(postSegmentEvent).toHaveBeenCalledWith(
-          'Click',
-          {
-            place: 'Landing Navbar',
-            event: 'click',
-            action: 'learn',
-            section: 'learn',
-            href: 'https://decentraland.org/blog/',
-            track_called_at: expect.any(Number),
-            track_delivered_at: expect.any(Number),
-            track_deferred: true
-          },
-          'anon-1'
-        )
+        expect(postSegmentEvent).toHaveBeenCalledWith('Click', {
+          place: 'Landing Navbar',
+          event: 'click',
+          action: 'learn',
+          section: 'learn',
+          href: 'https://decentraland.org/blog/',
+          track_called_at: expect.any(Number),
+          track_delivered_at: expect.any(Number),
+          track_deferred: true
+        })
       })
 
       describe('and analytics finishes loading', () => {
@@ -735,11 +729,7 @@ describe('when the visitor clicks a navbar link', () => {
 
       it('should send it through the beacon, since signing in redirects away', () => {
         expect(postSegmentEvent).toHaveBeenCalledTimes(1)
-        expect(postSegmentEvent).toHaveBeenCalledWith(
-          'Click',
-          expect.objectContaining({ action: 'sign_in', track_deferred: true }),
-          'anon-1'
-        )
+        expect(postSegmentEvent).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'sign_in', track_deferred: true }))
       })
     })
 
@@ -759,8 +749,7 @@ describe('when the visitor clicks a navbar link', () => {
       it('should send it through the beacon before the tab navigates in the same tab', () => {
         expect(postSegmentEvent).toHaveBeenCalledWith(
           'Click',
-          expect.objectContaining({ action: 'discover', section: 'discover', href: '/events', track_deferred: true }),
-          'anon-1'
+          expect.objectContaining({ action: 'discover', section: 'discover', href: '/events', track_deferred: true })
         )
         expect(postSegmentEvent.mock.invocationCallOrder[0]).toBeLessThan(open.mock.invocationCallOrder[0])
       })
