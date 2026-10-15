@@ -379,8 +379,7 @@ describe('DownloadLayout', () => {
           download_target: 'app_store',
           utm_source: 'shefi',
           utm_campaign: 'partner'
-        }),
-        'anon-fixed'
+        })
       )
     })
 
@@ -402,8 +401,7 @@ describe('DownloadLayout', () => {
           download_target: 'google_play',
           utm_source: 'shefi',
           utm_campaign: 'partner'
-        }),
-        'anon-fixed'
+        })
       )
     })
   })
