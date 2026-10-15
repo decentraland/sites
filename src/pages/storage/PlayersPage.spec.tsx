@@ -272,10 +272,12 @@ describe('PlayersPage', () => {
       expect(screen.getByRole('checkbox', { name: SELECT_ALL })).toBeChecked()
     })
 
-    it('should label the bulk actions as download all and delete all', () => {
+    it('should label the bulk actions as selected, matching the per-item action', () => {
       render(<PlayersPage />)
       expect(
-        ['component.storage.common.download_all', 'component.storage.common.delete_all'].map(name => screen.queryByRole('button', { name }))
+        ['component.storage.common.download_selected 3', 'component.storage.common.delete_selected 3'].map(name =>
+          screen.queryByRole('button', { name })
+        )
       ).not.toContain(null)
     })
   })
@@ -308,29 +310,6 @@ describe('PlayersPage', () => {
     it('should register the busy export with the leave guard', () => {
       render(<PlayersPage />)
       expect(mockUseLeaveGuard).toHaveBeenCalledWith(true)
-    })
-  })
-
-  describe('when the export reports an error', () => {
-    beforeEach(() => {
-      mockUseStorageExport.mockImplementation(() => ({
-        startExport,
-        busy: false,
-        errorKey: 'component.storage.errors.export_failed',
-        clearError
-      }))
-    })
-
-    it('should render the translated error in an alert', () => {
-      render(<PlayersPage />)
-      expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.export_failed')
-    })
-
-    it('should clear the error when the alert is closed', async () => {
-      const user = userEvent.setup()
-      render(<PlayersPage />)
-      await user.click(within(screen.getByRole('alert')).getByRole('button', { name: 'close alert' }))
-      expect(clearError).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -482,6 +461,11 @@ describe('PlayersPage', () => {
 
       it('should track the failure with the attempted count', () => {
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE, { count: 2 })
+      })
+
+      it('should surface the bulk delete error and keep the selection', () => {
+        expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.bulk_delete_failed')
+        expect(selection.clear).not.toHaveBeenCalled()
       })
     })
 

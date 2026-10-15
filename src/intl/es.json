@@ -714,7 +714,7 @@
         "delete_all": "Borrar todo",
         "delete_selected_dialog": {
           "title": "¿Borrar los elementos seleccionados?",
-          "message": "Esto borrará de forma permanente {count} elementos seleccionados."
+          "message": "{count, plural, one {Esto borrará de forma permanente # elemento seleccionado.} other {Esto borrará de forma permanente # elementos seleccionados.}}"
         },
         "select_all": "Seleccionar todo",
         "select_row": "Seleccionar {name}",
@@ -886,7 +886,8 @@
         "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
         "server": "El servicio de almacenamiento devolvió un error. Inténtalo de nuevo en unos minutos.",
         "world_scene_unresolved": "No pudimos resolver la ubicación de la escena de este mundo. Puede que aún no tenga una escena desplegada.",
-        "export_failed": "La exportación falló. Inténtalo de nuevo."
+        "export_failed": "La exportación falló. Inténtalo de nuevo.",
+        "bulk_delete_failed": "No se pudieron borrar algunos elementos. Inténtalo de nuevo."
       }
     },
     "report": {

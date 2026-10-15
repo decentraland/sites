@@ -4,13 +4,13 @@ import { Helmet } from 'react-helmet-async'
 import AddIcon from '@mui/icons-material/Add'
 import { Box, Button, CircularProgress } from 'decentraland-ui2'
 import { BulkActions } from '../../components/storage/BulkActions'
+import { BulkDeleteDialog } from '../../components/storage/BulkDeleteDialog'
 import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
 import { KeyTable } from '../../components/storage/KeyTable'
 import { SceneAddDialog, SceneEditDialog } from '../../components/storage/SceneDialogs'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import {
   buildExportFile,
-  deleteSelection,
   getStorageErrorStatus,
   toStorageValueFile,
   useClearSceneMutation,
@@ -21,6 +21,7 @@ import {
 import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useBulkDelete } from '../../hooks/useBulkDelete'
 import { useLeaveGuard } from '../../hooks/useLeaveGuard'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useSelection } from '../../hooks/useSelection'
@@ -44,14 +45,26 @@ function ScenePageContent() {
   const [clearScene] = useClearSceneMutation()
   const [getSceneValue] = useLazyGetSceneValueQuery()
   const sceneKeyIds = useMemo(() => sceneKeys?.map(({ key }) => key) ?? [], [sceneKeys])
-  const selection = useSelection(sceneKeyIds)
-  const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const selection = useSelection(sceneKeyIds, `${realm ?? ''}:${position ?? ''}`)
+  const { startExport, busy } = useStorageExport()
   useLeaveGuard(busy)
+
+  const bulkDelete = useBulkDelete({
+    selection,
+    deleteOne: key => deleteSceneValue({ identity, realm, position, key }).unwrap(),
+    clearAll: () => clearScene({ identity, realm, position }).unwrap(),
+    onResult: ({ allSelected, ok, count }) => {
+      if (allSelected) {
+        track(ok ? SegmentEvent.STORAGE_SCENE_CLEAR_SUCCESS : SegmentEvent.STORAGE_SCENE_CLEAR_FAILURE)
+      } else {
+        track(ok ? SegmentEvent.STORAGE_SCENE_DELETE_SUCCESS : SegmentEvent.STORAGE_SCENE_DELETE_FAILURE, { count })
+      }
+    }
+  })
 
   const [addOpen, setAddOpen] = useState(false)
   const [editKey, setEditKey] = useState<string | null>(null)
   const [deleteKey, setDeleteKey] = useState<string | null>(null)
-  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteKey) return
@@ -77,23 +90,6 @@ function ScenePageContent() {
     },
     [getSceneValue, identity, realm, position, track]
   )
-
-  const handleConfirmBulkDelete = useCallback(async () => {
-    const { allSelected, selected, clear } = selection
-    const ok = await deleteSelection({
-      allSelected,
-      ids: [...selected],
-      deleteOne: key => deleteSceneValue({ identity, realm, position, key }).unwrap(),
-      clearAll: () => clearScene({ identity, realm, position }).unwrap()
-    })
-    if (allSelected) {
-      track(ok ? SegmentEvent.STORAGE_SCENE_CLEAR_SUCCESS : SegmentEvent.STORAGE_SCENE_CLEAR_FAILURE)
-    } else {
-      track(ok ? SegmentEvent.STORAGE_SCENE_DELETE_SUCCESS : SegmentEvent.STORAGE_SCENE_DELETE_FAILURE, { count: selected.size })
-    }
-    clear()
-    setBulkDeleteOpen(false)
-  }, [selection, deleteSceneValue, clearScene, identity, realm, position, track])
 
   const handleExportSelected = useCallback(
     (format: ExportFormat) => {
@@ -127,9 +123,9 @@ function ScenePageContent() {
           </Button>
         </SectionActions>
       </SectionHeader>
-      {errorKey ? (
-        <ExportAlert severity="error" onClose={clearError}>
-          {t(errorKey)}
+      {bulkDelete.errorKey ? (
+        <ExportAlert severity="error" onClose={bulkDelete.clearError}>
+          {t(bulkDelete.errorKey)}
         </ExportAlert>
       ) : null}
 
@@ -153,10 +149,9 @@ function ScenePageContent() {
               variant="icon"
               allSelected={selection.allSelected}
               count={selection.count}
-              total={sceneKeyIds.length}
               busy={busy}
               onDownload={handleExportSelected}
-              onDelete={() => setBulkDeleteOpen(true)}
+              onDelete={bulkDelete.request}
             />
           }
         />
@@ -192,22 +187,15 @@ function ScenePageContent() {
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteKey(null)}
       />
-      <ConfirmDialog
-        open={bulkDeleteOpen}
-        title={
-          selection.allSelected
-            ? t('component.storage.scene_page.clear_dialog.title')
-            : t('component.storage.common.delete_selected_dialog.title')
-        }
-        message={
-          selection.allSelected
-            ? t('component.storage.scene_page.clear_dialog.message')
-            : t('component.storage.common.delete_selected_dialog.message', { count: selection.count })
-        }
-        confirmLabel={t('component.storage.common.confirm')}
-        cancelLabel={t('component.storage.common.cancel')}
-        onConfirm={handleConfirmBulkDelete}
-        onCancel={() => setBulkDeleteOpen(false)}
+      <BulkDeleteDialog
+        open={bulkDelete.open}
+        pending={bulkDelete.pending}
+        allSelected={selection.allSelected}
+        count={selection.count}
+        clearTitle={t('component.storage.scene_page.clear_dialog.title')}
+        clearMessage={t('component.storage.scene_page.clear_dialog.message')}
+        onConfirm={bulkDelete.confirm}
+        onCancel={bulkDelete.cancel}
       />
     </StorageLayout>
   )

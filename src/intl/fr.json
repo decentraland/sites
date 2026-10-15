@@ -709,7 +709,7 @@
         "delete_all": "Tout supprimer",
         "delete_selected_dialog": {
           "title": "Supprimer les éléments sélectionnés ?",
-          "message": "Cela supprimera définitivement {count} éléments sélectionnés."
+          "message": "{count, plural, one {Cela supprimera définitivement # élément sélectionné.} other {Cela supprimera définitivement # éléments sélectionnés.}}"
         },
         "select_all": "Tout sélectionner",
         "select_row": "Sélectionner {name}",
@@ -881,7 +881,8 @@
         "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
         "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes.",
         "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée.",
-        "export_failed": "L’exportation a échoué. Veuillez réessayer."
+        "export_failed": "L’exportation a échoué. Veuillez réessayer.",
+        "bulk_delete_failed": "Certains éléments n’ont pas pu être supprimés. Veuillez réessayer."
       }
     },
     "report": {

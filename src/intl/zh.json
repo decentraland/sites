@@ -714,7 +714,7 @@
         "delete_all": "全部删除",
         "delete_selected_dialog": {
           "title": "删除所选项？",
-          "message": "这将永久删除 {count} 个所选项。"
+          "message": "{count, plural, other {这将永久删除 # 个所选项。}}"
         },
         "select_all": "全选",
         "select_row": "选择 {name}",
@@ -886,7 +886,8 @@
         "rate_limited": "请求过多。请稍候后再试。",
         "server": "存储服务返回了错误。请几分钟后再试。",
         "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。",
-        "export_failed": "导出失败。请重试。"
+        "export_failed": "导出失败。请重试。",
+        "bulk_delete_failed": "部分项目无法删除。请重试。"
       }
     },
     "report": {

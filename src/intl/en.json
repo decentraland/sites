@@ -854,7 +854,7 @@
         "delete_all": "Delete all",
         "delete_selected_dialog": {
           "title": "Delete selected items?",
-          "message": "This will permanently delete {count} selected items."
+          "message": "{count, plural, one {This will permanently delete # selected item.} other {This will permanently delete # selected items.}}"
         },
         "select_all": "Select all",
         "select_row": "Select {name}",
@@ -1026,7 +1026,8 @@
         "rate_limited": "Too many requests. Wait a moment and try again.",
         "server": "The storage service returned an error. Try again in a few minutes.",
         "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet.",
-        "export_failed": "The export failed. Please try again."
+        "export_failed": "The export failed. Please try again.",
+        "bulk_delete_failed": "Some items could not be deleted. Please try again."
       }
     },
     "report": {

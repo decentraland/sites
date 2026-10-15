@@ -21,10 +21,16 @@ const EMPTY: SelectionState = { all: false, ids: new Set() }
 const effectiveIds = (state: SelectionState, loaded: ReadonlyArray<string>): Set<string> =>
   new Set(state.all ? loaded : loaded.filter(id => state.ids.has(id)))
 
-/** Gmail-style row selection over the loaded `ids`. */
-function useSelection(ids: ReadonlyArray<string>): Selection {
+/** Gmail-style row selection over the loaded `ids`. Resets when `resetKey` changes (e.g. the storage scope). */
+function useSelection(ids: ReadonlyArray<string>, resetKey?: string): Selection {
   const [state, setState] = useState<SelectionState>(EMPTY)
   const idsRef = useRef(ids)
+  const resetKeyRef = useRef(resetKey)
+
+  if (resetKey !== resetKeyRef.current) {
+    resetKeyRef.current = resetKey
+    setState(EMPTY)
+  }
 
   useEffect(() => {
     idsRef.current = ids

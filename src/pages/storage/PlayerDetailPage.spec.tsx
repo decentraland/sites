@@ -352,29 +352,6 @@ describe('PlayerDetailPage', () => {
     })
   })
 
-  describe('when the export reports an error', () => {
-    beforeEach(() => {
-      mockUseStorageExport.mockImplementation(() => ({
-        startExport,
-        busy: false,
-        errorKey: 'component.storage.errors.rate_limited',
-        clearError
-      }))
-    })
-
-    it('should render the translated error in an alert', () => {
-      render(<PlayerDetailPage />)
-      expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.rate_limited')
-    })
-
-    it('should clear the error when the alert is closed', async () => {
-      const user = userEvent.setup()
-      render(<PlayerDetailPage />)
-      await user.click(within(screen.getByRole('alert')).getByRole('button', { name: 'close alert' }))
-      expect(clearError).toHaveBeenCalledTimes(1)
-    })
-  })
-
   describe('when a key is downloaded and the value loads', () => {
     beforeEach(() => {
       mockGetPlayerValue.mockReturnValue({ unwrap: () => Promise.resolve({ key: 'save.json', value: { level: 3 } }) })
@@ -653,6 +630,11 @@ describe('PlayerDetailPage', () => {
 
       it('should track the failure with the attempted count', () => {
         expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.STORAGE_PLAYER_DELETE_FAILURE, { count: 2 })
+      })
+
+      it('should surface the bulk delete error and keep the selection', () => {
+        expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.bulk_delete_failed')
+        expect(selection.clear).not.toHaveBeenCalled()
       })
     })
 

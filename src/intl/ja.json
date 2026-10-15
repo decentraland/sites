@@ -714,7 +714,7 @@
         "delete_all": "すべて削除",
         "delete_selected_dialog": {
           "title": "選択した項目を削除しますか？",
-          "message": "選択した{count}件の項目が完全に削除されます。"
+          "message": "{count, plural, other {選択した#件の項目が完全に削除されます。}}"
         },
         "select_all": "すべて選択",
         "select_row": "{name} を選択",
@@ -886,7 +886,8 @@
         "rate_limited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
         "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。",
         "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。",
-        "export_failed": "エクスポートに失敗しました。もう一度お試しください。"
+        "export_failed": "エクスポートに失敗しました。もう一度お試しください。",
+        "bulk_delete_failed": "一部の項目を削除できませんでした。もう一度お試しください。"
       }
     },
     "report": {

@@ -2,14 +2,14 @@ import { act, renderHook } from '@testing-library/react'
 import type { RenderHookResult } from '@testing-library/react'
 import { useSelection } from './useSelection'
 
-type Props = { ids: ReadonlyArray<string> }
+type Props = { ids: ReadonlyArray<string>; resetKey?: string }
 type Hook = RenderHookResult<ReturnType<typeof useSelection>, Props>
 
 describe('useSelection', () => {
   let hook: Hook
 
   beforeEach(() => {
-    hook = renderHook(({ ids }: Props) => useSelection(ids), { initialProps: { ids: ['a', 'b', 'c'] } as Props })
+    hook = renderHook(({ ids, resetKey }: Props) => useSelection(ids, resetKey), { initialProps: { ids: ['a', 'b', 'c'] } as Props })
   })
 
   afterEach(() => {
@@ -167,6 +167,21 @@ describe('useSelection', () => {
 
     it('should keep toggle referentially stable', () => {
       expect(hook.result.current.toggle).toBe(toggle)
+    })
+  })
+
+  describe('when the resetKey changes', () => {
+    beforeEach(() => {
+      hook = renderHook(({ ids, resetKey }: Props) => useSelection(ids, resetKey), {
+        initialProps: { ids: ['a', 'b', 'c'], resetKey: 'main:0,0' } as Props
+      })
+      act(() => hook.result.current.toggleAll())
+      hook.rerender({ ids: ['a', 'b', 'c'], resetKey: 'other:1,1' })
+    })
+
+    it('should clear the selection', () => {
+      const { selected, allSelected, count } = hook.result.current
+      expect({ selected: [...selected], allSelected, count }).toEqual({ selected: [], allSelected: false, count: 0 })
     })
   })
 })

@@ -315,6 +315,7 @@ interface DeleteSelectionParams {
   ids: ReadonlyArray<string>
   deleteOne: (id: string) => Promise<unknown>
   clearAll: () => Promise<unknown>
+  concurrency?: number
 }
 
 type WrapSignedFetchError = { status: number; data?: unknown } | { status: 'FETCH_ERROR'; error: string }

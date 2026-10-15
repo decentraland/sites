@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import { fetchExportFile, getStorageErrorKey, getStorageErrorStatus } from '../features/storage'
 import type { ExportFormat, ExportSelection } from '../features/storage'
 import { triggerBlobDownload } from '../modules/file'
@@ -14,40 +14,72 @@ interface UseStorageExportResult {
   clearError: () => void
 }
 
+interface ExportState {
+  busy: boolean
+  errorKey: string | null
+}
+
 const EXPORT_FAILED_KEY = 'component.storage.errors.export_failed'
 
-/** Streams a storage export for the selection and saves it, aborting it when the caller unmounts. */
+const IDLE: ExportState = { busy: false, errorKey: null }
+
+let state: ExportState = IDLE
+let controller: AbortController | null = null
+const listeners = new Set<() => void>()
+
+const emit = (): void => listeners.forEach(listener => listener())
+const setState = (next: ExportState): void => {
+  state = next
+  emit()
+}
+const getState = (): ExportState => state
+
+const abortActive = (): void => {
+  if (!controller) return
+  controller.abort()
+  controller = null
+  setState({ busy: false, errorKey: state.errorKey })
+}
+
+const subscribe = (listener: () => void): (() => void) => {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+    if (listeners.size === 0) {
+      controller?.abort()
+      controller = null
+      state = IDLE
+    }
+  }
+}
+
+/** One shared export controller for the whole storage area: a second start while one streams does nothing, and there is a single busy/error source. */
 function useStorageExport(): UseStorageExportResult {
   const { identity } = useAuthIdentity()
   const { realm, position } = useStorageScope()
   const track = useStorageTrack()
-  const [busy, setBusy] = useState(false)
-  const [errorKey, setErrorKey] = useState<string | null>(null)
-  const controllerRef = useRef<AbortController | null>(null)
+  const snapshot = useSyncExternalStore(subscribe, getState, getState)
 
-  useEffect(() => () => controllerRef.current?.abort(), [])
+  useEffect(() => () => abortActive(), [realm, position, identity])
 
   const runExport = useCallback(
     async (selection: ExportSelection, format: ExportFormat) => {
-      const controller = new AbortController()
-      controllerRef.current = controller
-      setBusy(true)
-      setErrorKey(null)
+      const activeController = new AbortController()
+      controller = activeController
+      setState({ busy: true, errorKey: null })
       try {
-        const file = await fetchExportFile({ identity, realm, position, format, selection, signal: controller.signal })
-        if (controller.signal.aborted) return
+        const file = await fetchExportFile({ identity, realm, position, format, selection, signal: activeController.signal })
+        if (activeController.signal.aborted) return
         triggerBlobDownload(file, `storage-export.${format}`)
         track(SegmentEvent.STORAGE_EXPORT_SUCCESS, { format })
+        controller = null
+        setState(IDLE)
       } catch (error) {
-        if (controller.signal.aborted) return
+        if (activeController.signal.aborted) return
         const status = getStorageErrorStatus(error)
-        setErrorKey(status === 'FETCH_ERROR' ? EXPORT_FAILED_KEY : getStorageErrorKey(error))
+        controller = null
+        setState({ busy: false, errorKey: status === 'FETCH_ERROR' ? EXPORT_FAILED_KEY : getStorageErrorKey(error) })
         track(SegmentEvent.STORAGE_EXPORT_FAILURE, { format, errorStatus: status ?? 'unknown' })
-      } finally {
-        if (!controller.signal.aborted) {
-          controllerRef.current = null
-          setBusy(false)
-        }
       }
     },
     [identity, realm, position, track]
@@ -55,15 +87,15 @@ function useStorageExport(): UseStorageExportResult {
 
   const startExport = useCallback(
     (selection: ExportSelection, format: ExportFormat) => {
-      if (controllerRef.current || !identity) return
+      if (controller || !identity) return
       void runExport(selection, format)
     },
     [identity, runExport]
   )
 
-  const clearError = useCallback(() => setErrorKey(null), [])
+  const clearError = useCallback(() => setState({ busy: state.busy, errorKey: null }), [])
 
-  return { startExport, busy, errorKey, clearError }
+  return { startExport, busy: snapshot.busy, errorKey: snapshot.errorKey, clearError }
 }
 
 export { useStorageExport }

@@ -4,16 +4,17 @@ import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { Box, Checkbox, CircularProgress, FormControlLabel, Typography } from 'decentraland-ui2'
 import { BulkActions } from '../../components/storage/BulkActions'
-import { ConfirmDialog } from '../../components/storage/ConfirmDialog'
+import { BulkDeleteDialog } from '../../components/storage/BulkDeleteDialog'
 import { PlayerCard } from '../../components/storage/PlayerCard'
 import { SearchField } from '../../components/storage/SearchField'
 import { StorageEmptyState } from '../../components/storage/StorageEmptyState'
 import { StorageLayout } from '../../components/storage/StorageLayout'
 import { useGetProfileNames } from '../../features/profile/profile.client'
-import { deleteSelection, useClearAllPlayersMutation, useClearPlayerMutation, useListPlayersQuery } from '../../features/storage'
+import { useClearAllPlayersMutation, useClearPlayerMutation, useListPlayersQuery } from '../../features/storage'
 import type { ExportFormat } from '../../features/storage'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
+import { useBulkDelete } from '../../hooks/useBulkDelete'
 import { useLeaveGuard } from '../../hooks/useLeaveGuard'
 import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { useSelection } from '../../hooks/useSelection'
@@ -38,13 +39,25 @@ function PlayersPageContent() {
   const [clearPlayer] = useClearPlayerMutation()
 
   const [query, setQuery] = useState('')
-  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const playerAddresses = useMemo(() => players ?? [], [players])
   const profileNames = useGetProfileNames(playerAddresses)
-  const selection = useSelection(playerAddresses)
-  const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const selection = useSelection(playerAddresses, `${realm ?? ''}:${position ?? ''}`)
+  const { startExport, busy } = useStorageExport()
   const confirmLeave = useLeaveGuard(busy)
+
+  const bulkDelete = useBulkDelete({
+    selection,
+    deleteOne: address => clearPlayer({ identity, realm, position, address }).unwrap(),
+    clearAll: () => clearAllPlayers({ identity, realm, position }).unwrap(),
+    onResult: ({ allSelected, ok, count }) => {
+      if (allSelected) {
+        track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_FAILURE)
+      } else {
+        track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE, { count })
+      }
+    }
+  })
 
   const filteredPlayers = useMemo(() => {
     if (!query.trim()) return playerAddresses
@@ -81,23 +94,6 @@ function PlayersPageContent() {
     selection.toggleAll()
   }, [query, filteredPlayers, selection])
 
-  const handleConfirmBulkDelete = useCallback(async () => {
-    const { allSelected, selected, clear } = selection
-    const ok = await deleteSelection({
-      allSelected,
-      ids: [...selected],
-      deleteOne: playerAddress => clearPlayer({ identity, realm, position, address: playerAddress }).unwrap(),
-      clearAll: () => clearAllPlayers({ identity, realm, position }).unwrap()
-    })
-    if (allSelected) {
-      track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_ALL_FAILURE)
-    } else {
-      track(ok ? SegmentEvent.STORAGE_PLAYER_CLEAR_SUCCESS : SegmentEvent.STORAGE_PLAYER_CLEAR_FAILURE, { count: selected.size })
-    }
-    clear()
-    setBulkDeleteOpen(false)
-  }, [selection, clearPlayer, clearAllPlayers, identity, realm, position, track])
-
   usePageViewTracking({
     name: t('page.storage.players.title'),
     properties: { section: 'storage_players', realm: realm ?? undefined, position: position ?? undefined }
@@ -126,16 +122,15 @@ function PlayersPageContent() {
             variant="button"
             allSelected={selection.allSelected}
             count={selection.count}
-            total={playerAddresses.length}
             busy={busy}
             onDownload={handleExportSelected}
-            onDelete={() => setBulkDeleteOpen(true)}
+            onDelete={bulkDelete.request}
           />
         </SectionActions>
       </SectionHeader>
-      {errorKey ? (
-        <ExportAlert severity="error" onClose={clearError}>
-          {t(errorKey)}
+      {bulkDelete.errorKey ? (
+        <ExportAlert severity="error" onClose={bulkDelete.clearError}>
+          {t(bulkDelete.errorKey)}
         </ExportAlert>
       ) : null}
 
@@ -177,22 +172,15 @@ function PlayersPageContent() {
         </CardsGrid>
       )}
 
-      <ConfirmDialog
-        open={bulkDeleteOpen}
-        title={
-          selection.allSelected
-            ? t('component.storage.player_page.clear_all_dialog.title')
-            : t('component.storage.common.delete_selected_dialog.title')
-        }
-        message={
-          selection.allSelected
-            ? t('component.storage.player_page.clear_all_dialog.message')
-            : t('component.storage.common.delete_selected_dialog.message', { count: selection.count })
-        }
-        confirmLabel={t('component.storage.common.confirm')}
-        cancelLabel={t('component.storage.common.cancel')}
-        onConfirm={handleConfirmBulkDelete}
-        onCancel={() => setBulkDeleteOpen(false)}
+      <BulkDeleteDialog
+        open={bulkDelete.open}
+        pending={bulkDelete.pending}
+        allSelected={selection.allSelected}
+        count={selection.count}
+        clearTitle={t('component.storage.player_page.clear_all_dialog.title')}
+        clearMessage={t('component.storage.player_page.clear_all_dialog.message')}
+        onConfirm={bulkDelete.confirm}
+        onCancel={bulkDelete.cancel}
       />
     </StorageLayout>
   )

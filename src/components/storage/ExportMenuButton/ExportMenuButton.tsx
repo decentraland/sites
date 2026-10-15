@@ -5,6 +5,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import DownloadIcon from '@mui/icons-material/Download'
 import { Button, CircularProgress, Menu, MenuItem } from 'decentraland-ui2'
+import type { ExportFormat } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { ActionIconButton } from '../_shared/ActionIconButton.styled'
 import { ExportMenuRoot, ExportStatus } from './ExportMenuButton.styled'
@@ -13,7 +14,7 @@ interface ExportMenuButtonProps {
   label: string
   busy?: boolean
   variant?: 'button' | 'icon'
-  onSelect: (format: 'json' | 'csv') => void
+  onSelect: (format: ExportFormat) => void
 }
 
 const ExportMenuButton: FC<ExportMenuButtonProps> = props => {
@@ -36,7 +37,7 @@ const ExportMenuButton: FC<ExportMenuButtonProps> = props => {
   }, [])
 
   const handleSelect = useCallback(
-    (format: 'json' | 'csv') => () => {
+    (format: ExportFormat) => () => {
       setAnchorEl(null)
       onSelect(format)
     },

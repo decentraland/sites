@@ -173,6 +173,26 @@ describe('useStorageExport', () => {
       })
     })
 
+    describe('and the scope changes before the file arrives', () => {
+      let signal: AbortSignal
+
+      beforeEach(async () => {
+        signal = (fetchExportFileMock.mock.calls[0][0] as { signal: AbortSignal }).signal
+        useStorageScopeMock.mockReturnValue({ realm: 'other.dcl.eth', position: '1,1' })
+        await act(async () => {
+          hook.rerender()
+        })
+      })
+
+      it('should abort the in-flight export', () => {
+        expect(signal.aborted).toBe(true)
+      })
+
+      it('should be idle again', () => {
+        expect(hook.result.current.busy).toBe(false)
+      })
+    })
+
     describe('and the hook unmounts before the file arrives', () => {
       let signal: AbortSignal
 

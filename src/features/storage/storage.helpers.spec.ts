@@ -198,6 +198,15 @@ describe('createScopedSignedFetch', () => {
     await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 401 })
   })
 
+  it.each(['Failed to fetch', 'NetworkError when attempting to fetch resource', 'Load failed'])(
+    'lets a network TypeError ("%s") through so it becomes a FETCH_ERROR, not a 401',
+    async message => {
+      signedFetchMock.mockRejectedValue(new TypeError(message))
+      const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
+      await expect(sf('https://example/api', { method: 'PUT' })).rejects.toThrow(message)
+    }
+  )
+
   it('wraps a generic signing Error as 401 too (never falls back to an unsigned request)', async () => {
     signedFetchMock.mockRejectedValue(new Error('signing broken'))
     const fetchSpy = jest.spyOn(globalThis, 'fetch')
@@ -254,6 +263,13 @@ describe('sendSignedFetch', () => {
   it('resolves silently on a 2xx response', async () => {
     const sf = jest.fn().mockResolvedValue(makeResponse(null, { status: 204 }))
     await expect(sendSignedFetch(sf, 'https://example/api', { method: 'DELETE' })).resolves.toBeUndefined()
+  })
+
+  it('cancels the response body on success so the stream is not left open', async () => {
+    const cancel = jest.fn().mockResolvedValue(undefined)
+    const sf = jest.fn().mockResolvedValue({ ok: true, status: 200, body: { cancel } } as unknown as Response)
+    await sendSignedFetch(sf, 'https://example/api', { method: 'DELETE' })
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 
   it('throws a status/data shape on a non-2xx response', async () => {
@@ -572,6 +588,14 @@ describe('toStorageValueFile', () => {
       expect(toStorageValueFile('notes.md', 'x').type).toBe('text/plain')
       expect(toStorageValueFile('greeting', 'hi').type).toBe('text/plain')
     })
+
+    it('should append .txt to a key whose extension is not in the download allowlist', () => {
+      expect(toStorageValueFile('report.html', '<b>x</b>')).toMatchObject({ filename: 'report.html.txt', type: 'text/plain' })
+    })
+
+    it('should keep an extensionless key filename unchanged', () => {
+      expect(toStorageValueFile('greeting', 'hi').filename).toBe('greeting')
+    })
   })
 
   describe('when the value is not a string', () => {
@@ -700,6 +724,36 @@ describe('when building an export file', () => {
         expect(file.content).toContain('world,,k,-5\r\n')
       })
     })
+
+    describe('and a key starts with a fullwidth or newline formula character', () => {
+      it.each(['＝SUM(A1)', '＋1', '－1', '＠x', '\nx'])('should prefix "%s" with a quote', key => {
+        file = buildExportFile('csv', [{ key, value: 1 }], [])
+
+        expect(file.content).toContain(`'${key}`)
+      })
+    })
+
+    describe('and a player address starts with a formula character', () => {
+      beforeEach(() => {
+        players = [{ address: '=cmd', key: 'k', value: 1 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should neutralize the address cell', () => {
+        expect(file.content).toContain("player,'=cmd,k,1\r\n")
+      })
+    })
+
+    describe('and a value is missing', () => {
+      beforeEach(() => {
+        world = [{ key: 'k', value: undefined }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should write an empty value cell instead of the literal undefined', () => {
+        expect(file.content).toContain('world,,k,\r\n')
+      })
+    })
   })
 })
 
@@ -802,8 +856,8 @@ describe('deleteSelection', () => {
       expect(clearAll).not.toHaveBeenCalled()
     })
 
-    it('should resolve true when every delete succeeds', async () => {
-      await expect(run()).resolves.toBe(true)
+    it('should resolve to no failed ids when every delete succeeds', async () => {
+      await expect(run()).resolves.toEqual([])
     })
 
     describe('and one delete fails', () => {
@@ -817,8 +871,25 @@ describe('deleteSelection', () => {
         expect(deleteOne).toHaveBeenCalledTimes(2)
       })
 
-      it('should resolve false', async () => {
-        await expect(run()).resolves.toBe(false)
+      it('should resolve to only the failed ids', async () => {
+        await expect(run()).resolves.toEqual(['b'])
+      })
+    })
+
+    describe('and more ids are selected than the concurrency cap', () => {
+      it('should never run more than the cap at once', async () => {
+        let inFlight = 0
+        let peak = 0
+        const slow = jest.fn(async () => {
+          inFlight++
+          peak = Math.max(peak, inFlight)
+          await Promise.resolve()
+          inFlight--
+        })
+        await deleteSelection({ allSelected: false, ids: ['a', 'b', 'c', 'd', 'e'], deleteOne: slow, clearAll, concurrency: 2 })
+
+        expect(peak).toBeLessThanOrEqual(2)
+        expect(slow).toHaveBeenCalledTimes(5)
       })
     })
   })
@@ -840,8 +911,8 @@ describe('deleteSelection', () => {
       expect(deleteOne).not.toHaveBeenCalled()
     })
 
-    it('should resolve true when the clear succeeds', async () => {
-      await expect(run()).resolves.toBe(true)
+    it('should resolve to no failed ids when the clear succeeds', async () => {
+      await expect(run()).resolves.toEqual([])
     })
 
     describe('and the clear fails', () => {
@@ -849,8 +920,8 @@ describe('deleteSelection', () => {
         clearAll.mockRejectedValue({ status: 500 })
       })
 
-      it('should resolve false', async () => {
-        await expect(run()).resolves.toBe(false)
+      it('should resolve to the selected ids so they stay selected', async () => {
+        await expect(run()).resolves.toEqual(['a', 'b'])
       })
     })
   })

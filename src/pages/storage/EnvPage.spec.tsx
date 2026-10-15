@@ -121,7 +121,15 @@ jest.mock('../../components/storage/EnvDialogs', () => ({
 }))
 jest.mock('./shared.styled', () => ({
   SectionActions: ({ children }: ChildrenProps) => <div>{children}</div>,
-  SectionHeader: ({ children }: ChildrenProps) => <div>{children}</div>
+  SectionHeader: ({ children }: ChildrenProps) => <div>{children}</div>,
+  ExportAlert: ({ children, onClose }: { children?: ReactNode; onClose: () => void }) => (
+    <div role="alert">
+      {children}
+      <button type="button" onClick={onClose}>
+        close alert
+      </button>
+    </div>
+  )
 }))
 jest.mock('../../components/storage/StorageLayout', () => ({
   StorageLayout: ({ children }: ChildrenProps) => <div>{children}</div>

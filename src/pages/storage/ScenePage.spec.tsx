@@ -317,26 +317,31 @@ describe('ScenePage', () => {
     })
   })
 
-  describe('when the export reports an error', () => {
-    beforeEach(() => {
-      mockUseStorageExport.mockImplementation(() => ({
-        startExport,
-        busy: false,
-        errorKey: 'component.storage.errors.export_failed',
-        clearError
-      }))
+  describe('when a bulk delete fails', () => {
+    let user: ReturnType<typeof userEvent.setup>
+    const DIALOG = 'component.storage.common.delete_selected_dialog.title'
+
+    beforeEach(async () => {
+      const selected = new Set(['a', 'b'])
+      selection = buildSelection({ selected, count: 2, isSelected: id => selected.has(id) })
+      user = userEvent.setup()
+      mockDeleteSceneValue.mockReturnValue({ unwrap: () => Promise.reject({ status: 500 }) })
+      render(<ScenePage />)
+      await user.click(screen.getByRole('button', { name: 'component.storage.common.delete_selected 2' }))
+      await user.click(within(screen.getByRole('dialog', { name: DIALOG })).getByRole('button', { name: 'confirm' }))
     })
 
-    it('should render the translated error in an alert', () => {
-      render(<ScenePage />)
-      expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.export_failed')
+    it('should surface the bulk delete error in an alert', () => {
+      expect(screen.getByRole('alert')).toHaveTextContent('component.storage.errors.bulk_delete_failed')
     })
 
-    it('should clear the error when the alert is closed', async () => {
-      const user = userEvent.setup()
-      render(<ScenePage />)
+    it('should keep the selection instead of clearing it', () => {
+      expect(selection.clear).not.toHaveBeenCalled()
+    })
+
+    it('should dismiss the alert when it is closed', async () => {
       await user.click(within(screen.getByRole('alert')).getByRole('button', { name: 'close alert' }))
-      expect(clearError).toHaveBeenCalledTimes(1)
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
 
