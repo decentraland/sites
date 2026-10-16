@@ -17,8 +17,18 @@ const attachHls = async (video: HTMLVideoElement, src: string, onFatal: () => vo
   const { default: Hls } = await import('hls.js')
   if (!Hls.isSupported()) throw new Error('HLS is not supported')
   const hls = new Hls()
+  let recovered = false
   hls.on(Hls.Events.ERROR, (_event, data) => {
-    if (data.fatal) onFatal()
+    if (!data.fatal) return
+    if (!recovered && data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+      recovered = true
+      hls.startLoad()
+    } else if (!recovered && data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+      recovered = true
+      hls.recoverMediaError()
+    } else {
+      onFatal()
+    }
   })
   hls.loadSource(src)
   hls.attachMedia(video)

@@ -3,19 +3,37 @@ import { attachHls } from './hlsSource'
 
 jest.mock('hls.js', () => ({
   __esModule: true,
-  default: Object.assign(jest.fn(), { isSupported: jest.fn(), Events: { ERROR: 'hlsError' } })
+  default: Object.assign(jest.fn(), {
+    isSupported: jest.fn(),
+    Events: { ERROR: 'hlsError' },
+    ErrorTypes: { NETWORK_ERROR: 'networkError', MEDIA_ERROR: 'mediaError' }
+  })
 }))
 
 const SRC = 'https://player.vimeo.com/external/123456.m3u8?s=abc'
 
 describe('when an HLS source is attached', () => {
   let video: HTMLVideoElement
-  let hls: { loadSource: jest.Mock; attachMedia: jest.Mock; destroy: jest.Mock; on: jest.Mock }
+  let hls: {
+    loadSource: jest.Mock
+    attachMedia: jest.Mock
+    destroy: jest.Mock
+    on: jest.Mock
+    startLoad: jest.Mock
+    recoverMediaError: jest.Mock
+  }
   let onFatal: jest.Mock
 
   beforeEach(() => {
     video = document.createElement('video')
-    hls = { loadSource: jest.fn(), attachMedia: jest.fn(), destroy: jest.fn(), on: jest.fn() }
+    hls = {
+      loadSource: jest.fn(),
+      attachMedia: jest.fn(),
+      destroy: jest.fn(),
+      on: jest.fn(),
+      startLoad: jest.fn(),
+      recoverMediaError: jest.fn()
+    }
     onFatal = jest.fn()
     jest.mocked(HlsJs).mockImplementation(() => hls as never)
   })
@@ -78,6 +96,43 @@ describe('when an HLS source is attached', () => {
 
     it('should listen for hls.js errors', () => {
       expect(hls.on).toHaveBeenCalledWith('hlsError', expect.any(Function))
+    })
+
+    const emitError = (data: { fatal: boolean; type?: string }) => {
+      const [event, listener] = hls.on.mock.calls[0]
+      listener(event, data)
+    }
+
+    describe('and hls.js reports a fatal network error', () => {
+      beforeEach(() => emitError({ fatal: true, type: 'networkError' }))
+
+      it('should restart loading instead of failing', () => {
+        expect(hls.startLoad).toHaveBeenCalled()
+      })
+
+      it('should not report a failure', () => {
+        expect(onFatal).not.toHaveBeenCalled()
+      })
+
+      describe('and it recurs', () => {
+        beforeEach(() => emitError({ fatal: true, type: 'networkError' }))
+
+        it('should report the failure', () => {
+          expect(onFatal).toHaveBeenCalledTimes(1)
+        })
+      })
+    })
+
+    describe('and hls.js reports a fatal media error', () => {
+      beforeEach(() => emitError({ fatal: true, type: 'mediaError' }))
+
+      it('should recover the media instead of failing', () => {
+        expect(hls.recoverMediaError).toHaveBeenCalled()
+      })
+
+      it('should not report a failure', () => {
+        expect(onFatal).not.toHaveBeenCalled()
+      })
     })
 
     describe('and the cleanup runs', () => {

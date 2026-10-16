@@ -7,7 +7,7 @@ import type { PresentationState } from '../../../features/cast2/contexts/Present
 import { ClientVideo } from './ClientVideo'
 import { attachHls } from './hlsSource'
 import { createYouTubePlayer, loadYouTubeApi } from './youtubePlayer'
-import type { ClientPlayerEvents, ClientPlayerHandle } from './PresentationStage.types'
+import type { ClientPlayerEvents, ClientPlayerHandle } from './ClientVideo.types'
 
 jest.mock('decentraland-ui2', () => ({
   ...jest.requireActual('../../../__test-utils__/styledMock'),
@@ -179,6 +179,21 @@ describe('when a YouTube client video renders', () => {
 
       it('should not seek again', () => {
         expect(handle.seekTo).not.toHaveBeenCalled()
+      })
+
+      describe('and the presenter restarts the video afterwards', () => {
+        beforeEach(() => {
+          state = { ...state, videoPositionMs: 3_000, videoPositionAt: Date.now() }
+          result.rerender(<ClientVideo video={video} muted={false} />)
+        })
+
+        it('should seek to the restarted position', () => {
+          expect(handle.seekTo).toHaveBeenCalledWith(3_000)
+        })
+
+        it('should resume playing', () => {
+          expect(handle.play).toHaveBeenCalled()
+        })
       })
     })
 
@@ -556,6 +571,17 @@ describe('when a file client video renders', () => {
       it('should not play again', () => {
         expect(play).not.toHaveBeenCalled()
       })
+
+      describe('and the presenter restarts the video afterwards', () => {
+        beforeEach(() => {
+          state = { ...state, videoPositionMs: 3_000, videoPositionAt: NOW }
+          result.rerender(<ClientVideo video={video} muted={false} />)
+        })
+
+        it('should play again', () => {
+          expect(play).toHaveBeenCalled()
+        })
+      })
     })
 
     describe('and it unmounts', () => {
@@ -660,12 +686,16 @@ describe('when a file client video renders', () => {
       await canPlay()
     })
 
-    it('should render nothing', () => {
-      expect(result.container).toBeEmptyDOMElement()
+    it('should keep the video element', () => {
+      expect(element()).toBeInTheDocument()
     })
 
-    it('should warn with the player kind only', () => {
-      expect(warn).toHaveBeenCalledWith(FAILURE, 'file')
+    it('should keep the unmute button', () => {
+      expect(screen.getByRole('button', UNMUTE)).toBeInTheDocument()
+    })
+
+    it('should not warn', () => {
+      expect(warn).not.toHaveBeenCalled()
     })
   })
 

@@ -5,4 +5,23 @@ interface ClientVideoProps {
   muted: boolean
 }
 
-export type { ClientVideoProps }
+interface ClientPlayerHandle {
+  play: () => void
+  pause: () => void
+  seekTo: (ms: number) => void
+  currentTimeMs: () => number
+  durationMs: () => number | null
+  isPlaying: () => boolean
+  isBusy: () => boolean
+  setMuted: (muted: boolean) => void
+  destroy: () => void
+}
+
+interface ClientPlayerEvents {
+  onReady: () => void
+  onEnded: () => void
+  onError: () => void
+  onAutoplayBlocked: () => void
+}
+
+export type { ClientPlayerEvents, ClientPlayerHandle, ClientVideoProps }

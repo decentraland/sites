@@ -38,6 +38,7 @@ const STREAM_VIDEO = { ...SLIDE_VIDEO, source: 'stream' }
 const CLIENT_VIDEO = { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', geometry: SLIDE_VIDEO.geometry, source: 'client' }
 const UNKNOWN_SOURCE_VIDEO = { ...SLIDE_VIDEO, source: 'bogus' }
 const VIDEO_POSITION = { videoState: 'playing', videoPositionMs: 12_500, videoPositionAt: 1_760_270_400_123 }
+const VIDEO_POSITION_STATE = { videoState: 'playing', videoPositionMs: 12_500, videoPositionAt: expect.any(Number) }
 const NO_VIDEO_POSITION = { videoPositionMs: null, videoPositionAt: null }
 const COMPOSITION = { slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }
 const COMPOSED_METADATA = { overlay: LARGE_OVERLAY, slideVideos: [SLIDE_VIDEO], ...COMPOSITION }
@@ -155,7 +156,11 @@ describe('PresentationProvider', () => {
     ['no overlay', {}, { status: 'active', overlay: null }],
     ['a malformed overlay', { overlay: { x: 'a' } }, { status: 'active', overlay: DEFAULT_OVERLAY }],
     ['a failed video', { videoState: 'error', slideVideos: [SLIDE_VIDEO] }, { videoState: 'idle', slideVideos: [SLIDE_VIDEO] }],
-    ['a playing client video', { slideVideos: [CLIENT_VIDEO], ...VIDEO_POSITION }, { slideVideos: [CLIENT_VIDEO], ...VIDEO_POSITION }],
+    [
+      'a playing client video',
+      { slideVideos: [CLIENT_VIDEO], ...VIDEO_POSITION },
+      { slideVideos: [CLIENT_VIDEO], ...VIDEO_POSITION_STATE }
+    ],
     ['a slide video with no source', { slideVideos: [SLIDE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
     ['a slide video with an unknown source', { slideVideos: [UNKNOWN_SOURCE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
     ['negative video positions', { videoPositionMs: -1, videoPositionAt: -1 }, NO_VIDEO_POSITION],
@@ -242,7 +247,7 @@ describe('PresentationProvider', () => {
     ['a client slide video', { slideVideos: [CLIENT_VIDEO] }, { slideVideos: [CLIENT_VIDEO] }],
     ['a slide video with no source', { slideVideos: [SLIDE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
     ['a slide video with an unknown source', { slideVideos: [UNKNOWN_SOURCE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
-    ['valid video positions', VIDEO_POSITION, VIDEO_POSITION],
+    ['valid video positions', VIDEO_POSITION, VIDEO_POSITION_STATE],
     ['no video positions', {}, NO_VIDEO_POSITION],
     ['negative video positions', { videoPositionMs: -1, videoPositionAt: -1 }, NO_VIDEO_POSITION],
     ['NaN video positions', { videoPositionMs: NaN, videoPositionAt: NaN }, NO_VIDEO_POSITION],
@@ -271,6 +276,31 @@ describe('PresentationProvider', () => {
 
     it('should keep the same state object', () => {
       expect(current.state).toBe(previous)
+    })
+  })
+
+  describe('when the followed bot sends a video position', () => {
+    beforeEach(() => {
+      renderProvider()
+      jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000)
+      deliver(statePacket(VIDEO_POSITION))
+    })
+
+    afterEach(() => jest.restoreAllMocks())
+
+    it('should anchor the position to the local receipt clock, not the server timestamp', () => {
+      expect(current.state.videoPositionAt).toBe(1_700_000_000_000)
+    })
+
+    describe('and it later moves the position', () => {
+      beforeEach(() => {
+        jest.spyOn(Date, 'now').mockReturnValue(1_700_000_005_000)
+        deliver(statePacket({ ...VIDEO_POSITION, videoPositionMs: 20_000 }))
+      })
+
+      it('should re-stamp the receipt clock', () => {
+        expect(current.state.videoPositionAt).toBe(1_700_000_005_000)
+      })
     })
   })
 

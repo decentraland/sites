@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react'
-import type { ClientPlayerEvents, ClientPlayerHandle, YouTubePlayer, YouTubePlayerOptions } from './PresentationStage.types'
+import type { ClientPlayerEvents, ClientPlayerHandle } from './ClientVideo.types'
+import type { YouTubePlayer, YouTubePlayerOptions } from './youtubePlayer.types'
 
 const API_SRC = 'https://www.youtube.com/iframe_api'
 const VIDEO_ID = 'dQw4w9WgXcQ'
@@ -10,6 +11,7 @@ describe('when the YouTube IFrame API is loaded', () => {
   let loadYouTubeApi: () => Promise<void>
 
   beforeEach(async () => {
+    jest.useFakeTimers()
     jest.resetModules()
     ;({ loadYouTubeApi } = await import('./youtubePlayer'))
   })
@@ -17,6 +19,7 @@ describe('when the YouTube IFrame API is loaded', () => {
   afterEach(() => {
     apiScripts().forEach(script => script.remove())
     delete window.onYouTubeIframeAPIReady
+    jest.useRealTimers()
     jest.resetAllMocks()
   })
 
@@ -72,6 +75,27 @@ describe('when the YouTube IFrame API is loaded', () => {
     })
   })
 
+  describe('and it never becomes ready', () => {
+    let timedOut: Promise<void>
+
+    beforeEach(() => {
+      timedOut = loadYouTubeApi()
+      timedOut.catch(() => undefined)
+    })
+
+    it('should reject after the timeout', async () => {
+      jest.advanceTimersByTime(10_000)
+      await expect(timedOut).rejects.toThrow('YouTube IFrame API timed out')
+    })
+
+    it('should start a new load on the next call', () => {
+      jest.advanceTimersByTime(10_000)
+      const retried = loadYouTubeApi()
+      retried.catch(() => undefined)
+      expect(retried).not.toBe(timedOut)
+    })
+  })
+
   describe('and the API is already on the page', () => {
     let loaded: Promise<void>
 
@@ -119,11 +143,12 @@ describe('when a YouTube player is created', () => {
   let player: jest.Mocked<YouTubePlayer>
   let Player: jest.Mock
   let container: HTMLDivElement
-  let handedParent: HTMLElement | null
   let events: jest.Mocked<ClientPlayerEvents>
   let handle: ClientPlayerHandle
 
   const options = () => Player.mock.calls[0][1] as YouTubePlayerOptions
+  const iframe = () => container.querySelector('iframe') as HTMLIFrameElement
+  const embedParams = () => new URL(iframe().src).searchParams
 
   beforeEach(async () => {
     jest.resetModules()
@@ -140,13 +165,7 @@ describe('when a YouTube player is created', () => {
       setOption: jest.fn(),
       destroy: jest.fn()
     }
-    Player = jest.fn().mockImplementation((element: HTMLElement) => {
-      const iframe = document.createElement('iframe')
-      handedParent = element.parentElement
-      element.replaceWith(iframe)
-      player.destroy.mockImplementation(() => iframe.replaceWith(element))
-      return player
-    })
+    Player = jest.fn().mockImplementation(() => player)
     window.YT = { Player }
     container = document.createElement('div')
     document.body.append(container)
@@ -160,30 +179,36 @@ describe('when a YouTube player is created', () => {
     jest.resetAllMocks()
   })
 
-  it('should hand YT.Player a child it created inside the container', () => {
-    expect(handedParent).toBe(container)
+  it('should append a credentialless iframe to the container', () => {
+    expect(iframe()).toHaveAttribute('credentialless', '')
+  })
+
+  it('should hand YT.Player that iframe', () => {
+    expect(Player.mock.calls[0][0]).toBe(iframe())
   })
 
   it('should never hand YT.Player the container itself', () => {
     expect(Player.mock.calls[0][0]).not.toBe(container)
   })
 
-  it('should load the parsed id without controls, keyboard, related videos, fullscreen, annotations or captions', () => {
-    expect(options()).toEqual(
-      expect.objectContaining({
-        videoId: VIDEO_ID,
-        playerVars: {
-          controls: 0,
-          disablekb: 1,
-          playsinline: 1,
-          rel: 0,
-          fs: 0,
-          iv_load_policy: 3,
-          cc_load_policy: 0,
-          origin: window.location.origin
-        }
-      })
-    )
+  it('should allow autoplay in the iframe', () => {
+    expect(iframe()).toHaveAttribute('allow', 'autoplay; encrypted-media')
+  })
+
+  it('should enable the JS API for the parsed id in the iframe src', () => {
+    expect(new URL(iframe().src).pathname).toBe(`/embed/${VIDEO_ID}`)
+    expect(embedParams().get('enablejsapi')).toBe('1')
+    expect(embedParams().get('origin')).toBe(window.location.origin)
+  })
+
+  it('should load without controls, keyboard, related videos, fullscreen, annotations or captions', () => {
+    expect(embedParams().get('controls')).toBe('0')
+    expect(embedParams().get('disablekb')).toBe('1')
+    expect(embedParams().get('playsinline')).toBe('1')
+    expect(embedParams().get('rel')).toBe('0')
+    expect(embedParams().get('fs')).toBe('0')
+    expect(embedParams().get('iv_load_policy')).toBe('3')
+    expect(embedParams().get('cc_load_policy')).toBe('0')
   })
 
   describe('and the player loads a module', () => {
@@ -196,8 +221,9 @@ describe('when a YouTube player is created', () => {
     })
   })
 
-  it('should size the player to fill its region', () => {
-    expect(options()).toEqual(expect.objectContaining({ width: '100%', height: '100%' }))
+  it('should size the iframe to fill its region', () => {
+    expect(iframe()).toHaveAttribute('width', '100%')
+    expect(iframe()).toHaveAttribute('height', '100%')
   })
 
   describe.each([
@@ -321,7 +347,7 @@ describe('when a YouTube player is created', () => {
       expect(player.destroy).toHaveBeenCalled()
     })
 
-    it('should remove the child it created', () => {
+    it('should remove the iframe it created', () => {
       expect(container).toBeEmptyDOMElement()
     })
   })

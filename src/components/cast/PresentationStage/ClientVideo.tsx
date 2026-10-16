@@ -6,8 +6,7 @@ import { usePresentation } from '../../../features/cast2/contexts/PresentationCo
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { attachHls } from './hlsSource'
 import { createYouTubePlayer, loadYouTubeApi } from './youtubePlayer'
-import type { ClientVideoProps } from './ClientVideo.types'
-import type { ClientPlayerEvents, ClientPlayerHandle } from './PresentationStage.types'
+import type { ClientPlayerEvents, ClientPlayerHandle, ClientVideoProps } from './ClientVideo.types'
 import { PlayerContainer, PlayerVideo, UnmuteSlot } from './ClientVideo.styled'
 
 const DRIFT_MS = 2000
@@ -18,10 +17,9 @@ const videoElementPlayer = (
   events: Pick<ClientPlayerEvents, 'onAutoplayBlocked' | 'onError'>
 ): ClientPlayerHandle => ({
   play: () => {
-    const attemptWasMuted = video.muted
     video.play().catch((error: unknown) => {
       const name = error instanceof DOMException ? error.name : ''
-      if (name === 'NotAllowedError' && !attemptWasMuted) events.onAutoplayBlocked()
+      if (name === 'NotAllowedError') events.onAutoplayBlocked()
       else if (name !== 'AbortError') events.onError()
     })
   },
@@ -118,6 +116,7 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
 
   useEffect(() => {
     if (!ready) return
+    endedRef.current = false
     const sync = () => {
       const handle = handleRef.current
       if (!handle || endedRef.current) return
@@ -157,7 +156,7 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
       )}
       {autoplayMuted ? (
         <UnmuteSlot>
-          <Button variant="contained" size="small" aria-label={unmuteLabel} onClick={handleUnmute}>
+          <Button variant="contained" size="small" onClick={handleUnmute}>
             {unmuteLabel}
           </Button>
         </UnmuteSlot>
