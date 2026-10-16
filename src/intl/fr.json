@@ -699,11 +699,30 @@
         "delete": "Supprimer",
         "close": "Fermer",
         "loading": "Chargement",
-        "actions": "Actions",
         "key": "Clé",
         "add": "Ajouter",
         "owner": "Propriétaire",
-        "collaborator": "Collaborateur"
+        "collaborator": "Collaborateur",
+        "download_all": "Tout télécharger",
+        "download_selected": "Télécharger la sélection ({count})",
+        "delete_selected": "Supprimer la sélection ({count})",
+        "delete_all": "Tout supprimer",
+        "delete_selected_dialog": {
+          "title": "Supprimer les éléments sélectionnés ?",
+          "message": "{count, plural, one {Cela supprimera définitivement # élément sélectionné.} other {Cela supprimera définitivement # éléments sélectionnés.}}"
+        },
+        "select_all": "Tout sélectionner",
+        "select_row": "Sélectionner {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Préparation du téléchargement…",
+        "keep_page_open": "Gardez cette page ouverte jusqu’au début du téléchargement."
+      },
+      "leave_dialog": {
+        "title": "Quitter la page pendant l’exportation ?",
+        "message": "Si vous quittez la page, le téléchargement s’arrête. Relancez-le plus tard : le fichier sera prêt immédiatement.",
+        "stay": "Rester",
+        "leave": "Quitter"
       },
       "role": {
         "owner": "Propriétaire",
@@ -760,7 +779,6 @@
       "env_page": {
         "title": "Variables d’environnement",
         "add": "Ajouter",
-        "clear_all": "Tout effacer",
         "no_keys": "Aucune variable d’environnement trouvée",
         "add_dialog": {
           "title": "Ajouter une variable d’environnement",
@@ -785,7 +803,6 @@
       "scene_page": {
         "title": "Stockage de scène",
         "add": "Ajouter",
-        "clear_all": "Tout effacer",
         "no_keys": "Aucune valeur de scène trouvée",
         "add_dialog": {
           "title": "Ajouter une valeur de scène",
@@ -809,7 +826,6 @@
       "player_page": {
         "title": "Stockage de joueur",
         "add": "Ajouter",
-        "clear_all_players": "Effacer tous les joueurs",
         "description": "Parcourez les joueurs avec des données stockées, ou recherchez par nom ou adresse.",
         "search_players": "Rechercher par nom ou adresse…",
         "no_players": "Aucun joueur trouvé",
@@ -822,7 +838,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Charger les clés",
         "keys_for": "Clés de {address}",
-        "clear_this_player": "Effacer ce joueur",
         "no_keys": "Aucune clé trouvée pour ce joueur",
         "loading_keys": "Chargement des clés du joueur",
         "add_dialog": {
@@ -865,7 +880,9 @@
         "payload_too_large": "La valeur est trop volumineuse pour cet espace de stockage.",
         "rate_limited": "Trop de requêtes. Patientez un instant et réessayez.",
         "server": "Le service de stockage a renvoyé une erreur. Réessayez dans quelques minutes.",
-        "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée."
+        "world_scene_unresolved": "Nous n’avons pas pu résoudre l’emplacement de la scène de ce monde. Il se peut qu’aucune scène n’y soit encore déployée.",
+        "export_failed": "L’exportation a échoué. Veuillez réessayer.",
+        "bulk_delete_failed": "Certains éléments n’ont pas pu être supprimés. Veuillez réessayer."
       }
     },
     "report": {

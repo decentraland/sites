@@ -243,6 +243,8 @@ A wildcard without one fails the build, as does a `path` that is not a string li
 - React Testing Library: `getByRole` > `getByLabelText` > `getByText`.
 - `npm run build` runs `tsc -b`, which **typechecks `*.spec.ts(x)` too** — ts-jest is more lenient, so a green `npm test` can still fail the build. Run `tsc -b` before treating specs as done (strictly-typed mock helpers like `React.createElement` are the usual culprit).
 - Inline `jest.mock` factories must not use `require()` (banned by `@typescript-eslint/no-require-imports`). Use the repo pattern: `import React from 'react'` at the top, then reference `React.createElement` inside the factory (see `LiveNowCard.spec.tsx`).
+- **TDD red commits for new modules.** lint-staged runs `eslint` (`import/no-unresolved`) and `--no-verify` is blocked by a hook, so a red commit whose specs import a module that doesn't exist yet must include a minimal stub (component returning `null`, `styled(X)({})`) that resolves the import but still fails the assertions.
+- `dialogMockFactory()` has no `styled`. A spec that uses it and renders a real child component must mock every `*.styled.ts` that child reaches, by path (e.g. `jest.mock('../_shared/ActionIconButton.styled', …)`). Otherwise the suite fails to load with `styled is not a function`.
 
 ## Pre-PR review
 

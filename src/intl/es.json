@@ -704,11 +704,30 @@
         "delete": "Eliminar",
         "close": "Cerrar",
         "loading": "Cargando",
-        "actions": "Acciones",
         "key": "Clave",
         "add": "Agregar",
         "owner": "Propietario",
-        "collaborator": "Colaborador"
+        "collaborator": "Colaborador",
+        "download_all": "Descargar todo",
+        "download_selected": "Descargar selección ({count})",
+        "delete_selected": "Borrar selección ({count})",
+        "delete_all": "Borrar todo",
+        "delete_selected_dialog": {
+          "title": "¿Borrar los elementos seleccionados?",
+          "message": "{count, plural, one {Esto borrará de forma permanente # elemento seleccionado.} other {Esto borrará de forma permanente # elementos seleccionados.}}"
+        },
+        "select_all": "Seleccionar todo",
+        "select_row": "Seleccionar {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Preparando la descarga…",
+        "keep_page_open": "Mantén esta página abierta hasta que empiece la descarga."
+      },
+      "leave_dialog": {
+        "title": "¿Salir mientras se ejecuta la exportación?",
+        "message": "Si sales, la descarga se detiene. Si vuelves a iniciarla más tarde, el archivo estará listo al instante.",
+        "stay": "Quedarme",
+        "leave": "Salir"
       },
       "role": {
         "owner": "Propietario",
@@ -765,7 +784,6 @@
       "env_page": {
         "title": "Variables de entorno",
         "add": "Agregar",
-        "clear_all": "Borrar todo",
         "no_keys": "No se encontraron variables de entorno",
         "add_dialog": {
           "title": "Agregar variable de entorno",
@@ -790,7 +808,6 @@
       "scene_page": {
         "title": "Almacenamiento de escena",
         "add": "Agregar",
-        "clear_all": "Borrar todo",
         "no_keys": "No se encontraron valores de escena",
         "add_dialog": {
           "title": "Agregar valor de escena",
@@ -814,7 +831,6 @@
       "player_page": {
         "title": "Almacenamiento de jugador",
         "add": "Agregar",
-        "clear_all_players": "Borrar todos los jugadores",
         "description": "Explorá los jugadores con datos guardados o buscalos por nombre o dirección.",
         "search_players": "Buscar por nombre o dirección…",
         "no_players": "No se encontraron jugadores",
@@ -827,7 +843,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Cargar claves",
         "keys_for": "Claves de {address}",
-        "clear_this_player": "Borrar este jugador",
         "no_keys": "No se encontraron claves para este jugador",
         "loading_keys": "Cargando claves del jugador",
         "add_dialog": {
@@ -870,7 +885,9 @@
         "payload_too_large": "El valor es demasiado grande para este espacio de almacenamiento.",
         "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
         "server": "El servicio de almacenamiento devolvió un error. Inténtalo de nuevo en unos minutos.",
-        "world_scene_unresolved": "No pudimos resolver la ubicación de la escena de este mundo. Puede que aún no tenga una escena desplegada."
+        "world_scene_unresolved": "No pudimos resolver la ubicación de la escena de este mundo. Puede que aún no tenga una escena desplegada.",
+        "export_failed": "La exportación falló. Inténtalo de nuevo.",
+        "bulk_delete_failed": "No se pudieron borrar algunos elementos. Inténtalo de nuevo."
       }
     },
     "report": {

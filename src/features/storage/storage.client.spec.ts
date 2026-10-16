@@ -1,10 +1,10 @@
 jest.mock('decentraland-crypto-fetch', () => ({ __esModule: true, default: jest.fn() }))
-jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => 'https://storage') }))
+jest.mock('../../config/env', () => ({ getEnv: () => 'https://storage' }))
 
 import { configureStore } from '@reduxjs/toolkit'
 import signedFetchLib from 'decentraland-crypto-fetch'
 import { storageClient } from '../../services/storageClient'
-import { storageEndpoints } from './index'
+import { fetchExportFile, storageEndpoints } from './index'
 
 const signedFetchMock = signedFetchLib as unknown as jest.Mock
 
@@ -14,7 +14,8 @@ const makeResponse = (body: unknown, init: { status?: number } = {}): Response =
     ok: status >= 200 && status < 300,
     status,
     text: async () => (typeof body === 'string' ? body : JSON.stringify(body)),
-    json: async () => body
+    json: async () => body,
+    blob: async () => (body instanceof Blob ? body : new Blob([JSON.stringify(body)]))
   } as unknown as Response
 }
 
@@ -85,9 +86,9 @@ describe('storage.client endpoints', () => {
 
   it('listSceneKeys + getSceneValue + setSceneValue round-trip a value', async () => {
     const store = setupStore()
-    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'gameState' }] }))
+    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'gameState', value: 42 }] }))
     const list = await store.dispatch(storageEndpoints.endpoints.listSceneKeys.initiate({ identity, ...ctx }))
-    expect(list.data).toEqual([{ key: 'gameState' }])
+    expect(list.data).toEqual([{ key: 'gameState', value: 42 }])
 
     signedFetchMock.mockResolvedValueOnce(makeResponse({ value: 42 }))
     const get = await store.dispatch(storageEndpoints.endpoints.getSceneValue.initiate({ identity, key: 'gameState', ...ctx }))
@@ -115,9 +116,9 @@ describe('storage.client endpoints', () => {
     const players = await store.dispatch(storageEndpoints.endpoints.listPlayers.initiate({ identity, ...ctx }))
     expect(players.data).toEqual(['0xa'])
 
-    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'inventory' }] }))
+    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'inventory', value: 'old' }] }))
     const keys = await store.dispatch(storageEndpoints.endpoints.listPlayerKeys.initiate({ identity, address: '0xa', ...ctx }))
-    expect(keys.data).toEqual([{ key: 'inventory' }])
+    expect(keys.data).toEqual([{ key: 'inventory', value: 'old' }])
 
     signedFetchMock.mockResolvedValueOnce(makeResponse({ value: 'old' }))
     const get = await store.dispatch(
@@ -349,5 +350,69 @@ describe('when two accounts read the same storage realm and position', () => {
     ).rejects.toMatchObject({ status: 403 })
     expect(storageEndpoints.endpoints.listEnvKeys.select({ identity: otherIdentity, ...ctx })(store.getState()).data).toBeUndefined()
     expect(signedFetchMock).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('when fetching an export file', () => {
+  let selection: { world: { keys: string[] }; players: { addresses: string[] } }
+  let controller: AbortController
+
+  beforeEach(() => {
+    selection = { world: { keys: [] }, players: { addresses: ['0xa'] } }
+    controller = new AbortController()
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('and the server streams the file', () => {
+    let file: Blob
+
+    beforeEach(() => {
+      file = new Blob(['scope,player_address,key,value\r\n'])
+      signedFetchMock.mockResolvedValueOnce(makeResponse(file))
+    })
+
+    it('should POST the selection as JSON to the export endpoint with the format and the abort signal', async () => {
+      await fetchExportFile({ identity, format: 'csv', selection, signal: controller.signal, ...ctx })
+      expect(signedFetchMock).toHaveBeenCalledWith(
+        'https://storage/exports?format=csv',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selection),
+          signal: controller.signal
+        })
+      )
+    })
+
+    it('should resolve to the streamed file', async () => {
+      await expect(fetchExportFile({ identity, format: 'csv', selection, ...ctx })).resolves.toBe(file)
+    })
+  })
+
+  describe('and another export of the scene is already streaming', () => {
+    beforeEach(() => {
+      signedFetchMock.mockResolvedValueOnce(makeResponse('busy', { status: 429 }))
+    })
+
+    it('should reject with the 429 status', async () => {
+      await expect(fetchExportFile({ identity, format: 'json', selection, ...ctx })).rejects.toMatchObject({ status: 429 })
+    })
+  })
+
+  describe('and the stream breaks while the body is read', () => {
+    beforeEach(() => {
+      signedFetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        blob: () => Promise.reject(new TypeError('network error'))
+      } as unknown as Response)
+    })
+
+    it('should reject with a fetch error', async () => {
+      await expect(fetchExportFile({ identity, format: 'json', selection, ...ctx })).rejects.toMatchObject({ status: 'FETCH_ERROR' })
+    })
   })
 })
