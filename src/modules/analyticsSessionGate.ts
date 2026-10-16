@@ -14,8 +14,9 @@ function isAnalyticsDisabledForSession(): boolean {
   return analyticsDisabled
 }
 
-// The two cases where AnalyticsProvider never boots: an exempt session (main.tsx passes no write key) and a bot.
-// Events that are not conversions must not be sent by any other transport in those cases either.
+// The cases where analytics is off by our own decision, an exempt session (main.tsx passes no write key) or a bot,
+// as opposed to analytics.js failing to load. Events that are not conversions must not be sent by any other transport
+// in those cases either.
 function isAnalyticsOffForVisitor(): boolean {
   return analyticsDisabled || isBotClient(typeof navigator === 'undefined' ? undefined : navigator.userAgent)
 }
