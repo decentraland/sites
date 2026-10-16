@@ -117,7 +117,10 @@ const Box = forwardRef(({ children, ...rest }: { children?: ReactNode } & Record
 )
 ;(Box as unknown as { displayName: string }).displayName = 'BoxMock'
 
-const keyframes = (chunks: TemplateStringsArray | string) => (typeof chunks === 'string' ? chunks : chunks.join(''))
+const keyframes = (chunks: TemplateStringsArray | string | Record<string, unknown>) => {
+  if (typeof chunks === 'string') return chunks
+  return Array.isArray(chunks) ? chunks.join('') : JSON.stringify(chunks)
+}
 
 // Mirror of decentraland-ui2's dclColors constants (dist/theme/colors.js) so
 // styled files that read tokens at module scope evaluate under this mock.
