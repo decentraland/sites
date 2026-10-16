@@ -26,7 +26,7 @@ function NavigateButton({ to }: { to: string }) {
   )
 }
 
-function renderAt(path: string, element: JSX.Element = <NavigateButton to="/wallets" />) {
+function renderAt(path: string, element: React.ReactElement = <NavigateButton to="/wallets" />) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <CanonicalSync />
@@ -48,7 +48,7 @@ describe('CanonicalSync', () => {
       renderAt('/play')
     })
 
-    it('should point the canonical at the current route on the same origin', () => {
+    it("should point the canonical at the current route, keeping the canonical's origin", () => {
       expect(getCanonicalHref()).toBe('https://decentraland.org/play')
     })
   })
@@ -57,7 +57,7 @@ describe('CanonicalSync', () => {
     beforeEach(async () => {
       setCanonical('https://decentraland.org/')
       renderAt('/play')
-      await userEvent.click(screen.getByRole('button', { name: 'go' }))
+      await userEvent.setup().click(screen.getByRole('button', { name: 'go' }))
     })
 
     it('should follow the new route', () => {
@@ -68,11 +68,45 @@ describe('CanonicalSync', () => {
   describe('when the canonical already matches the route with query params', () => {
     beforeEach(() => {
       setCanonical('https://decentraland.org/jump/events?id=abc')
-      renderAt('/jump/events')
+      renderAt('/jump/events?id=abc')
     })
 
     it('should leave the canonical untouched', () => {
       expect(getCanonicalHref()).toBe('https://decentraland.org/jump/events?id=abc')
+    })
+  })
+
+  describe('when the route only differs from the canonical by a trailing slash', () => {
+    beforeEach(() => {
+      setCanonical('https://decentraland.org/events?id=abc')
+      renderAt('/events/?id=abc')
+    })
+
+    it('should keep the worker query in the canonical', () => {
+      expect(getCanonicalHref()).toBe('https://decentraland.org/events?id=abc')
+    })
+  })
+
+  describe('when a query-only navigation leaves the worker query stale', () => {
+    beforeEach(async () => {
+      setCanonical('https://decentraland.org/events?id=abc')
+      renderAt('/events?id=abc', <NavigateButton to="/events?id=xyz" />)
+      await userEvent.setup().click(screen.getByRole('button', { name: 'go' }))
+    })
+
+    it('should drop the stale query so the live one is used', () => {
+      expect(getCanonicalHref()).toBe('https://decentraland.org/events')
+    })
+  })
+
+  describe('when the path is protocol-relative', () => {
+    beforeEach(() => {
+      setCanonical('https://decentraland.org/')
+      renderAt('//evil.example/x')
+    })
+
+    it("should keep the canonical's origin", () => {
+      expect(new URL(getCanonicalHref() as string).origin).toBe('https://decentraland.org')
     })
   })
 
