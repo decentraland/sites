@@ -23,7 +23,9 @@ const TRAILING_SLASHES = /\/+$/
  * that fire deliberate, user-initiated events (the download-CTA beacon in
  * `segmentBeacon.ts`) pass `bypassExemptPathGate: true`: without it, a cold
  * load of `/download` (an exempt path hosting download CTAs) silently dropped
- * every store-exit click, losing partner attribution.
+ * every store-exit click, losing partner attribution. Callers whose events are
+ * not conversions (the navbar's early clicks, via `postDeferredClick`) check
+ * `isAnalyticsOffForVisitor` before calling the beacon.
  *
  * The key is a public client-side write key (already shipped in the bundle for
  * analytics.js); it is config, not a secret.

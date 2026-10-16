@@ -18,6 +18,22 @@ jest.mock('decentraland-ui2', () => ({
 jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ NotificationComponentByType: {} }))
 
 jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn() }))
+jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsOffForVisitor: jest.fn() }))
+// Wraps the real useDeferredTrack so a test can tell whether a click was handed to it (queued, or sent at once when ready).
+const mockDeferredTrackCall = jest.fn()
+jest.mock('../../hooks/useDeferredTrack', () => {
+  const actual = jest.requireActual('../../hooks/useDeferredTrack')
+  return {
+    useDeferredTrack: () => {
+      const deferredTrack = actual.useDeferredTrack()
+      return (event: string, payload: Record<string, unknown>) => {
+        mockDeferredTrackCall(event, payload)
+        deferredTrack(event, payload)
+      }
+    }
+  }
+})
+jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
 jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn() }))
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: jest.fn()
@@ -34,8 +50,14 @@ beforeEach(() => {
   ;(jest.requireMock('../../hooks/adapters/useFormatMessage').useFormatMessage as jest.Mock).mockReturnValue((key: string) => key)
 })
 
+const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
+
+// The navbar shows Jump In only once the page has scrolled.
+const scrollPageTo = (value: number) => Object.defineProperty(window, 'scrollY', { configurable: true, value })
+
 afterEach(() => {
   jest.resetAllMocks()
+  if (originalScrollY) Object.defineProperty(window, 'scrollY', originalScrollY)
 })
 
 const renderAt = (pathname: string, extra: Partial<NavbarProps> = {}) =>
@@ -290,7 +312,7 @@ describe('when the landing navbar is minimal', () => {
   beforeEach(() => {
     onClickJumpIn = jest.fn()
     user = userEvent.setup()
-    Object.defineProperty(window, 'scrollY', { configurable: true, value: 100 })
+    scrollPageTo(100)
   })
 
   it('should invoke jump-in after scrolling', async () => {
@@ -415,7 +437,10 @@ describe('when the visitor clicks a navbar link', () => {
         event: 'click',
         action: 'creator_documentation',
         section: 'create',
-        href: 'https://docs.decentraland.org/creator'
+        href: 'https://docs.decentraland.org/creator',
+        track_called_at: expect.any(Number),
+        track_delivered_at: expect.any(Number),
+        track_deferred: false
       })
     })
   })
@@ -529,18 +554,264 @@ describe('when the visitor clicks a navbar link', () => {
   })
 
   describe('and analytics has not finished loading', () => {
-    beforeEach(async () => {
-      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
-      renderAt('/events')
-      const createTab = desktopSection(/navbar\.create$/i)
-      await user.hover(createTab.parentElement!)
-      fireEvent.click(
-        preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
+    let postSegmentEvent: jest.Mock
+    let isAnalyticsOffForVisitor: jest.Mock
+
+    const learnLink = () =>
+      within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', { name: /navbar\.learn/i, hidden: true })
+
+    const clickLearn = (init?: MouseEventInit) => {
+      const rendered = renderAt('/events')
+      fireEvent.click(preventNavigation(learnLink()), init)
+      return rendered
+    }
+
+    // A new onClickJumpIn, since the memoized navbar would otherwise skip the render that reads the new readiness.
+    const finishLoading = (rerender: ReturnType<typeof render>['rerender'], pathname = '/events', extra: Partial<NavbarProps> = {}) => {
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: true, track })
+      rerender(
+        <MemoryRouter initialEntries={[pathname]}>
+          <LandingNavbar {...props} isSignedIn={false} {...extra} onClickJumpIn={jest.fn()} />
+        </MemoryRouter>
       )
+    }
+
+    beforeEach(() => {
+      postSegmentEvent = jest.requireMock('../../modules/segmentBeacon').postSegmentEvent
+      isAnalyticsOffForVisitor = jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsOffForVisitor
+      ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
+      isAnalyticsOffForVisitor.mockReturnValue(false)
     })
 
-    it('should not send anything', () => {
-      expect(track).not.toHaveBeenCalled()
+    describe('and the visitor is a person in a session with analytics on', () => {
+      beforeEach(() => {
+        clickLearn()
+      })
+
+      it('should send the click through the beacon, which survives the page unloading', () => {
+        expect(track).not.toHaveBeenCalled()
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+        expect(postSegmentEvent).toHaveBeenCalledWith('Click', {
+          place: 'Landing Navbar',
+          event: 'click',
+          action: 'learn',
+          section: 'learn',
+          href: 'https://decentraland.org/blog/',
+          track_called_at: expect.any(Number),
+          track_delivered_at: expect.any(Number),
+          track_deferred: true
+        })
+      })
+
+      it('should not also queue it, so it is not sent again once analytics is ready', () => {
+        expect(mockDeferredTrackCall).not.toHaveBeenCalled()
+      })
+    })
+
+    describe.each([
+      ['ctrl', { ctrlKey: true }],
+      ['cmd', { metaKey: true }],
+      ['shift', { shiftKey: true }],
+      ['alt', { altKey: true }]
+    ])('and the visitor %s-clicks a same-tab link, which keeps the page open', (_key, init) => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(() => {
+        ;({ rerender } = clickLearn(init))
+      })
+
+      it('should queue it instead of using the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender)
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'learn', track_deferred: true }))
+        })
+      })
+    })
+
+    describe('and the visitor middle-clicks a link', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(() => {
+        ;({ rerender } = renderAt('/events'))
+        fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+      })
+
+      it('should queue it instead of using the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender)
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'learn', track_deferred: true }))
+        })
+      })
+    })
+
+    describe('and the link opens in a new tab', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+
+      beforeEach(async () => {
+        ;({ rerender } = renderAt('/events'))
+        const createTab = desktopSection(/navbar\.create$/i)
+        await user.hover(createTab.parentElement!)
+        fireEvent.click(
+          preventNavigation(within(createTab.parentElement!).getByRole('link', { name: /creator_documentation/i, hidden: true }))
+        )
+      })
+
+      it('should not use the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender)
+        })
+
+        it('should send the queued click through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith(
+            'Click',
+            expect.objectContaining({ action: 'creator_documentation', section: 'create', track_deferred: true })
+          )
+        })
+      })
+    })
+
+    describe('and analytics stays off for this visitor (a session that started on an exempt page, or a bot)', () => {
+      beforeEach(() => {
+        isAnalyticsOffForVisitor.mockReturnValue(true)
+      })
+
+      describe('and the click replaces the page', () => {
+        beforeEach(() => {
+          clickLearn()
+        })
+
+        it('should not send anything', () => {
+          expect(track).not.toHaveBeenCalled()
+          expect(postSegmentEvent).not.toHaveBeenCalled()
+        })
+      })
+
+      describe('and the click keeps the page open', () => {
+        beforeEach(() => {
+          renderAt('/events')
+          fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
+        })
+
+        it('should not queue it, since analytics never boots to send it', () => {
+          expect(mockDeferredTrackCall).not.toHaveBeenCalled()
+          expect(postSegmentEvent).not.toHaveBeenCalled()
+        })
+      })
+    })
+
+    describe('and the visitor clicks Sign In', () => {
+      beforeEach(async () => {
+        renderAt('/events')
+        await user.click(screen.getAllByRole('button', { name: 'component.landing.navbar.sign_in' })[0])
+      })
+
+      it('should send it through the beacon, since signing in redirects away', () => {
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+        expect(postSegmentEvent).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'sign_in', track_deferred: true }))
+      })
+    })
+
+    describe('and the visitor clicks a section tab', () => {
+      let open: jest.SpyInstance
+
+      beforeEach(() => {
+        open = jest.spyOn(window, 'open').mockImplementation(() => null)
+        renderAt('/events')
+        fireEvent.click(desktopSection(/navbar\.discover$/i))
+      })
+
+      afterEach(() => {
+        open.mockRestore()
+      })
+
+      it('should send it through the beacon before the tab navigates in the same tab', () => {
+        expect(postSegmentEvent).toHaveBeenCalledWith(
+          'Click',
+          expect.objectContaining({ action: 'discover', section: 'discover', href: '/events', track_deferred: true })
+        )
+        expect(postSegmentEvent.mock.invocationCallOrder[0]).toBeLessThan(open.mock.invocationCallOrder[0])
+      })
+    })
+
+    describe('and the visitor clicks Jump In', () => {
+      let rerender: ReturnType<typeof render>['rerender']
+      let onClickJumpIn: jest.Mock
+
+      beforeEach(async () => {
+        onClickJumpIn = jest.fn()
+        scrollPageTo(100)
+        ;({ rerender } = renderAt('/', { isLandingPage: true, onClickJumpIn }))
+        fireEvent.scroll(window)
+        await user.click(screen.getByRole('button', { name: /jump_in/i }))
+      })
+
+      it('should queue it instead of using the beacon, since the page stays open', () => {
+        expect(postSegmentEvent).not.toHaveBeenCalled()
+        expect(track).not.toHaveBeenCalled()
+        expect(onClickJumpIn).toHaveBeenCalledTimes(1)
+      })
+
+      describe('and analytics finishes loading', () => {
+        beforeEach(() => {
+          finishLoading(rerender, '/', { isLandingPage: true })
+        })
+
+        it('should send the queued click once through analytics', () => {
+          expect(track).toHaveBeenCalledTimes(1)
+          expect(track).toHaveBeenCalledWith('Click', expect.objectContaining({ action: 'jump_in', track_deferred: true }))
+          expect(postSegmentEvent).not.toHaveBeenCalled()
+        })
+      })
+    })
+  })
+
+  describe('and analytics is ready', () => {
+    beforeEach(() => {
+      renderAt('/events')
+      const mobileMenu = screen.getByRole('navigation', { name: 'Mobile navigation' })
+      fireEvent.click(preventNavigation(within(mobileMenu).getByRole('link', { name: /navbar\.learn/i, hidden: true })))
+    })
+
+    it('should send the click through analytics and not the beacon', () => {
+      expect(track).toHaveBeenCalledTimes(1)
+      expect(jest.requireMock('../../modules/segmentBeacon').postSegmentEvent).not.toHaveBeenCalled()
+    })
+
+    it('should send the click payload marked as not deferred, like every other navbar click', () => {
+      expect(track).toHaveBeenCalledWith('Click', {
+        place: 'Landing Navbar',
+        event: 'click',
+        action: 'learn',
+        section: 'learn',
+        href: 'https://decentraland.org/blog/',
+        track_called_at: expect.any(Number),
+        track_delivered_at: expect.any(Number),
+        track_deferred: false
+      })
     })
   })
 
