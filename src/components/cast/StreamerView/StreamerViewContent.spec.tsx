@@ -18,8 +18,8 @@ jest.mock('../ParticipantGrid/ParticipantGrid', () => ({
     React.createElement('div', { 'data-testid': 'participant-grid' }, presentationOverlay)
 }))
 jest.mock('../PresentationStage/PresentationStage', () => ({
-  PresentationStage: ({ overlay }: { overlay?: React.ReactNode }) =>
-    React.createElement('div', { 'data-testid': 'presentation-stage' }, overlay)
+  PresentationStage: ({ overlay, muted }: { overlay?: React.ReactNode; muted?: boolean }) =>
+    React.createElement('div', { 'data-testid': 'presentation-stage', 'data-muted': String(muted) }, overlay)
 }))
 jest.mock('../CameraOverlayHandle/CameraOverlayHandle', () => ({
   CameraOverlayHandle: () => React.createElement('div', { 'data-testid': 'camera-overlay-handle' })
@@ -106,6 +106,18 @@ describe('when the streamer view renders', () => {
 
     it(`should render ${overlays} camera overlay handle inside it`, () => {
       expect(within(screen.getByTestId(view)).queryAllByTestId('camera-overlay-handle')).toHaveLength(overlays)
+    })
+  })
+
+  describe('and the tab is muted during a composed deck', () => {
+    beforeEach(() => {
+      mockUseLocalVideoTracks.mockReturnValue({ hasLocalCamera: true, hasLocalScreenShare: false })
+      mockUsePresentationOptional.mockReturnValue(composed('0xabc'))
+      render(<StreamerViewContent isTabMuted />)
+    })
+
+    it('should forward the tab mute to the presentation stage', () => {
+      expect(screen.getByTestId('presentation-stage')).toHaveAttribute('data-muted', 'true')
     })
   })
 
