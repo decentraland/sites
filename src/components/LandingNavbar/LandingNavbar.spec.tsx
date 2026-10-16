@@ -19,15 +19,15 @@ jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ Notif
 
 jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn() }))
 jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsOffForVisitor: jest.fn() }))
-// The real queue, wrapped so a test can tell whether a click went into it.
-const mockQueueClick = jest.fn()
+// Wraps the real useDeferredTrack so a test can tell whether a click was handed to it (queued, or sent at once when ready).
+const mockDeferredTrackCall = jest.fn()
 jest.mock('../../hooks/useDeferredTrack', () => {
   const actual = jest.requireActual('../../hooks/useDeferredTrack')
   return {
     useDeferredTrack: () => {
       const deferredTrack = actual.useDeferredTrack()
       return (event: string, payload: Record<string, unknown>) => {
-        mockQueueClick(event, payload)
+        mockDeferredTrackCall(event, payload)
         deferredTrack(event, payload)
       }
     }
@@ -604,7 +604,7 @@ describe('when the visitor clicks a navbar link', () => {
       })
 
       it('should not also queue it, so it is not sent again once analytics is ready', () => {
-        expect(mockQueueClick).not.toHaveBeenCalled()
+        expect(mockDeferredTrackCall).not.toHaveBeenCalled()
       })
     })
 
@@ -717,7 +717,7 @@ describe('when the visitor clicks a navbar link', () => {
         })
 
         it('should not queue it, since analytics never boots to send it', () => {
-          expect(mockQueueClick).not.toHaveBeenCalled()
+          expect(mockDeferredTrackCall).not.toHaveBeenCalled()
           expect(postSegmentEvent).not.toHaveBeenCalled()
         })
       })
