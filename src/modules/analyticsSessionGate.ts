@@ -1,3 +1,4 @@
+import { isBotClient } from '@dcl/hooks'
 import { isAnalyticsExemptPath } from '../utils/isAnalyticsExemptPath'
 
 // Pure legal/text routes have no funnel signal worth measuring and pay a
@@ -13,4 +14,10 @@ function isAnalyticsDisabledForSession(): boolean {
   return analyticsDisabled
 }
 
-export { isAnalyticsDisabledForSession }
+// The two cases where AnalyticsProvider never boots: an exempt session (main.tsx passes no write key) and a bot.
+// Events that are not conversions must not be sent by any other transport in those cases either.
+function isAnalyticsOffForVisitor(): boolean {
+  return analyticsDisabled || isBotClient(typeof navigator === 'undefined' ? undefined : navigator.userAgent)
+}
+
+export { isAnalyticsDisabledForSession, isAnalyticsOffForVisitor }

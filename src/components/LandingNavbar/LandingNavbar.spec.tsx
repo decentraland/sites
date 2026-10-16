@@ -17,8 +17,22 @@ jest.mock('decentraland-ui2', () => ({
 }))
 jest.mock('decentraland-ui2/dist/components/Notifications/utils', () => ({ NotificationComponentByType: {} }))
 
-jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn(), isBotClient: jest.fn() }))
-jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsDisabledForSession: jest.fn() }))
+jest.mock('@dcl/hooks', () => ({ useAnalytics: jest.fn() }))
+jest.mock('../../modules/analyticsSessionGate', () => ({ isAnalyticsOffForVisitor: jest.fn() }))
+// The real queue, wrapped so a test can tell whether a click went into it.
+const mockQueueClick = jest.fn()
+jest.mock('../../hooks/useDeferredTrack', () => {
+  const actual = jest.requireActual('../../hooks/useDeferredTrack')
+  return {
+    useDeferredTrack: () => {
+      const deferredTrack = actual.useDeferredTrack()
+      return (event: string, payload: Record<string, unknown>) => {
+        mockQueueClick(event, payload)
+        deferredTrack(event, payload)
+      }
+    }
+  }
+})
 jest.mock('../../modules/segmentBeacon', () => ({ postSegmentEvent: jest.fn() }))
 jest.mock('../../intl/LocaleContext', () => ({ useLocale: jest.fn() }))
 jest.mock('../../hooks/adapters/useFormatMessage', () => ({
@@ -538,8 +552,7 @@ describe('when the visitor clicks a navbar link', () => {
 
   describe('and analytics has not finished loading', () => {
     let postSegmentEvent: jest.Mock
-    let isBotClient: jest.Mock
-    let isAnalyticsDisabledForSession: jest.Mock
+    let isAnalyticsOffForVisitor: jest.Mock
 
     const learnLink = () =>
       within(screen.getByRole('navigation', { name: 'Mobile navigation' })).getByRole('link', { name: /navbar\.learn/i, hidden: true })
@@ -562,18 +575,14 @@ describe('when the visitor clicks a navbar link', () => {
 
     beforeEach(() => {
       postSegmentEvent = jest.requireMock('../../modules/segmentBeacon').postSegmentEvent
-      isBotClient = jest.requireMock('@dcl/hooks').isBotClient
-      isAnalyticsDisabledForSession = jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsDisabledForSession
+      isAnalyticsOffForVisitor = jest.requireMock('../../modules/analyticsSessionGate').isAnalyticsOffForVisitor
       ;(jest.requireMock('@dcl/hooks').useAnalytics as jest.Mock).mockReturnValue({ isInitialized: false, track })
-      isBotClient.mockReturnValue(false)
-      isAnalyticsDisabledForSession.mockReturnValue(false)
+      isAnalyticsOffForVisitor.mockReturnValue(false)
     })
 
     describe('and the visitor is a person in a session with analytics on', () => {
-      let rerender: ReturnType<typeof render>['rerender']
-
       beforeEach(() => {
-        ;({ rerender } = clickLearn())
+        clickLearn()
       })
 
       it('should send the click through the beacon, which survives the page unloading', () => {
@@ -591,22 +600,17 @@ describe('when the visitor clicks a navbar link', () => {
         })
       })
 
-      describe('and analytics finishes loading', () => {
-        beforeEach(() => {
-          finishLoading(rerender)
-        })
-
-        it('should not send the click again through analytics', () => {
-          expect(track).not.toHaveBeenCalled()
-          expect(postSegmentEvent).toHaveBeenCalledTimes(1)
-        })
+      it('should not also queue it, so it is not sent again once analytics is ready', () => {
+        expect(mockQueueClick).not.toHaveBeenCalled()
       })
     })
 
     describe.each([
       ['ctrl', { ctrlKey: true }],
-      ['cmd', { metaKey: true }]
-    ])('and the visitor %s-clicks a same-tab link to open it in a new tab', (_key, init) => {
+      ['cmd', { metaKey: true }],
+      ['shift', { shiftKey: true }],
+      ['alt', { altKey: true }]
+    ])('and the visitor %s-clicks a same-tab link, which keeps the page open', (_key, init) => {
       let rerender: ReturnType<typeof render>['rerender']
 
       beforeEach(() => {
@@ -687,12 +691,9 @@ describe('when the visitor clicks a navbar link', () => {
       })
     })
 
-    describe.each([
-      ['the session started on an exempt page', () => isAnalyticsDisabledForSession.mockReturnValue(true)],
-      ['the visitor is a bot', () => isBotClient.mockReturnValue(true)]
-    ])('and %s', (_case, arrange) => {
+    describe('and analytics stays off for this visitor (a session that started on an exempt page, or a bot)', () => {
       beforeEach(() => {
-        arrange()
+        isAnalyticsOffForVisitor.mockReturnValue(true)
       })
 
       describe('and the click replaces the page', () => {
@@ -708,14 +709,12 @@ describe('when the visitor clicks a navbar link', () => {
 
       describe('and the click keeps the page open', () => {
         beforeEach(() => {
-          const { rerender } = renderAt('/events')
+          renderAt('/events')
           fireEvent(learnLink(), new MouseEvent('auxclick', { bubbles: true, button: 1 }))
-          finishLoading(rerender)
         })
 
-        // Readiness is forced here only to prove the click was never queued: analytics stays off in these sessions.
-        it('should not queue it, so nothing is sent even once analytics is ready', () => {
-          expect(track).not.toHaveBeenCalled()
+        it('should not queue it, since analytics never boots to send it', () => {
+          expect(mockQueueClick).not.toHaveBeenCalled()
           expect(postSegmentEvent).not.toHaveBeenCalled()
         })
       })

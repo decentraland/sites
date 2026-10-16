@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
+import { isAnalyticsOffForVisitor } from '../modules/analyticsSessionGate'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
@@ -19,6 +20,10 @@ jest.mock('../modules/segmentAnonymousId.helpers', () => ({
 
 jest.mock('../modules/segmentBeacon', () => ({
   postSegmentEvent: jest.fn()
+}))
+
+jest.mock('../modules/analyticsSessionGate', () => ({
+  isAnalyticsOffForVisitor: jest.fn()
 }))
 
 jest.mock('../modules/downloadPageExit', () => ({
@@ -105,6 +110,22 @@ describe('when tracking a download click', () => {
           track_delivered_at: expect.any(Number)
         })
       )
+    })
+
+    describe('and analytics stays off for the visitor, as on the exempt /download page', () => {
+      beforeEach(() => {
+        ;(isAnalyticsOffForVisitor as jest.Mock).mockReturnValue(true)
+      })
+
+      it('should still post the beacon, since a download click is a conversion', () => {
+        const { result } = renderHook(() => useDownloadClick())
+
+        act(() => {
+          result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'download-page' }))
+        })
+
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      })
     })
 
     it('should not enqueue a normal analytics track call', () => {

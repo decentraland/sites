@@ -56,7 +56,7 @@ function useDownloadClick(options: UseDownloadClickOptions = {}) {
         return
       }
 
-      postDeferredClick(payload)
+      postDeferredClick(payload, { isConversion: true })
     },
     [deferredTrack, recordCorrelation]
   )

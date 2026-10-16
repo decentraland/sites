@@ -1,11 +1,11 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { isBotClient, useAnalytics } from '@dcl/hooks'
+import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
-import { isAnalyticsDisabledForSession } from '../../modules/analyticsSessionGate'
+import { isAnalyticsOffForVisitor } from '../../modules/analyticsSessionGate'
 import { postDeferredClick } from '../../modules/deferredClickBeacon'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
@@ -273,13 +273,11 @@ const LandingNavbar = memo(function LandingNavbar({
         track(SegmentEvent.CLICK, properties)
         return
       }
-      // Analytics never loads for sessions that started on an exempt page or for bots, so neither path may
-      // send their clicks, and a queued one would wait forever.
-      if (isAnalyticsDisabledForSession() || isBotClient(navigator.userAgent)) return
       // Analytics loads once the page is idle and is ready only after Segment fetched its settings. A click
-      // that stays on the page (new tab, Jump In) waits in the queue with the SDK's full context.
+      // that stays on the page (new tab, Jump In) waits in the queue with the SDK's full context, unless analytics
+      // never boots for this visitor and the queue would wait forever.
       if (!leavesPage) {
-        deferredTrack(SegmentEvent.CLICK, properties)
+        if (!isAnalyticsOffForVisitor()) deferredTrack(SegmentEvent.CLICK, properties)
         return
       }
       // One that replaces the page would be lost with it; the beacon survives the unload.
