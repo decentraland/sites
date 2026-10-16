@@ -5,7 +5,7 @@ jest.mock('hls.js', () => ({
   __esModule: true,
   default: Object.assign(jest.fn(), {
     isSupported: jest.fn(),
-    Events: { ERROR: 'hlsError' },
+    Events: { ERROR: 'hlsError', FRAG_LOADED: 'hlsFragLoaded' },
     ErrorTypes: { NETWORK_ERROR: 'networkError', MEDIA_ERROR: 'mediaError' }
   })
 }))
@@ -98,9 +98,14 @@ describe('when an HLS source is attached', () => {
       expect(hls.on).toHaveBeenCalledWith('hlsError', expect.any(Function))
     })
 
+    const listenerFor = (name: string) => hls.on.mock.calls.find(([event]) => event === name)
     const emitError = (data: { fatal: boolean; type?: string }) => {
-      const [event, listener] = hls.on.mock.calls[0]
+      const [event, listener] = listenerFor('hlsError')!
       listener(event, data)
+    }
+    const emitFragLoaded = () => {
+      const [event, listener] = listenerFor('hlsFragLoaded')!
+      listener(event, {})
     }
 
     describe('and hls.js reports a fatal network error', () => {
@@ -119,6 +124,18 @@ describe('when an HLS source is attached', () => {
 
         it('should report the failure', () => {
           expect(onFatal).toHaveBeenCalledTimes(1)
+        })
+      })
+
+      describe('and a fragment loads before it recurs', () => {
+        beforeEach(() => {
+          emitFragLoaded()
+          emitError({ fatal: true, type: 'networkError' })
+        })
+
+        it('should recover again instead of failing', () => {
+          expect(hls.startLoad).toHaveBeenCalledTimes(2)
+          expect(onFatal).not.toHaveBeenCalled()
         })
       })
     })

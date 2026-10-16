@@ -74,6 +74,8 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
   const handleUnmute = () => {
     viewerUnmutedRef.current = true
     setAutoplayMuted(false)
+    handleRef.current?.setMuted(muted)
+    if (videoStateRef.current === 'playing') handleRef.current?.play()
   }
 
   useEffect(() => {

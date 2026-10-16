@@ -88,6 +88,11 @@ describe('when the YouTube IFrame API is loaded', () => {
       await expect(timedOut).rejects.toThrow('YouTube IFrame API timed out')
     })
 
+    it('should remove the timed-out script', () => {
+      jest.advanceTimersByTime(10_000)
+      expect(apiScripts()).toHaveLength(0)
+    })
+
     it('should start a new load on the next call', () => {
       jest.advanceTimersByTime(10_000)
       const retried = loadYouTubeApi()
@@ -350,6 +355,38 @@ describe('when a YouTube player is created', () => {
     it('should remove the iframe it created', () => {
       expect(container).toBeEmptyDOMElement()
     })
+  })
+})
+
+describe('when a created YouTube player never becomes ready', () => {
+  let createYouTubePlayer: (container: HTMLElement, id: string, events: ClientPlayerEvents) => ClientPlayerHandle
+  let events: jest.Mocked<ClientPlayerEvents>
+  let handle: ClientPlayerHandle
+
+  beforeEach(async () => {
+    jest.useFakeTimers()
+    jest.resetModules()
+    ;({ createYouTubePlayer } = await import('./youtubePlayer'))
+    window.YT = { Player: jest.fn().mockReturnValue({ destroy: jest.fn() }) }
+    events = { onReady: jest.fn(), onEnded: jest.fn(), onError: jest.fn(), onAutoplayBlocked: jest.fn() }
+    handle = createYouTubePlayer(document.createElement('div'), VIDEO_ID, events)
+  })
+
+  afterEach(() => {
+    delete window.YT
+    jest.useRealTimers()
+    jest.resetAllMocks()
+  })
+
+  it('should report an error after the ready timeout', () => {
+    jest.advanceTimersByTime(10_000)
+    expect(events.onError).toHaveBeenCalled()
+  })
+
+  it('should not report an error once destroyed', () => {
+    handle.destroy()
+    jest.advanceTimersByTime(10_000)
+    expect(events.onError).not.toHaveBeenCalled()
   })
 })
 

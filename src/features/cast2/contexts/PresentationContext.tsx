@@ -46,7 +46,7 @@ const OVERLAY_HOLD_MS = 1000
 
 type PresentationBotMetadata = Record<string, unknown> & { role: 'presentation'; id?: string }
 
-type IncomingState = Omit<PresentationState, 'status' | 'videoPositionAt'>
+type IncomingState = Omit<PresentationState, 'status'>
 
 const VIDEO_STATES: PresentationState['videoState'][] = ['idle', 'loading', 'playing', 'paused']
 
@@ -121,21 +121,12 @@ const toIncomingState = (id: string, data: Record<string, unknown>): IncomingSta
   slide: toSlideInfo(data.slide),
   presenterIdentity: toPresenterIdentity(data.presenterIdentity),
   playingVideoIndex: toPlayingVideoIndex(data.playingVideoIndex),
-  videoPositionMs: toPositionNumber(data.videoPositionMs)
+  videoPositionMs: toPositionNumber(data.videoPositionMs),
+  videoPositionAt: toPositionNumber(data.videoPositionAt)
 })
 
 const sameOverlay = (a: OverlayLayout | null, b: OverlayLayout): boolean =>
   a !== null && Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
-
-/** The viewer's local clock at the moment a new anchor arrives; the previous stamp for an unchanged anchor; `null` with no position. */
-const receiptStampedPositionAt = (
-  prev: Pick<PresentationState, 'videoPositionMs' | 'videoPositionAt' | 'videoState'>,
-  incoming: Pick<IncomingState, 'videoPositionMs' | 'videoState'>
-): number | null => {
-  if (incoming.videoPositionMs === null) return null
-  const anchorMoved = incoming.videoPositionMs !== prev.videoPositionMs || incoming.videoState !== prev.videoState
-  return anchorMoved ? Date.now() : prev.videoPositionAt
-}
 
 const isPresentationStateMessage = (data: unknown): data is Record<string, unknown> & { type: 'presentation:state'; id: string } => {
   if (typeof data !== 'object' || data === null) return false
@@ -197,8 +188,7 @@ const PresentationProvider = ({ children, canControl = false }: { children: Reac
       const isHeld = pending !== null && Date.now() < pending.until
       if (!isHeld) pendingOverlayRef.current = null
       const overlay = isHeld && !sameOverlay(incoming.overlay, pending.layout) ? prev.overlay : incoming.overlay
-      const videoPositionAt = receiptStampedPositionAt(prev, incoming)
-      const next: PresentationState = { ...initialState, ...incoming, status: 'active', overlay, videoPositionAt }
+      const next: PresentationState = { ...initialState, ...incoming, status: 'active', overlay }
       return JSON.stringify(next) === JSON.stringify(prev) ? prev : next
     })
   }, [])

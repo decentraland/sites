@@ -663,11 +663,16 @@ describe('when a file client video renders', () => {
 
     describe('and the viewer clicks the unmute button', () => {
       beforeEach(() => {
+        play.mockClear()
         fireEvent.click(screen.getByRole('button', UNMUTE))
       })
 
       it('should unmute the element', () => {
         expect(element().muted).toBe(false)
+      })
+
+      it('should play the element in the same gesture', () => {
+        expect(play).toHaveBeenCalled()
       })
     })
   })

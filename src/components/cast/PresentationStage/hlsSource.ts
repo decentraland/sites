@@ -30,6 +30,9 @@ const attachHls = async (video: HTMLVideoElement, src: string, onFatal: () => vo
       onFatal()
     }
   })
+  hls.on(Hls.Events.FRAG_LOADED, () => {
+    recovered = false
+  })
   hls.loadSource(src)
   hls.attachMedia(video)
   return () => hls.destroy()

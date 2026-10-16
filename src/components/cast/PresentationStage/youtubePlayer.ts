@@ -3,6 +3,7 @@ import type { YouTubePlayer } from './youtubePlayer.types'
 
 const API_SRC = 'https://www.youtube.com/iframe_api'
 const API_TIMEOUT_MS = 10_000
+const READY_TIMEOUT_MS = 10_000
 const EMBED_ORIGIN = 'https://www.youtube.com'
 const ENDED = 0
 const PLAYING = 1
@@ -20,7 +21,10 @@ const loadYouTubeApi = (): Promise<void> => {
   apiPromise ??= new Promise<void>((resolve, reject) => {
     const script = document.createElement('script')
     script.src = API_SRC
+    const previous = window.onYouTubeIframeAPIReady
     const timer = setTimeout(() => {
+      script.remove()
+      window.onYouTubeIframeAPIReady = previous
       apiPromise = null
       reject(new Error('YouTube IFrame API timed out'))
     }, API_TIMEOUT_MS)
@@ -29,7 +33,6 @@ const loadYouTubeApi = (): Promise<void> => {
       apiPromise = null
       reject(new Error('YouTube IFrame API failed to load'))
     }
-    const previous = window.onYouTubeIframeAPIReady
     window.onYouTubeIframeAPIReady = () => {
       clearTimeout(timer)
       previous?.()
@@ -78,9 +81,13 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientP
   iframe.src = embedSrc(id)
   container.appendChild(iframe)
   let playRequested = false
+  const readyTimer = setTimeout(() => events.onError(), READY_TIMEOUT_MS)
   const player: YouTubePlayer = new YT.Player(iframe, {
     events: {
-      onReady: () => events.onReady(),
+      onReady: () => {
+        clearTimeout(readyTimer)
+        events.onReady()
+      },
       onStateChange: ({ data }) => {
         if (data !== BUFFERING) playRequested = false
         if (data === ENDED) events.onEnded()
@@ -115,6 +122,7 @@ const createYouTubePlayer = (container: HTMLElement, id: string, events: ClientP
       else player.unMute()
     },
     destroy: () => {
+      clearTimeout(readyTimer)
       player.destroy()
       iframe.remove()
     }
