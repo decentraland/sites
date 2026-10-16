@@ -2,13 +2,16 @@ import { act, renderHook } from '@testing-library/react'
 import { launchDesktopApp } from 'decentraland-ui2'
 import { getEnv } from '../config/env'
 import { collectCampaignParams } from '../modules/campaignParams'
-import { detectDownloadOS } from '../modules/downloadConstants'
+import { detectDesktopInstallerOs, detectDownloadOS } from '../modules/downloadConstants'
+import { buildModalDownloadUrl } from '../modules/url'
+import { OperativeSystem } from '../types/download.types'
 import { useAnonUserId } from './useAnonUserId'
 import { useDeepLinkQueryParams } from './useDeepLinkQueryParams'
 import { useHangOutAction } from './useHangOutAction'
 import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
 
+jest.mock('./useDownloadClick', () => ({ useDownloadClick: () => jest.fn() }))
 jest.mock('decentraland-ui2', () => ({ launchDesktopApp: jest.fn() }))
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('./useWalletAddress', () => ({ useWalletAddress: jest.fn() }))
@@ -16,14 +19,17 @@ jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400
 jest.mock('./useAnonUserId', () => ({ ANON_USER_ID_PARAM: 'anon_user_id', useAnonUserId: jest.fn() }))
 jest.mock('./useDeepLinkQueryParams', () => ({ useDeepLinkQueryParams: jest.fn(() => ({})) }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
+// Stands in for the installer routing (covered in url.test.ts): it only joins base + params,
+// so these specs assert which installer OS the hook hands to the builder.
+const mockTrackedUrl = (base: string, params: Record<string, string | undefined | null>) => {
+  const url = new URL(base, window.location.origin)
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) url.searchParams.append(key, value)
+  })
+  return url.toString()
+}
 jest.mock('../modules/url', () => ({
-  buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
-    const url = new URL(base, window.location.origin)
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) url.searchParams.append(key, value)
-    })
-    return url.toString()
-  }
+  buildModalDownloadUrl: jest.fn()
 }))
 jest.mock('../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
@@ -33,9 +39,12 @@ jest.mock('../modules/downloadConstants', () => ({
     googlePlay: 'https://google-play',
     appStore: 'https://app-store'
   },
+  detectDesktopInstallerOs: jest.fn(() => null),
   detectDownloadOS: jest.fn(() => 'apple')
 }))
 
+const mockedBuildModalDownloadUrl = buildModalDownloadUrl as jest.MockedFunction<typeof buildModalDownloadUrl>
+const mockedDetectInstallerOs = detectDesktopInstallerOs as jest.MockedFunction<typeof detectDesktopInstallerOs>
 const mockedLaunchDesktopApp = launchDesktopApp as jest.MockedFunction<typeof launchDesktopApp>
 const mockedDeepLinkQueryParams = useDeepLinkQueryParams as jest.MockedFunction<typeof useDeepLinkQueryParams>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
@@ -54,6 +63,8 @@ describe('useHangOutAction', () => {
     mockedUseAnonUserId.mockReturnValue(undefined)
     mockedCollectCampaignParams.mockReturnValue({})
     mockedDetectDownloadOS.mockReturnValue('apple')
+    mockedDetectInstallerOs.mockReturnValue(null)
+    mockedBuildModalDownloadUrl.mockImplementation((_os, base, params) => mockTrackedUrl(base, params))
     mockedGetEnv.mockReturnValue(undefined)
     mockedDeepLinkQueryParams.mockReturnValue({})
   })
@@ -135,6 +146,22 @@ describe('useHangOutAction', () => {
       const url = new URL(result.current.downloadModalProps.downloadUrl)
       expect(url.origin).toBe(window.location.origin)
       expect(url.pathname).toBe('/download')
+    })
+
+    it('should hand the detected desktop installer OS to the modal download URL builder', () => {
+      mockedDetectInstallerOs.mockReturnValue(OperativeSystem.WINDOWS)
+      renderHook(() => useHangOutAction())
+
+      expect(mockedBuildModalDownloadUrl).toHaveBeenCalledWith(OperativeSystem.WINDOWS, expect.any(String), expect.any(Object))
+    })
+
+    it('should return the direct download click handler only when the browser has a desktop installer', () => {
+      const { result: without } = renderHook(() => useHangOutAction())
+      mockedDetectInstallerOs.mockReturnValue(OperativeSystem.WINDOWS)
+      const { result: withInstaller } = renderHook(() => useHangOutAction())
+
+      expect(without.current.downloadModalProps.onDownloadClick).toBeUndefined()
+      expect(withInstaller.current.downloadModalProps.onDownloadClick).toEqual(expect.any(Function))
     })
 
     it('should surface the total downloads label from useTotalDownloads', () => {

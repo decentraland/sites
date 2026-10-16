@@ -27,10 +27,10 @@ jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('../utils/mobileAppLaunch', () => ({ launchMobileApp: jest.fn() }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
-jest.mock('../modules/url', () => ({
+jest.mock('../modules/url', () => {
   // Mirror the real helper: resolve relative bases against the origin, append
   // the params, and fall back to the raw base if the URL can't be parsed.
-  buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
+  const buildTrackedDownloadUrl = (base: string, params: Record<string, string | undefined | null>) => {
     try {
       const url = new URL(base, window.location.origin)
       Object.entries(params).forEach(([key, value]) => {
@@ -41,8 +41,15 @@ jest.mock('../modules/url', () => ({
       return base
     }
   }
-}))
+  // The modal CTA builder routes through the same stub; its installer routing is covered in url.test.ts.
+  return {
+    buildTrackedDownloadUrl,
+    buildModalDownloadUrl: (_os: unknown, base: string, params: Record<string, string | undefined | null>) =>
+      buildTrackedDownloadUrl(base, params)
+  }
+})
 jest.mock('../modules/downloadConstants', () => ({
+  detectDesktopInstallerOs: () => null,
   DOWNLOAD_URLS: {
     apple: 'https://dl.test/apple',
     windows: 'https://dl.test/windows',

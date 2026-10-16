@@ -4,9 +4,9 @@ import type { DownloadModalProps } from 'decentraland-ui2'
 import { getEnv } from '../config/env'
 import { DOWNLOAD_URLS, detectDownloadOS } from '../modules/downloadConstants'
 import { buildDownloadTrackingParams } from '../modules/downloadTrackingParams'
-import { buildTrackedDownloadUrl } from '../modules/url'
 import { useAnonUserId } from './useAnonUserId'
 import { useDeepLinkQueryParams } from './useDeepLinkQueryParams'
+import { useModalDownloadCta } from './useModalDownloadCta'
 import { useTotalDownloads } from './useTotalDownloads'
 import { useWalletAddress } from './useWalletAddress'
 
@@ -54,16 +54,18 @@ function useHangOutAction() {
   const os = detectDownloadOS()
 
   // Carry the tracking params (campaign utm_* + anon_user_id) onto the modal's
-  // primary CTA so attribution survives the hop to `/download` and the funnel
-  // join stays intact — same contract as the download-page CTAs.
+  // primary CTA so attribution survives the hop (straight to `/download_success`
+  // on Windows/macOS, `/download` elsewhere) and the funnel join stays intact.
   const downloadUrlParams = buildDownloadTrackingParams(anonUserId)
   // Prefer the env `DOWNLOAD_URL` (relative on dev/zone → resolved against the
   // current origin) so the download stays on the zone origin; fall back to the
   // platform constant.
   const downloadBase = getEnv('DOWNLOAD_URL') ?? (os === 'apple' ? DOWNLOAD_URLS.apple : DOWNLOAD_URLS.windows)
+  const { downloadUrl, onDownloadClick } = useModalDownloadCta(downloadBase, downloadUrlParams)
   const downloadModalProps: Omit<DownloadModalProps, 'open' | 'onClose'> = {
     os,
-    downloadUrl: buildTrackedDownloadUrl(downloadBase, downloadUrlParams),
+    downloadUrl,
+    onDownloadClick,
     epicUrl: DOWNLOAD_URLS.epic,
     googlePlayUrl: DOWNLOAD_URLS.googlePlay,
     appStoreUrl: DOWNLOAD_URLS.appStore,

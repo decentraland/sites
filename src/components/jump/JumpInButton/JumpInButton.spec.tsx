@@ -45,6 +45,7 @@ jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 jest.mock('../../../modules/downloadConstants', () => ({
+  detectDesktopInstallerOs: () => null,
   DOWNLOAD_URLS: {
     apple: 'https://dl.test',
     windows: 'https://dl.test',
@@ -57,9 +58,15 @@ jest.mock('../../../modules/downloadConstants', () => ({
 jest.mock('../../../modules/segment', () => ({
   SegmentEvent: { GO_TO_EXPLORER: 'Go To Explorer', CLICK: 'Click' }
 }))
-jest.mock('../../../modules/url', () => ({
-  buildTrackedDownloadUrl: jest.fn()
-}))
+jest.mock('../../../modules/url', () => {
+  const buildTrackedDownloadUrl = jest.fn()
+  // The modal CTA builder routes through the same stub; its installer routing is covered in url.test.ts.
+  return {
+    buildTrackedDownloadUrl,
+    buildModalDownloadUrl: (_os: unknown, base: string, params: Record<string, string | undefined | null>) =>
+      buildTrackedDownloadUrl(base, params)
+  }
+})
 jest.mock('../../../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('../../../utils/mobileAppLaunch', () => ({ launchMobileApp: jest.fn() }))
 jest.mock('../../../hooks/useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
