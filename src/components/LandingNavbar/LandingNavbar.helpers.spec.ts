@@ -71,7 +71,7 @@ describe('when naming the analytics action for a navbar link', () => {
 describe('when deciding whether a navbar click replaces the current page', () => {
   const linkWith = (target?: string) => {
     const link = document.createElement('a')
-    if (target) link.setAttribute('target', target)
+    if (target !== undefined) link.setAttribute('target', target)
     return link
   }
   const click = (currentTarget: Element, keys: Partial<Record<'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey', boolean>> = {}) => ({
@@ -87,7 +87,7 @@ describe('when deciding whether a navbar click replaces the current page', () =>
     expect(isSameTabNavigation(click(linkWith()))).toBe(true)
   })
 
-  it.each(['_self', '_parent', '_top', '_SELF'])('should treat a %s link as leaving the page', target => {
+  it.each(['', '_self', '_parent', '_top', '_SELF'])('should treat a link with target "%s" as leaving the page', target => {
     expect(isSameTabNavigation(click(linkWith(target)))).toBe(true)
   })
 
