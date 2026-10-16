@@ -151,8 +151,8 @@ function postSegmentEvent(event: SegmentEvent, properties: Record<string, unknow
   // NOTE: bypasses the analytics-exempt-path gate on purpose. /download is
   // exempt for Lighthouse yet hosts download CTAs whose clicks, funnel exits
   // and download_started/_success/_failed events must still land. Callers
-  // whose events are not conversions (the navbar's early clicks) apply
-  // `isAnalyticsDisabledForSession` themselves before calling.
+  // whose events are not conversions apply `isAnalyticsOffForVisitor`
+  // (exempt session or bot) before calling, as `postDeferredClick` does.
   const writeKey = getSegmentWriteKey({ bypassExemptPathGate: true })
   if (!writeKey) return
 
