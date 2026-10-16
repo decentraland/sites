@@ -95,6 +95,12 @@ describe('when deciding whether a navbar click replaces the current page', () =>
     expect(isSameTabNavigation(click(linkWith(target)))).toBe(false)
   })
 
+  it('should keep the page for a link that downloads its file', () => {
+    const link = linkWith()
+    link.setAttribute('download', '')
+    expect(isSameTabNavigation(click(link))).toBe(false)
+  })
+
   it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'] as const)('should keep the page when %s opens the link elsewhere', key => {
     expect(isSameTabNavigation(click(linkWith(), { [key]: true }))).toBe(false)
   })
