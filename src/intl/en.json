@@ -1524,6 +1524,7 @@
       "category": {
         "label": "Category",
         "all": "Any Category",
+        "featured": "Featured",
         "social": "Social",
         "music": "Music",
         "art": "Art",

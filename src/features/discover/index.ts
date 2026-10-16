@@ -8,12 +8,16 @@ export {
   useGetDiscoverWorldByNameQuery
 } from './discover.client'
 export {
-  DISCOVER_CATEGORIES,
+  DISCOVER_CATEGORY_OPTIONS,
+  FEATURED_CATEGORY,
+  categoryQueryArgs,
+  parseCategoryParam,
   buildDetailPath,
   buildJumpLandingHref,
   countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
   isJunkContactName,
   parsePositionParam,
@@ -25,5 +29,5 @@ export {
   placeHasPeople,
   placePlayers
 } from './discover.helpers'
-export type { DiscoverCategory } from './discover.helpers'
+export type { DiscoverCategory, DiscoverCategoryFilter } from './discover.helpers'
 export type { HotScene, LiveWorldEntry, DiscoverCommunity, DiscoverPlace, ExploreSection } from './discover.types'
