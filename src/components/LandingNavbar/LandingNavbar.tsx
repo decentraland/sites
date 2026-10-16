@@ -256,7 +256,7 @@ const LandingNavbar = memo(function LandingNavbar({
   // ui2 renders notifications in en/es/zh only, so the site locale cannot go
   // straight through (SITES-2S0).
   const notificationLocale = toNotificationLocale(locale)
-  const { isInitialized, track } = useAnalytics()
+  const { isInitialized } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Read through a ref (as useDownloadClick does) so trackNavbar keeps its identity when analytics becomes
@@ -269,8 +269,9 @@ const LandingNavbar = memo(function LandingNavbar({
   const trackNavbar = useCallback(
     (action: string, link?: NavbarClickLink, { leavesPage = true }: NavbarClickOptions = {}) => {
       const properties = { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link }
+      // Once analytics is ready the queue sends at once, so every navbar click carries the same `track_*` fields.
       if (isInitializedRef.current) {
-        track(SegmentEvent.CLICK, properties)
+        deferredTrack(SegmentEvent.CLICK, properties)
         return
       }
       // Analytics loads once the page is idle and is ready only after Segment fetched its settings. A click
@@ -283,7 +284,7 @@ const LandingNavbar = memo(function LandingNavbar({
       // One that replaces the page would be lost with it; the beacon survives the unload.
       postDeferredClick(properties)
     },
-    [deferredTrack, track]
+    [deferredTrack]
   )
 
   const trackNavbarLink = useCallback(

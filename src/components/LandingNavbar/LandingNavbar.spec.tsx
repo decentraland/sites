@@ -437,7 +437,10 @@ describe('when the visitor clicks a navbar link', () => {
         event: 'click',
         action: 'creator_documentation',
         section: 'create',
-        href: 'https://docs.decentraland.org/creator'
+        href: 'https://docs.decentraland.org/creator',
+        track_called_at: expect.any(Number),
+        track_delivered_at: expect.any(Number),
+        track_deferred: false
       })
     })
   })
@@ -798,13 +801,16 @@ describe('when the visitor clicks a navbar link', () => {
       expect(jest.requireMock('../../modules/segmentBeacon').postSegmentEvent).not.toHaveBeenCalled()
     })
 
-    it('should send the plain click payload, without deferral fields', () => {
+    it('should send the click payload marked as not deferred, like every other navbar click', () => {
       expect(track).toHaveBeenCalledWith('Click', {
         place: 'Landing Navbar',
         event: 'click',
         action: 'learn',
         section: 'learn',
-        href: 'https://decentraland.org/blog/'
+        href: 'https://decentraland.org/blog/',
+        track_called_at: expect.any(Number),
+        track_delivered_at: expect.any(Number),
+        track_deferred: false
       })
     })
   })
