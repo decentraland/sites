@@ -46,7 +46,7 @@ const OVERLAY_HOLD_MS = 1000
 
 type PresentationBotMetadata = Record<string, unknown> & { role: 'presentation'; id?: string }
 
-type IncomingState = Omit<PresentationState, 'status'>
+type IncomingState = Omit<PresentationState, 'status' | 'videoPositionAt'>
 
 const VIDEO_STATES: PresentationState['videoState'][] = ['idle', 'loading', 'playing', 'paused']
 
@@ -121,8 +121,7 @@ const toIncomingState = (id: string, data: Record<string, unknown>): IncomingSta
   slide: toSlideInfo(data.slide),
   presenterIdentity: toPresenterIdentity(data.presenterIdentity),
   playingVideoIndex: toPlayingVideoIndex(data.playingVideoIndex),
-  videoPositionMs: toPositionNumber(data.videoPositionMs),
-  videoPositionAt: toPositionNumber(data.videoPositionAt)
+  videoPositionMs: toPositionNumber(data.videoPositionMs)
 })
 
 const sameOverlay = (a: OverlayLayout | null, b: OverlayLayout): boolean =>

@@ -116,7 +116,10 @@ function ClientVideo({ video, muted }: ClientVideoProps) {
 
   useEffect(() => {
     if (!ready) return
-    endedRef.current = false
+    const live = targetPositionMs({ videoState, videoPositionMs, videoPositionAt }, Date.now())
+    const duration = handleRef.current?.durationMs() ?? null
+    const atOrPastEnd = live !== null && duration !== null && live >= duration - DRIFT_MS
+    if (!atOrPastEnd) endedRef.current = false
     const sync = () => {
       const handle = handleRef.current
       if (!handle || endedRef.current) return

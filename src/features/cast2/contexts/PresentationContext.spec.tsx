@@ -302,6 +302,17 @@ describe('PresentationProvider', () => {
         expect(current.state.videoPositionAt).toBe(1_700_000_005_000)
       })
     })
+
+    describe('and it re-emits the same position later', () => {
+      beforeEach(() => {
+        jest.spyOn(Date, 'now').mockReturnValue(1_700_000_009_000)
+        deliver(statePacket(VIDEO_POSITION))
+      })
+
+      it('should keep the original receipt stamp', () => {
+        expect(current.state.videoPositionAt).toBe(1_700_000_000_000)
+      })
+    })
   })
 
   describe.each<[string, Uint8Array, string | null]>([

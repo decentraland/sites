@@ -195,6 +195,22 @@ describe('when a YouTube client video renders', () => {
           expect(handle.play).toHaveBeenCalled()
         })
       })
+
+      describe('and the presenter advances toward the end without restarting', () => {
+        beforeEach(() => {
+          handle.durationMs.mockReturnValue(12_000)
+          state = { ...state, videoPositionMs: 11_000, videoPositionAt: Date.now() }
+          result.rerender(<ClientVideo video={video} muted={false} />)
+        })
+
+        it('should not replay the ended video', () => {
+          expect(handle.play).not.toHaveBeenCalled()
+        })
+
+        it('should not seek', () => {
+          expect(handle.seekTo).not.toHaveBeenCalled()
+        })
+      })
     })
 
     describe('and it unmounts', () => {
