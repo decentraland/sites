@@ -131,6 +131,30 @@ describe('CreatorHubDownloadSuccess', () => {
       )
     })
 
+    describe('and the document is denied sessionStorage access', () => {
+      const realSessionStorage = window.sessionStorage
+
+      beforeEach(() => {
+        Object.defineProperty(window, 'sessionStorage', {
+          configurable: true,
+          get() {
+            throw new DOMException('Access is denied for this document.', 'SecurityError')
+          }
+        })
+      })
+
+      afterEach(() => {
+        Object.defineProperty(window, 'sessionStorage', { value: realSessionStorage, configurable: true, writable: true })
+      })
+
+      it('should still report the download as a first visit', async () => {
+        render(<CreatorHubDownloadSuccess />)
+
+        await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))
+        expect(mockPostSegmentEvent.mock.calls[0][1]).toEqual(expect.objectContaining({ revisit: 0 }))
+      })
+    })
+
     it('should increment the revisit counter on a second mount for the same os:arch', async () => {
       const first = render(<CreatorHubDownloadSuccess />)
       await waitFor(() => expect(mockPostSegmentEvent).toHaveBeenCalledTimes(1))

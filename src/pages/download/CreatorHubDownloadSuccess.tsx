@@ -18,6 +18,7 @@ import { createDownloadTracker, toAuthState } from '../../modules/downloadTracki
 import { triggerFileDownload } from '../../modules/file'
 import { DownloadPlace, DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { Architecture, OperativeSystem } from '../../types/download.types'
+import { readStorageItem, writeStorageItem } from '../../utils/safeStorage'
 import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from '../DownloadSuccess/DownloadSuccess.types'
 import { DownloadSuccessLayout } from '../DownloadSuccess/DownloadSuccessLayout'
 
@@ -54,8 +55,11 @@ const CreatorHubDownloadSuccess = memo(() => {
   // DownloadSuccess flow.
   const [revisitNumber] = useState(() => {
     const visitsKey = `creatorHubDownloadSuccess:visits:${clientOS}:${clientArch}`
-    const current = Number(sessionStorage.getItem(visitsKey) ?? '0')
-    sessionStorage.setItem(visitsKey, String(current + 1))
+    // Safe reads: a document denied storage access throws on `sessionStorage`
+    // itself, and an uncaught throw here took the whole page down (SITES-2TJ).
+    // Without storage every arrival simply counts as a first visit.
+    const current = Number(readStorageItem(visitsKey, 'session') ?? '0')
+    writeStorageItem(visitsKey, String(current + 1), 'session')
     return current
   })
 

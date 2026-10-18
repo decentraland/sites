@@ -135,3 +135,39 @@ describe('when writing safe storage', () => {
     it('should report failure without throwing', () => expect(writeStorageItem('anon', 'id')).toBe(false))
   })
 })
+
+describe('when using the session area', () => {
+  const realSessionStorage = window.sessionStorage
+
+  afterEach(() => {
+    Object.defineProperty(window, 'sessionStorage', { value: realSessionStorage, configurable: true, writable: true })
+    window.sessionStorage.clear()
+  })
+
+  it('should read and write sessionStorage, not localStorage', () => {
+    expect(writeStorageItem('visits', '2', 'session')).toBe(true)
+
+    expect(window.sessionStorage.getItem('visits')).toBe('2')
+    expect(readStorageItem('visits', 'session')).toBe('2')
+    expect(readStorageItem('visits')).toBeNull()
+  })
+
+  describe('and the document is denied storage access', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'sessionStorage', {
+        configurable: true,
+        get() {
+          throw new DOMException('Access is denied for this document.', 'SecurityError')
+        }
+      })
+    })
+
+    it('should read as null instead of throwing', () => {
+      expect(readStorageItem('visits', 'session')).toBeNull()
+    })
+
+    it('should report a failed write instead of throwing', () => {
+      expect(writeStorageItem('visits', '1', 'session')).toBe(false)
+    })
+  })
+})

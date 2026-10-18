@@ -29,6 +29,7 @@ import type { StreamOrFallbackResult } from '../../modules/streamOrFallback.type
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
 import { resolveReferrer } from '../../utils/referrer'
+import { readStorageItem, writeStorageItem } from '../../utils/safeStorage'
 import { DownloadStepsLayout } from './DownloadStepsLayout'
 import { getStepOneVariant, resolveDownloadBrowser } from './DownloadSuccess.helpers'
 import type { DownloadStepsStep } from './DownloadSuccess.types'
@@ -234,8 +235,11 @@ const DownloadSuccess = memo(() => {
   // visit; `revisit: n` is the n-th revisit (refresh / back-forward / etc.).
   const [revisitNumber] = useState(() => {
     const visitsKey = `downloadSuccess:visits:${clientOS}:${clientArch}`
-    const current = Number(sessionStorage.getItem(visitsKey) ?? '0')
-    sessionStorage.setItem(visitsKey, String(current + 1))
+    // Safe reads: a document denied storage access throws on `sessionStorage`
+    // itself, and an uncaught throw here took the whole page down (SITES-2TJ).
+    // Without storage every arrival simply counts as a first visit.
+    const current = Number(readStorageItem(visitsKey, 'session') ?? '0')
+    writeStorageItem(visitsKey, String(current + 1), 'session')
     return current
   })
 
