@@ -170,4 +170,27 @@ describe('when using the session area', () => {
       expect(writeStorageItem('visits', '1', 'session')).toBe(false)
     })
   })
+
+  describe('and sessionStorage is null', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'sessionStorage', { value: null, configurable: true, writable: true })
+    })
+
+    it('should read as null and report a failed write', () => {
+      expect(readStorageItem('visits', 'session')).toBeNull()
+      expect(writeStorageItem('visits', '1', 'session')).toBe(false)
+    })
+  })
+
+  describe('and the write is rejected', () => {
+    beforeEach(() => {
+      jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new DOMException('Quota exceeded', 'QuotaExceededError')
+      })
+    })
+
+    it('should report failure without throwing', () => {
+      expect(writeStorageItem('visits', '1', 'session')).toBe(false)
+    })
+  })
 })

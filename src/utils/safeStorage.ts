@@ -1,5 +1,5 @@
 /**
- * `localStorage` (and `sessionStorage`) is not always there, and not always readable.
+ * `localStorage` and `sessionStorage` are not always there, and not always readable.
  *
  * Some Android WebViews expose it as `null`, and a document denied storage
  * access (third-party framing, a locked-down browser profile) throws
