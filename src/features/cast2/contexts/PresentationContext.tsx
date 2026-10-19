@@ -3,7 +3,7 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useM
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RemoteParticipant, RoomEvent } from 'livekit-client'
 import { useGetPresentationBotTokenMutation, useUploadPresentationFromUrlMutation, useUploadPresentationMutation } from '../cast2.client'
-import type { PresentationInfo, SlideVideoInfo } from '../cast2.types'
+import type { OverlayLayout, PresentationInfo, SlideVideoInfo } from '../cast2.types'
 import { getStreamerToken as getStoredToken, isPresentationBot, isRetryableVideoErrorCode, parseParticipantMetadata } from '../cast2.utils'
 import { decodeCommsPacket, encodeCommsPacket } from '../commsProtocol'
 import { useCastTranslation } from '../useCastTranslation'
@@ -14,12 +14,10 @@ interface PresentationState {
   slideCount: number
   currentSlide: number
   fileType: 'pdf' | 'pptx' | null
-  // 'starting' covers the window between upload completion and the bot joining
-  // the room — without it, the bot-absence cleanup effect below would briefly
-  // snap state back to 'idle' on the render right after upload resolves.
   status: 'idle' | 'uploading' | 'starting' | 'active'
   slideVideos: SlideVideoInfo[]
   videoState: 'idle' | 'loading' | 'playing' | 'paused'
+  overlay: OverlayLayout
 }
 
 interface PresentationContextValue {
@@ -31,12 +29,15 @@ interface PresentationContextValue {
   playVideo: (videoIndex: number) => Promise<void>
   pauseVideo: () => Promise<void>
   stopVideo: () => Promise<void>
+  setOverlay: (patch: Partial<OverlayLayout>) => Promise<void>
   stopPresentation: () => Promise<void>
   isPresentationActive: boolean
   presentationParticipantIdentity: string | null
 }
 
 const PRESENTATION_TOPIC = 'presentation'
+const DEFAULT_OVERLAY: OverlayLayout = { x: 0, y: 1, size: 'small' }
+const OVERLAY_HOLD_MS = 1000
 
 interface PresentationBotMetadata {
   role: 'presentation'
@@ -46,6 +47,7 @@ interface PresentationBotMetadata {
   fileType?: 'pdf' | 'pptx'
   videoState?: PresentationState['videoState']
   slideVideos?: SlideVideoInfo[]
+  overlay?: unknown
 }
 
 const initialState: PresentationState = {
@@ -55,8 +57,18 @@ const initialState: PresentationState = {
   fileType: null,
   status: 'idle',
   slideVideos: [],
-  videoState: 'idle'
+  videoState: 'idle',
+  overlay: DEFAULT_OVERLAY
 }
+
+const isOverlayLayout = (value: unknown): value is OverlayLayout => {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return Number.isFinite(v.x) && Number.isFinite(v.y) && (v.size === 'small' || v.size === 'large')
+}
+
+const sameOverlay = (a: OverlayLayout, b: OverlayLayout): boolean =>
+  Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && a.size === b.size
 
 const isPresentationStateMessage = (
   data: unknown
@@ -68,6 +80,7 @@ const isPresentationStateMessage = (
   fileType: 'pdf' | 'pptx'
   slideVideos?: SlideVideoInfo[]
   videoState?: PresentationState['videoState']
+  overlay?: unknown
 } => {
   if (typeof data !== 'object' || data === null) return false
   const d = data as Record<string, unknown>
@@ -138,6 +151,17 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
   const idRef = useRef<string | null>(null)
   idRef.current = state.id
   const uploadingRef = useRef(false)
+  const pendingOverlayRef = useRef<{ layout: OverlayLayout; until: number } | null>(null)
+
+  const resolveIncomingOverlay = (prev: OverlayLayout, incoming: OverlayLayout): OverlayLayout => {
+    const pending = pendingOverlayRef.current
+    if (!pending) return incoming
+    if (Date.now() >= pending.until) {
+      pendingOverlayRef.current = null
+      return incoming
+    }
+    return sameOverlay(incoming, pending.layout) ? incoming : prev
+  }
 
   const sendCommand = useCallback(
     async (command: Record<string, unknown>) => {
@@ -170,6 +194,11 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
   const botCurrentSlide = botMetadata?.currentSlide ?? 0
   const botFileType = botMetadata?.fileType ?? null
   const botVideoState = botMetadata?.videoState ?? 'idle'
+  const {
+    x: botOverlayX,
+    y: botOverlayY,
+    size: botOverlaySize
+  } = isOverlayLayout(botMetadata?.overlay) ? botMetadata.overlay : DEFAULT_OVERLAY
   const botSlideVideosJson = useMemo(() => JSON.stringify(botMetadata?.slideVideos ?? []), [botMetadata])
   const hasBotMetadata = botMetadata !== null
 
@@ -177,6 +206,7 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
     if (!hasBotMetadata) return
     if (botId) {
       setState(prev => {
+        const overlay = resolveIncomingOverlay(prev.overlay, { x: botOverlayX, y: botOverlayY, size: botOverlaySize })
         if (
           prev.status === 'active' &&
           prev.id === botId &&
@@ -184,7 +214,8 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
           prev.slideCount === botSlideCount &&
           prev.fileType === botFileType &&
           prev.videoState === botVideoState &&
-          JSON.stringify(prev.slideVideos) === botSlideVideosJson
+          JSON.stringify(prev.slideVideos) === botSlideVideosJson &&
+          prev.overlay === overlay
         ) {
           return prev
         }
@@ -195,13 +226,26 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
           fileType: botFileType,
           status: 'active',
           slideVideos: JSON.parse(botSlideVideosJson),
-          videoState: botVideoState
+          videoState: botVideoState,
+          overlay
         }
       })
       return
     }
     sendCommand({ type: 'presentation:get-state' })
-  }, [hasBotMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideosJson, sendCommand])
+  }, [
+    hasBotMetadata,
+    botId,
+    botSlideCount,
+    botCurrentSlide,
+    botFileType,
+    botVideoState,
+    botSlideVideosJson,
+    botOverlayX,
+    botOverlayY,
+    botOverlaySize,
+    sendCommand
+  ])
 
   const showNotificationRef = useRef(notifications.show)
   showNotificationRef.current = notifications.show
@@ -218,15 +262,17 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
       if (!decoded || decoded.topic !== PRESENTATION_TOPIC) return
 
       if (isPresentationStateMessage(decoded.data)) {
-        setState({
-          id: decoded.data.id,
-          slideCount: decoded.data.slideCount,
-          currentSlide: decoded.data.currentSlide,
-          fileType: decoded.data.fileType,
+        const stateMessage = decoded.data
+        setState(prev => ({
+          id: stateMessage.id,
+          slideCount: stateMessage.slideCount,
+          currentSlide: stateMessage.currentSlide,
+          fileType: stateMessage.fileType,
           status: 'active',
-          slideVideos: decoded.data.slideVideos ?? [],
-          videoState: decoded.data.videoState ?? 'idle'
-        })
+          slideVideos: stateMessage.slideVideos ?? [],
+          videoState: stateMessage.videoState ?? 'idle',
+          overlay: resolveIncomingOverlay(prev.overlay, isOverlayLayout(stateMessage.overlay) ? stateMessage.overlay : DEFAULT_OVERLAY)
+        }))
       } else if (isPresentationStoppedMessage(decoded.data)) {
         setState(initialState)
       } else if (isPresentationErrorMessage(decoded.data)) {
@@ -273,7 +319,8 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
                 fileType: info.fileType,
                 status: 'starting',
                 slideVideos: [],
-                videoState: 'idle'
+                videoState: 'idle',
+                overlay: DEFAULT_OVERLAY
               }
         )
       } catch (err) {
@@ -339,6 +386,19 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
     await sendCommand({ type: 'presentation:video:stop' })
   }, [sendCommand])
 
+  const setOverlay = useCallback(
+    async (patch: Partial<OverlayLayout>) => {
+      if (!idRef.current) return
+      setState(prev => {
+        const overlay = { ...prev.overlay, ...patch }
+        pendingOverlayRef.current = { layout: overlay, until: Date.now() + OVERLAY_HOLD_MS }
+        return { ...prev, overlay }
+      })
+      await sendCommand({ type: 'presentation:overlay:update', ...patch })
+    },
+    [sendCommand]
+  )
+
   const stopPresentationHandler = useCallback(async () => {
     if (!idRef.current) return
     await sendCommand({ type: 'presentation:stop' })
@@ -360,6 +420,7 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
       playVideo,
       pauseVideo,
       stopVideo,
+      setOverlay,
       stopPresentation: stopPresentationHandler,
       isPresentationActive: state.status === 'active' || state.status === 'starting',
       presentationParticipantIdentity
@@ -373,6 +434,7 @@ const PresentationProvider = ({ children }: { children: ReactNode }) => {
       playVideo,
       pauseVideo,
       stopVideo,
+      setOverlay,
       stopPresentationHandler,
       presentationParticipantIdentity
     ]

@@ -8,7 +8,7 @@ import { getDisplayName, isPresentationBot } from '../../../features/cast2/cast2
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import { Avatar } from '../Avatar/Avatar'
 import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
-import { ParticipantGridProps } from './ParticipantGrid.types'
+import { ParticipantGridProps, ParticipantTileProps } from './ParticipantGrid.types'
 import {
   AvatarFallback,
   FloatingVideoContainer,
@@ -32,7 +32,7 @@ import {
 const MAX_VISIBLE_PARTICIPANTS = 9
 const MAX_THUMBNAILS = 1
 
-function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProps) {
+function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }: ParticipantGridProps) {
   const { t } = useCastTranslation()
   const [expandedTrackSid, setExpandedTrackSid] = useState<string | null>(null)
   const [showAllParticipants, setShowAllParticipants] = useState(false)
@@ -134,6 +134,7 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
             trackRef={expandedTrack}
             isFullscreen={true}
             onClick={isPresentationExpanded ? undefined : () => handleTileClick(expandedTrack.participant.sid + expandedTrack.source)}
+            overlay={presentationOverlay}
           />
         )}
         {/* Hide participant thumbnails during presentation — slides are the focus */}
@@ -190,6 +191,7 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
           trackRef={trackRef}
           isFullscreen={isFullscreen}
           onClick={hasMultipleParticipants ? () => handleTileClick(trackRef.participant.sid + trackRef.source) : undefined}
+          overlay={presentationOverlay}
         />
       ))}
       {hasOverflow && (
@@ -211,15 +213,8 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   )
 }
 
-function ParticipantTile({
-  trackRef,
-  isFullscreen = false,
-  onClick
-}: {
-  trackRef: TrackReferenceOrPlaceholder
-  isFullscreen?: boolean
-  onClick?: () => void
-}) {
+function ParticipantTile(props: ParticipantTileProps) {
+  const { trackRef, isFullscreen, onClick, overlay } = props
   const { t } = useCastTranslation()
   const { participant, source, publication } = trackRef
   const isScreenShare = source === Track.Source.ScreenShare
@@ -284,6 +279,8 @@ function ParticipantTile({
           <Avatar name={displayName} ethAddress={participant.identity} size={120} />
         </AvatarFallback>
       )}
+
+      {isPresentation && hasActiveVideo && !isTrackInitializing ? overlay : null}
 
       {!isScreenShare && !isPresentation && (
         <SpeakingIndicatorWrapper>
