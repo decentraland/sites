@@ -34,7 +34,7 @@ async function transformEmotionStyled(code: string, filename: string): Promise<{
 }
 
 // Mirrors vercel.json — cross-origin isolation ONLY on /places documents so
-// the bevy-web iframe (which relies on SharedArrayBuffer) can boot there.
+// the bevy web client iframe (which relies on SharedArrayBuffer) can boot there.
 // `credentialless` lets us load cross-origin resources without requiring CORP
 // everywhere, at the cost of stripping credentials from those requests.
 // Scoped per-request (not global server headers) to keep dev/preview at prod

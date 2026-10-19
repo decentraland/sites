@@ -366,15 +366,6 @@
       "missing_address_title": "缺少地址",
       "missing_address_description": "URL 中需要地址参数。请检查邮件中的链接。"
     },
-    "play": {
-      "title": "网页版已不再提供。",
-      "subtitle": "在桌面或移动应用上继续游玩。",
-      "also_available_on": "同时支持",
-      "already_downloaded": "已经下载了？",
-      "jump_in": "立即进入！",
-      "experimental": "想继续在网页上游玩？点击{here}体验实验版",
-      "here": "这里"
-    },
     "not_found": {
       "title_oops": "哎呀！",
       "title_rest": "此页面已离开这个世界。",

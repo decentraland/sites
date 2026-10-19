@@ -43,7 +43,7 @@ interface SceneJumpInModalProps {
 // JUMP IN modal — pitches the place (cover, creator, description) with a JUMP
 // IN CTA and a copy-link shortcut, shown in place of the bevy watcher in two
 // cases: (1) desktop, when the scene has nobody in it (the watcher would render
-// an empty world); (2) mobile, for ANY scene, since bevy-web can't run on touch
+// an empty world); (2) mobile, for ANY scene, since the bevy web client can't run on touch
 // devices. `liveCount > 0` adds the LIVE + presence badges (the mobile case).
 function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpInModalProps) {
   const t = useFormatMessage()

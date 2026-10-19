@@ -36,7 +36,6 @@ const CreatorHubDownloadSuccessPage = lazyWithRetry(() =>
   import('./pages/download/CreatorHubDownloadSuccess').then(m => ({ default: m.CreatorHubDownloadSuccess }))
 )
 const HelpPage = lazyWithRetry(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
-const PlayPage = lazyWithRetry(() => import('./pages/play').then(m => ({ default: m.PlayPage })))
 const InvitePage = lazyWithRetry(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
 const CreatePage = lazyWithRetry(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazyWithRetry(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
@@ -232,7 +231,6 @@ const App = () => {
               <Route path="/terms" element={<TermsOfUse />} />
               {/* route-manifest: sitemap */}
               <Route path="/help" element={<HelpPage />} />
-              <Route path="/play" element={<PlayPage />} />
               {/* route-manifest: sitemap */}
               <Route path="/create" element={<CreatePage />} />
               {/* route-manifest: sitemap */}

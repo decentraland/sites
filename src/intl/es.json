@@ -366,15 +366,6 @@
       "missing_address_title": "Falta la dirección",
       "missing_address_description": "El parámetro de dirección es obligatorio en la URL. Revisa el enlace de tu correo."
     },
-    "play": {
-      "title": "La versión web ya no está disponible.",
-      "subtitle": "Seguí jugando en la app de escritorio o móvil.",
-      "also_available_on": "También disponible en",
-      "already_downloaded": "¿Ya lo descargaste?",
-      "jump_in": "¡ENTRAR!",
-      "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
-      "here": "AQUÍ"
-    },
     "not_found": {
       "title_oops": "¡Ups!",
       "title_rest": "Esta página abandonó el mundo.",
