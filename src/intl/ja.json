@@ -366,15 +366,6 @@
       "missing_address_title": "アドレスがありません",
       "missing_address_description": "URL にアドレスのパラメータが必要です。メールのリンクをご確認ください。"
     },
-    "play": {
-      "title": "ウェブ版は提供を終了しました。",
-      "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
-      "also_available_on": "こちらでも利用可能",
-      "already_downloaded": "すでにダウンロード済みですか？",
-      "jump_in": "入場する！",
-      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
-      "here": "こちら"
-    },
     "not_found": {
       "title_oops": "おっと！",
       "title_rest": "このページはワールドから消えました。",

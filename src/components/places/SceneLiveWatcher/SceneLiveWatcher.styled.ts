@@ -17,7 +17,7 @@ const WatcherContainer = styled(Box)({
 
 // Slim tab strip above the video area. VIDEO switches to the LiveKit comms
 // room (chat + voice + any publisher in the scene). STREAMING SCENE swaps
-// the video panel for a bevy-web iframe rendering the actual 3D scene.
+// the video panel for a bevy web client iframe rendering the actual 3D scene.
 const TabStrip = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'stretch',
@@ -60,7 +60,7 @@ const TabButton = styled('button', { shouldForwardProp: prop => prop !== '$activ
   }
 }))
 
-// Iframe for the bevy-web streaming-scene tab. We mark it sandbox-permissive
+// Iframe for the bevy web client streaming-scene tab. We mark it sandbox-permissive
 // (allow-scripts, allow-same-origin, allow-popups, allow-pointer-lock) so the
 // 3D client can run. DCL serves it with `X-Frame-Options: DENY` today, which
 // browsers enforce regardless — the overlay button below is the practical
@@ -178,7 +178,7 @@ const JumpInFloat = styled(Box)({
   zIndex: 3
 })
 
-// Mirrors the bevy-web "experience not available on mobile" template
+// Mirrors the bevy web client "experience not available on mobile" template
 // (`Decentraland Web` headline + store CTA) but rendered in Decentraland's
 // own type/color tokens. Used in place of the EXPLORE SCENE launch overlay
 // on touch devices, so we never mount the bevy iframe there — bevy's own
