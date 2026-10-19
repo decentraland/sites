@@ -17,7 +17,8 @@ import {
   isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
   parseDurationMs,
-  recurrenceToApi
+  recurrenceToApi,
+  todayDateString
 } from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
@@ -314,7 +315,11 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       newErrors.description = t('create_event.error_description_too_long')
     }
 
-    if (!form.startDate) newErrors.startDate = t('create_event.error_required')
+    if (!form.startDate) {
+      newErrors.startDate = t('create_event.error_required')
+    } else if (form.startDate < todayDateString()) {
+      newErrors.startDate = t('create_event.error_date_in_past')
+    }
     if (!form.startTime) newErrors.startTime = t('create_event.error_required')
     if (!form.duration) {
       newErrors.duration = t('create_event.error_required')
@@ -351,6 +356,8 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
     // weekday is now derived from start_at, so the only thing left to validate is the end date.
     if (form.repeatEnabled && !form.repeatEndDate) {
       newErrors.repeatEndDate = t('create_event.error_required')
+    } else if (form.repeatEnabled && form.repeatEndDate && form.repeatEndDate < todayDateString()) {
+      newErrors.repeatEndDate = t('create_event.error_repeat_end_date_in_past')
     }
 
     return newErrors

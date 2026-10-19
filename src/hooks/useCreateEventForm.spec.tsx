@@ -557,6 +557,39 @@ describe('useCreateEventForm', () => {
     })
   })
 
+  describe('when startDate is in the past', () => {
+    it('should report a past-date error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField, { startDate: '2020-01-01' })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.startDate).toBe('create_event.error_date_in_past')
+    })
+  })
+
+  describe('when repeatEndDate is in the past', () => {
+    it('should report a past repeat-end-date error', async () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      fillValidForm(result.current.setField)
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('recurrence', 'every_week')
+        result.current.setField('repeatEndDate', '2020-06-01')
+      })
+
+      await act(async () => {
+        await result.current.handleSubmit()
+      })
+
+      expect(result.current.errors.repeatEndDate).toBe('create_event.error_repeat_end_date_in_past')
+    })
+  })
+
   describe('when markRequiredFields is called', () => {
     it('should set the required-error message on every listed field', () => {
       const { result } = renderHook(() => useCreateEventForm())
