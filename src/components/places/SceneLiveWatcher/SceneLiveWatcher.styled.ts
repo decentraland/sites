@@ -62,9 +62,9 @@ const TabButton = styled('button', { shouldForwardProp: prop => prop !== '$activ
 
 // Iframe for the bevy web client streaming-scene tab. We mark it sandbox-permissive
 // (allow-scripts, allow-same-origin, allow-popups, allow-pointer-lock) so the
-// 3D client can run. DCL serves it with `X-Frame-Options: DENY` today, which
-// browsers enforce regardless — the overlay button below is the practical
-// fallback until that header is relaxed.
+// 3D client can run. If the client is ever served with `X-Frame-Options: DENY`
+// (or a `frame-ancestors` that excludes this origin), browsers enforce it
+// regardless — the overlay button below is the practical fallback.
 // `$visible` toggles display so the iframe stays mounted while the user
 // switches to the VIDEO tab — without it the bevy scene reloads on every
 // tab switch (cold start = many seconds of asset download).
