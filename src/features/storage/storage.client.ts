@@ -1,6 +1,6 @@
 import { getStorageApiUrl, getWorldsContentServerUrl, storageClient } from '../../services/storageClient'
 import { identityAddress } from '../../utils/identityScope'
-import { createScopedSignedFetch, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
+import { createScopedSignedFetch, fetchSignedBlob, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
 import type {
   AuthParams,
   ClearPlayerParams,
@@ -11,6 +11,7 @@ import type {
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  ExportFileParams,
   GetCollaboratorScenesParams,
   GetPlayerValueParams,
   GetSceneValueParams,
@@ -105,7 +106,7 @@ const storageEndpoints = storageClient.injectEndpoints({
         const signedFetch = createScopedSignedFetch(identity, realm, position)
         try {
           const response = await wrapSignedFetch<ListStorageItemsResponse>(signedFetch, `${getStorageApiUrl()}/values`)
-          return { data: response.data.map(({ key }) => ({ key })) }
+          return { data: response.data.map(({ key, value }) => ({ key, value })) }
         } catch (error) {
           return { error: error as WrapSignedFetchError }
         }
@@ -216,7 +217,7 @@ const storageEndpoints = storageClient.injectEndpoints({
             signedFetch,
             `${getStorageApiUrl()}/players/${encodeURIComponent(address)}/values`
           )
-          return { data: response.data.map(({ key }) => ({ key })) }
+          return { data: response.data.map(({ key, value }) => ({ key, value })) }
         } catch (error) {
           return { error: error as WrapSignedFetchError }
         }
@@ -432,6 +433,7 @@ const {
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
   useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,
@@ -442,7 +444,28 @@ const {
   useSetSceneValueMutation
 } = storageEndpoints
 
+/** Streams a storage export for the selection and resolves to the file. */
+const fetchExportFile = ({
+  identity,
+  realm,
+  position,
+  format,
+  selection,
+  signal
+}: ExportFileParams & AuthParams & StorageContext): Promise<Blob> =>
+  fetchSignedBlob(
+    createScopedSignedFetch(identity, realm, position),
+    `${getStorageApiUrl()}/exports?format=${encodeURIComponent(format)}`,
+    {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(selection),
+      signal
+    }
+  )
+
 export {
+  fetchExportFile,
   storageEndpoints,
   useClearAllPlayersMutation,
   useClearEnvMutation,
@@ -456,6 +479,7 @@ export {
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
   useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,

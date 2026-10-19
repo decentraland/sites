@@ -11,10 +11,26 @@ import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
-import { Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { Alert, Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { useListPlayersQuery, useListSceneKeysQuery } from '../../../features/storage'
+import type { ExportFormat } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useLeaveGuard, useLeavePrompt } from '../../../hooks/useLeaveGuard'
+import { useStorageExport } from '../../../hooks/useStorageExport'
 import { useStorageScope } from '../../../hooks/useStorageScope'
-import { BackButton, LoaderBox, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot } from './StorageLayout.styled'
+import { ConfirmDialog } from '../ConfirmDialog'
+import { ExportMenuButton } from '../ExportMenuButton'
+import {
+  BackButton,
+  HeaderActions,
+  LoaderBox,
+  ScopeChip,
+  ScopeRow,
+  StorageHeader,
+  StoragePageContainer,
+  StorageTabsRoot
+} from './StorageLayout.styled'
 
 interface StorageLayoutProps {
   children: ReactNode
@@ -31,6 +47,10 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { realm, position, isResolving, unresolved } = useStorageScope()
+  const { identity } = useAuthIdentity()
+  const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const confirmLeave = useLeaveGuard(busy)
+  const leavePrompt = useLeavePrompt()
 
   const activeTab = useMemo(() => {
     if (location.pathname.startsWith('/storage/scene')) return 'scene'
@@ -50,16 +70,22 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: 'env' | 'scene' | 'players') => {
-      navigate({ pathname: `/storage/${newValue}`, search: window.location.search })
+      confirmLeave(() => navigate({ pathname: `/storage/${newValue}`, search: window.location.search }))
     },
-    [navigate]
+    [confirmLeave, navigate]
   )
 
   const handleBack = useCallback(() => {
-    navigate('/storage/select')
-  }, [navigate])
+    confirmLeave(() => navigate('/storage/select'))
+  }, [confirmLeave, navigate])
+
+  const handleDownloadAll = useCallback((format: ExportFormat) => startExport({}, format), [startExport])
 
   const scopeLabel = realm ?? position ?? ''
+  const canExportScope = Boolean(identity) && !isResolving && !unresolved && activeTab !== 'env'
+  const { currentData: sceneKeys } = useListSceneKeysQuery({ identity, realm, position }, { skip: !canExportScope })
+  const { currentData: players } = useListPlayersQuery({ identity, realm, position }, { skip: !canExportScope })
+  const canDownloadAll = canExportScope && Boolean(sceneKeys?.length || players?.length)
 
   return (
     <StoragePageContainer>
@@ -83,7 +109,17 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
             ) : null}
           </ScopeRow>
         ) : null}
+        {canDownloadAll ? (
+          <HeaderActions>
+            <ExportMenuButton label={t('component.storage.common.download_all')} busy={busy} onSelect={handleDownloadAll} />
+          </HeaderActions>
+        ) : null}
       </StorageHeader>
+      {errorKey ? (
+        <Alert severity="error" onClose={clearError}>
+          {t(errorKey)}
+        </Alert>
+      ) : null}
       <StorageTabsRoot>
         <Tabs value={selectedTab} onChange={handleTabChange} aria-label="storage sections" variant="scrollable">
           {tabs.map(tab => (
@@ -108,6 +144,15 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
       ) : (
         children
       )}
+      <ConfirmDialog
+        open={leavePrompt.open}
+        title={t('component.storage.leave_dialog.title')}
+        message={t('component.storage.leave_dialog.message')}
+        confirmLabel={t('component.storage.leave_dialog.leave')}
+        cancelLabel={t('component.storage.leave_dialog.stay')}
+        onConfirm={leavePrompt.leave}
+        onCancel={leavePrompt.stay}
+      />
     </StoragePageContainer>
   )
 }

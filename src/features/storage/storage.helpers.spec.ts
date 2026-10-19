@@ -19,9 +19,12 @@ jest.mock('../../config/env', () => ({ getEnv: (key: string) => getEnvMock(key) 
 
 import signedFetchLib from 'decentraland-crypto-fetch'
 import {
+  buildExportFile,
   buildSignedFetchMetadata,
   createScopedSignedFetch,
+  deleteSelection,
   estateToLand,
+  fetchSignedBlob,
   fromRentalFields,
   getEstateRegistryAddress,
   getLandPosition,
@@ -42,7 +45,15 @@ import {
   wrapSignedFetch
 } from './storage.helpers'
 import { LandType, RoleType } from './storage.types'
-import type { LandQueryResult, RentalsQueryResult, SubgraphEstate, SubgraphParcel } from './storage.types'
+import type {
+  ExportPlayerRow,
+  ExportWorldRow,
+  LandQueryResult,
+  RentalsQueryResult,
+  StorageValueFile,
+  SubgraphEstate,
+  SubgraphParcel
+} from './storage.types'
 
 const signedFetchMock = signedFetchLib as unknown as jest.Mock
 
@@ -187,6 +198,15 @@ describe('createScopedSignedFetch', () => {
     await expect(sf('https://example/api', { method: 'PUT' })).rejects.toMatchObject({ status: 401 })
   })
 
+  it.each(['Failed to fetch', 'NetworkError when attempting to fetch resource', 'Load failed'])(
+    'lets a network TypeError ("%s") through so it becomes a FETCH_ERROR, not a 401',
+    async message => {
+      signedFetchMock.mockRejectedValue(new TypeError(message))
+      const sf = createScopedSignedFetch(validIdentity, 'vitsky.dcl.eth', '0,0')
+      await expect(sf('https://example/api', { method: 'PUT' })).rejects.toThrow(message)
+    }
+  )
+
   it('wraps a generic signing Error as 401 too (never falls back to an unsigned request)', async () => {
     signedFetchMock.mockRejectedValue(new Error('signing broken'))
     const fetchSpy = jest.spyOn(globalThis, 'fetch')
@@ -243,6 +263,13 @@ describe('sendSignedFetch', () => {
   it('resolves silently on a 2xx response', async () => {
     const sf = jest.fn().mockResolvedValue(makeResponse(null, { status: 204 }))
     await expect(sendSignedFetch(sf, 'https://example/api', { method: 'DELETE' })).resolves.toBeUndefined()
+  })
+
+  it('cancels the response body on success so the stream is not left open', async () => {
+    const cancel = jest.fn().mockResolvedValue(undefined)
+    const sf = jest.fn().mockResolvedValue({ ok: true, status: 200, body: { cancel } } as unknown as Response)
+    await sendSignedFetch(sf, 'https://example/api', { method: 'DELETE' })
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 
   it('throws a status/data shape on a non-2xx response', async () => {
@@ -561,6 +588,14 @@ describe('toStorageValueFile', () => {
       expect(toStorageValueFile('notes.md', 'x').type).toBe('text/plain')
       expect(toStorageValueFile('greeting', 'hi').type).toBe('text/plain')
     })
+
+    it('should append .txt to a key whose extension is not in the download allowlist', () => {
+      expect(toStorageValueFile('report.html', '<b>x</b>')).toMatchObject({ filename: 'report.html.txt', type: 'text/plain' })
+    })
+
+    it('should keep an extensionless key filename unchanged', () => {
+      expect(toStorageValueFile('greeting', 'hi').filename).toBe('greeting')
+    })
   })
 
   describe('when the value is not a string', () => {
@@ -575,6 +610,319 @@ describe('toStorageValueFile', () => {
     it('should not add a second .json extension', () => {
       expect(toStorageValueFile('scores.json', [1, 2]).filename).toBe('scores.json')
       expect(toStorageValueFile('scores.JSON', [1, 2]).filename).toBe('scores.json')
+    })
+  })
+})
+
+describe('when building an export file', () => {
+  let world: ExportWorldRow[]
+  let players: ExportPlayerRow[]
+  let file: StorageValueFile
+
+  beforeEach(() => {
+    world = []
+    players = []
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('and the format is json', () => {
+    describe('and there are no rows', () => {
+      beforeEach(() => {
+        file = buildExportFile('json', world, players)
+      })
+
+      it('should name and type the file as a json export', () => {
+        expect(file).toMatchObject({ filename: 'storage-export.json', type: 'application/json' })
+      })
+
+      it('should hold empty world and players lists', () => {
+        expect(JSON.parse(file.content)).toEqual({ world: [], players: [] })
+      })
+    })
+
+    describe('and there are world and player rows', () => {
+      beforeEach(() => {
+        world = [{ key: 'a', value: { n: 1 } }]
+        players = [{ address: '0xa', key: 'k', value: 's' }]
+        file = buildExportFile('json', world, players)
+      })
+
+      it('should hold both lists with their values', () => {
+        expect(JSON.parse(file.content)).toEqual({
+          world: [{ key: 'a', value: { n: 1 } }],
+          players: [{ address: '0xa', key: 'k', value: 's' }]
+        })
+      })
+    })
+  })
+
+  describe('and the format is csv', () => {
+    describe('and there are no rows', () => {
+      beforeEach(() => {
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should hold only the header line', () => {
+        expect(file).toEqual({ filename: 'storage-export.csv', type: 'text/csv', content: 'scope,player_address,key,value\r\n' })
+      })
+    })
+
+    describe('and there is a world row', () => {
+      beforeEach(() => {
+        world = [{ key: 'a', value: { a: 1 } }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should write a world line with an empty address and the quoted JSON value', () => {
+        expect(file.content).toContain('world,,a,"{""a"":1}"\r\n')
+      })
+    })
+
+    describe('and there is a player row', () => {
+      beforeEach(() => {
+        players = [{ address: '0xa', key: 'k', value: 's' }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should write a player line with the address and the quoted JSON string', () => {
+        expect(file.content).toContain('player,0xa,k,"""s"""\r\n')
+      })
+    })
+
+    describe('and a key starts with a formula character', () => {
+      beforeEach(() => {
+        world = [{ key: '=SUM(A1)', value: 1 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should prefix the key cell with a quote', () => {
+        expect(file.content).toContain("world,,'=SUM(A1),1\r\n")
+      })
+    })
+
+    describe('and a key contains a comma', () => {
+      beforeEach(() => {
+        world = [{ key: 'a,b', value: 1 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should quote the key cell', () => {
+        expect(file.content).toContain('world,,"a,b",1\r\n')
+      })
+    })
+
+    describe('and a value starts with a formula character', () => {
+      beforeEach(() => {
+        world = [{ key: 'k', value: -5 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should leave the value cell unprefixed', () => {
+        expect(file.content).toContain('world,,k,-5\r\n')
+      })
+    })
+
+    describe('and a key starts with a fullwidth or newline formula character', () => {
+      it.each(['＝SUM(A1)', '＋1', '－1', '＠x', '\nx'])('should prefix "%s" with a quote', key => {
+        file = buildExportFile('csv', [{ key, value: 1 }], [])
+
+        expect(file.content).toContain(`'${key}`)
+      })
+    })
+
+    describe('and a player address starts with a formula character', () => {
+      beforeEach(() => {
+        players = [{ address: '=cmd', key: 'k', value: 1 }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should neutralize the address cell', () => {
+        expect(file.content).toContain("player,'=cmd,k,1\r\n")
+      })
+    })
+
+    describe('and a value is missing', () => {
+      beforeEach(() => {
+        world = [{ key: 'k', value: undefined }]
+        file = buildExportFile('csv', world, players)
+      })
+
+      it('should write an empty value cell instead of the literal undefined', () => {
+        expect(file.content).toContain('world,,k,\r\n')
+      })
+    })
+  })
+})
+
+describe('when fetching a signed blob', () => {
+  let signedFetch: jest.Mock
+
+  beforeEach(() => {
+    signedFetch = jest.fn()
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('and the response is ok', () => {
+    let blob: Blob
+
+    beforeEach(() => {
+      blob = new Blob(['gz'])
+      signedFetch.mockResolvedValueOnce({ ok: true, status: 200, blob: async () => blob } as unknown as Response)
+    })
+
+    it('should resolve to the response blob', async () => {
+      await expect(fetchSignedBlob(signedFetch, 'https://example/api')).resolves.toBe(blob)
+    })
+  })
+
+  describe('and the response is not ok', () => {
+    beforeEach(() => {
+      signedFetch.mockResolvedValueOnce(makeResponse('not ready', { status: 409 }))
+    })
+
+    it('should throw the status with the response text', async () => {
+      await expect(fetchSignedBlob(signedFetch, 'https://example/api')).rejects.toEqual({ status: 409, data: 'not ready' })
+    })
+  })
+
+  describe('and the request is rejected', () => {
+    beforeEach(() => {
+      signedFetch.mockRejectedValueOnce(new Error('network down'))
+    })
+
+    it('should throw a FETCH_ERROR with the error message', async () => {
+      await expect(fetchSignedBlob(signedFetch, 'https://example/api')).rejects.toEqual({ status: 'FETCH_ERROR', error: 'network down' })
+    })
+  })
+})
+
+describe('when a signed request fails and its error body cannot be read', () => {
+  let signedFetch: jest.Mock
+
+  beforeEach(() => {
+    signedFetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.reject(new Error('stream closed'))
+    } as unknown as Response)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it.each([
+    ['wrapSignedFetch', (sf: jest.Mock) => wrapSignedFetch(sf, 'https://example/api')],
+    ['sendSignedFetch', (sf: jest.Mock) => sendSignedFetch(sf, 'https://example/api', { method: 'PUT' })],
+    ['fetchSignedBlob', (sf: jest.Mock) => fetchSignedBlob(sf, 'https://example/api')]
+  ])('should make %s throw the status with undefined data', async (_name, request) => {
+    await expect(request(signedFetch)).rejects.toEqual({ status: 500, data: undefined })
+  })
+})
+
+describe('deleteSelection', () => {
+  let deleteOne: jest.Mock
+  let clearAll: jest.Mock
+  let allSelected: boolean
+
+  const run = () => deleteSelection({ allSelected, ids: ['a', 'b'], deleteOne, clearAll })
+
+  beforeEach(() => {
+    deleteOne = jest.fn().mockResolvedValue(undefined)
+    clearAll = jest.fn().mockResolvedValue(undefined)
+    allSelected = false
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when only some items are selected', () => {
+    it('should delete each selected id', async () => {
+      await run()
+
+      expect(deleteOne.mock.calls).toEqual([['a'], ['b']])
+    })
+
+    it('should not clear everything', async () => {
+      await run()
+
+      expect(clearAll).not.toHaveBeenCalled()
+    })
+
+    it('should resolve to no failed ids when every delete succeeds', async () => {
+      await expect(run()).resolves.toEqual([])
+    })
+
+    describe('and one delete fails', () => {
+      beforeEach(() => {
+        deleteOne.mockImplementation((id: string) => (id === 'b' ? Promise.reject({ status: 500 }) : Promise.resolve()))
+      })
+
+      it('should still attempt every delete', async () => {
+        await run()
+
+        expect(deleteOne).toHaveBeenCalledTimes(2)
+      })
+
+      it('should resolve to only the failed ids', async () => {
+        await expect(run()).resolves.toEqual(['b'])
+      })
+    })
+
+    describe('and more ids are selected than the concurrency cap', () => {
+      it('should never run more than the cap at once', async () => {
+        let inFlight = 0
+        let peak = 0
+        const slow = jest.fn(async () => {
+          inFlight++
+          peak = Math.max(peak, inFlight)
+          await Promise.resolve()
+          inFlight--
+        })
+        await deleteSelection({ allSelected: false, ids: ['a', 'b', 'c', 'd', 'e'], deleteOne: slow, clearAll, concurrency: 2 })
+
+        expect(peak).toBeLessThanOrEqual(2)
+        expect(slow).toHaveBeenCalledTimes(5)
+      })
+    })
+  })
+
+  describe('when everything is selected', () => {
+    beforeEach(() => {
+      allSelected = true
+    })
+
+    it('should clear everything with a single call', async () => {
+      await run()
+
+      expect(clearAll).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not delete item by item', async () => {
+      await run()
+
+      expect(deleteOne).not.toHaveBeenCalled()
+    })
+
+    it('should resolve to no failed ids when the clear succeeds', async () => {
+      await expect(run()).resolves.toEqual([])
+    })
+
+    describe('and the clear fails', () => {
+      beforeEach(() => {
+        clearAll.mockRejectedValue({ status: 500 })
+      })
+
+      it('should resolve to the selected ids so they stay selected', async () => {
+        await expect(run()).resolves.toEqual(['a', 'b'])
+      })
     })
   })
 })

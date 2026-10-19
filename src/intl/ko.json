@@ -704,11 +704,30 @@
         "delete": "삭제",
         "close": "닫기",
         "loading": "로딩 중",
-        "actions": "작업",
         "key": "키",
         "add": "추가",
         "owner": "소유자",
-        "collaborator": "협업자"
+        "collaborator": "협업자",
+        "download_all": "모두 다운로드",
+        "download_selected": "선택 항목 다운로드 ({count})",
+        "delete_selected": "선택 항목 삭제 ({count})",
+        "delete_all": "모두 삭제",
+        "delete_selected_dialog": {
+          "title": "선택한 항목을 삭제하시겠습니까?",
+          "message": "{count, plural, other {선택한 항목 #개가 영구적으로 삭제됩니다.}}"
+        },
+        "select_all": "모두 선택",
+        "select_row": "{name} 선택",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "다운로드 준비 중…",
+        "keep_page_open": "다운로드가 시작될 때까지 이 페이지를 열어 두세요."
+      },
+      "leave_dialog": {
+        "title": "내보내기가 진행 중인데 나가시겠어요?",
+        "message": "나가면 다운로드가 중지됩니다. 나중에 다시 시작하면 파일이 바로 준비됩니다.",
+        "stay": "머무르기",
+        "leave": "나가기"
       },
       "role": {
         "owner": "소유자",
@@ -765,7 +784,6 @@
       "env_page": {
         "title": "환경 변수",
         "add": "추가",
-        "clear_all": "모두 지우기",
         "no_keys": "환경 변수를 찾을 수 없습니다",
         "add_dialog": {
           "title": "환경 변수 추가",
@@ -790,7 +808,6 @@
       "scene_page": {
         "title": "씬 저장소",
         "add": "추가",
-        "clear_all": "모두 지우기",
         "no_keys": "씬 값을 찾을 수 없습니다",
         "add_dialog": {
           "title": "씬 값 추가",
@@ -814,7 +831,6 @@
       "player_page": {
         "title": "플레이어 저장소",
         "add": "추가",
-        "clear_all_players": "모든 플레이어 지우기",
         "description": "저장된 데이터가 있는 플레이어를 탐색하거나 이름 또는 주소로 검색하세요.",
         "search_players": "이름 또는 주소로 검색…",
         "no_players": "플레이어를 찾을 수 없습니다",
@@ -827,7 +843,6 @@
         "address_placeholder": "0x…",
         "load_keys": "키 불러오기",
         "keys_for": "{address}의 키",
-        "clear_this_player": "이 플레이어 지우기",
         "no_keys": "이 플레이어의 키를 찾을 수 없습니다",
         "loading_keys": "플레이어 키를 불러오는 중",
         "add_dialog": {
@@ -870,7 +885,9 @@
         "payload_too_large": "값이 이 스토리지 네임스페이스에 비해 너무 큽니다.",
         "rate_limited": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
         "server": "스토리지 서비스가 오류를 반환했습니다. 몇 분 후에 다시 시도하세요.",
-        "world_scene_unresolved": "이 월드의 씬 위치를 확인할 수 없습니다. 아직 배포된 씬이 없을 수 있습니다."
+        "world_scene_unresolved": "이 월드의 씬 위치를 확인할 수 없습니다. 아직 배포된 씬이 없을 수 있습니다.",
+        "export_failed": "내보내기에 실패했습니다. 다시 시도하세요.",
+        "bulk_delete_failed": "일부 항목을 삭제하지 못했습니다. 다시 시도하세요."
       }
     },
     "report": {

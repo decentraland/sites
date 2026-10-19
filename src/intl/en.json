@@ -844,11 +844,30 @@
         "delete": "Delete",
         "close": "Close",
         "loading": "Loading",
-        "actions": "Actions",
         "key": "Key",
         "add": "Add",
         "owner": "Owner",
-        "collaborator": "Collaborator"
+        "collaborator": "Collaborator",
+        "download_all": "Download all",
+        "download_selected": "Download selected ({count})",
+        "delete_selected": "Delete selected ({count})",
+        "delete_all": "Delete all",
+        "delete_selected_dialog": {
+          "title": "Delete selected items?",
+          "message": "{count, plural, one {This will permanently delete # selected item.} other {This will permanently delete # selected items.}}"
+        },
+        "select_all": "Select all",
+        "select_row": "Select {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Preparing download…",
+        "keep_page_open": "Keep this page open until the download starts."
+      },
+      "leave_dialog": {
+        "title": "Leave while your export is running?",
+        "message": "Leaving stops the download. Start it again later and the file will be ready right away.",
+        "stay": "Stay",
+        "leave": "Leave"
       },
       "role": {
         "owner": "Owner",
@@ -905,7 +924,6 @@
       "env_page": {
         "title": "Environment Variables",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No environment variables found",
         "add_dialog": {
           "title": "Add Environment Variable",
@@ -930,7 +948,6 @@
       "scene_page": {
         "title": "Scene Storage",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No scene values found",
         "add_dialog": {
           "title": "Add Scene Value",
@@ -954,7 +971,6 @@
       "player_page": {
         "title": "Player Storage",
         "add": "Add",
-        "clear_all_players": "Clear All Players",
         "description": "Browse players with stored data, or search by name or address.",
         "search_players": "Search by name or address…",
         "no_players": "No players found",
@@ -967,7 +983,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Load keys",
         "keys_for": "Keys for {address}",
-        "clear_this_player": "Clear this player",
         "no_keys": "No keys found for this player",
         "loading_keys": "Loading player keys",
         "add_dialog": {
@@ -1010,7 +1025,9 @@
         "payload_too_large": "Value is too large for this storage namespace.",
         "rate_limited": "Too many requests. Wait a moment and try again.",
         "server": "The storage service returned an error. Try again in a few minutes.",
-        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet."
+        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet.",
+        "export_failed": "The export failed. Please try again.",
+        "bulk_delete_failed": "Some items could not be deleted. Please try again."
       }
     },
     "report": {

@@ -5,6 +5,10 @@ import { getEnv } from '../../config/env'
 import { isEns } from '../../utils/ens'
 import { LandType, RoleType } from './storage.types'
 import type {
+  DeleteSelectionParams,
+  ExportFormat,
+  ExportPlayerRow,
+  ExportWorldRow,
   Land,
   LandQueryResult,
   Rental,
@@ -70,6 +74,10 @@ const isIdentityValid = (identity: AuthIdentity): boolean => {
   return expiration.getTime() > Date.now()
 }
 
+const NETWORK_FAILURE_MESSAGE = /failed to fetch|networkerror|network request failed|load failed/i
+
+const isNetworkFailure = (error: unknown): boolean => error instanceof TypeError && NETWORK_FAILURE_MESSAGE.test(error.message)
+
 const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: string | null, position?: string | null): SignedFetch => {
   const metadata = buildSignedFetchMetadata(realm, position)
   return async (url: string, init: RequestInit = {}) => {
@@ -97,11 +105,7 @@ const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: str
     try {
       return await signedFetchLib(url, { ...init, identity, metadata })
     } catch (error) {
-      // signedFetchLib throws TypeError when the identity is malformed (missing
-      // ephemeralIdentity/authChain) — those throws don't have a `status` field
-      // and would otherwise bubble up as a generic FETCH_ERROR ("Could not reach
-      // the storage service"). Re-throw with a 401 shape so the dialog can ask
-      // the user to sign in again instead of suggesting a connectivity problem.
+      if (isNetworkFailure(error)) throw error
       if (error instanceof TypeError || (error instanceof Error && !('status' in error))) {
         throw { status: 401, data: error.message }
       }
@@ -110,34 +114,21 @@ const createScopedSignedFetch = (identity: AuthIdentity | undefined, realm?: str
   }
 }
 
-const wrapSignedFetch = async <T>(signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<T> => {
+const performSignedFetch = async <T>(
+  signedFetch: SignedFetch,
+  url: string,
+  init: RequestInit,
+  read: (response: Response) => Promise<T>
+): Promise<T> => {
   try {
     const response = await signedFetch(url, init)
     if (!response.ok) {
       throw {
         status: response.status,
         data: await response.text().catch(() => undefined)
-      }
+      } satisfies WrapSignedFetchError
     }
-    return (await response.json()) as T
-  } catch (error) {
-    if (error && typeof error === 'object' && 'status' in error) throw error
-    throw {
-      status: 'FETCH_ERROR' as const,
-      error: error instanceof Error ? error.message : String(error)
-    }
-  }
-}
-
-const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: RequestInit): Promise<void> => {
-  try {
-    const response = await signedFetch(url, init)
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        data: await response.text().catch(() => undefined)
-      }
-    }
+    return await read(response)
   } catch (error) {
     if (error && typeof error === 'object' && 'status' in error) throw error
     throw {
@@ -146,6 +137,17 @@ const sendSignedFetch = async (signedFetch: SignedFetch, url: string, init: Requ
     } satisfies WrapSignedFetchError
   }
 }
+
+const wrapSignedFetch = <T>(signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<T> =>
+  performSignedFetch(signedFetch, url, init, response => response.json() as Promise<T>)
+
+const fetchSignedBlob = (signedFetch: SignedFetch, url: string, init: RequestInit = { method: 'GET' }): Promise<Blob> =>
+  performSignedFetch(signedFetch, url, init, response => response.blob())
+
+const sendSignedFetch = (signedFetch: SignedFetch, url: string, init: RequestInit): Promise<void> =>
+  performSignedFetch(signedFetch, url, init, async response => {
+    await response.body?.cancel().catch(() => undefined)
+  })
 
 const STORAGE_ERROR_KEY_PREFIX = 'component.storage.errors'
 
@@ -408,6 +410,8 @@ const FILE_TYPES_BY_EXTENSION: Record<string, string> = {
   json: 'application/json'
 }
 
+const SAFE_DOWNLOAD_EXTENSIONS = new Set(['json', 'csv', 'txt'])
+
 // Scenes store files as string values under keys named like files (`feedback-1.csv`),
 // so a string is saved verbatim under its key. Anything else is saved as JSON.
 const toStorageValueFile = (key: string, value: unknown): StorageValueFile => {
@@ -421,13 +425,82 @@ const toStorageValueFile = (key: string, value: unknown): StorageValueFile => {
       content: JSON.stringify(value, null, 2)
     }
   }
-  return { filename, type: FILE_TYPES_BY_EXTENSION[extension] ?? 'text/plain', content: value }
+  const extensionSafe = extension === '' || SAFE_DOWNLOAD_EXTENSIONS.has(extension)
+  return {
+    filename: extensionSafe ? filename : `${key}.txt`,
+    type: FILE_TYPES_BY_EXTENSION[extension] ?? 'text/plain',
+    content: value
+  }
+}
+
+const EXPORT_CSV_HEADER = 'scope,player_address,key,value\r\n'
+
+const csvCell = (value: string): string => (/[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)
+
+const neutralizeFormula = (value: string): string => (/^[=+\-@\t\r\n＝＋－＠]/.test(value) ? `'${value}` : value)
+
+const csvLine = (scope: string, address: string, key: string, value: unknown): string => {
+  const serialized = value === undefined ? '' : JSON.stringify(value)
+  return `${scope},${csvCell(neutralizeFormula(address))},${csvCell(neutralizeFormula(key))},${csvCell(serialized)}\r\n`
+}
+
+/** Builds a `storage-export.<format>` file shaped like the export API's output. */
+const buildExportFile = (format: ExportFormat, world: ExportWorldRow[], players: ExportPlayerRow[]): StorageValueFile => ({
+  filename: `storage-export.${format}`,
+  type: FILE_TYPES_BY_EXTENSION[format],
+  content:
+    format === 'json'
+      ? JSON.stringify({ world, players })
+      : EXPORT_CSV_HEADER +
+        world.map(({ key, value }) => csvLine('world', '', key, value)).join('') +
+        players.map(({ address, key, value }) => csvLine('player', address, key, value)).join('')
+})
+
+const DELETE_CONCURRENCY = 6
+
+const settle = async <TValue>(task: Promise<TValue>): Promise<PromiseSettledResult<TValue>> => {
+  try {
+    return { status: 'fulfilled', value: await task }
+  } catch (reason) {
+    return { status: 'rejected', reason }
+  }
+}
+
+const mapWithConcurrency = async <TItem, TResult>(
+  items: ReadonlyArray<TItem>,
+  limit: number,
+  task: (item: TItem) => Promise<TResult>
+): Promise<PromiseSettledResult<TResult>[]> => {
+  const results: PromiseSettledResult<TResult>[] = new Array(items.length)
+  let cursor = 0
+  const worker = async (): Promise<void> => {
+    while (cursor < items.length) {
+      const index = cursor++
+      results[index] = await settle(task(items[index]))
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(Math.max(limit, 1), items.length) }, worker))
+  return results
+}
+
+const deleteSelection = async ({ allSelected, ids, deleteOne, clearAll, concurrency }: DeleteSelectionParams): Promise<string[]> => {
+  if (allSelected) {
+    return clearAll().then(
+      () => [],
+      () => [...ids]
+    )
+  }
+  const results = await mapWithConcurrency(ids, concurrency ?? DELETE_CONCURRENCY, deleteOne)
+  return ids.filter((_id, index) => results[index].status === 'rejected')
 }
 
 export {
+  buildExportFile,
   buildSignedFetchMetadata,
   createScopedSignedFetch,
+  deleteSelection,
   estateToLand,
+  fetchSignedBlob,
   fromRentalFields,
   getEstateRegistryAddress,
   getLandPosition,

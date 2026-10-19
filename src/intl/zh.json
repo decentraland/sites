@@ -704,11 +704,30 @@
         "delete": "删除",
         "close": "关闭",
         "loading": "加载中",
-        "actions": "操作",
         "key": "键",
         "add": "添加",
         "owner": "所有者",
-        "collaborator": "协作者"
+        "collaborator": "协作者",
+        "download_all": "全部下载",
+        "download_selected": "下载所选项 ({count})",
+        "delete_selected": "删除所选项 ({count})",
+        "delete_all": "全部删除",
+        "delete_selected_dialog": {
+          "title": "删除所选项？",
+          "message": "{count, plural, other {这将永久删除 # 个所选项。}}"
+        },
+        "select_all": "全选",
+        "select_row": "选择 {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "正在准备下载…",
+        "keep_page_open": "请保持此页面打开，直到下载开始。"
+      },
+      "leave_dialog": {
+        "title": "导出仍在进行，确定要离开吗？",
+        "message": "离开将停止下载。稍后重新开始，文件会立即就绪。",
+        "stay": "留下",
+        "leave": "离开"
       },
       "role": {
         "owner": "所有者",
@@ -765,7 +784,6 @@
       "env_page": {
         "title": "环境变量",
         "add": "添加",
-        "clear_all": "全部清除",
         "no_keys": "未找到环境变量",
         "add_dialog": {
           "title": "添加环境变量",
@@ -790,7 +808,6 @@
       "scene_page": {
         "title": "场景存储",
         "add": "添加",
-        "clear_all": "全部清除",
         "no_keys": "未找到场景值",
         "add_dialog": {
           "title": "添加场景值",
@@ -814,7 +831,6 @@
       "player_page": {
         "title": "玩家存储",
         "add": "添加",
-        "clear_all_players": "清除所有玩家",
         "description": "浏览有存储数据的玩家,或按名称或地址搜索。",
         "search_players": "按名称或地址搜索…",
         "no_players": "未找到玩家",
@@ -827,7 +843,6 @@
         "address_placeholder": "0x…",
         "load_keys": "加载键",
         "keys_for": "{address} 的键",
-        "clear_this_player": "清除此玩家",
         "no_keys": "未找到此玩家的键",
         "loading_keys": "正在加载玩家的键",
         "add_dialog": {
@@ -870,7 +885,9 @@
         "payload_too_large": "值对该存储空间来说过大。",
         "rate_limited": "请求过多。请稍候后再试。",
         "server": "存储服务返回了错误。请几分钟后再试。",
-        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。"
+        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。",
+        "export_failed": "导出失败。请重试。",
+        "bulk_delete_failed": "部分项目无法删除。请重试。"
       }
     },
     "report": {
