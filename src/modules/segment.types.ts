@@ -110,6 +110,9 @@ enum DownloadPlace {
   CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
   CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
   CREATORS_HERO = 'creators-hero',
+  // Jump In landing (jumpin.decentraland.org). LETS_PLAY_LANDING is the value it
+  // sent before; kept so links and data from that period still resolve.
+  JUMP_IN_LANDING = 'jump-in-landing',
   LETS_PLAY_LANDING = 'lets-play-landing',
   UNKNOWN = 'unknown'
 }
