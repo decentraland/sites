@@ -8,7 +8,7 @@
  * persisted per session. A visitor who lands on `/?utm_source=…`, browses to
  * another page via an internal link, and downloads from there loses the
  * attribution (the query string is gone). Partner links must point directly
- * at a page hosting download CTAs (`/`, `/download`, `/play`).
+ * at a page hosting download CTAs (`/`, `/download`).
  *
  * Kept snake_case because that matches BOTH the raw URL param names partners
  * send AND the Segment warehouse payload-key convention (snake_case, e.g.

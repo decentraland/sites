@@ -366,15 +366,6 @@
       "missing_address_title": "アドレスがありません",
       "missing_address_description": "URL にアドレスのパラメータが必要です。メールのリンクをご確認ください。"
     },
-    "play": {
-      "title": "ウェブ版は提供を終了しました。",
-      "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
-      "also_available_on": "こちらでも利用可能",
-      "already_downloaded": "すでにダウンロード済みですか？",
-      "jump_in": "入場する！",
-      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
-      "here": "こちら"
-    },
     "not_found": {
       "title_oops": "おっと！",
       "title_rest": "このページはワールドから消えました。",
@@ -704,11 +695,30 @@
         "delete": "削除",
         "close": "閉じる",
         "loading": "読み込み中",
-        "actions": "アクション",
         "key": "キー",
         "add": "追加",
         "owner": "オーナー",
-        "collaborator": "コラボレーター"
+        "collaborator": "コラボレーター",
+        "download_all": "すべてダウンロード",
+        "download_selected": "選択項目をダウンロード ({count})",
+        "delete_selected": "選択項目を削除 ({count})",
+        "delete_all": "すべて削除",
+        "delete_selected_dialog": {
+          "title": "選択した項目を削除しますか？",
+          "message": "{count, plural, other {選択した#件の項目が完全に削除されます。}}"
+        },
+        "select_all": "すべて選択",
+        "select_row": "{name} を選択",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "ダウンロードを準備中…",
+        "keep_page_open": "ダウンロードが始まるまで、このページを開いたままにしてください。"
+      },
+      "leave_dialog": {
+        "title": "エクスポートの実行中にページを離れますか？",
+        "message": "ページを離れるとダウンロードは停止します。後でもう一度開始すると、ファイルはすぐに用意されます。",
+        "stay": "とどまる",
+        "leave": "離れる"
       },
       "role": {
         "owner": "オーナー",
@@ -765,7 +775,6 @@
       "env_page": {
         "title": "環境変数",
         "add": "追加",
-        "clear_all": "すべてクリア",
         "no_keys": "環境変数が見つかりません",
         "add_dialog": {
           "title": "環境変数を追加",
@@ -790,7 +799,6 @@
       "scene_page": {
         "title": "シーンストレージ",
         "add": "追加",
-        "clear_all": "すべてクリア",
         "no_keys": "シーン値が見つかりません",
         "add_dialog": {
           "title": "シーン値を追加",
@@ -814,7 +822,6 @@
       "player_page": {
         "title": "プレイヤーストレージ",
         "add": "追加",
-        "clear_all_players": "すべてのプレイヤーを削除",
         "description": "保存データのあるプレイヤーを閲覧するか、名前やアドレスで検索できます。",
         "search_players": "名前またはアドレスで検索…",
         "no_players": "プレイヤーが見つかりません",
@@ -827,7 +834,6 @@
         "address_placeholder": "0x…",
         "load_keys": "キーを読み込む",
         "keys_for": "{address} のキー",
-        "clear_this_player": "このプレイヤーを削除",
         "no_keys": "このプレイヤーのキーは見つかりません",
         "loading_keys": "プレイヤーのキーを読み込み中",
         "add_dialog": {
@@ -870,7 +876,9 @@
         "payload_too_large": "値がこのストレージ領域には大きすぎます。",
         "rate_limited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
         "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。",
-        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。"
+        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。",
+        "export_failed": "エクスポートに失敗しました。もう一度お試しください。",
+        "bulk_delete_failed": "一部の項目を削除できませんでした。もう一度お試しください。"
       }
     },
     "report": {

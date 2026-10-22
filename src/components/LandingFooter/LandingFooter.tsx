@@ -98,7 +98,7 @@ const LandingFooter = memo(() => {
   const langRef = useRef<HTMLDivElement>(null)
 
   // The footer is shared by every route, but only the ones the worker serves with COEP
-  // (`/places*`, so the bevy-web frame can be cross-origin-isolated) block the beehiiv embed:
+  // (`/places*`, so the bevy web client frame can be cross-origin-isolated) block the beehiiv embed:
   // it sends no COEP of its own, so the frame is refused with ERR_BLOCKED_BY_RESPONSE and the
   // form renders as an empty box. `credentialless` is the opt-in that unblocks it, at the cost
   // of an embed with no cookies, so we only pay that price where the frame would otherwise not

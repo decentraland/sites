@@ -35,7 +35,7 @@ function useHangOutAction() {
       try {
         // NOTE: this used to call `launchDesktopApp()` with no options, so every
         // surface backed by this hook silently dropped the deep-link query params
-        // — the homepage sections and /play, but also the navbar Jump In, which
+        // — the homepage sections, but also the navbar Jump In, which
         // `Layout` mounts on nearly every route. They now forward the same set as
         // the jump surfaces (`?dclenv`/`?scene-console`/`?multi-instance`).
         const hasLauncher = await launchDesktopApp({ dclenv, sceneConsole, multiInstance })
