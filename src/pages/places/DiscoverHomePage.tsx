@@ -434,8 +434,9 @@ function DiscoverHomePage() {
   //
   // Whatever the rails rendered is subtracted unless the repeat flag is on. `/destinations` returns
   // `highlighted DESC` first, so with repetition the head of this grid IS the Featured rail verbatim
-  // and the user scrolls past the same cards twice. Search and category filtering empty both rails,
-  // so results are never hidden from a query.
+  // and the user scrolls past the same cards twice. A search empties both rails and a category empties
+  // the Featured rail only (Live Now stays), so under a category nothing is subtracted and the grid is
+  // the complete result.
   const exploreCards = useMemo<DiscoverPlace[]>(() => {
     // The Featured category applies the same curated-aware rule as the Featured rail, so both views agree.
     const isHidden = activeCategory === FEATURED_CATEGORY ? isHiddenFeaturedPlace : isHiddenPlace

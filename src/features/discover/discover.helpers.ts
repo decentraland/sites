@@ -235,7 +235,6 @@ function discoverPlacePayload(place: DiscoverPlace): Record<string, string | num
 }
 
 export {
-  DISCOVER_CATEGORIES,
   DISCOVER_CATEGORY_OPTIONS,
   FEATURED_CATEGORY,
   categoryQueryArgs,
@@ -259,4 +258,4 @@ export {
   placeHasPeople,
   placePlayers
 }
-export type { DiscoverCategory, DiscoverCategoryFilter }
+export type { DiscoverCategoryFilter }

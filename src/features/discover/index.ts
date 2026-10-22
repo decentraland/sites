@@ -29,5 +29,5 @@ export {
   placeHasPeople,
   placePlayers
 } from './discover.helpers'
-export type { DiscoverCategory, DiscoverCategoryFilter } from './discover.helpers'
+export type { DiscoverCategoryFilter } from './discover.helpers'
 export type { HotScene, LiveWorldEntry, DiscoverCommunity, DiscoverPlace, ExploreSection } from './discover.types'
