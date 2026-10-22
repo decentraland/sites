@@ -8,11 +8,13 @@ import { PendingEventCard } from '../../components/events/PendingEventCard'
 import { RejectEventModal } from '../../components/events/RejectEventModal'
 import type { RejectSubmitPayload } from '../../components/events/RejectEventModal'
 import { useApproveEventMutation, useGetAdminEventsQuery, useRejectEventMutation } from '../../features/events/events.admin.client'
+import { toUpcomingOccurrence } from '../../features/events/events.helpers'
 import type { EventEntry } from '../../features/events/events.types'
 import { useAdminEventDeepLink } from '../../hooks/useAdminEventDeepLink'
 import { useAdminPermissions } from '../../hooks/useAdminPermissions'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useEventDetailModal } from '../../hooks/useEventDetailModal'
+import { useSeriesEventOpener } from '../../hooks/useSeriesEventOpener'
 import { buildRejectionReason } from './PendingEventsPage.helpers'
 import { AdminPageContainer } from './AdminLayout.styled'
 import { CardGrid, EmptyStateText, Section, SectionSubtitle, SectionTitle } from './PendingEventsPage.styled'
@@ -35,6 +37,7 @@ function PendingEventsPageContent() {
   const [approve, { isLoading: isApproving }] = useApproveEventMutation()
   const [reject, { isLoading: isRejecting }] = useRejectEventMutation()
 
+  const openSeriesEvent = useSeriesEventOpener(events, openEventDetailModal)
   const { closeDeepLink } = useAdminEventDeepLink({ events, isLoaded: areEventsLoaded, onMatch: openEventDetailModal })
 
   const handleCloseModal = useCallback(() => {
@@ -44,16 +47,18 @@ function PendingEventsPageContent() {
 
   const pending = useMemo(() => {
     const now = Date.now()
-    return events.filter(event => !event.approved && !event.rejected && new Date(event.finish_at).getTime() > now)
+    return events.filter(event => !event.approved && !event.rejected && new Date(event.finish_at).getTime() > now).map(toUpcomingOccurrence)
   }, [events])
 
   const recentlyApproved = useMemo(() => {
     const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS
-    return events.filter(event => {
-      if (!event.approved) return false
-      const updatedAt = event.updated_at ? new Date(event.updated_at).getTime() : 0
-      return updatedAt >= cutoff
-    })
+    return events
+      .filter(event => {
+        if (!event.approved) return false
+        const updatedAt = event.updated_at ? new Date(event.updated_at).getTime() : 0
+        return updatedAt >= cutoff
+      })
+      .map(toUpcomingOccurrence)
   }, [events])
 
   if (!isLoading && !allowed) return <Navigate to="/events" replace />
@@ -106,7 +111,7 @@ function PendingEventsPageContent() {
           {pending.length === 0 ? (
             <EmptyStateText>{t('whats_on_admin.pending_events.empty')}</EmptyStateText>
           ) : (
-            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={openEventDetailModal} />)
+            pending.map(event => <PendingEventCard key={event.id} event={event} onClick={openSeriesEvent} />)
           )}
         </CardGrid>
       </Section>
@@ -118,7 +123,7 @@ function PendingEventsPageContent() {
         </SectionTitle>
         <CardGrid>
           {recentlyApproved.map(event => (
-            <PendingEventCard key={event.id} event={event} onClick={openEventDetailModal} />
+            <PendingEventCard key={event.id} event={event} onClick={openSeriesEvent} />
           ))}
         </CardGrid>
       </Section>
