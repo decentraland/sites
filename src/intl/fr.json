@@ -1295,6 +1295,7 @@
       "category": {
         "label": "Catégorie",
         "all": "Toute catégorie",
+        "featured": "En vedette",
         "social": "Social",
         "music": "Musique",
         "art": "Art",

@@ -1300,6 +1300,7 @@
       "category": {
         "label": "카테고리",
         "all": "모든 카테고리",
+        "featured": "추천",
         "social": "소셜",
         "music": "음악",
         "art": "아트",
