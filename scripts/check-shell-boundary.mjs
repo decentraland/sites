@@ -28,8 +28,12 @@ const HEAVY_PAGE_DIRS = ['events', 'blog', 'jump', 'social', 'places', 'cast', '
 // Entry points that ship on the lightweight tier. Anything they can reach must stay shell-free.
 const LIGHTWEIGHT_ROOTS = ['main.tsx', 'components/Layout', 'components/LandingNavbar', 'components/LandingFooter', 'pages']
 
-// `src/App.tsx` is the one authorized reference: it lazy-imports the shell to code-split it.
+// `src/App.tsx` is authorized to lazy-import any shell file to code-split it. The one other edge is
+// the homepage detail modal's loader, which may lazy-import exactly its own shell file: the modal
+// island loads the store only after a card click.
 const AUTHORIZED_SHELL_IMPORTER = 'App.tsx'
+const AUTHORIZED_ISLAND_LOADER = 'components/Home/HomeDetailModal/HomeDetailModalLoader.tsx'
+const AUTHORIZED_ISLAND_SHELL = 'shells/HomeDetailModalShell.tsx'
 
 class UsageError extends Error {}
 
@@ -173,6 +177,11 @@ function resolveImport(fromFile, specifier) {
   return existsSync(base) && statSync(base).isFile() ? base : null
 }
 
+function isAuthorizedShellImport(importer, target, isDynamic) {
+  if (!isDynamic) return false
+  return importer === AUTHORIZED_SHELL_IMPORTER || (importer === AUTHORIZED_ISLAND_LOADER && target === AUTHORIZED_ISLAND_SHELL)
+}
+
 function isShellFile(file, dir) {
   return relative(dir, file).split('/')[0] === SHELL_DIR
 }
@@ -211,7 +220,7 @@ function findViolations(files, dir) {
         if (isShellFile(target, dir)) {
           // App.tsx may reference the shell, but only through a dynamic import: a static one
           // would pull the whole shell tree into the bundle that every visitor downloads.
-          if (relative(dir, current) === AUTHORIZED_SHELL_IMPORTER && isDynamic) continue
+          if (isAuthorizedShellImport(relative(dir, current), relative(dir, target), isDynamic)) continue
           const key = `${relative(dir, root)} -> ${relative(dir, target)}`
           if (reported.has(key)) continue
           reported.add(key)

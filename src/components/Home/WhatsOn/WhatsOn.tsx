@@ -1,14 +1,16 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import { AnimatedBackground, DownloadModal } from 'decentraland-ui2'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { useGetWhatsOnDataQuery } from '../../../features/events/events.discovery'
+import type { ExploreItem } from '../../../features/events/events.discovery.types'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
-import { useHangOutAction } from '../../../hooks/useHangOutAction'
-import { useWalletAddress } from '../../../hooks/useWalletAddress'
 import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { Carousel } from '../../Carousel/Carousel'
+import { selectionFromExploreItem } from '../HomeDetailModal/HomeDetailModal.helpers'
+import type { HomeDetailSelection } from '../HomeDetailModal/HomeDetailModal.types'
+import { HomeDetailModalLoader } from '../HomeDetailModal/HomeDetailModalLoader'
 import { WhatsOnCard } from './WhatsOnCard'
 import { CardsGrid, MobileCarousel, SectionTitle, ViewAllButton, WhatsOnContainer } from './WhatsOn.styled'
 
@@ -18,20 +20,10 @@ const WhatsOn = memo(() => {
   const l = useFormatMessage()
   const trackClick = useTrackClick()
   const { data: cards, isLoading } = useGetWhatsOnDataQuery()
-  const { isConnected } = useWalletAddress()
-  const { handleClick, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useHangOutAction()
+  const [selection, setSelection] = useState<HomeDetailSelection | null>(null)
 
-  // Intercept card clicks when not signed in → show download modal instead
-  const handleCardClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (!isConnected) {
-        e.preventDefault()
-        e.stopPropagation()
-        handleClick(e)
-      }
-    },
-    [isConnected, handleClick]
-  )
+  const handleSelect = useCallback((card: ExploreItem) => setSelection(selectionFromExploreItem(card)), [])
+  const closeDetail = useCallback(() => setSelection(null), [])
 
   if (!isLoading && cards.length === 0) return null
 
@@ -39,21 +31,26 @@ const WhatsOn = memo(() => {
     () =>
       isLoading
         ? LOADING_PLACEHOLDERS.map(i => <WhatsOnCard key={i} loading />)
-        : cards.map(card => <WhatsOnCard key={card.id} card={card} />),
-    [isLoading, cards]
+        : cards.map(card => <WhatsOnCard key={card.id} card={card} onSelect={handleSelect} />),
+    [isLoading, cards, handleSelect]
   )
 
   return (
     <WhatsOnContainer>
       <AnimatedBackground variant="absolute" />
       <SectionTitle variant="h3">{l('page.home.whats_on.title')}</SectionTitle>
-      <CardsGrid onClickCapture={handleCardClick}>{cardElements}</CardsGrid>
-      <MobileCarousel onClickCapture={handleCardClick}>
+      <CardsGrid>{cardElements}</CardsGrid>
+      <MobileCarousel>
         {isLoading ? (
           <WhatsOnCard loading />
         ) : (
           cards.length > 0 && (
-            <Carousel items={cards} renderItem={card => <WhatsOnCard card={card} />} keyExtractor={card => card.id} autoplayDelay={5000} />
+            <Carousel
+              items={cards}
+              renderItem={card => <WhatsOnCard card={card} onSelect={handleSelect} />}
+              keyExtractor={card => card.id}
+              autoplayDelay={5000}
+            />
           )
         )}
       </MobileCarousel>
@@ -67,7 +64,7 @@ const WhatsOn = memo(() => {
         {l('page.home.whats_on.view_all')}
         <ChevronRightIcon />
       </ViewAllButton>
-      <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />
+      <HomeDetailModalLoader selection={selection} onClose={closeDetail} />
     </WhatsOnContainer>
   )
 })

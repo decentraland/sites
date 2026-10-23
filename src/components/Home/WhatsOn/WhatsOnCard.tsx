@@ -1,12 +1,16 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useRef } from 'react'
 import type { ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Avatar } from '@dcl/schemas'
 import type { EventCardProps as BaseEventCardProps } from 'decentraland-ui2/dist/components/EventCard/EventCard.types'
-import { BadgeGroup, EventCard as BaseEventCard, LiveBadge, UserCountBadge } from 'decentraland-ui2'
+import { BadgeGroup, EventCard as BaseEventCard, DownloadModal, LiveBadge, UserCountBadge } from 'decentraland-ui2'
 import type { ExploreItem } from '../../../features/events/events.discovery.types'
+import { DEFAULT_POSITION } from '../../../features/places/places.helpers'
 import { useGetProfileQuery } from '../../../features/profile/profile.client'
+import { buildClickPayload } from '../../../hooks/adapters/clickPayload.helpers'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
+import { useDeferredTrack } from '../../../hooks/useDeferredTrack'
+import { useLaunchExplorer } from '../../../hooks/useLaunchExplorer'
 import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { assetUrl } from '../../../utils/assetUrl'
 import { DCL_FOUNDATION_BACKGROUND_COLOR, getAvatarBackgroundColor, getDisplayName } from '../../../utils/avatarColor'
@@ -30,8 +34,21 @@ const EventCard = BaseEventCard as unknown as ComponentType<EventCardProps>
 // dev we force https by replacing the protocol.
 const DCL_LOGO_URL = assetUrl('/dcl-logo.svg').replace(/^http:\/\//, 'https://')
 
-const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boolean }) => {
+const JUMP_IN_SECTION = 'jump_in'
+
+interface WhatsOnCardProps {
+  card?: ExploreItem
+  loading?: boolean
+  onSelect?: (card: ExploreItem) => void
+}
+
+const WhatsOnCard = memo(({ card, loading, onSelect }: WhatsOnCardProps) => {
   const onClickHandle = useTrackClick()
+  const track = useDeferredTrack()
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const { launchExplorer, isMobile, isDownloadModalOpen, closeDownloadModal, downloadModalProps } = useLaunchExplorer({
+    position: card?.coordinates ?? DEFAULT_POSITION
+  })
   // Navigate (instead of opening a modal) because Home is lightweight tier
   // and doesn't mount the profile modal's Redux store. /profile/<addr> lazy-loads
   // DappsShell on first navigation.
@@ -41,6 +58,17 @@ const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
   const handleAvatarClick = useCallback(() => {
     if (card?.creatorAddress) navigate(`/profile/${card.creatorAddress.toLowerCase()}`)
   }, [card?.creatorAddress, navigate])
+
+  const handleSelect = useCallback(() => {
+    if (card) onSelect?.(card)
+  }, [card, onSelect])
+
+  // ui2 stops the Jump In click from reaching the wrapper, so its tracking `onClick` never sees it:
+  // report it here with the same payload and a distinct section.
+  const handleJumpIn = useCallback(() => {
+    if (wrapperRef.current) track(SegmentEvent.CLICK, buildClickPayload(wrapperRef.current, { section: JUMP_IN_SECTION }))
+    launchExplorer()
+  }, [track, launchExplorer])
 
   let avatar: Avatar | undefined = fetchedAvatar as Avatar | undefined
   if (!avatar && card?.creatorName) {
@@ -72,32 +100,38 @@ const WhatsOnCard = memo(({ card, loading }: { card?: ExploreItem; loading?: boo
   ])
 
   return (
-    <CardWrapper
-      $avatarBackgroundColor={avatarBackgroundColor}
-      data-place={SectionViewedTrack.LANDING_EXPLORE}
-      data-event={SegmentEvent.CLICK}
-      data-card={card?.title}
-      onClick={onClickHandle}
-    >
-      <EventCard
-        loading={loading}
-        image={card?.image ?? ''}
-        sceneName={card?.title ?? ''}
-        avatar={avatar}
-        coordinates={card?.coordinates}
-        onAvatarClick={card?.creatorAddress ? handleAvatarClick : undefined}
-        leftBadgeTransparent
-        hideLocation
-        leftBadge={
-          card ? (
-            <BadgeGroup>
-              <LiveBadge />
-              <UserCountBadge count={card.users} />
-            </BadgeGroup>
-          ) : undefined
-        }
-      />
-    </CardWrapper>
+    <>
+      <CardWrapper
+        ref={wrapperRef}
+        $avatarBackgroundColor={avatarBackgroundColor}
+        data-place={SectionViewedTrack.LANDING_EXPLORE}
+        data-event={SegmentEvent.CLICK}
+        data-card={card?.title}
+        onClick={onClickHandle}
+      >
+        <EventCard
+          loading={loading}
+          image={card?.image ?? ''}
+          sceneName={card?.title ?? ''}
+          avatar={avatar}
+          coordinates={card?.coordinates}
+          onAvatarClick={card?.creatorAddress ? handleAvatarClick : undefined}
+          onClick={handleSelect}
+          onJumpInClick={card ? handleJumpIn : undefined}
+          leftBadgeTransparent
+          hideLocation
+          leftBadge={
+            card ? (
+              <BadgeGroup>
+                <LiveBadge />
+                <UserCountBadge count={card.users} />
+              </BadgeGroup>
+            ) : undefined
+          }
+        />
+      </CardWrapper>
+      {!isMobile && <DownloadModal open={isDownloadModalOpen} onClose={closeDownloadModal} {...downloadModalProps} />}
+    </>
   )
 })
 
