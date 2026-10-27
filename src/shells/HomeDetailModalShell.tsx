@@ -1,6 +1,6 @@
 import { Provider } from 'react-redux'
-import { HomeDetailModal } from '../components/Home/HomeDetailModal/HomeDetailModal'
-import type { HomeDetailModalProps } from '../components/Home/HomeDetailModal/HomeDetailModal'
+import { HomeDetailModal } from './HomeDetailModal'
+import type { HomeDetailModalProps } from './HomeDetailModal'
 import { store } from './store'
 
 // The homepage has no Redux store; EventDetailModal needs one at runtime (remind me, edit permission,

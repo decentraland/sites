@@ -1,25 +1,25 @@
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMockEvent, createMockLiveNowCard, createMockModalData } from '../../../__test-utils__/factories'
-import { ExploreCardType } from '../../../features/events/events.discovery.types'
-import type { ExploreItem } from '../../../features/events/events.discovery.types'
+import { createMockEvent, createMockLiveNowCard, createMockModalData } from '../__test-utils__/factories'
+import type { HomeDetailSelection } from '../components/Home/HomeDetailModal/HomeDetailModal.types'
+import { ExploreCardType } from '../features/events/events.discovery.types'
+import type { ExploreItem } from '../features/events/events.discovery.types'
 import { HomeDetailModal } from './HomeDetailModal'
-import type { HomeDetailSelection } from './HomeDetailModal.types'
 
 const mockUseGetEventByIdQuery = jest.fn()
-jest.mock('../../../features/events', () => ({
+jest.mock('../features/events', () => ({
   useGetEventByIdQuery: (...args: unknown[]) => mockUseGetEventByIdQuery(...args)
 }))
 
 const mockEnrichPlaceCards = jest.fn()
-jest.mock('../../../features/events/events.helpers', () => ({
+jest.mock('../features/events/events.helpers', () => ({
   enrichPlaceCards: (...args: unknown[]) => mockEnrichPlaceCards(...args)
 }))
 
 const mockNormalizeEventEntry = jest.fn()
 const mockNormalizeLiveNowCard = jest.fn()
-jest.mock('../../events/EventDetailModal', () => ({
+jest.mock('../components/events/EventDetailModal', () => ({
   EventDetailModal: ({ data, onClose }: { data: { name: string }; onClose: () => void }) => (
     <div data-testid="event-detail-modal" data-name={data.name}>
       <button onClick={onClose}>close modal</button>
@@ -29,15 +29,15 @@ jest.mock('../../events/EventDetailModal', () => ({
   normalizeLiveNowCard: (...args: unknown[]) => mockNormalizeLiveNowCard(...args)
 }))
 
-jest.mock('../../../hooks/useAuthIdentity', () => ({
+jest.mock('../hooks/useAuthIdentity', () => ({
   useAuthIdentity: () => ({ identity: 'identity-1', hasValidIdentity: true, address: '0xabc' })
 }))
 
-jest.mock('../../../config/env', () => ({
+jest.mock('../config/env', () => ({
   getEnv: (key: string) => `https://${key.toLowerCase()}.example.com`
 }))
 
-jest.mock('./HomeDetailPendingOverlay', () => ({
+jest.mock('../components/Home/HomeDetailModal/HomeDetailPendingOverlay', () => ({
   HomeDetailPendingOverlay: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="pending-overlay">
       <button onClick={onClose}>close pending</button>

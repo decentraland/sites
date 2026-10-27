@@ -11,13 +11,8 @@ jest.mock('decentraland-ui2', () => ({
   BadgeGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LiveBadge: () => <span>live</span>,
   UserCountBadge: ({ count }: { count: number }) => <span data-testid="users">{count}</span>,
-  DownloadModal: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
-    open ? (
-      <div data-testid="download-modal">
-        <button onClick={onClose}>close download</button>
-      </div>
-    ) : null,
-  // Mirrors ui2's EventCard contract: onJumpInClick stops the click from reaching the card.
+  // Mirrors ui2's EventCard: the JUMP IN control sits INSIDE the clickable card area (a div here, so no
+  // button is nested in a button) and only stops the click from reaching the card when a handler is set.
   EventCard: ({
     sceneName,
     loading,
@@ -34,22 +29,35 @@ jest.mock('decentraland-ui2', () => ({
     loading ? (
       <div data-testid="card-loading" />
     ) : (
-      <div>
-        <button data-testid="card-action" onClick={onClick}>
-          {sceneName}
-        </button>
-        {onJumpInClick && (
-          <button
-            data-testid="jump-in"
+      <div
+        data-testid="card-action"
+        role="button"
+        tabIndex={0}
+        onClick={onClick}
+        onKeyDown={event => {
+          if (event.key === 'Enter' || event.key === ' ') onClick?.()
+        }}
+      >
+        {sceneName}
+        <span
+          data-testid="jump-in"
+          onClick={event => {
+            if (!onJumpInClick) return
+            event.stopPropagation()
+            onJumpInClick()
+          }}
+        >
+          jump in
+        </span>
+        {onAvatarClick && (
+          <span
+            data-testid="avatar"
             onClick={event => {
               event.stopPropagation()
-              onJumpInClick()
+              onAvatarClick()
             }}
-          >
-            jump in
-          </button>
+          />
         )}
-        {onAvatarClick && <button data-testid="avatar" onClick={onAvatarClick} />}
       </div>
     )
 }))
@@ -82,22 +90,6 @@ jest.mock('../../../hooks/useDeferredTrack', () => ({
   useDeferredTrack: () => mockDeferredTrack
 }))
 
-const mockLaunchExplorer = jest.fn()
-const mockCloseDownloadModal = jest.fn()
-let mockLauncherState = { isMobile: false, isDownloadModalOpen: false }
-const mockUseLaunchExplorer = jest.fn()
-jest.mock('../../../hooks/useLaunchExplorer', () => ({
-  useLaunchExplorer: (options: unknown) => {
-    mockUseLaunchExplorer(options)
-    return {
-      launchExplorer: mockLaunchExplorer,
-      closeDownloadModal: mockCloseDownloadModal,
-      downloadModalProps: {},
-      ...mockLauncherState
-    }
-  }
-}))
-
 jest.mock('../../../utils/assetUrl', () => ({ assetUrl: (path: string) => `https://cdn.example.com${path}` }))
 
 const card: ExploreItem = {
@@ -115,6 +107,7 @@ const card: ExploreItem = {
 const CurrentLocation = () => <div data-testid="location">{useLocation().pathname}</div>
 
 const onSelect = jest.fn()
+const onJumpIn = jest.fn()
 
 const renderCard = (props: React.ComponentProps<typeof WhatsOnCard>) =>
   render(
@@ -127,7 +120,6 @@ const renderCard = (props: React.ComponentProps<typeof WhatsOnCard>) =>
 describe('when rendering a whats on card', () => {
   beforeEach(() => {
     mockUseGetProfileQuery.mockReturnValue({ data: undefined })
-    mockLauncherState = { isMobile: false, isDownloadModalOpen: false }
   })
 
   afterEach(() => {
@@ -136,22 +128,18 @@ describe('when rendering a whats on card', () => {
 
   describe('and the card is loading', () => {
     beforeEach(() => {
-      renderCard({ loading: true, onSelect })
+      renderCard({ loading: true, onSelect, onJumpIn })
     })
 
     it('should render the placeholder and no actions', () => {
       expect(screen.getByTestId('card-loading')).toBeInTheDocument()
       expect(screen.queryByTestId('jump-in')).toBeNull()
     })
-
-    it('should keep the launcher on the default position', () => {
-      expect(mockUseLaunchExplorer).toHaveBeenCalledWith({ position: '0,0' })
-    })
   })
 
   describe('and the card is clicked', () => {
     beforeEach(async () => {
-      renderCard({ card, onSelect })
+      renderCard({ card, onSelect, onJumpIn })
       await userEvent.click(screen.getByTestId('card-action'))
     })
 
@@ -163,14 +151,14 @@ describe('when rendering a whats on card', () => {
       expect(mockTrackClick).toHaveBeenCalledTimes(1)
     })
 
-    it('should not launch the explorer', () => {
-      expect(mockLaunchExplorer).not.toHaveBeenCalled()
+    it('should not hand the card to the section for a launch', () => {
+      expect(onJumpIn).not.toHaveBeenCalled()
     })
   })
 
   describe('and the card is activated with the keyboard', () => {
     beforeEach(async () => {
-      renderCard({ card, onSelect })
+      renderCard({ card, onSelect, onJumpIn })
       screen.getByTestId('card-action').focus()
       await userEvent.keyboard('{Enter}')
       await userEvent.keyboard(' ')
@@ -194,13 +182,13 @@ describe('when rendering a whats on card', () => {
 
   describe('and Jump In is clicked', () => {
     beforeEach(async () => {
-      renderCard({ card, onSelect })
+      renderCard({ card, onSelect, onJumpIn })
       await userEvent.click(screen.getByTestId('jump-in'))
     })
 
-    it('should launch the explorer at the card position', () => {
-      expect(mockUseLaunchExplorer).toHaveBeenCalledWith({ position: '3,4' })
-      expect(mockLaunchExplorer).toHaveBeenCalledTimes(1)
+    it('should hand the card to the section to launch it', () => {
+      expect(onJumpIn).toHaveBeenCalledTimes(1)
+      expect(onJumpIn).toHaveBeenCalledWith(card)
     })
 
     it('should not open the detail', () => {
@@ -216,38 +204,20 @@ describe('when rendering a whats on card', () => {
     })
   })
 
-  describe('and the explorer is not installed on desktop', () => {
-    beforeEach(() => {
-      mockLauncherState = { isMobile: false, isDownloadModalOpen: true }
+  describe('and the card has no onJumpIn handler', () => {
+    beforeEach(async () => {
       renderCard({ card, onSelect })
+      await userEvent.click(screen.getByTestId('jump-in'))
     })
 
-    it('should show the download modal over the page', () => {
-      expect(screen.getByTestId('download-modal')).toBeInTheDocument()
-    })
-
-    it('should not track or select when its own buttons are clicked', async () => {
-      await userEvent.click(screen.getByText('close download'))
-      expect(mockCloseDownloadModal).toHaveBeenCalledTimes(1)
-      expect(mockTrackClick).not.toHaveBeenCalled()
-      expect(onSelect).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('and the launch falls back to the store on mobile', () => {
-    beforeEach(() => {
-      mockLauncherState = { isMobile: true, isDownloadModalOpen: true }
-      renderCard({ card, onSelect })
-    })
-
-    it('should not render the desktop download modal', () => {
-      expect(screen.queryByTestId('download-modal')).toBeNull()
+    it('should still track the Jump In click without throwing', () => {
+      expect(mockDeferredTrack).toHaveBeenCalledWith('Click', expect.objectContaining({ section: 'jump_in' }))
     })
   })
 
   describe('and the creator avatar is clicked', () => {
     beforeEach(async () => {
-      renderCard({ card, onSelect })
+      renderCard({ card, onSelect, onJumpIn })
       await userEvent.click(screen.getByTestId('avatar'))
     })
 
@@ -269,7 +239,7 @@ describe('when rendering a whats on card', () => {
   describe('and the creator profile has loaded', () => {
     beforeEach(() => {
       mockUseGetProfileQuery.mockReturnValue({ data: { avatars: [{ name: 'Jane', ethAddress: '0xabc', hasClaimedName: true }] } })
-      renderCard({ card, onSelect })
+      renderCard({ card, onSelect, onJumpIn })
     })
 
     it('should still render the card', () => {

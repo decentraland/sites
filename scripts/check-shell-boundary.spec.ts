@@ -295,6 +295,32 @@ describe('when checking the dual-shell import boundary', () => {
       })
     })
 
+    describe('and it lazy-imports the detail modal itself instead of its shell', () => {
+      beforeEach(() => {
+        write('shells/HomeDetailModal.tsx', 'export const HomeDetailModal = () => null\n')
+        write(LOADER, "export const Loader = lazy(() => import('../../../shells/HomeDetailModal'))\n")
+      })
+
+      it('should exit 1 because only the Provider wrapper is authorized', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('shells/HomeDetailModal.tsx')
+      })
+    })
+
+    describe('and it statically imports the detail modal itself', () => {
+      beforeEach(() => {
+        write('shells/HomeDetailModal.tsx', 'export const HomeDetailModal = () => null\n')
+        write(LOADER, "import { HomeDetailModal } from '../../../shells/HomeDetailModal'\nexport const Loader = HomeDetailModal\n")
+      })
+
+      it('should exit 1 because it would put the modal and its store hooks in the homepage bundle', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('shells/HomeDetailModal.tsx')
+      })
+    })
+
     describe('and another file lazy-imports the detail modal shell', () => {
       beforeEach(() => {
         write(LOADER, 'export const Loader = null\n')
