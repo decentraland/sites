@@ -1231,6 +1231,12 @@
       "invites_accepted": "{count} Friends Joined",
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
+    },
+    "name_lookup": {
+      "loading": "Buscando el nombre del perfil…",
+      "not_found": "No se encontró el nombre registrado de Decentraland \"{name}\".",
+      "error": "No pudimos resolver el nombre de este perfil. Vuelve a intentarlo.",
+      "retry": "Volver a intentar"
     }
   },
   "event_detail": {

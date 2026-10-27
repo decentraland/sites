@@ -1231,6 +1231,12 @@
       "invites_accepted": "{count} Friends Joined",
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
+    },
+    "name_lookup": {
+      "loading": "正在查找个人资料名称…",
+      "not_found": "未找到已注册的 Decentraland 名称“{name}”。",
+      "error": "无法解析此个人资料名称。请重试。",
+      "retry": "重试"
     }
   },
   "event_detail": {

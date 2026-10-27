@@ -1789,6 +1789,12 @@
       "invites_accepted": "{count} Friends Joined",
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
+    },
+    "name_lookup": {
+      "loading": "Resolving profile name…",
+      "not_found": "No registered Decentraland name \"{name}\" was found.",
+      "error": "We could not resolve this profile name. Please try again.",
+      "retry": "Try again"
     }
   },
   "account": {
