@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { CanonicalSync } from './components/CanonicalSync'
 import { RouteErrorBoundary } from './components/ErrorBoundary'
 import { ScrollToTop } from './components/ScrollToTop'
 import { lazyWithRetry } from './utils/lazyWithRetry'
@@ -181,6 +182,7 @@ const AccountNotFoundPage = lazyWithRetry(() =>
 const App = () => {
   return (
     <BrowserRouter>
+      <CanonicalSync />
       <ScrollToTop />
       {/* Inside BrowserRouter so the boundary can clear itself on navigation, and
           outside Suspense so a rejected lazy import is caught rather than left to

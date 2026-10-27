@@ -1,0 +1,1 @@
+export { CanonicalSync } from './CanonicalSync'
