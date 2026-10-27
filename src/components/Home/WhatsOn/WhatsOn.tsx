@@ -25,6 +25,12 @@ const WhatsOn = memo(() => {
   const handleSelect = useCallback((card: ExploreItem) => setSelection(selectionFromExploreItem(card)), [])
   const closeDetail = useCallback(() => setSelection(null), [])
 
+  // NOTE: 2026-10-23 — signed-out clicks used to be intercepted here (`onClickCapture`) to open the download
+  // modal, and a signed-in click fell through to ui2's `window.open` of the jump URL in a new tab. Both are
+  // gone on purpose: a card now opens its detail in place for every user, and Jump In keeps the launcher +
+  // DownloadModal fallback (WhatsOnCard). The gate is not meant to return; the download prompt is the Jump In
+  // fallback now, not the card click.
+
   if (!isLoading && cards.length === 0) return null
 
   const cardElements = useMemo(

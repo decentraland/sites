@@ -65,6 +65,23 @@ jest.mock('decentraland-ui2', () => {
   })
 })
 
+// The in-modal profile/photo/place/community surfaces are not what this spec is about (it proves the store
+// reaches the modal's hooks) and are never rendered here, so they are stubbed the way EventDetailModal.spec
+// does. Importing them for real would also drag ~100 untested files into the repo coverage denominator.
+jest.mock('../components/profile/ProfileSurface', () => ({ ProfileSurface: () => null }))
+jest.mock('../components/profile/PhotoModal/PhotoSurface', () => ({ PhotoSurface: () => null }))
+jest.mock('../components/profile/PlaceDetailModal/PlaceDetailSurface', () => ({ PlaceDetailSurface: () => null }))
+jest.mock('../components/profile/CommunityDetailModal', () => ({ CommunityDetailSurface: () => null }))
+jest.mock('../components/profile/ProfileModal', () => {
+  const actual = jest.requireActual('../components/profile/ProfileModal/useModalSurfaceStack')
+  return {
+    ModalProfileNavigationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    useModalSurfaceStack: actual.useModalSurfaceStack,
+    useStackDialogClose: actual.useStackDialogClose,
+    ModalSurfaceView: () => null
+  }
+})
+
 // The point of this spec is the REAL store and the REAL EventDetailModal: the modal's hooks
 // (remind me, edit permission, profile surfaces) throw without a react-redux Provider, and the
 // homepage mounts none, so only a runtime render proves the shell supplies it.
