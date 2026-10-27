@@ -34,6 +34,11 @@ const HOLD_START = 1_000_000
 const SLIDE = { url: 'https://presenter.test/presentations/deck-1/slides/0f3a.png', width: 1920, height: 1080 }
 const SLIDE_VIDEO = { url: 'https://presenter.test/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 } }
 const OFF_SLIDE_VIDEO = { url: 'https://presenter.test/edge.mp4', geometry: { x: -40, y: -10, width: 0, height: 120 } }
+const STREAM_VIDEO = { ...SLIDE_VIDEO, source: 'stream' }
+const CLIENT_VIDEO = { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', geometry: SLIDE_VIDEO.geometry, source: 'client' }
+const UNKNOWN_SOURCE_VIDEO = { ...SLIDE_VIDEO, source: 'bogus' }
+const VIDEO_POSITION = { videoState: 'playing', videoPositionMs: 12_500, videoPositionAt: 1_760_270_400_123 }
+const NO_VIDEO_POSITION = { videoPositionMs: null, videoPositionAt: null }
 const COMPOSITION = { slide: SLIDE, presenterIdentity: 'stream:p:1', playingVideoIndex: 0 }
 const COMPOSED_METADATA = { overlay: LARGE_OVERLAY, slideVideos: [SLIDE_VIDEO], ...COMPOSITION }
 const ORPHANED = { slide: SLIDE, presenterIdentity: 'stream:old' }
@@ -149,7 +154,12 @@ describe('PresentationProvider', () => {
     ['composition fields', COMPOSED_METADATA, COMPOSED_METADATA],
     ['no overlay', {}, { status: 'active', overlay: null }],
     ['a malformed overlay', { overlay: { x: 'a' } }, { status: 'active', overlay: DEFAULT_OVERLAY }],
-    ['a failed video', { videoState: 'error', slideVideos: [SLIDE_VIDEO] }, { videoState: 'idle', slideVideos: [SLIDE_VIDEO] }]
+    ['a failed video', { videoState: 'error', slideVideos: [SLIDE_VIDEO] }, { videoState: 'idle', slideVideos: [SLIDE_VIDEO] }],
+    ['a playing client video', { slideVideos: [CLIENT_VIDEO], ...VIDEO_POSITION }, { slideVideos: [CLIENT_VIDEO], ...VIDEO_POSITION }],
+    ['a slide video with no source', { slideVideos: [SLIDE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
+    ['a slide video with an unknown source', { slideVideos: [UNKNOWN_SOURCE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
+    ['negative video positions', { videoPositionMs: -1, videoPositionAt: -1 }, NO_VIDEO_POSITION],
+    ['string video positions', { videoPositionMs: '12500', videoPositionAt: '1760270400123' }, NO_VIDEO_POSITION]
   ])('when the bot metadata carries %s', (_label, extra, expected) => {
     beforeEach(() => {
       participants([makeBot(extra)])
@@ -228,7 +238,15 @@ describe('PresentationProvider', () => {
     ],
     ['the error video state', { videoState: 'error' }, { videoState: 'idle' }],
     ['an unknown video state', { videoState: 'bogus' }, { videoState: 'idle' }],
-    ['a numeric video state', { videoState: 42 }, { videoState: 'idle' }]
+    ['a numeric video state', { videoState: 42 }, { videoState: 'idle' }],
+    ['a client slide video', { slideVideos: [CLIENT_VIDEO] }, { slideVideos: [CLIENT_VIDEO] }],
+    ['a slide video with no source', { slideVideos: [SLIDE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
+    ['a slide video with an unknown source', { slideVideos: [UNKNOWN_SOURCE_VIDEO] }, { slideVideos: [STREAM_VIDEO] }],
+    ['valid video positions', VIDEO_POSITION, VIDEO_POSITION],
+    ['no video positions', {}, NO_VIDEO_POSITION],
+    ['negative video positions', { videoPositionMs: -1, videoPositionAt: -1 }, NO_VIDEO_POSITION],
+    ['NaN video positions', { videoPositionMs: NaN, videoPositionAt: NaN }, NO_VIDEO_POSITION],
+    ['string video positions', { videoPositionMs: '12500', videoPositionAt: '1760270400123' }, NO_VIDEO_POSITION]
   ])('when the followed bot sends a presentation:state packet with %s', (_label, extra, expected) => {
     beforeEach(() => {
       participants([makeBot({ overlay: LARGE_OVERLAY })])
@@ -238,6 +256,21 @@ describe('PresentationProvider', () => {
 
     it('should expose the normalized presentation state', () => {
       expect(current.state).toMatchObject(expected)
+    })
+  })
+
+  describe('when the followed bot re-emits a presentation:state packet with identical video positions', () => {
+    let previous: PresentationState
+
+    beforeEach(() => {
+      renderProvider()
+      deliver(statePacket(VIDEO_POSITION))
+      previous = current.state
+      deliver(statePacket(VIDEO_POSITION))
+    })
+
+    it('should keep the same state object', () => {
+      expect(current.state).toBe(previous)
     })
   })
 

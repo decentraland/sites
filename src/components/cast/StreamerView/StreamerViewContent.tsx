@@ -14,7 +14,11 @@ import { ContentWrapper } from './StreamerViewContent.styled'
 
 const TRACK_INIT_GRACE_MS = 2000
 
-export function StreamerViewContent() {
+interface StreamerViewContentProps {
+  isTabMuted?: boolean
+}
+
+export function StreamerViewContent({ isTabMuted }: StreamerViewContentProps) {
   const { t } = useCastTranslation()
   const { localParticipant } = useLocalParticipant()
   const connectionState = useConnectionState()
@@ -67,7 +71,7 @@ export function StreamerViewContent() {
     return (
       <ContentWrapper>
         <LiveStreamCounter />
-        <PresentationStage overlay={canMoveBubble ? <CameraOverlayHandle /> : undefined} />
+        <PresentationStage muted={isTabMuted} overlay={canMoveBubble ? <CameraOverlayHandle /> : undefined} />
       </ContentWrapper>
     )
   }

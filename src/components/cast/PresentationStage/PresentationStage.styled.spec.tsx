@@ -1,4 +1,4 @@
-import { CircleVideo, RegionVideo } from './PresentationStage.styled'
+import { CircleVideo, RegionVideo, VideoRegion } from './PresentationStage.styled'
 
 jest.mock('decentraland-ui2', () => {
   const { styled } = jest.requireActual('../../../__test-utils__/styledMock')
@@ -23,5 +23,18 @@ describe.each([
 
   it(`should ${objectFit}-fit the element itself above LiveKit specificity`, () => {
     expect(style).toEqual({ '&&&': expect.objectContaining({ objectFit }) })
+  })
+})
+
+describe('when the video region is styled', () => {
+  let style: Record<string, unknown>
+
+  beforeEach(() => {
+    const regionStyle = VideoRegion as unknown as (props: { theme: unknown }) => Record<string, unknown>
+    style = regionStyle({ theme: { palette: { common: { black: '#000' } } } })
+  })
+
+  it('should not clip the unmute button in a short region', () => {
+    expect(style).not.toHaveProperty('overflow')
   })
 })

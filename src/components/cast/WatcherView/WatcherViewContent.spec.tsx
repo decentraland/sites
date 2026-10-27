@@ -19,7 +19,7 @@ jest.mock('../ParticipantGrid/ParticipantGrid', () => ({
   ParticipantGrid: () => React.createElement('div', null, 'participant-grid')
 }))
 jest.mock('../PresentationStage/PresentationStage', () => ({
-  PresentationStage: () => React.createElement('div', null, 'presentation-stage')
+  PresentationStage: ({ muted }: { muted?: boolean }) => React.createElement('div', { 'data-muted': String(muted) }, 'presentation-stage')
 }))
 jest.mock('../LiveKitEnhancements/EmptyStreamState', () => ({
   EmptyStreamState: ({ message, participantName }: { message: string; participantName?: string }) =>
@@ -59,5 +59,21 @@ describe.each([
 
   it(`should render ${view}`, () => {
     expect(screen.getByText(view)).toBeInTheDocument()
+  })
+})
+
+describe('when the tab is muted during a composed presentation', () => {
+  beforeEach(() => {
+    ;(useRemoteParticipants as jest.Mock).mockReturnValue([])
+    ;(usePresentationOptional as jest.Mock).mockReturnValue(composed)
+    render(<WatcherViewContent isTabMuted />)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should forward the tab mute to the presentation stage', () => {
+    expect(screen.getByText('presentation-stage')).toHaveAttribute('data-muted', 'true')
   })
 })

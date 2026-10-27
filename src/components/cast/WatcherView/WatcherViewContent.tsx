@@ -9,7 +9,11 @@ import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
 import { PresentationStage } from '../PresentationStage/PresentationStage'
 import { ContentWrapper } from './WatcherViewContent.styled'
 
-export function WatcherViewContent() {
+interface WatcherViewContentProps {
+  isTabMuted?: boolean
+}
+
+export function WatcherViewContent({ isTabMuted }: WatcherViewContentProps) {
   const { t } = useCastTranslation()
   const remoteParticipants = useRemoteParticipants()
   const presentation = usePresentationOptional()
@@ -30,7 +34,7 @@ export function WatcherViewContent() {
     return (
       <ContentWrapper>
         <LiveStreamCounter />
-        <PresentationStage />
+        <PresentationStage muted={isTabMuted} />
       </ContentWrapper>
     )
   }

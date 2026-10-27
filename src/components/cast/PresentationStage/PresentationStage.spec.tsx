@@ -16,12 +16,17 @@ jest.mock('@livekit/components-react', () => ({
 jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePresentation: jest.fn() }))
 jest.mock('../../../features/cast2/cast2.helpers', () => ({ getPresenterServerUrl: () => 'https://presenter.example' }))
 jest.mock('../../../features/cast2/useCastTranslation', () => ({ useCastTranslation: () => ({ t: (key: string) => key }) }))
+jest.mock('./ClientVideo', () => ({
+  ClientVideo: ({ video, muted }: { video: { url: string }; muted: boolean }) =>
+    React.createElement('div', { 'data-testid': 'client-video', 'data-url': video.url, 'data-muted': String(muted) })
+}))
 
 const BOT = 'presentation-bot:deck'
 const PRESENTER = '0xpresenter'
 const LOCAL = 'stream:local'
 const SLIDE_URL = 'https://presenter.example/presentations/3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b/slides/0a1b2c3d4e5f6a7b.png'
 const NEXT_SLIDE_URL = 'https://presenter.example/presentations/3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b/slides/3d4e5f6a7b8c9d0e.png'
+const CLIENT_VIDEO_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 const FOREIGN_SLIDE = { url: SLIDE_URL.replace('presenter.example', 'evil.example'), width: 1920, height: 1080 }
 const PLAYING_VIDEO: Partial<PresentationState> = {
   videoState: 'playing',
@@ -220,6 +225,62 @@ describe('when the presentation stage renders', () => {
       it('should not render the presentation video', () => {
         expect(videoOf(Track.Source.ScreenShare)).not.toBeInTheDocument()
       })
+    })
+  })
+
+  describe('and a client-played video is playing without a presentation-video track', () => {
+    beforeEach(() => {
+      state = {
+        ...state,
+        ...PLAYING_VIDEO,
+        slideVideos: [{ url: CLIENT_VIDEO_URL, geometry: { x: 480, y: 270, width: 960, height: 540 }, source: 'client' }]
+      }
+      result = render(<PresentationStage muted />)
+    })
+
+    it('should render the client video over its slide rectangle', () => {
+      expect(screen.getByTestId('client-video').parentElement).toHaveStyle({ left: '25%', top: '25%', width: '50%', height: '50%' })
+    })
+
+    it('should forward the tab mute to the client video', () => {
+      expect(screen.getByTestId('client-video')).toHaveAttribute('data-muted', 'true')
+    })
+  })
+
+  describe('and a client-played video is idle', () => {
+    beforeEach(() => {
+      state = {
+        ...state,
+        videoState: 'idle',
+        playingVideoIndex: null,
+        slideVideos: [{ url: CLIENT_VIDEO_URL, geometry: { x: 480, y: 270, width: 960, height: 540 }, source: 'client' }]
+      }
+      renderStage()
+    })
+
+    it('should not render the client video', () => {
+      expect(screen.queryByTestId('client-video')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('and a stream video is playing without a presentation-video track', () => {
+    beforeEach(() => {
+      state = {
+        ...state,
+        ...PLAYING_VIDEO,
+        slideVideos: [
+          { url: 'https://presenter.example/video.mp4', geometry: { x: 480, y: 270, width: 960, height: 540 }, source: 'stream' }
+        ]
+      }
+      renderStage()
+    })
+
+    it('should not render a video region', () => {
+      expect(slideBox().querySelector('[style*="left: 25%"][style*="width: 50%"]')).not.toBeInTheDocument()
+    })
+
+    it('should not render the client video', () => {
+      expect(screen.queryByTestId('client-video')).not.toBeInTheDocument()
     })
   })
 

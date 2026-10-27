@@ -183,6 +183,7 @@
         "connected": "연결됨",
         "mute_cast": "월드에 있는 동안 이 Cast 오디오를 음소거",
         "unmute_cast": "Cast 오디오 켜기",
+        "click_to_unmute": "클릭하여 음소거 해제",
         "share_presentation": "프레젠테이션 공유",
         "stop_presentation": "프레젠테이션 중지",
         "uploading_presentation": "프레젠테이션 업로드 중...",
