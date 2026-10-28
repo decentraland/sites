@@ -1322,9 +1322,6 @@
         "sports": "스포츠",
         "business": "비즈니스"
       },
-      "section": {
-        "featured": "추천 장소"
-      },
       "tab": {
         "explore_all": "모두 보기",
         "favourites": "즐겨찾기",
@@ -1375,10 +1372,6 @@
       "explore_scene": "장면 둘러보기",
       "jump_to_location": "{location}(으)로 이동 (새 탭에서 열림)",
       "copied": "복사됨!"
-    },
-    "featured": {
-      "view_all": "추천 장소 모두 보기",
-      "view_less": "접기"
     }
   },
   "account": {

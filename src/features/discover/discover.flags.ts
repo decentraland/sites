@@ -14,7 +14,7 @@ const DEFAULT_LIVE_MIN_USERS = 0
 
 /**
  * Whether a place may appear in more than one section of /places. ON: a scene that qualifies shows
- * in Live Now, then again in Featured, then again in the Explore grid. OFF (the default): it shows in
+ * in Live Now, then again in the Explore grid. OFF (the default): it shows in
  * the first section it qualifies for and nowhere else, unless a search or category filter is active,
  * because a query must never hide results.
  *
@@ -39,23 +39,7 @@ function useLiveMinUsers(): number {
   return raw !== undefined && /^\d+$/.test(raw) ? Number(raw) : DEFAULT_LIVE_MIN_USERS
 }
 
-/**
- * Whether /places drops the Featured rail entirely, leaving the curated picks to appear in the
- * Explore grid like any other place.
- *
- * Independent of the repeat flag by construction. Nothing is ever hidden by turning this one on: the
- * grid reads `/destinations`, which returns `highlighted DESC` first, so the curated set sits at the
- * head of the feed either way. Deduplication only subtracts what a rail actually rendered, and with no
- * rail rendering there is nothing to subtract.
- *
- * Default off, which is the rail production ships. Named for hiding rather than showing so that an
- * in-flight or failed flag fetch resolves to the section still being there.
- */
-function useHideFeaturedPlaces(): boolean {
-  return useRemoteFeatureFlag(FEATURE_FLAG.placesHideFeaturedSection)
-}
-
 /** @internal — exported for testing (see discover.flags.spec.ts); not part of this module's public contract. */
 const resetDiscoverFlagsForTests = resetFeatureFlagsForTests
 
-export { DEFAULT_LIVE_MIN_USERS, resetDiscoverFlagsForTests, useHideFeaturedPlaces, useLiveMinUsers, useRepeatAcrossSections }
+export { DEFAULT_LIVE_MIN_USERS, resetDiscoverFlagsForTests, useLiveMinUsers, useRepeatAcrossSections }

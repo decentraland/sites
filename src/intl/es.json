@@ -1322,9 +1322,6 @@
         "sports": "Deportes",
         "business": "Negocios"
       },
-      "section": {
-        "featured": "Lugares destacados"
-      },
       "tab": {
         "explore_all": "Explorar todo",
         "favourites": "Favoritos",
@@ -1375,10 +1372,6 @@
       "explore_scene": "Explorar la escena",
       "jump_to_location": "Entrar a {location} (se abre en una pestaña nueva)",
       "copied": "¡Copiado!"
-    },
-    "featured": {
-      "view_all": "Ver todos los lugares destacados",
-      "view_less": "Ver menos"
     }
   },
   "account": {

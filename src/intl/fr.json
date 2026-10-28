@@ -1317,9 +1317,6 @@
         "sports": "Sports",
         "business": "Affaires"
       },
-      "section": {
-        "featured": "Lieux en vedette"
-      },
       "tab": {
         "explore_all": "Tout explorer",
         "favourites": "Favoris",
@@ -1370,10 +1367,6 @@
       "explore_scene": "Explorer la scène",
       "jump_to_location": "Rejoindre {location} (s’ouvre dans un nouvel onglet)",
       "copied": "Copié !"
-    },
-    "featured": {
-      "view_all": "Voir tous les lieux à la une",
-      "view_less": "Voir moins"
     }
   },
   "account": {

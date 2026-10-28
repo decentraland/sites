@@ -264,20 +264,6 @@ const ChipCloseIcon = styled(CloseRoundedIcon)({
   fontSize: 16
 })
 
-// Section headings ("Live Now", "Featured Places") — typography/h4 from the
-// Figma: 32px Inter Medium, 1.235 line, soft-white.
-const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: 'clamp(24px, 1.667vw, 32px)',
-  fontWeight: 500,
-  lineHeight: 1.235,
-  color: SNOW,
-  margin: theme.spacing(4, 0, 2),
-  [theme.breakpoints.down('sm')]: {
-    fontSize: 24,
-    textAlign: 'center' // Figma mobile centers the section headings
-  }
-}))
-
 // Live Now rail — the Figma "Live Now Section" (1850:43355): 32px padding,
 // 40px radius, soft white glow, radial purple gradient (#A042CD center →
 // #32134C edge). The ellipse radii are decoded from the Figma gradient's
@@ -419,34 +405,6 @@ const CarouselDot = styled('button', { shouldForwardProp: prop => prop !== '$act
   ['&:focus-visible']: { outline: `2px solid ${SNOW}`, outlineOffset: 2 }
 }))
 
-// Featured rail — 429px horizontal cards. Same responsive column steps as the
-// Explore grid so both rails share one density.
-// Underlined uppercase link-button under the Featured grid (Figma: "VIEW ALL
-// FEATURED PLACES" / "VIEW LESS"), left-aligned.
-const FeaturedToggle = styled('button')(({ theme }) => ({
-  alignSelf: 'flex-start',
-  border: 'none',
-  padding: 0,
-  marginBottom: theme.spacing(2),
-  background: 'none',
-  color: dclColors.neutral.softWhite,
-  // Figma "VIEW ALL FEATURED PLACES": Inter Semi-Bold 13/24, 0.46px tracking,
-  // solid underline at the default offset/thickness. Theme font IS Inter —
-  // buttons don't inherit it, so set it explicitly via the token.
-  fontFamily: theme.typography.fontFamily,
-  fontSize: 13,
-  fontWeight: 600,
-  lineHeight: '24px',
-  letterSpacing: '0.46px',
-  textTransform: 'uppercase',
-  textDecoration: 'underline',
-  cursor: 'pointer',
-  transition: theme.transitions.create('opacity', { duration: theme.transitions.duration.shortest }),
-  ['&:hover']: { opacity: 0.8 },
-  ['&:active']: { opacity: 0.6 },
-  ['&:focus-visible']: { outline: `2px solid ${dclColors.base.primary}`, outlineOffset: 2 }
-}))
-
 // Trailing sentinel under the Explore grid — the IntersectionObserver target
 // for infinite scroll, tall enough to host the next-page spinner.
 const LoadMoreSentinel = styled(Box)(({ theme }) => ({
@@ -454,21 +412,6 @@ const LoadMoreSentinel = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: theme.spacing(8)
-}))
-
-// Same track formula What's On uses for its Upcoming grid, because both now
-// render the same ui2 card: the card carries a 300px minimum, so fixed column
-// counts would overflow it (4-up at 1280 leaves ~290 per column). `auto-fill`
-// drops a column instead.
-const FeaturedGrid = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-  gap: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: {
-    gridTemplateColumns: `repeat(auto-fill, minmax(${SHARED_CARD_TRACK}, 1fr))`,
-    gap: theme.spacing(3)
-  }
 }))
 
 export {
@@ -487,8 +430,6 @@ export {
   ExploreBand,
   ExploreBandContent,
   ExploreToolbar,
-  FeaturedGrid,
-  FeaturedToggle,
   FilterButton,
   FilterChip,
   FilterChipsRow,
@@ -501,7 +442,6 @@ export {
   LiveNowSection,
   LiveRailLayer,
   SearchSlot,
-  SectionTitle,
   TabPill,
   TabsRow,
   ToolbarSearchField

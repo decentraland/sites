@@ -1554,9 +1554,6 @@
         "sports": "Sports",
         "business": "Business"
       },
-      "section": {
-        "featured": "Featured Places"
-      },
       "tab": {
         "explore_all": "Explore all",
         "favourites": "Favourites",
@@ -1607,10 +1604,6 @@
       "explore_scene": "Explore the scene",
       "jump_to_location": "Jump into {location} (opens in a new tab)",
       "copied": "Copied!"
-    },
-    "featured": {
-      "view_all": "View all featured places",
-      "view_less": "View less"
     }
   },
   "profile": {
