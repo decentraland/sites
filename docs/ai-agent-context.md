@@ -8,7 +8,7 @@ Orientation for an agent that has not read this codebase yet. `CLAUDE.md` at the
 
 ## Architecture in one paragraph
 
-Routes live on three tiers so the homepage stays fast. Lightweight routes ship in the main bundle with no Redux and no Web3. Heavy routes render inside `src/shells/DappsShell.tsx`, which boots the Redux store and the RTK Query middleware only when one of them is visited. A third shell, `src/shells/BlockchainShell.tsx`, dynamically imports the Web3 stack and mounts only for the few account actions that need a signer. Code reachable from a lightweight route must never import `src/shells/*`; `npm run lint:shells` enforces that by walking the import graph. The full route map and the tier rules are in `CLAUDE.md` > Architecture: Dual Shell.
+Routes live on three tiers so the homepage stays fast. Lightweight routes ship in the main bundle with no Redux and no Web3. Heavy routes render inside `src/shells/DappsShell.tsx`, which boots the Redux store and the RTK Query middleware only when one of them is visited. A third shell, `src/shells/BlockchainShell.tsx`, dynamically imports the Web3 stack and mounts only for the few account actions that need a signer. Code reachable from a lightweight route must never import `src/shells/*`; `npm run lint:shells` enforces that by walking the import graph (the only exceptions are the lazy shell import in `App.tsx` and the homepage detail modal loader's dynamic import of `HomeDetailModalShell`). The full route map and the tier rules are in `CLAUDE.md` > Architecture: Dual Shell.
 
 ## Where things live
 

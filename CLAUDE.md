@@ -39,35 +39,39 @@ These render as `<Outlet />` children of `src/shells/DappsShell.tsx`. The shell 
 
 A lazy, opt-in shell for the few account actions that need a connected signer (Wallets Send; Delete). It wraps children in `@dcl/core-web3`'s `WalletStateProvider` + `Web3LazyProvider`, which dynamically import the heavy Web3 stack (`wagmi` / `viem` / `magic-sdk` / `@magic-ext/oauth2`) only when an action mounts the shell, then calls `injectWeb3Reducers()` to append core-web3's `wallet` / `network` / `transactions` slices to the already-running `DappsShell` store (`createLazyStoreEnhancer` in `store.ts`). Children are withheld behind a readiness gate until the providers are mounted, so wagmi hooks never run without a `WagmiProvider`. The base `DappsShell` store only statically imports the lightweight `@dcl/core-web3/lazy` facade (the enhancer + provider shells) — the wagmi/viem bundle is code-split and never loads on a non-account heavy route.
 
-**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/events/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/places/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The ONLY legitimate reference to `src/shells/` from outside the shell and outside a heavy-route tree is the `lazy()` import in `src/App.tsx`.
+### Homepage detail modal island (`src/shells/HomeDetailModalShell.tsx`)
+
+Clicking a card in the homepage "Jump Into What's Happening" or "Your Weekly Rituals" sections opens the event/place detail modal over `/`. The modal needs the Redux store, which the homepage never mounts, so `HomeDetailModalLoader` (lightweight, mounted by each section only while a card is selected) lazy-loads `HomeDetailModalShell` (`<Provider store>` + `src/shells/HomeDetailModal.tsx`, which only the shell imports) after the first click and shows a dismissible pending overlay meanwhile. If the chunk or the fetch fails it closes the overlay and navigates the same tab to the canonical page (`/events?id=<id>` or `/places/place/<x,y>`). Nothing store, RTK Query or modal related loads before the first card click.
+
+**Boundary rule:** code that runs on lightweight routes (anything reachable from `App.tsx` without going through `<DappsShell />`) must never `import` from `src/shells/`. The lightweight tier covers everything under `src/pages/*` EXCEPT the heavy-route page directories: `src/pages/events/*`, `src/pages/blog/*`, `src/pages/jump/*`, `src/pages/social/*`, `src/pages/places/*`, `src/pages/cast/*`, `src/pages/storage/*`, `src/pages/account/*`. Heavy-tier code (those page dirs + their feature/component trees, e.g. `src/components/account/*`) may import `src/shells/` — `BlockchainShell` and the RTK hooks live there. The same lightweight restriction applies to `src/components/Layout/*`, `src/components/LandingNavbar/*`, `src/components/LandingFooter/*`, and any hook the navbar consumes. The only legitimate references to `src/shells/` from outside the shell and outside a heavy-route tree are the `lazy()` import in `src/App.tsx` and the single dynamic import of `shells/HomeDetailModalShell.tsx` from `components/Home/HomeDetailModal/HomeDetailModalLoader.tsx` (see "Homepage detail modal island" above). Both must be dynamic; `lint:shells` allows exactly those edges.
 
 ## Directory map (top-level)
 
-| Path                            | Purpose                                                                                          |
-| ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                                    |
-| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).                         |
-| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                               |
-| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listeners) + `BlockchainShell.tsx`/`web3Config.ts` (lazy Web3). |
-| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                                     |
-| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                             |
-| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).                  |
-| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                                         |
-| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                                    |
-| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                                       |
-| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.                 |
-| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                             |
-| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.                 |
-| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`.           |
-| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.                     |
-| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                              |
-| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by events, social, storage mutations).                        |
-| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                          |
-| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                            |
-| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                        |
-| `public/.well-known/`           | iOS/Android app-link association files. Make `/jump` open the explorer. `docs/domains/jump.md`.  |
-| `api/seo.ts`                    | **Preview-only** Vercel function for `/blog/*` OG meta. Skill `seo-worker`.                      |
-| `vercel.json`                   | **Preview-only** Vercel config: rewrites + per-route headers. Never runs in prd/stg/dev.         |
+| Path                            | Purpose                                                                                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/App.tsx`                   | Router. Splits routes into Layout-less / lightweight / heavy.                                                                                                       |
+| `src/App.styled.ts`             | Shared `CenteredBox` styled component (App-level + DappsShell fallback).                                                                                            |
+| `src/main.tsx`                  | Entry point. Mounts the lightweight provider tree.                                                                                                                  |
+| `src/shells/`                   | `DappsShell.tsx` + `store.ts` (+ listeners) + `BlockchainShell.tsx`/`web3Config.ts` (lazy Web3) + `HomeDetailModalShell.tsx` + `HomeDetailModal.tsx` (its content). |
+| `src/pages/`                    | Page components. Subdirs per dapp (see per-dapp docs below).                                                                                                        |
+| `src/pages/index.tsx`           | Landing homepage (hero prerendered by `scripts/prerender-hero.mjs`).                                                                                                |
+| `src/components/`               | Shared components. Top-level for landing; subdirs per dapp (see per-dapp docs).                                                                                     |
+| `src/components/Layout/`        | Outlet-based layout. Mounts navbar, child route, footer.                                                                                                            |
+| `src/components/LandingNavbar/` | Navbar. Consumes `useWalletAddress` (localStorage, no Redux).                                                                                                       |
+| `src/components/LandingFooter/` | Footer. Newsletter + social + legal links.                                                                                                                          |
+| `src/features/profile/`         | Lightweight Catalyst profile client (`useSyncExternalStore`). Used cross-domain.                                                                                    |
+| `src/features/notifications/`   | `usePageNotifications` hook used by `Layout` (navbar notifications).                                                                                                |
+| `src/hooks/`                    | Shared hooks. `useAuthIdentity`, `useWalletAddress`, `useBlogPageTracking`, etc.                                                                                    |
+| `src/config/env/`               | Per-environment JSON (`dev.json`, `stg.json`, `prd.json`). Access via `getEnv('KEY')`.                                                                              |
+| `src/intl/`                     | Six locale files (`en`, `es`, `fr`, `ja`, `ko`, `zh`). Skill `add-i18n-key`.                                                                                        |
+| `src/modules/`                  | Side-effect wiring: Sentry, Segment, Contentsquare.                                                                                                                 |
+| `src/utils/signedFetch.ts`      | Shared identity-signed fetch (used by events, social, storage mutations).                                                                                           |
+| `src/utils/avatarColor.ts`      | Deterministic avatar background color. Skill `avatar-background-color`.                                                                                             |
+| `scripts/prebuild.cjs`          | Resolves CDN base URL and writes `.env` before build.                                                                                                               |
+| `scripts/prerender-hero.mjs`    | Injects static hero HTML + critical CSS post-build (LCP).                                                                                                           |
+| `public/.well-known/`           | iOS/Android app-link association files. Make `/jump` open the explorer. `docs/domains/jump.md`.                                                                     |
+| `api/seo.ts`                    | **Preview-only** Vercel function for `/blog/*` OG meta. Skill `seo-worker`.                                                                                         |
+| `vercel.json`                   | **Preview-only** Vercel config: rewrites + per-route headers. Never runs in prd/stg/dev.                                                                            |
 
 ### Per-dapp directory details
 
@@ -262,7 +266,7 @@ Enforce the boundary rule from Architecture > Dual Shell:
 npm run lint:shells
 ```
 
-It walks the import graph from every lightweight entry point (`src/main.tsx`, `src/pages/*` outside the heavy route groups, `components/Layout`, `components/LandingNavbar`, `components/LandingFooter`) and fails if any of them can reach `src/shells/*` at runtime, printing the full chain. Indirect paths through a helper or a barrel count; `import type` does not, because it leaves nothing in the bundle.
+It walks the import graph from every lightweight entry point (`src/main.tsx`, `src/pages/*` outside the heavy route groups, `components/Layout`, `components/LandingNavbar`, `components/LandingFooter`) and fails if any of them can reach `src/shells/*` at runtime, printing the full chain. Indirect paths through a helper or a barrel count; `import type` does not, because it leaves nothing in the bundle. The only exceptions are `App.tsx` (lazy shell import) and `HomeDetailModalLoader.tsx` (dynamic import of `HomeDetailModalShell.tsx` only).
 
 Do NOT grep for `from '.*shells/'` instead. It misses the indirect paths and flags the heavy route trees (`src/pages/{events,blog,jump,social,places,cast,storage,account,profile}/*` and the components they own), which are explicitly allowed to import the shell.
 
