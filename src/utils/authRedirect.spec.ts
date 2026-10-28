@@ -25,23 +25,23 @@ describe('buildAuthRedirectUrl', () => {
 
   describe('when called with a simple path', () => {
     it('should return the same-origin path without any host prefix', () => {
-      expect(buildAuthRedirectUrl('/whats-on')).toBe('/whats-on')
+      expect(buildAuthRedirectUrl('/events')).toBe('/events')
     })
   })
 
   describe('when called with a path that includes a query string', () => {
     it('should preserve the existing query parameters', () => {
-      expect(buildAuthRedirectUrl('/whats-on?tab=my')).toBe('/whats-on?tab=my')
+      expect(buildAuthRedirectUrl('/events?tab=my')).toBe('/events?tab=my')
     })
   })
 
   describe('when called with additional query params', () => {
     it('should append them to the query string', () => {
-      expect(buildAuthRedirectUrl('/whats-on', { loginMethod: 'METAMASK' })).toBe('/whats-on?loginMethod=METAMASK')
+      expect(buildAuthRedirectUrl('/events', { loginMethod: 'METAMASK' })).toBe('/events?loginMethod=METAMASK')
     })
 
     it('should merge with an existing query string', () => {
-      expect(buildAuthRedirectUrl('/whats-on?tab=my', { loginMethod: 'METAMASK' })).toBe('/whats-on?tab=my&loginMethod=METAMASK')
+      expect(buildAuthRedirectUrl('/events?tab=my', { loginMethod: 'METAMASK' })).toBe('/events?tab=my&loginMethod=METAMASK')
     })
   })
 
@@ -51,14 +51,14 @@ describe('buildAuthRedirectUrl', () => {
     // this base onto the redirect path, producing a redirectTo pointing at the raw bundle
     // host instead of decentraland.org. The function MUST ignore that asset base.
     it('should not leak the CDN base URL into the redirect path', () => {
-      expect(buildAuthRedirectUrl('/whats-on')).not.toMatch(/^https?:\/\//)
-      expect(buildAuthRedirectUrl('/whats-on')).not.toContain('cdn.decentraland.org')
+      expect(buildAuthRedirectUrl('/events')).not.toMatch(/^https?:\/\//)
+      expect(buildAuthRedirectUrl('/events')).not.toContain('cdn.decentraland.org')
     })
   })
 
   describe('when called with an absolute URL on a different origin', () => {
     it('should keep only the pathname and search, dropping the foreign origin', () => {
-      expect(buildAuthRedirectUrl('https://evil.example.com/whats-on?foo=bar')).toBe('/whats-on?foo=bar')
+      expect(buildAuthRedirectUrl('https://evil.example.com/events?foo=bar')).toBe('/events?foo=bar')
     })
   })
 })
@@ -87,7 +87,7 @@ describe('redirectToAuth', () => {
 
   describe('sign-in pending flag', () => {
     it('should mark a sign-in as pending before redirecting', () => {
-      redirectToAuth('/whats-on')
+      redirectToAuth('/events')
 
       const written = localStorage.getItem('dcl:sign-in-pending')
       expect(written).not.toBeNull()
@@ -97,7 +97,7 @@ describe('redirectToAuth', () => {
     it('should snapshot an address→ephemeral-fingerprint map of known wallets before redirecting', () => {
       // Pretend the user already had MetaMask connected before clicking Sign In.
       localStorage.setItem('single-sign-on-0xprev', '{}')
-      redirectToAuth('/whats-on')
+      redirectToAuth('/events')
 
       const snapshot = JSON.parse(localStorage.getItem('dcl:sign-in-pending-snapshot') ?? '{}') as Record<string, string>
       expect(Object.keys(snapshot)).toEqual(['0xprev'])
@@ -106,13 +106,13 @@ describe('redirectToAuth', () => {
 
   describe('when called from a same-origin page', () => {
     it('should call window.location.replace with a same-origin redirectTo', () => {
-      redirectToAuth('/whats-on', { loginMethod: 'METAMASK' })
+      redirectToAuth('/events', { loginMethod: 'METAMASK' })
 
       expect(replaceMock).toHaveBeenCalledTimes(1)
       const [calledWith] = replaceMock.mock.calls[0] as [string]
       const url = new URL(calledWith)
       const redirectTo = url.searchParams.get('redirectTo')
-      expect(redirectTo).toBe('/whats-on?loginMethod=METAMASK')
+      expect(redirectTo).toBe('/events?loginMethod=METAMASK')
       expect(redirectTo).not.toContain('cdn.decentraland.org')
     })
   })
@@ -132,14 +132,14 @@ describe('redirectToAuth', () => {
     })
 
     it('should target the preview origin so the Vercel rewrite proxies /auth same-origin', () => {
-      redirectToAuth('/whats-on')
+      redirectToAuth('/events')
 
       expect(replaceMock).toHaveBeenCalledTimes(1)
       const [calledWith] = replaceMock.mock.calls[0] as [string]
       const url = new URL(calledWith)
       expect(url.origin).toBe('https://nautilus-preview.vercel.app')
       expect(url.pathname).toBe('/auth/login')
-      expect(url.searchParams.get('redirectTo')).toBe('/whats-on')
+      expect(url.searchParams.get('redirectTo')).toBe('/events')
     })
   })
 
@@ -158,7 +158,7 @@ describe('redirectToAuth', () => {
     })
 
     it('should fall back to the relative /auth path', () => {
-      redirectToAuth('/whats-on')
+      redirectToAuth('/events')
 
       expect(replaceMock).toHaveBeenCalledTimes(1)
       const [calledWith] = replaceMock.mock.calls[0] as [string]
@@ -181,7 +181,7 @@ describe('redirectToAuth', () => {
     })
 
     it('should use the relative /auth path so the Vite proxy handles the request', () => {
-      redirectToAuth('/whats-on')
+      redirectToAuth('/events')
 
       expect(replaceMock).toHaveBeenCalledTimes(1)
       const [calledWith] = replaceMock.mock.calls[0] as [string]

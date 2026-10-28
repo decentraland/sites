@@ -28,6 +28,11 @@ jest.mock('../App.styled', () => ({
   CenteredBox: ({ children }: { children: React.ReactNode }) => <div data-testid="centered">{children}</div>
 }))
 
+jest.mock('../components/profile/ProfileModal', () => ({
+  ProfileModalHost: () => null,
+  ProfileModalHostProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>
+}))
+
 function renderShell() {
   return render(
     <MemoryRouter>

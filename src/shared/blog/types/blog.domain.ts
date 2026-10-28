@@ -32,6 +32,9 @@ interface BlogPost {
   slug: string
   title: string
   description: string
+  /** Raw ISO 8601 value straight from the CMS. Machine-readable consumers
+   * (`<time datetime>`, `article:published_time`) need it verbatim; render sites
+   * format it with `formatUtcDate`. */
   publishedDate: string
   body: Document
   bodyAssets: Record<string, ContentfulAsset>

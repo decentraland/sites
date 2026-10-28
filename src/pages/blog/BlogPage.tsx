@@ -6,7 +6,7 @@ import { BlogLayout } from '../../components/blog/BlogLayout'
 import { PostList } from '../../components/blog/PostList'
 import { SEO } from '../../components/blog/SEO/SEO'
 import { useInfiniteBlogPosts } from '../../features/cms/useInfiniteBlogPosts'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import type { BlogPost } from '../../shared/blog/types/blog.domain'
 import { ErrorContainer } from './BlogPage.styled'
 
@@ -15,7 +15,7 @@ export const BlogPage = () => {
   const isMobile = useMobileMediaQuery()
   const { posts, isLoadingInitial, error } = useInfiniteBlogPosts()
   const blogTitle = t('blog.title')
-  useBlogPageTracking({
+  usePageViewTracking({
     name: blogTitle,
     properties: { title: blogTitle, path: '/blog' }
   })

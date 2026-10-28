@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 type Options = {
   hasMore: boolean
@@ -8,16 +8,22 @@ type Options = {
   rootMargin?: string
 }
 
-// Sentinel-based infinite scroll. Use when the loadable area sits inside an
-// `overflow: auto` container — the consumer attaches the returned ref to a
-// trailing element and onLoadMore fires when that element intersects the
+// Sentinel-based infinite scroll. The consumer attaches the returned ref to a
+// trailing element and `onLoadMore` fires when that element intersects the
 // viewport (or its scroll root, depending on rootMargin).
+//
+// The node is tracked via a CALLBACK ref held in state — not a RefObject read
+// inside the effect — so when React replaces the sentinel element (branch
+// remounts, list re-renders), the observer re-attaches to the fresh node
+// instead of silently watching a detached one.
 function useInfiniteScrollSentinel(options: Options) {
   const { hasMore, isLoading, onLoadMore, threshold = 0.1, rootMargin = '100px' } = options
-  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [sentinel, setSentinel] = useState<HTMLDivElement | null>(null)
+  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
+    setSentinel(node)
+  }, [])
 
   useEffect(() => {
-    const sentinel = sentinelRef.current
     if (!sentinel || !hasMore || isLoading) return
 
     const observer = new IntersectionObserver(
@@ -28,8 +34,8 @@ function useInfiniteScrollSentinel(options: Options) {
       { threshold, rootMargin }
     )
     observer.observe(sentinel)
-    return () => observer.unobserve(sentinel)
-  }, [hasMore, isLoading, onLoadMore, threshold, rootMargin])
+    return () => observer.disconnect()
+  }, [sentinel, hasMore, isLoading, onLoadMore, threshold, rootMargin])
 
   return sentinelRef
 }

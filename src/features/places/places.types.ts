@@ -28,6 +28,7 @@ interface JumpEvent {
 }
 
 interface JumpPlace {
+  creator_address?: string | null
   id: string
   title: string
   image: string
@@ -61,6 +62,9 @@ interface JumpEventResponse {
 
 interface PeerSceneEntity {
   id: string
+  metadata?: {
+    owner?: string
+  }
 }
 
 interface PeerDeployment {
@@ -136,11 +140,29 @@ interface GetPlacesArgs {
 
 interface GetSceneMetadataArgs {
   position: string
+  // Worlds are not deployed on the main Catalyst at a Genesis City `position`;
+  // their scene lives on the Worlds Content Server keyed by the world name.
+  // When `realm` is an ENS name the query resolves the world owner instead of a
+  // Genesis City scene deployer.
+  realm?: string
 }
+
+interface DeepLinkOptions {
+  realm?: string
+  position?: string
+  dclenv?: string
+  sceneConsole?: string
+  multiInstance?: string
+}
+
+/** The validated position/realm pair a download hop or a mobile app link carries. */
+type DeepLinkParams = Pick<DeepLinkOptions, 'position' | 'realm'>
 
 export type {
   CardData,
   Creator,
+  DeepLinkOptions,
+  DeepLinkParams,
   GetEventByIdArgs,
   GetEventsArgs,
   GetPlacesArgs,

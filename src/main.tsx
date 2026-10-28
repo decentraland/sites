@@ -2,20 +2,15 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { DclThemeProvider, darkTheme } from 'decentraland-ui2'
 import { App } from './App'
-import { getEnv } from './config/env'
 import { LocaleProvider } from './intl/LocaleContext'
+import { isAnalyticsDisabledForSession } from './modules/analyticsSessionGate'
 import { DeferredAnalyticsProvider } from './modules/DeferredAnalyticsProvider'
 import { scheduleDeferredThirdParty } from './modules/deferredThirdParty'
-import { isAnalyticsExemptPath } from './utils/isAnalyticsExemptPath'
+import { getSegmentApiHost, getSegmentCdnUrl, getSegmentWriteKey } from './modules/segmentConfig'
 import { scheduleWhenIdle } from './utils/scheduleWhenIdle'
 
-// Pure legal/text routes have no funnel signal worth measuring and pay a
-// disproportionate Lighthouse cost for the Segment + Contentsquare chains
-// (third-party cookies, deferred JS execution). Skip both on cold loads to
-// these paths; users who land on the homepage and navigate to them via SPA
-// still keep analytics enabled.
-const analyticsDisabled = isAnalyticsExemptPath(window.location.pathname)
-const segmentWriteKey = analyticsDisabled ? '' : getEnv('SEGMENT_KEY') || ''
+const analyticsDisabled = isAnalyticsDisabledForSession()
+const segmentWriteKey = getSegmentWriteKey()
 
 // Sentry adds ~110 KB to the critical JS. Defer the init to idle so the
 // vendor-sentry chunk doesn't compete with the LCP image and the lazy
@@ -37,7 +32,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <DclThemeProvider theme={darkTheme}>
       <LocaleProvider>
-        <DeferredAnalyticsProvider writeKey={segmentWriteKey}>
+        <DeferredAnalyticsProvider writeKey={segmentWriteKey} cdnUrl={getSegmentCdnUrl()} apiHost={getSegmentApiHost()}>
           <App />
         </DeferredAnalyticsProvider>
       </LocaleProvider>

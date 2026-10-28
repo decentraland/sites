@@ -1080,4 +1080,125 @@ describe('expandRecurrentDates', () => {
       expect(result.slice(-3)).toEqual(['2026-05-20T14:00:00.000Z', '2026-05-27T14:00:00.000Z', '2026-06-03T14:00:00.000Z'])
     })
   })
+
+  describe('when recurrent_until exactly equals the last materialized entry', () => {
+    it('should return the materialized dates without synthesizing past the rule', () => {
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2026-05-06T14:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z']
+      })
+      // Visible window stretches well past recurrent_until, so the early-out is
+      // driven by recurrent_until <= lastMaterialized, not by the visible range.
+      const result = expandRecurrentDates(event, new Date('2027-01-01T00:00:00Z'))
+      expect(result).toEqual(['2026-04-29T14:00:00Z', '2026-05-06T14:00:00Z'])
+    })
+  })
+
+  describe('when the only gap between materialized dates overshoots a full week', () => {
+    it('should fall back to the most recent delta as the cadence', () => {
+      // Two materialized dates ~5 weeks apart: the single delta is well over a
+      // week, so cycle detection trusts that gap as the cadence and keeps
+      // stepping by it.
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-01T14:00:00Z', '2026-05-06T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-07-01T00:00:00Z'))
+      // 35-day step continues: Jun 10, then Jul 15 would exceed the cap.
+      expect(result).toEqual(['2026-04-01T14:00:00Z', '2026-05-06T14:00:00Z', '2026-06-10T14:00:00.000Z'])
+    })
+  })
+
+  describe('when the materialized dates do not yet span a full weekly cycle', () => {
+    it('should use the partial cycle it collected rather than a default week', () => {
+      // Two dates only 3 days apart: the accumulated delta never reaches a week
+      // and never overshoots, so detection falls through to the collected cycle.
+      const event = createMockEvent({
+        ...baseRecurrent,
+        recurrent_frequency: 'WEEKLY',
+        recurrent_until: '2027-01-01T00:00:00Z',
+        recurrent_dates: ['2026-04-29T14:00:00Z', '2026-05-02T14:00:00Z']
+      })
+      const result = expandRecurrentDates(event, new Date('2026-05-12T00:00:00Z'))
+      // 3-day cadence is replayed: May 5, May 8, May 11.
+      expect(result).toEqual([
+        '2026-04-29T14:00:00Z',
+        '2026-05-02T14:00:00Z',
+        '2026-05-05T14:00:00.000Z',
+        '2026-05-08T14:00:00.000Z',
+        '2026-05-11T14:00:00.000Z'
+      ])
+    })
+  })
+})
+
+describe('buildLiveNowCards multi-scene fallback ordering', () => {
+  it('should sort scenes without matching events by descending user count', () => {
+    const sceneA = createMockScene({ id: 'sc-a', name: 'Alpha', usersTotalCount: 12, baseCoords: [1, 1], parcels: [[1, 1]] })
+    const sceneB = createMockScene({ id: 'sc-b', name: 'Beta', usersTotalCount: 40, baseCoords: [2, 2], parcels: [[2, 2]] })
+    const sceneC = createMockScene({ id: 'sc-c', name: 'Gamma', usersTotalCount: 25, baseCoords: [3, 3], parcels: [[3, 3]] })
+
+    const result = buildLiveNowCards([], [sceneA, sceneB, sceneC])
+
+    expect(result.map(card => card.title)).toEqual(['Beta', 'Gamma', 'Alpha'])
+  })
+})
+
+describe('enrichPlaceCards peer deployer lookup', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  function mockPeerDeployerFetch(): void {
+    jest.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url.toString()
+      if (urlStr.includes('/content/entities/active')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([{ id: 'entity-1' }]) } as Response)
+      }
+      if (urlStr.includes('/content/deployments')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ deployments: [{ deployedBy: '0xDeployer' }] })
+        } as Response)
+      }
+      // Places API returns nothing useful so the peer fallback path runs.
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) } as Response)
+    })
+  }
+
+  it('should resolve creatorAddress from the deployment when peerUrl is set and the card has no creator', async () => {
+    mockPeerDeployerFetch()
+    const result = await enrichPlaceCards([createMockPlaceCard()], { peerUrl: 'https://peer.test' })
+    expect(result[0].creatorAddress).toBe('0xDeployer')
+  })
+
+  it('should leave creatorAddress unset when the active-entity lookup returns no entity', async () => {
+    jest.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url.toString()
+      if (urlStr.includes('/content/entities/active')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) } as Response)
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) } as Response)
+    })
+    const cards = [createMockPlaceCard()]
+    const result = await enrichPlaceCards(cards, { peerUrl: 'https://peer.test' })
+    expect(result[0].creatorAddress).toBeUndefined()
+  })
+
+  it('should swallow a thrown deployer lookup and keep the card unchanged', async () => {
+    jest.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url.toString()
+      if (urlStr.includes('/content/entities/active')) {
+        return Promise.reject(new Error('peer down'))
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) } as Response)
+    })
+    const cards = [createMockPlaceCard()]
+    const result = await enrichPlaceCards(cards, { peerUrl: 'https://peer.test' })
+    expect(result[0].creatorAddress).toBeUndefined()
+  })
 })

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { SegmentEvent } from '../../modules/segment'
 import { useDeferredTrack } from '../useDeferredTrack'
+import { buildClickPayload } from './clickPayload.helpers'
 
 /**
  * Click adapter consumed by interactive elements that follow the
@@ -18,34 +19,23 @@ import { useDeferredTrack } from '../useDeferredTrack'
  * Callers should always set `data-event` to a `SegmentEvent` enum value
  * rather than a hardcoded literal — keeps casing consistent in the
  * warehouse and makes grep over the codebase trivial.
+ *
+ * The current URL's campaign (utm_*) params are merged first so a partner
+ * link (`/create?utm_source=…`) attributes every tracked click, matching the
+ * download-CTA behavior in `useDownloadClick`. `data-*` attributes are spread
+ * last as the trusted, component-controlled source and win on collision; they
+ * never collide with the snake_case utm_* keys because `readDataAttributes`
+ * camelCases dashed names (see `collectCampaignParams`).
  */
 function useTrackClick() {
   const deferredTrack = useDeferredTrack()
   return useCallback(
-    (event: React.MouseEvent<HTMLElement>) => {
-      const element = event.currentTarget
-      const payload: Record<string, string | null> = {}
-
-      Array.from(element.attributes).forEach(attr => {
-        if (!attr.name.startsWith('data-')) return
-        // Skip empty string attributes — components like BannerButton set
-        // `data-title=""` / `data-subtitle=""` as placeholders when the
-        // metadata isn't applicable. Forwarding empty strings to the
-        // warehouse creates noise without analytic value.
-        if (attr.value === '') return
-        const key = attr.name
-          .slice(5)
-          .split('-')
-          .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()))
-          .join('')
-        payload[key] = attr.value
-      })
-
-      if (payload.event === SegmentEvent.CLICK) {
-        delete payload.event
-      }
-
-      deferredTrack(SegmentEvent.CLICK, payload)
+    // Accepts any SyntheticEvent (mouse, keyboard, …): only `currentTarget` is
+    // read, so widening the type lets keyboard-activated controls (e.g. the FAQ
+    // accordion) call this without a lossy cast, while `onClick={trackClick}`
+    // still type-checks because a mouse event is a SyntheticEvent.
+    (event: React.SyntheticEvent<HTMLElement>) => {
+      deferredTrack(SegmentEvent.CLICK, buildClickPayload(event.currentTarget))
     },
     [deferredTrack]
   )

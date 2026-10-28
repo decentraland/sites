@@ -1,14 +1,18 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention -- React component default export, matches MUI icon convention
 import CheckIcon from '@mui/icons-material/Check'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import { useAnalytics } from '@dcl/hooks'
 import { useTabletAndBelowMediaQuery, useTabletMediaQuery, useTheme } from 'decentraland-ui2'
 import { getRarityColor, getThumbnailUrl } from '../../../../features/communities/communities.helpers'
 import { Privacy } from '../../../../features/communities/communities.types'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
-import { useProfilePicture } from '../../../../hooks/useProfilePicture'
+import { useProfileAvatar } from '../../../../hooks/useProfileAvatar'
 import { SegmentEvent } from '../../../../modules/segment.types'
+import { truncateAddress } from '../../../../utils/address'
 import { redirectToAuth } from '../../../../utils/authRedirect'
+import { AvatarSkeleton, NameSkeleton } from '../CommunityDetail.styled'
 import { AllowedAction } from '../CommunityDetail.types'
 import { CommunityJumpInButton } from './CommunityJumpInButton'
 import { PrivacyIcon } from './PrivacyIcon'
@@ -59,10 +63,15 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   const { track } = useAnalytics()
   const isTabletOrMobile = useTabletAndBelowMediaQuery()
   const isTablet = useTabletMediaQuery()
-  const ownerProfilePicture = useProfilePicture(community.ownerAddress)
+  // The /v2 community payload carries the owner address only — the name comes from the
+  // Catalyst. The row holds a skeleton until that lookup settles, then shows the name or,
+  // for an owner with no profile (or a failed lookup), the address itself.
+  const { avatarFace: ownerProfilePicture, name: ownerName, isLoading: isLoadingOwner } = useProfileAvatar(community.ownerAddress)
   const ownerAvatarBackgroundColor = useMemo(() => getRarityColor(theme, community.ownerAddress), [theme, community.ownerAddress])
 
   const thumbnailUrl = getThumbnailUrl(community.id)
+  const [thumbnailFailed, setThumbnailFailed] = useState(false)
+  const handleThumbnailError = useCallback(() => setThumbnailFailed(true), [])
   const isPrivate = community.privacy === Privacy.PRIVATE
   const formattedMembersCount = useMemo(
     () => new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short' }).format(community.membersCount),
@@ -152,7 +161,13 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
   return (
     <InfoSection>
       <TopRow>
-        <CommunityImage>{thumbnailUrl && <CommunityImageContent src={thumbnailUrl} alt={community.name} />}</CommunityImage>
+        <CommunityImage>
+          {thumbnailUrl && !thumbnailFailed ? (
+            <CommunityImageContent src={thumbnailUrl} alt={community.name} onError={handleThumbnailError} />
+          ) : (
+            <GroupsOutlinedIcon />
+          )}
+        </CommunityImage>
         <CommunityDetails>
           <TitleContainer>
             <CommunityLabel>{t('community.info.decentraland_community')}</CommunityLabel>
@@ -171,12 +186,21 @@ function CommunityInfoComponent(props: CommunityInfoProps) {
                 </PrivacyMembersText>
               </PrivacyMembersRow>
             </TitleHeader>
-            <OwnerRow>
+            <OwnerRow aria-busy={isLoadingOwner}>
               <OwnerAvatarContainer>
-                <OwnerAvatar src={ownerProfilePicture} backgroundColor={ownerAvatarBackgroundColor} />
+                {isLoadingOwner ? (
+                  <AvatarSkeleton variant="circular" />
+                ) : (
+                  <OwnerAvatar src={ownerProfilePicture} backgroundColor={ownerAvatarBackgroundColor} />
+                )}
               </OwnerAvatarContainer>
               <OwnerText>
-                {t('community.info.by')} <OwnerName>{community.ownerName ?? t('community.info.unknown')}</OwnerName>
+                {t('community.info.by')}
+                {isLoadingOwner ? (
+                  <NameSkeleton variant="text" width={120} />
+                ) : (
+                  <OwnerName>{ownerName ?? truncateAddress(community.ownerAddress)}</OwnerName>
+                )}
               </OwnerText>
             </OwnerRow>
             <ActionButtons>

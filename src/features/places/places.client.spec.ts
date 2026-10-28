@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import type { AuthIdentity } from '@dcl/crypto'
 import { getEnv } from '../../config/env'
-import { placesEndpoints } from './places.client'
+import { isWorldNotFoundError, placesEndpoints } from './places.client'
 
 jest.mock('../../config/env')
 
@@ -88,6 +88,143 @@ describe('placesEndpoints', () => {
         await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth' }))
 
         expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/worlds?names=cool.dcl.eth')
+      })
+    })
+
+    describe('and an ENS realm with an explicit position is provided', () => {
+      // The /places scene record carries a contaminated user_count (the Genesis
+      // City parcel's occupancy); /worlds carries the World's real count. The
+      // scene fetch is always the first call, so it's queued in the parent
+      // beforeEach; each child queues only its distinct /worlds response next.
+      beforeEach(() => {
+        mockGetEnv.mockImplementation(key => (key === 'PLACES_API_URL' ? 'https://places.test/api' : undefined))
+        fetchSpy.mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              ok: true,
+              data: [
+                {
+                  id: 'arena',
+                  title: 'Arena',
+                  base_position: '10,20',
+                  owner: null,
+                  image: '',
+                  description: '',
+                  positions: ['10,20', '11,20'],
+                  world: true,
+                  world_name: 'cool.dcl.eth',
+                  user_count: 99
+                }
+              ]
+            })
+        } as unknown as Response)
+      })
+
+      describe('and the /worlds lookup resolves the World record', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({
+            ok: true,
+            json: () =>
+              Promise.resolve({ ok: true, data: [{ id: 'cool.dcl.eth', world: true, world_name: 'cool.dcl.eth', user_count: 2 }] })
+          } as unknown as Response)
+        })
+
+        it('should query the World scene by name AND position so the API returns only the matching scene', async () => {
+          const store = createTestStore()
+          await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
+
+          expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/places?names=cool.dcl.eth&positions=10,20')
+        })
+
+        it('should return the scene the server resolved for that position', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena' }))
+        })
+
+        it('should also query /worlds with the lowercased name to read the reliable occupancy', async () => {
+          const store = createTestStore()
+          await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'Cool.DCL.eth', position: [10, 20] }))
+
+          expect(fetchSpy).toHaveBeenCalledWith('https://places.test/api/worlds?names=cool.dcl.eth')
+        })
+
+        it('should overlay the /worlds user_count so the card shows the World occupancy, not the Genesis City parcel count', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(2)
+        })
+      })
+
+      describe('and the /worlds lookup reports zero users (the user is alone)', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({
+            ok: true,
+            json: () =>
+              Promise.resolve({ ok: true, data: [{ id: 'cool.dcl.eth', world: true, world_name: 'cool.dcl.eth', user_count: 0 }] })
+          } as unknown as Response)
+        })
+
+        it('should overlay the zero count instead of leaving the contaminated value', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(0)
+        })
+      })
+
+      describe('and the /worlds lookup fails', () => {
+        beforeEach(() => {
+          fetchSpy.mockRejectedValueOnce(new Error('worlds down'))
+        })
+
+        it('should keep the scene record and not crash the query', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0]).toEqual(expect.objectContaining({ id: 'arena', user_count: 99 }))
+        })
+      })
+
+      describe('and the /worlds lookup returns a non-OK response', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
+        })
+
+        it('should fall back to the scene record value rather than overriding with undefined', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(99)
+        })
+      })
+
+      describe('and the /worlds lookup returns no record', () => {
+        beforeEach(() => {
+          fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ok: true, data: [] }) } as unknown as Response)
+        })
+
+        it('should keep the scene record value', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getJumpPlaces.initiate({ realm: 'cool.dcl.eth', position: [10, 20] })
+          )
+
+          expect(result.data?.[0].user_count).toBe(99)
+        })
       })
     })
 
@@ -509,6 +646,152 @@ describe('placesEndpoints', () => {
         expect(result.data).toBeNull()
       })
     })
+
+    describe('and the realm is a World (ENS name)', () => {
+      const mockWorldsAndPeer = (key: string) => {
+        if (key === 'WORLDS_CONTENT_SERVER_URL') return 'https://worlds.test'
+        if (key === 'PEER_URL') return 'https://peer.test'
+        return undefined
+      }
+
+      describe('and the world scene entity exposes an owner with a Catalyst profile', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy
+            .mockResolvedValueOnce({
+              ok: true,
+              json: () => Promise.resolve([{ id: 'world-entity', metadata: { owner: '0xOwner' } }])
+            } as unknown as Response)
+            .mockResolvedValueOnce({
+              ok: true,
+              json: () =>
+                Promise.resolve([
+                  {
+                    timestamp: 0,
+                    avatars: [
+                      {
+                        name: 'Chiri',
+                        userId: '0xOwner',
+                        avatar: { snapshots: { face256: 'owner.png', body: 'body.png' } }
+                      }
+                    ]
+                  }
+                ])
+            } as unknown as Response)
+        })
+
+        it('should resolve the owner profile from the Worlds Content Server scene entity', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '25,4', realm: 'MyWorld.dcl.eth' })
+          )
+
+          expect(fetchSpy).toHaveBeenCalledWith(
+            'https://worlds.test/entities/active',
+            expect.objectContaining({ method: 'POST', body: JSON.stringify({ pointers: ['myworld.dcl.eth'] }) })
+          )
+          expect(result.data).toEqual({
+            deployerAddress: '0xOwner',
+            deployerName: 'Chiri',
+            deployerAvatar: 'owner.png'
+          })
+        })
+
+        it('should not query the main Catalyst active-entities endpoint by position', async () => {
+          // Drop call history accumulated by earlier suites so the assertion only
+          // reflects this dispatch; the `mockResolvedValueOnce` queue survives.
+          fetchSpy.mockClear()
+          const store = createTestStore()
+          await store.dispatch(placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '25,4', realm: 'myworld.dcl.eth' }))
+
+          const calledUrls = fetchSpy.mock.calls.map(call => call[0])
+          expect(calledUrls).toContain('https://worlds.test/entities/active')
+          expect(calledUrls).not.toContain('https://peer.test/content/entities/active')
+        })
+      })
+
+      describe('and the world has no active scene entity (server answered 200 with [])', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
+        })
+
+        it('should surface WORLD_NOT_FOUND so the page can treat the realm as an invalid jump', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'empty.dcl.eth' })
+          )
+          expect(result.error).toEqual(expect.objectContaining({ status: 'WORLD_NOT_FOUND' }))
+        })
+      })
+
+      describe('and the world scene entity has no owner', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy.mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve([{ id: 'world-entity', metadata: {} }])
+          } as unknown as Response)
+        })
+
+        it('should return null', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'ownerless.dcl.eth' })
+          )
+          expect(result.data).toBeNull()
+        })
+      })
+
+      describe('and the owner has no Catalyst profile', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy
+            .mockResolvedValueOnce({
+              ok: true,
+              json: () => Promise.resolve([{ id: 'world-entity', metadata: { owner: '0xOwner' } }])
+            } as unknown as Response)
+            .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) } as unknown as Response)
+        })
+
+        it('should return null so the Places API contact_name is used', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'noprofile.dcl.eth' })
+          )
+          expect(result.data).toBeNull()
+        })
+      })
+
+      describe('and the Worlds Content Server returns a server error', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(mockWorldsAndPeer)
+          fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
+        })
+
+        it('should surface FETCH_ERROR (not WORLD_NOT_FOUND) so an outage does not redirect valid worlds to invalid', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'down.dcl.eth' })
+          )
+          expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+        })
+      })
+
+      describe('and WORLDS_CONTENT_SERVER_URL is not set', () => {
+        beforeEach(() => {
+          mockGetEnv.mockImplementation(key => (key === 'PEER_URL' ? 'https://peer.test' : undefined))
+        })
+
+        it('should surface FETCH_ERROR', async () => {
+          const store = createTestStore()
+          const result = await store.dispatch(
+            placesEndpoints.endpoints.getSceneMetadata.initiate({ position: '0,0', realm: 'noenv.dcl.eth' })
+          )
+          expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR' }))
+        })
+      })
+    })
   })
 
   describe('getJumpPlaces with no position or realm', () => {
@@ -623,6 +906,19 @@ describe('placesEndpoints', () => {
       })
     })
 
+    describe('and the lambdas profiles endpoint responds not-ok', () => {
+      beforeEach(() => {
+        mockGetEnv.mockReturnValue('https://peer.test')
+        fetchSpy.mockResolvedValueOnce({ ok: false, status: 503 } as unknown as Response)
+      })
+
+      it('should resolve to null because no profile could be fetched', async () => {
+        const store = createTestStore()
+        const result = await store.dispatch(placesEndpoints.endpoints.getProfileCreator.initiate({ address: '0xabc' }))
+        expect(result.data).toBeNull()
+      })
+    })
+
     describe('and PEER_URL is not configured', () => {
       beforeEach(() => {
         mockGetEnv.mockReturnValue(undefined)
@@ -661,5 +957,58 @@ describe('placesEndpoints', () => {
         expect(result.error).toEqual(expect.objectContaining({ status: 'FETCH_ERROR', error: 'Unknown error' }))
       }
     )
+  })
+
+  describe('when a not-ok response body cannot be read as text', () => {
+    beforeEach(() => {
+      mockGetEnv.mockReturnValue('https://places.test/api')
+    })
+
+    it('should fall back to null data for getJumpPlaces when response.text() rejects', async () => {
+      fetchSpy.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error('stream closed'))
+      } as unknown as Response)
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpPlaces.initiate({ position: [0, 0] }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+
+    it('should fall back to null data for getJumpEvents when response.text() rejects', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error('stream closed'))
+      } as unknown as Response)
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpEvents.initiate({ position: [0, 0] }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+
+    it('should fall back to null data for getJumpEventById when response.text() rejects on a non-404 error', async () => {
+      mockFetchWithOptionalIdentity.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error('stream closed'))
+      } as unknown as Response)
+      const store = createTestStore()
+      const result = await store.dispatch(placesEndpoints.endpoints.getJumpEventById.initiate({ id: 'e1' }))
+      expect(result.error).toEqual(expect.objectContaining({ status: 500, data: null }))
+    })
+  })
+
+  describe('isWorldNotFoundError', () => {
+    it('should return true only for the typed WORLD_NOT_FOUND error shape', () => {
+      expect(isWorldNotFoundError({ status: 'WORLD_NOT_FOUND' })).toBe(true)
+    })
+
+    it('should return false for other error shapes and primitives', () => {
+      expect(isWorldNotFoundError({ status: 'FETCH_ERROR' })).toBe(false)
+      expect(isWorldNotFoundError({ status: 404 })).toBe(false)
+      expect(isWorldNotFoundError(null)).toBe(false)
+      expect(isWorldNotFoundError(undefined)).toBe(false)
+      expect(isWorldNotFoundError('WORLD_NOT_FOUND')).toBe(false)
+    })
   })
 })

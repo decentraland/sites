@@ -1,6 +1,6 @@
 ---
 name: coverage-keeper
-description: Writes Jest specs to bring listed files above the 95% statements / lines / functions floor (CLAUDE.md rule 6). Takes a list of source file paths plus their current uncovered-statement counts; emits new specs or extensions to existing ones. Used by the coverage-guard skill and by the Stop hook in `.claude/hooks/stop-coverage-guard.sh` when the floor breaks.
+description: Writes Jest specs to bring listed files above the 95% statements / lines / functions floor (CLAUDE.md rule 6). Takes a list of source file paths plus their current uncovered-statement counts; emits new specs or extensions to existing ones. Used by the coverage-guard skill when the floor breaks (the old Stop hook was removed on 2026-05-20).
 tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
@@ -12,7 +12,7 @@ A list of `<file path>` entries, each with the count of uncovered statements as 
 
 ## Rules you must honor
 
-These come from `/Users/braianmellor/orca/workspaces/sites/coverage/CLAUDE.md`. Cite the rule number whenever it constrains a choice.
+These come from this repo's `CLAUDE.md` (rule 6 and the Testing conventions). Cite the rule number whenever it constrains a choice.
 
 - **Rule 6** — new providers/shells/layouts need a smoke test; new reducers / RTK Query clients need a test asserting the store builds with the expected `reducerPath`. Apply the same shape when you add a _new_ spec for an existing reducer or client.
 - **Rule 17** — endpoint files do not import the store for dispatch; your tests must not assume they do.

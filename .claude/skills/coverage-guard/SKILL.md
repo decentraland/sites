@@ -11,7 +11,6 @@ Enforce the 95% floor on statements, lines, and functions for `@dcl/sites`. Bran
 
 - Before `gh pr create` whenever the diff touches `src/**` or `api/**`.
 - After a large refactor or dapp absorption that adds new modules.
-- When the Stop hook (`.claude/hooks/stop-coverage-guard.sh`) blocks the agent.
 
 ## When NOT to use
 
@@ -26,7 +25,7 @@ Enforce the 95% floor on statements, lines, and functions for `@dcl/sites`. Bran
 npm run test:coverage -- --silent --coverageReporters=json-summary --coverageReporters=text-summary
 ```
 
-This writes `coverage/coverage-summary.json` which the Stop hook reads.
+This writes `coverage/coverage-summary.json`. There is no automatic Stop-hook enforcement (removed 2026-05-20 for token cost — see docs/skills-registry.md); the floor is policy, run this skill manually before PRs.
 
 ### 2. Read the totals + top offenders
 

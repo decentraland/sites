@@ -31,7 +31,7 @@ describe('useReelImagesByUser', () => {
       const { result } = renderHook(() => useReelImagesByUser('0xabc', { limit: 24, offset: 0 }))
       await waitFor(() => expect(result.current.isLoading).toBe(false))
       expect(result.current.images).toHaveLength(2)
-      expect(result.current.total).toBe(50)
+      expect(result.current.total).toBe(2)
     })
 
     it('should expose the error when the fetch fails', async () => {
@@ -40,6 +40,14 @@ describe('useReelImagesByUser', () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false))
       expect(result.current.error?.message).toBe('boom')
       expect(result.current.images).toEqual([])
+    })
+
+    it('should forward the identity to the fetch so the owner gallery is signed', async () => {
+      const identity = { authChain: [] } as unknown as Parameters<typeof useReelImagesByUser>[2]
+      reelsMock.fetchImagesByUser.mockResolvedValue({ images: [], currentImages: 0, maxImages: 0 })
+      renderHook(() => useReelImagesByUser('0xabc', { limit: 24, offset: 0 }, identity))
+      await waitFor(() => expect(reelsMock.fetchImagesByUser).toHaveBeenCalled())
+      expect(reelsMock.fetchImagesByUser).toHaveBeenCalledWith('0xabc', { limit: 24, offset: 0 }, expect.anything(), identity)
     })
   })
 })

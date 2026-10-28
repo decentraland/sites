@@ -3,12 +3,15 @@ import { useParams } from 'react-router-dom'
 import { ImageViewer } from '../../components/Reels/ImageViewer'
 import { Metadata } from '../../components/Reels/Metadata'
 import { NotPhoto } from '../../components/Reels/NotPhoto'
+import { usePageView } from '../../hooks/usePageView'
 import { useReelImageById } from '../../hooks/useReelImageById'
 
 const ReelsImagePage = memo(() => {
   const { imageId } = useParams<{ imageId: string }>()
   const { image, isLoading, error } = useReelImageById(imageId)
   const [metadataVisible, setMetadataVisible] = useState(true)
+
+  usePageView()
 
   useEffect(() => {
     const previous = document.title

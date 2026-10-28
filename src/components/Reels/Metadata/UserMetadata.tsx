@@ -6,6 +6,7 @@ import type { ImageUser } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import wearableShirtSrc from '../../../images/reels/wearable-shirt.svg'
 import { SegmentEvent } from '../../../modules/segment'
+import { useOpenProfileModal } from '../../profile/ProfileModal/useOpenProfileModal'
 import { WearableMetadata } from './WearableMetadata'
 import {
   ChevronButton,
@@ -32,15 +33,30 @@ interface UserMetadataProps {
 const UserMetadata = memo(({ user, isFirst, initialWearableVisibility = false }: UserMetadataProps) => {
   const l = useFormatMessage()
   const { track } = useAnalytics()
+  const openProfile = useOpenProfileModal()
   const [showWearables, setShowWearables] = useState(initialWearableVisibility)
 
-  const profileUrl = useMemo(() => (user.userAddress ? buildProfileUrl(user.userAddress) : undefined), [user.userAddress])
+  // Internal profile route used as the visible href (right-click → Open in new
+  // tab still works). The onClick intercepts left-click and either swaps the
+  // surrounding modal (when a ModalProfileNavigationProvider is mounted) or
+  // sets `?profile=<addr>` so ProfileModalHost opens the modal overlay.
+  const profileUrl = useMemo(() => (user.userAddress ? `/profile/${user.userAddress.toLowerCase()}` : undefined), [user.userAddress])
+  // Kept around for the segment payload — reels analytics still references the
+  // legacy URL shape, so we keep tracking the same field.
+  const legacyProfileUrl = useMemo(() => (user.userAddress ? buildProfileUrl(user.userAddress) : undefined), [user.userAddress])
 
   const handleProfileClick = useCallback(
-    (_event: MouseEvent<HTMLAnchorElement>) => {
-      track(SegmentEvent.REELS_CLICK_PROFILE, { userAddress: user.userAddress })
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      track(SegmentEvent.REELS_CLICK_PROFILE, { userAddress: user.userAddress, legacyProfileUrl })
+      if (!user.userAddress) return
+      // Left-click + no modifier → SPA navigation via the profile modal flow.
+      // Allow ctrl/meta/middle-click to fall through so users can still open
+      // the profile in a new tab via the rendered href.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+      event.preventDefault()
+      openProfile(user.userAddress)
     },
-    [track, user.userAddress]
+    [track, user.userAddress, legacyProfileUrl, openProfile]
   )
 
   const handleToggle = useCallback(() => {
@@ -61,7 +77,7 @@ const UserMetadata = memo(({ user, isFirst, initialWearableVisibility = false }:
         <UserMetadataWrapper>
           {user.faceUrl ? <UserAvatar src={user.faceUrl} alt="" loading="lazy" /> : <UserAvatarFallback aria-hidden="true" />}
           {profileUrl ? (
-            <UserName href={profileUrl} target="_blank" rel="noopener noreferrer" onClick={handleProfileClick}>
+            <UserName href={profileUrl} onClick={handleProfileClick}>
               {user.userName}
             </UserName>
           ) : (

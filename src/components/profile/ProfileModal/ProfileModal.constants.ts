@@ -1,0 +1,3 @@
+const PROFILE_MODAL_QUERY_KEY = 'profile'
+
+export { PROFILE_MODAL_QUERY_KEY }

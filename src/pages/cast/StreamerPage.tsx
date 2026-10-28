@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { StreamerView } from '../../components/cast/StreamerView/StreamerView'
 import { useLiveKitCredentials } from '../../features/cast2/contexts/LiveKitContext'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { useBlogPageTracking } from '../../hooks/useBlogPageTracking'
+import { usePageViewTracking } from '../../hooks/usePageViewTracking'
 import { StreamerPageRoot } from './StreamerPage.styled'
 
 const StreamerPage = () => {
@@ -22,7 +22,7 @@ const StreamerPage = () => {
     [streamMetadata]
   )
 
-  useBlogPageTracking({ name: title, properties: trackingProperties })
+  usePageViewTracking({ name: title, properties: trackingProperties })
 
   return (
     <StreamerPageRoot>

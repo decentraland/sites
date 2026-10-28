@@ -1,0 +1,1 @@
+export { CreditsTerms } from './CreditsTerms'

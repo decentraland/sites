@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { FC, ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -11,10 +11,26 @@ import PeopleIcon from '@mui/icons-material/People'
 import SettingsIcon from '@mui/icons-material/Settings'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
-import { Tab, Tabs, Typography } from 'decentraland-ui2'
+import { Alert, Box, CircularProgress, Tab, Tabs, Typography } from 'decentraland-ui2'
+import { useListPlayersQuery, useListSceneKeysQuery } from '../../../features/storage'
+import type { ExportFormat } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
+import { useLeaveGuard, useLeavePrompt } from '../../../hooks/useLeaveGuard'
+import { useStorageExport } from '../../../hooks/useStorageExport'
 import { useStorageScope } from '../../../hooks/useStorageScope'
-import { BackButton, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot } from './StorageLayout.styled'
+import { ConfirmDialog } from '../ConfirmDialog'
+import { ExportMenuButton } from '../ExportMenuButton'
+import {
+  BackButton,
+  HeaderActions,
+  LoaderBox,
+  ScopeChip,
+  ScopeRow,
+  StorageHeader,
+  StoragePageContainer,
+  StorageTabsRoot
+} from './StorageLayout.styled'
 
 interface StorageLayoutProps {
   children: ReactNode
@@ -30,7 +46,11 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
   const t = useFormatMessage()
   const navigate = useNavigate()
   const location = useLocation()
-  const { realm, position } = useStorageScope()
+  const { realm, position, isResolving, unresolved } = useStorageScope()
+  const { identity } = useAuthIdentity()
+  const { startExport, busy, errorKey, clearError } = useStorageExport()
+  const confirmLeave = useLeaveGuard(busy)
+  const leavePrompt = useLeavePrompt()
 
   const activeTab = useMemo(() => {
     if (location.pathname.startsWith('/storage/scene')) return 'scene'
@@ -38,18 +58,34 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
     return 'env'
   }, [location.pathname])
 
+  const isCollaborator = useMemo(() => new URLSearchParams(location.search).get('access') === 'collaborator', [location.search])
+  const tabs = useMemo(() => (isCollaborator ? STORAGE_TABS.filter(tab => tab.value !== 'env') : STORAGE_TABS), [isCollaborator])
+  const selectedTab = tabs.some(tab => tab.value === activeTab) ? activeTab : tabs[0].value
+
+  useEffect(() => {
+    if (isCollaborator && activeTab === 'env') {
+      navigate({ pathname: '/storage/scene', search: location.search }, { replace: true })
+    }
+  }, [isCollaborator, activeTab, navigate, location.search])
+
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: 'env' | 'scene' | 'players') => {
-      navigate({ pathname: `/storage/${newValue}`, search: window.location.search })
+      confirmLeave(() => navigate({ pathname: `/storage/${newValue}`, search: window.location.search }))
     },
-    [navigate]
+    [confirmLeave, navigate]
   )
 
   const handleBack = useCallback(() => {
-    navigate('/storage/select')
-  }, [navigate])
+    confirmLeave(() => navigate('/storage/select'))
+  }, [confirmLeave, navigate])
+
+  const handleDownloadAll = useCallback((format: ExportFormat) => startExport({}, format), [startExport])
 
   const scopeLabel = realm ?? position ?? ''
+  const canExportScope = Boolean(identity) && !isResolving && !unresolved && activeTab !== 'env'
+  const { currentData: sceneKeys } = useListSceneKeysQuery({ identity, realm, position }, { skip: !canExportScope })
+  const { currentData: players } = useListPlayersQuery({ identity, realm, position }, { skip: !canExportScope })
+  const canDownloadAll = canExportScope && Boolean(sceneKeys?.length || players?.length)
 
   return (
     <StoragePageContainer>
@@ -73,10 +109,20 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
             ) : null}
           </ScopeRow>
         ) : null}
+        {canDownloadAll ? (
+          <HeaderActions>
+            <ExportMenuButton label={t('component.storage.common.download_all')} busy={busy} onSelect={handleDownloadAll} />
+          </HeaderActions>
+        ) : null}
       </StorageHeader>
+      {errorKey ? (
+        <Alert severity="error" onClose={clearError}>
+          {t(errorKey)}
+        </Alert>
+      ) : null}
       <StorageTabsRoot>
-        <Tabs value={activeTab} onChange={handleTabChange} aria-label="storage sections" variant="scrollable">
-          {STORAGE_TABS.map(tab => (
+        <Tabs value={selectedTab} onChange={handleTabChange} aria-label="storage sections" variant="scrollable">
+          {tabs.map(tab => (
             <Tab
               key={tab.value}
               value={tab.value}
@@ -87,7 +133,26 @@ const StorageLayout: FC<StorageLayoutProps> = ({ children }) => {
           ))}
         </Tabs>
       </StorageTabsRoot>
-      {children}
+      {isResolving ? (
+        <LoaderBox>
+          <CircularProgress aria-label={t('component.storage.common.loading')} />
+        </LoaderBox>
+      ) : unresolved ? (
+        <Box sx={{ mt: 3 }}>
+          <Typography color="error">{t('component.storage.errors.world_scene_unresolved')}</Typography>
+        </Box>
+      ) : (
+        children
+      )}
+      <ConfirmDialog
+        open={leavePrompt.open}
+        title={t('component.storage.leave_dialog.title')}
+        message={t('component.storage.leave_dialog.message')}
+        confirmLabel={t('component.storage.leave_dialog.leave')}
+        cancelLabel={t('component.storage.leave_dialog.stay')}
+        onConfirm={leavePrompt.leave}
+        onCancel={leavePrompt.stay}
+      />
     </StoragePageContainer>
   )
 }

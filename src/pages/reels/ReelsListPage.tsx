@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAnalytics } from '@dcl/hooks'
 import { NotPhoto } from '../../components/Reels/NotPhoto'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { usePageView } from '../../hooks/usePageView'
 import { useReelImagesByUser } from '../../hooks/useReelImagesByUser'
 import { SegmentEvent } from '../../modules/segment'
 import { ListContainer, ListGrid, ListItem, ListTitle } from './ReelsListPage.styled'
@@ -13,6 +14,8 @@ const ReelsListPage = memo(() => {
   const { track } = useAnalytics()
   const l = useFormatMessage()
   const { images, isLoading, error } = useReelImagesByUser(address, { limit: 24, offset: 0 })
+
+  usePageView()
 
   useEffect(() => {
     const previous = document.title

@@ -14,7 +14,7 @@ This SPA splits RTK Query into two folders per backend API. The split breaks a c
 - Declares the empty base client (base URL, cache config, tag types, custom signed-fetch baseQuery when needed).
 - **No endpoints.**
 - Imported by `src/shells/store.ts` to register reducers and middleware.
-- Existing bases: `cmsClient`, `placesClient`, `socialClient`, `cast2Client`, `storageClient`, `subgraphClient`.
+- Existing bases: `cmsClient`, `placesClient`, `socialClient`, `cast2Client`, `storageClient`, `subgraphClient`, `marketplaceClient`, `referralClient` (the profile tabs inject `profile.*.client.ts` endpoints into the last two).
 - Two legacy bases live next to their endpoints (still load via the shell): `eventsClient` (`features/events/events.client.ts`) and `adminClient` (`features/events/events.admin.client.ts`).
 
 **Business logic** — `src/features/<api>/<api>.client.ts`:
@@ -25,7 +25,7 @@ This SPA splits RTK Query into two folders per backend API. The split breaks a c
 
 ## Why the split
 
-1. **Breaks a circular dep.** `store.ts` imports the base client. Endpoints in `features/blog/blog.client.ts` import `store` for one cache-read optimization (`getPostFromStore`). If the base client lived next to the endpoints, that would cycle. The split keeps the hub (`services/`) free of app-layer imports.
+1. **Breaks a circular dep.** `store.ts` imports the base client. Endpoints in `features/cms/cms.client.ts` import `store` for one cache-read optimization (`getPostFromStore`). If the base client lived next to the endpoints, that would cycle. The split keeps the hub (`services/`) free of app-layer imports.
 2. **Matches RTK Query's recommended pattern** ([code splitting](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)). The "empty api + inject" idiom scales cleanly with each new dapp.
 3. **Keeps the store lean.** `store.ts` doesn't need to import feature endpoint definitions just to register reducers/middleware.
 
@@ -63,7 +63,7 @@ getBlogPosts: builder.query({
 })
 ```
 
-A single legitimate read of `store.getState()` for cache-check optimizations is tolerated (see `features/blog/blog.client.ts:getPostFromStore`) as long as the file does NOT dispatch from within RTK Query callbacks.
+A single legitimate read of `store.getState()` for cache-check optimizations is tolerated (see `features/cms/cms.client.ts:getPostFromStore`) as long as the file does NOT dispatch from within RTK Query callbacks.
 
 ## Rule 18 — No internal cache state access
 

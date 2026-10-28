@@ -2,25 +2,12 @@ import { memo, useCallback, useState } from 'react'
 import type { FC, MouseEvent } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import FmdGoodIcon from '@mui/icons-material/FmdGood'
-import {
-  Box,
-  Button,
-  ButtonBase,
-  Card,
-  CardActions,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Menu,
-  MenuItem,
-  Typography
-} from 'decentraland-ui2'
+import { Box, Button, ButtonBase, Card, CardContent, Chip, CircularProgress, Menu, MenuItem, Typography } from 'decentraland-ui2'
 import { useGetWorldScenesQuery } from '../../../features/storage'
 import type { World } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { CardLabel, MenuDivider } from './WorldCard.styled'
+import { CardFooter, CardLabel, LocationIcon } from '../_shared/StorageCard.styled'
+import { MenuDivider } from './WorldCard.styled'
 
 interface WorldCardProps {
   world: World
@@ -36,6 +23,10 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
   const sceneCount = scenes?.length ?? 0
   const firstScene = scenes?.[0]
   const isMultiScene = sceneCount > 1
+  // Never let a click send an undefined base parcel: the storage-service reads an
+  // absent parcel as 0,0, which fails for worlds deployed off-origin. Block Edit until
+  // the scene list has resolved to at least one scene with a real baseParcel.
+  const isEditDisabled = isLoading || sceneCount === 0
 
   const handleEditClick = useCallback(() => {
     onEditClick(world.name, firstScene?.baseParcel)
@@ -68,7 +59,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
     <Card variant="outlined">
       <CardContent sx={{ pb: 1 }}>
         <CardLabel>
-          <FmdGoodIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+          <LocationIcon />
           <Typography variant="subtitle2" fontWeight={600}>
             {world.name}
           </Typography>
@@ -81,7 +72,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
           </Typography>
         )}
       </CardContent>
-      <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 1.5 }}>
+      <CardFooter>
         <Chip
           label={world.role === 'owner' ? t('component.storage.common.owner') : t('component.storage.common.collaborator')}
           size="small"
@@ -94,6 +85,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
               size="small"
               color="primary"
               disableElevation
+              disabled={isEditDisabled}
               onClick={handleEditClick}
               aria-label={t('component.storage.select_page.edit')}
               sx={{ pr: 0, gap: 0 }}
@@ -114,6 +106,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
               variant="contained"
               size="small"
               color="primary"
+              disabled={isEditDisabled}
               onClick={handleEditClick}
               aria-label={t('component.storage.select_page.edit')}
             >
@@ -135,7 +128,7 @@ const WorldCardComponent: FC<WorldCardProps> = ({ world, onEditClick }) => {
             ))}
           </Menu>
         </Box>
-      </CardActions>
+      </CardFooter>
     </Card>
   )
 }

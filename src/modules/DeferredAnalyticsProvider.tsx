@@ -4,6 +4,8 @@ import { type ScheduledHandle, cancelScheduledIdleCall, scheduleWhenIdle } from 
 
 interface Props {
   writeKey: string
+  cdnUrl?: string
+  apiHost?: string
   children: ReactNode
 }
 
@@ -14,8 +16,13 @@ interface Props {
  * = no-op, real key = triggers the lazy `import("@segment/analytics-next")`
  * chain. Holding back the key keeps Segment's dependency subtree out of
  * Lighthouse/Lantern's critical-path graph.
+ *
+ * `cdnUrl` and `apiHost` move the SDK's settings fetch and its event delivery
+ * to a first-party proxy, which ad blockers do not match. Both are optional and
+ * validated upstream, so an unset or malformed value keeps Segment's own hosts.
  */
-function DeferredAnalyticsProvider({ writeKey, children }: Props) {
+function DeferredAnalyticsProvider(props: Props) {
+  const { writeKey, cdnUrl, apiHost, children } = props
   const [resolvedKey, setResolvedKey] = useState('')
 
   useEffect(() => {
@@ -42,7 +49,11 @@ function DeferredAnalyticsProvider({ writeKey, children }: Props) {
     }
   }, [writeKey])
 
-  return <AnalyticsProvider writeKey={resolvedKey}>{children}</AnalyticsProvider>
+  return (
+    <AnalyticsProvider writeKey={resolvedKey} cdnUrl={cdnUrl} apiHost={apiHost}>
+      {children}
+    </AnalyticsProvider>
+  )
 }
 
 export { DeferredAnalyticsProvider }

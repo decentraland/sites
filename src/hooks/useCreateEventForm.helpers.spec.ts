@@ -1,5 +1,12 @@
 import type { EventEntry } from '../features/events'
-import { computeUpcomingOccurrences, eventEntryToFormState, recurrenceToApi } from './useCreateEventForm.helpers'
+import {
+  computeUpcomingOccurrences,
+  eventEntryToFormState,
+  hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
+  localDateToEndOfDayIso,
+  recurrenceToApi
+} from './useCreateEventForm.helpers'
 
 // Format an ISO timestamp into the same `YYYY-MM-DD` / `HH:MM` shape the form fields use, so the
 // tests below don't have to duplicate the local-timezone arithmetic the helper performs internally.
@@ -27,6 +34,7 @@ function buildEvent(overrides: Partial<EventEntry> = {}): EventEntry {
     world: false,
     server: null,
     community_id: null,
+    featured_item: null,
     contact: null,
     recurrent: false,
     user: '0xabc',
@@ -153,6 +161,21 @@ describe('eventEntryToFormState', () => {
       const formState = eventEntryToFormState(buildEvent({ recurrent: true, recurrent_frequency: 'YEARLY', recurrent_interval: 1 }))
 
       expect(formState.recurrence).toBe('every_week')
+    })
+  })
+
+  describe('when hydrating a recurrence end date', () => {
+    it('should use recurrent_until instead of the last materialized recurrent_dates entry', () => {
+      const recurrentUntil = '2026-08-01T22:00:00.000Z'
+      const formState = eventEntryToFormState(
+        buildEvent({
+          recurrent: true,
+          recurrent_until: recurrentUntil,
+          recurrent_dates: ['2026-07-31T19:00:00.000Z', '2026-08-01T19:00:00.000Z']
+        })
+      )
+
+      expect(formState.repeatEndDate).toBe(asLocalFormFields(recurrentUntil).date)
     })
   })
 
@@ -337,6 +360,269 @@ describe('eventEntryToFormState', () => {
       const expected = asLocalFormFields('2026-01-09T00:01:00.000Z')
       expect(formState.startDate).toBe(expected.date)
       expect(formState.startTime).toBe(expected.time)
+    })
+  })
+})
+
+describe('localDateToEndOfDayIso', () => {
+  it('should serialize the selected date at the end of its local day', () => {
+    expect(localDateToEndOfDayIso('2030-02-01')).toBe(new Date('2030-02-01T23:59:59.999').toISOString())
+  })
+
+  it.each(['', 'not-a-date', '2030-02-30', '2030-13-01'])('should return null for an invalid date input: %s', date => {
+    expect(localDateToEndOfDayIso(date)).toBeNull()
+  })
+})
+
+// Contract for what the form accepts as a featured item. Must stay in parity with the events API's
+// `featured_item` schema pattern (collections-v2 only, mainnet + testnet chains, optional item id).
+describe('isValidFeaturedItemUrn', () => {
+  const COLLECTION = '0x1234567890abcdef1234567890abcdef12345678'
+
+  it.each([
+    ['matic collection', `urn:decentraland:matic:collections-v2:${COLLECTION}`],
+    ['ethereum collection', `urn:decentraland:ethereum:collections-v2:${COLLECTION}`],
+    ['amoy testnet collection', `urn:decentraland:amoy:collections-v2:${COLLECTION}`],
+    ['sepolia testnet collection', `urn:decentraland:sepolia:collections-v2:${COLLECTION}`],
+    ['item inside a collection', `urn:decentraland:matic:collections-v2:${COLLECTION}:0`],
+    ['item with a multi-digit id', `urn:decentraland:matic:collections-v2:${COLLECTION}:123`],
+    ['mixed-case contract address', 'urn:decentraland:matic:collections-v2:0xAbCdEf1234567890ABCDEF1234567890abcdef12']
+  ])('should accept a %s URN', (_label, urn) => {
+    expect(isValidFeaturedItemUrn(urn)).toBe(true)
+  })
+
+  it.each([
+    ['empty string', ''],
+    ['collections-v1 (L1 wearables)', `urn:decentraland:ethereum:collections-v1:${COLLECTION}:some_wearable`],
+    ['base avatar', 'urn:decentraland:off-chain:base-avatars:BaseMale'],
+    ['third-party collection', `urn:decentraland:matic:collections-thirdparty:tp-name:${COLLECTION}:0`],
+    [
+      'smart wearable with baseUrl',
+      `urn:decentraland:matic:collections-v2:${COLLECTION}:0?baseUrl=https://peer.decentraland.org/content/contents/`
+    ],
+    ['unknown chain', `urn:decentraland:polygon:collections-v2:${COLLECTION}`],
+    ['address too short', 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef1234567'],
+    ['address too long', 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef123456789'],
+    ['non-hex address', 'urn:decentraland:matic:collections-v2:0xzzzz567890abcdef1234567890abcdef12345678'],
+    ['non-numeric item id', `urn:decentraland:matic:collections-v2:${COLLECTION}:abc`],
+    ['surrounding whitespace', ` urn:decentraland:matic:collections-v2:${COLLECTION}`],
+    ['missing urn prefix', `decentraland:matic:collections-v2:${COLLECTION}`],
+    ['longer than the 160-char server cap', `urn:decentraland:matic:collections-v2:${COLLECTION}:${'9'.repeat(120)}`]
+  ])('should reject a %s', (_label, urn) => {
+    expect(isValidFeaturedItemUrn(urn)).toBe(false)
+  })
+})
+
+describe('hasModeratedContentChanged', () => {
+  const savedEvent = buildEvent({
+    name: 'Fest',
+    description: 'desc',
+    image: 'https://img/a.png',
+    x: 10,
+    y: 20,
+    world: false,
+    server: null
+  })
+
+  describe('when the form matches the saved event', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(eventEntryToFormState(savedEvent), savedEvent)
+    })
+
+    it('should return false', () => {
+      expect(changed).toBe(false)
+    })
+  })
+
+  describe('when the name changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(savedEvent), name: 'Fest 2' }, savedEvent)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the description changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(savedEvent), description: 'new desc' }, savedEvent)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the image changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(savedEvent), imageUrl: 'https://img/b.png' }, savedEvent)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the vertical image changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(
+        { ...eventEntryToFormState(savedEvent), verticalImageUrl: 'https://img/vertical.png' },
+        savedEvent
+      )
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when a land coordinate changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(savedEvent), coordX: '11' }, savedEvent)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the event is switched from land to a world', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(
+        { ...eventEntryToFormState(savedEvent), location: 'world', world: 'my-world.dcl.eth' },
+        savedEvent
+      )
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the world server name changes on a world event', () => {
+    const worldEvent = buildEvent({ world: true, server: 'old.dcl.eth', x: 0, y: 0 })
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(worldEvent), world: 'new.dcl.eth' }, worldEvent)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the featured item changes', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(
+        {
+          ...eventEntryToFormState(savedEvent),
+          featuredItem: 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+        },
+        savedEvent
+      )
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the featured item is cleared on an event that has one', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      const eventWithItem = buildEvent({
+        ...savedEvent,
+        featured_item: 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+      })
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(eventWithItem), featuredItem: '' }, eventWithItem)
+    })
+
+    it('should return true', () => {
+      expect(changed).toBe(true)
+    })
+  })
+
+  describe('when the saved event predates the featured_item column and omits the key', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      const legacyEvent = buildEvent({ ...savedEvent, featured_item: undefined as unknown as null })
+      changed = hasModeratedContentChanged(eventEntryToFormState(legacyEvent), legacyEvent)
+    })
+
+    it('should return false', () => {
+      expect(changed).toBe(false)
+    })
+  })
+
+  describe('when the featured item only gains surrounding whitespace', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      const urn = 'urn:decentraland:matic:collections-v2:0x1234567890abcdef1234567890abcdef12345678'
+      const eventWithItem = buildEvent({ ...savedEvent, featured_item: urn })
+      changed = hasModeratedContentChanged({ ...eventEntryToFormState(eventWithItem), featuredItem: `  ${urn}  ` }, eventWithItem)
+    })
+
+    it('should return false', () => {
+      expect(changed).toBe(false)
+    })
+  })
+
+  describe('when only a non-moderated field changes', () => {
+    describe('and the contact email changes', () => {
+      let changed: boolean
+
+      beforeEach(() => {
+        changed = hasModeratedContentChanged({ ...eventEntryToFormState(savedEvent), email: 'new@example.com' }, savedEvent)
+      })
+
+      it('should return false', () => {
+        expect(changed).toBe(false)
+      })
+    })
+
+    describe('and the start date changes', () => {
+      let changed: boolean
+
+      beforeEach(() => {
+        changed = hasModeratedContentChanged({ ...eventEntryToFormState(savedEvent), startDate: '2031-05-05' }, savedEvent)
+      })
+
+      it('should return false', () => {
+        expect(changed).toBe(false)
+      })
+    })
+  })
+
+  describe('when there is no initial event (create flow)', () => {
+    let changed: boolean
+
+    beforeEach(() => {
+      changed = hasModeratedContentChanged(eventEntryToFormState(savedEvent), null)
+    })
+
+    it('should return false', () => {
+      expect(changed).toBe(false)
     })
   })
 })

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '@dcl/hooks'
 import {
   useCreateEventMutation,
@@ -8,15 +8,24 @@ import {
 } from '../features/events'
 import type { EventEntry } from '../features/events'
 import { compressImageFile } from '../utils/imageCompression'
+import { useAdminPermissions } from './useAdminPermissions'
 import { useAuthIdentity } from './useAuthIdentity'
-import { INITIAL_STATE, eventEntryToFormState, parseDurationMs, recurrenceToApi } from './useCreateEventForm.helpers'
+import {
+  INITIAL_STATE,
+  eventEntryToFormState,
+  hasModeratedContentChanged,
+  isValidFeaturedItemUrn,
+  localDateToEndOfDayIso,
+  parseDurationMs,
+  recurrenceToApi
+} from './useCreateEventForm.helpers'
 import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorCode } from './useCreateEventForm.types'
 
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
 const MAX_IMAGE_SIZE_BYTES = 500 * 1024
-const COVER_RECOMMENDED_WIDTH = 1340
-const COVER_RECOMMENDED_HEIGHT = 670
+const COVER_RECOMMENDED_WIDTH = 1920
+const COVER_RECOMMENDED_HEIGHT = 1080
 const VERTICAL_IMAGE_EXPECTED_WIDTH = 716
 const VERTICAL_IMAGE_EXPECTED_HEIGHT = 1814
 
@@ -112,7 +121,8 @@ type UseCreateEventFormOptions = {
 
 function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId = null }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
-  const { identity } = useAuthIdentity()
+  const { identity, address } = useAuthIdentity()
+  const { isAdmin, canApproveAnyEvent, canApproveOwnEvent } = useAdminPermissions()
   const [createEvent] = useCreateEventMutation()
   const [updateEvent] = useUpdateEventMutation()
   const [uploadPoster] = useUploadPosterMutation()
@@ -328,6 +338,10 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
       newErrors.world = t('create_event.error_required')
     }
 
+    if (form.featuredItem.trim() && !isValidFeaturedItemUrn(form.featuredItem.trim())) {
+      newErrors.featuredItem = t('create_event.error_invalid_featured_item')
+    }
+
     if (!isValidEmail(form.email)) {
       newErrors.email = t('create_event.error_invalid_email')
     }
@@ -390,6 +404,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         world: isWorld,
         server: isWorld ? form.world : null,
         community_id: form.communityId || null,
+        featured_item: form.featuredItem.trim() || null,
         recurrent: form.repeatEnabled || undefined,
         recurrent_frequency: recurrenceApi?.frequency,
         recurrent_interval: recurrenceApi?.interval,
@@ -399,7 +414,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
         // omitting the field on a PATCH would let the backend keep the old mask, which is how a Tuesday
         // event ended up also showing every Wednesday. Omit it only when the event isn't recurrent.
         recurrent_weekday_mask: form.repeatEnabled ? 0 : undefined,
-        recurrent_until: form.repeatEnabled && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00:00`).toISOString() : undefined
+        recurrent_until: form.repeatEnabled && form.repeatEndDate ? localDateToEndOfDayIso(form.repeatEndDate) ?? undefined : undefined
       }
       /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -421,10 +436,23 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
     }
   }, [form, identity, isSubmitting, initialEvent, validate, createEvent, updateEvent, t, onSuccess])
 
+  // Warn the owner before a save that would bounce an already-approved hangout back to moderation:
+  // true only while editing an approved event whose moderated content differs from the saved copy
+  // (see `hasModeratedContentChanged` + the backend re-moderation gate). Mirrors the backend's
+  // actor-can-approve exemption — moderators / self-approvers keep the event approved on edit, so
+  // they shouldn't see the warning.
+  const isOwner = !!address && !!initialEvent && address.toLowerCase() === initialEvent.user.toLowerCase()
+  const actorCanApprove = isAdmin || canApproveAnyEvent || (isOwner && canApproveOwnEvent)
+  const requiresModerationReview = useMemo(
+    () => Boolean(initialEvent?.approved) && !actorCanApprove && hasModeratedContentChanged(form, initialEvent),
+    [initialEvent, form, actorCanApprove]
+  )
+
   return {
     form,
     errors,
     mode,
+    requiresModerationReview,
     setField,
     markRequiredFields,
     handleImageSelect,

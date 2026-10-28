@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react'
 import { useAnalytics } from '@dcl/hooks'
-import { buildTwitterShareUrl } from '../../../features/reels'
+import { buildReelUrl, buildTwitterShareUrl } from '../../../features/reels'
 import type { Image } from '../../../features/reels'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import downloadIcon from '../../../images/reels/download-icon.svg'
@@ -33,14 +33,14 @@ const ImageActions = memo(({ image, metadataVisible, onToggleMetadata }: ImageAc
   const [copied, setCopied] = useState(false)
 
   const handleShare = useCallback(() => {
-    const shareUrl = buildTwitterShareUrl(l('component.reels.image_actions.share_text'), window.location.href)
+    const shareUrl = buildTwitterShareUrl(l('component.reels.image_actions.share_text'), buildReelUrl(image.id))
     track(SegmentEvent.REELS_SHARE, { imageId: image.id })
     window.open(shareUrl, '_blank', 'noopener,noreferrer')
   }, [image.id, l, track])
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(buildReelUrl(image.id))
       setCopied(true)
       window.setTimeout(() => setCopied(false), COPY_BADGE_TIMEOUT_MS)
       track(SegmentEvent.REELS_COPY_LINK, { imageId: image.id })

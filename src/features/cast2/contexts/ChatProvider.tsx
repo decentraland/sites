@@ -23,21 +23,17 @@ const useChatContext = (): ChatContextValue => {
   return context
 }
 
-const ChatProvider = ({ children }: { children: ReactNode }) => {
+const ChatProvider = ({ children, peerUrl }: { children: ReactNode; peerUrl?: string }) => {
   const { chatMessages } = useChat()
   const [lastReadMessageIndex, setLastReadMessageIndex] = useState(0)
   const [isChatOpen, setChatOpen] = useState(false)
 
   const addresses = useMemo(() => {
-    const set = new Set<string>()
-    chatMessages.forEach(msg => {
-      const address = msg.participantName
-      if (address && address.startsWith('0x')) set.add(address)
-    })
-    return Array.from(set)
+    const wallets = chatMessages.map(msg => msg.participantName).filter((name): name is string => !!name && name.startsWith('0x'))
+    return Array.from(new Set(wallets))
   }, [chatMessages])
 
-  const { profiles } = useProfiles(addresses)
+  const { profiles } = useProfiles(addresses, peerUrl)
 
   const markMessagesAsRead = useCallback(() => {
     setLastReadMessageIndex(chatMessages.length)

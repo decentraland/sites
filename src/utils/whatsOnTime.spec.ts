@@ -11,6 +11,22 @@ import {
 
 const t = (key: string, values?: Record<string, string | number>) => (values ? `${key}:${JSON.stringify(values)}` : key)
 
+// The jest globalSetup pins TZ to UTC, so getUtcDayDelta naturally returns 0 for every date.
+// To exercise the ±1 branches we override the UTC date getter by a fixed shift, mirroring a
+// real negative/positive timezone offset that rolls the local calendar day across midnight UTC.
+const shiftUtcDate = (shift: number): jest.SpyInstance => {
+  // Compute the real UTC day-of-month arithmetically from the epoch ms so the spy never calls
+  // back into the (now-spied) Date.prototype.getUTCDate — that would recurse infinitely, and a
+  // bound reference to the original method would trip @typescript-eslint/unbound-method.
+  const msPerDay = 24 * 60 * 60 * 1000
+  return jest.spyOn(Date.prototype, 'getUTCDate').mockImplementation(function (this: Date) {
+    const utcMidnightMs = Math.floor(this.getTime() / msPerDay) * msPerDay
+    // ISO date string is always UTC; slice the day-of-month out of `YYYY-MM-DDT...`.
+    const realUtcDay = Number(new Date(utcMidnightMs).toISOString().slice(8, 10))
+    return realUtcDay + shift
+  })
+}
+
 describe('whatsOnTime helpers', () => {
   describe('formatLocalTime', () => {
     it('should format a UTC timestamp in the host timezone using 12h with minutes', () => {
@@ -36,12 +52,60 @@ describe('whatsOnTime helpers', () => {
         expect(getUtcDayDelta('not-a-date')).toBe(0)
       })
     })
+
+    describe('when the UTC day is ahead of the local day', () => {
+      let spy: jest.SpyInstance
+      beforeEach(() => {
+        spy = shiftUtcDate(1)
+      })
+      afterEach(() => spy.mockRestore())
+
+      it('should return 1', () => {
+        expect(getUtcDayDelta('2026-04-07T23:00:00Z')).toBe(1)
+      })
+    })
+
+    describe('when the UTC day is behind the local day', () => {
+      let spy: jest.SpyInstance
+      beforeEach(() => {
+        spy = shiftUtcDate(-1)
+      })
+      afterEach(() => spy.mockRestore())
+
+      it('should return -1', () => {
+        expect(getUtcDayDelta('2026-04-07T01:00:00Z')).toBe(-1)
+      })
+    })
   })
 
   describe('formatUtcTooltip', () => {
     describe('when UTC and local share the same calendar day', () => {
       it('should use the same-day translation key', () => {
         expect(formatUtcTooltip('2026-04-07T10:00:00Z', 'en-US', t)).toBe('event_time.utc_same_day:{"time":"10:00 AM"}')
+      })
+    })
+
+    describe('when the UTC day is one ahead of the local day', () => {
+      let spy: jest.SpyInstance
+      beforeEach(() => {
+        spy = shiftUtcDate(1)
+      })
+      afterEach(() => spy.mockRestore())
+
+      it('should use the next-day translation key', () => {
+        expect(formatUtcTooltip('2026-04-07T23:00:00Z', 'en-US', t)).toBe('event_time.utc_next_day:{"time":"11:00 PM"}')
+      })
+    })
+
+    describe('when the UTC day is one behind the local day', () => {
+      let spy: jest.SpyInstance
+      beforeEach(() => {
+        spy = shiftUtcDate(-1)
+      })
+      afterEach(() => spy.mockRestore())
+
+      it('should use the previous-day translation key', () => {
+        expect(formatUtcTooltip('2026-04-07T01:00:00Z', 'en-US', t)).toBe('event_time.utc_previous_day:{"time":"1:00 AM"}')
       })
     })
   })
@@ -58,6 +122,26 @@ describe('whatsOnTime helpers', () => {
     describe('when there is no end time', () => {
       it('should fall back to the single tooltip', () => {
         expect(formatUtcRangeTooltip('2026-04-07T10:00:00Z', null, 'en-US', t)).toBe('event_time.utc_same_day:{"time":"10:00 AM"}')
+      })
+    })
+
+    describe('when the UTC calendar day differs from the local day', () => {
+      // The jest globalSetup pins TZ to UTC, so getUtcDayDelta is naturally always 0. To exercise
+      // the "with dates" branch we shift the UTC date getter ahead by one, mirroring users in a
+      // negative-offset timezone whose event rolls past midnight UTC.
+      let spy: jest.SpyInstance
+
+      beforeEach(() => {
+        spy = shiftUtcDate(1)
+      })
+
+      afterEach(() => spy.mockRestore())
+
+      it('should use the range-with-dates translation key', () => {
+        const result = formatUtcRangeTooltip('2026-04-07T10:00:00Z', '2026-04-07T23:30:00Z', 'en-US', t)
+        expect(result).toContain('event_time.utc_range_with_dates')
+        expect(result).toContain('"start":"10:00 AM"')
+        expect(result).toContain('"end":"11:30 PM"')
       })
     })
   })

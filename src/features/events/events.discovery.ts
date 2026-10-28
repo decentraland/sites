@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { getEnv } from '../../config/env'
 import { isDocumentVisible, subscribeVisibility } from '../../utils/documentVisibility'
+import { timeoutSignal } from '../../utils/timeoutSignal'
 import { buildExploreCards } from './events.discovery.helpers'
 import { ExploreCardType } from './events.discovery.types'
 import type { ActiveEntity, DeploymentResponse, EventsResponse, ExploreItem, HotScene } from './events.discovery.types'
@@ -9,7 +10,7 @@ const POLL_INTERVAL_MS = 60_000
 const DEPLOYER_BATCH_TIMEOUT_MS = 5_000
 
 async function resolveDeployers(peerUrl: string, coordinates: string[]): Promise<Map<string, string>> {
-  const signal = AbortSignal.timeout(DEPLOYER_BATCH_TIMEOUT_MS)
+  const signal = timeoutSignal(DEPLOYER_BATCH_TIMEOUT_MS)
   const result = new Map<string, string>()
   const coordinatesSet = new Set(coordinates)
 

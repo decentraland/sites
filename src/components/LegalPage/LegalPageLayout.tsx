@@ -16,6 +16,8 @@ import RedeemIcon from '@mui/icons-material/Redeem'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ShieldIcon from '@mui/icons-material/Shield'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import TokenIcon from '@mui/icons-material/Token'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import type { LegalPageLayoutProps } from './LegalPage.types'
 import { ContentArea, DocumentTitle, LayoutGrid, PageContainer, SidebarContainer, SidebarLink, TOCList } from './LegalPage.styled'
@@ -25,6 +27,7 @@ const SIDEBAR_PAGES: { label: string; slug: string; icon: ComponentType }[] = [
   { label: 'Content Policy', slug: '/content', icon: ParkIcon },
   { label: 'Code of Ethics', slug: '/ethics', icon: BalanceIcon },
   { label: 'Rewards Program', slug: '/rewards-terms', icon: CardGiftcardIcon },
+  { label: 'Credits', slug: '/credits-terms', icon: TokenIcon },
   { label: 'Security', slug: '/security', icon: ShieldIcon },
   { label: 'Privacy Policy', slug: '/privacy', icon: VpnKeyIcon },
   { label: 'Referral', slug: '/referral-terms', icon: RedeemIcon },

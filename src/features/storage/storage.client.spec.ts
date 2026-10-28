@@ -1,10 +1,10 @@
 jest.mock('decentraland-crypto-fetch', () => ({ __esModule: true, default: jest.fn() }))
-jest.mock('../../config/env', () => ({ getEnv: jest.fn(() => 'https://storage') }))
+jest.mock('../../config/env', () => ({ getEnv: () => 'https://storage' }))
 
 import { configureStore } from '@reduxjs/toolkit'
 import signedFetchLib from 'decentraland-crypto-fetch'
 import { storageClient } from '../../services/storageClient'
-import { storageEndpoints } from './index'
+import { fetchExportFile, storageEndpoints } from './index'
 
 const signedFetchMock = signedFetchLib as unknown as jest.Mock
 
@@ -14,7 +14,8 @@ const makeResponse = (body: unknown, init: { status?: number } = {}): Response =
     ok: status >= 200 && status < 300,
     status,
     text: async () => (typeof body === 'string' ? body : JSON.stringify(body)),
-    json: async () => body
+    json: async () => body,
+    blob: async () => (body instanceof Blob ? body : new Blob([JSON.stringify(body)]))
   } as unknown as Response
 }
 
@@ -85,9 +86,9 @@ describe('storage.client endpoints', () => {
 
   it('listSceneKeys + getSceneValue + setSceneValue round-trip a value', async () => {
     const store = setupStore()
-    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'gameState' }] }))
+    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'gameState', value: 42 }] }))
     const list = await store.dispatch(storageEndpoints.endpoints.listSceneKeys.initiate({ identity, ...ctx }))
-    expect(list.data).toEqual([{ key: 'gameState' }])
+    expect(list.data).toEqual([{ key: 'gameState', value: 42 }])
 
     signedFetchMock.mockResolvedValueOnce(makeResponse({ value: 42 }))
     const get = await store.dispatch(storageEndpoints.endpoints.getSceneValue.initiate({ identity, key: 'gameState', ...ctx }))
@@ -115,9 +116,9 @@ describe('storage.client endpoints', () => {
     const players = await store.dispatch(storageEndpoints.endpoints.listPlayers.initiate({ identity, ...ctx }))
     expect(players.data).toEqual(['0xa'])
 
-    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'inventory' }] }))
+    signedFetchMock.mockResolvedValueOnce(makeResponse({ data: [{ key: 'inventory', value: 'old' }] }))
     const keys = await store.dispatch(storageEndpoints.endpoints.listPlayerKeys.initiate({ identity, address: '0xa', ...ctx }))
-    expect(keys.data).toEqual([{ key: 'inventory' }])
+    expect(keys.data).toEqual([{ key: 'inventory', value: 'old' }])
 
     signedFetchMock.mockResolvedValueOnce(makeResponse({ value: 'old' }))
     const get = await store.dispatch(
@@ -208,5 +209,210 @@ describe('storage.client endpoints', () => {
     const result = await store.dispatch(storageEndpoints.endpoints.getWorldScenes.initiate({ worldName: 'foo.dcl.eth' }))
     expect((result.error as { status: string }).status).toBe('FETCH_ERROR')
     fetchSpy.mockRestore()
+  })
+
+  it('getWorldScenes sorts multiple scenes alphabetically by title', async () => {
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      makeResponse({
+        scenes: [
+          {
+            entity: { metadata: { display: { title: 'Zephyr' }, scene: { base: '1,1', parcels: ['1,1'] } }, pointers: [] },
+            parcels: ['1,1']
+          },
+          {
+            entity: { metadata: { display: { title: 'Atlas' }, scene: { base: '2,2', parcels: ['2,2'] } }, pointers: [] },
+            parcels: ['2,2']
+          }
+        ],
+        total: 2
+      })
+    )
+    const store = setupStore()
+    const result = await store.dispatch(storageEndpoints.endpoints.getWorldScenes.initiate({ worldName: 'foo.dcl.eth' }))
+    expect(result.data?.map(scene => scene.title)).toEqual(['Atlas', 'Zephyr'])
+    fetchSpy.mockRestore()
+  })
+
+  it('getWorldScenes leaves error.data undefined when the not-ok body cannot be read as text', async () => {
+    const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.reject(new Error('stream closed'))
+    } as unknown as Response)
+    const store = setupStore()
+    const result = await store.dispatch(storageEndpoints.endpoints.getWorldScenes.initiate({ worldName: 'foo.dcl.eth' }))
+    expect(result.error).toEqual(expect.objectContaining({ status: 500, data: undefined }))
+    fetchSpy.mockRestore()
+  })
+
+  describe('getCollaboratorScenes', () => {
+    it('returns the self-scoped page of collaborator scenes with its pagination', async () => {
+      const page = {
+        data: [
+          { sceneId: 's1', worldName: 'foo.dcl.eth', baseParcel: '0,0', title: 'My Scene', realmKind: 'world' },
+          { sceneId: 's2', worldName: '', baseParcel: '10,10', title: null, realmKind: 'genesis' }
+        ],
+        pagination: { limit: 20, offset: 0, total: 2 }
+      }
+      signedFetchMock.mockResolvedValue(makeResponse(page))
+      const store = setupStore()
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
+      expect(result.data).toEqual(page)
+    })
+
+    it('forwards limit and offset as query params to /collaborator', async () => {
+      signedFetchMock.mockResolvedValue(makeResponse({ data: [], pagination: { limit: 10, offset: 20, total: 0 } }))
+      const store = setupStore()
+      await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 10, offset: 20 }))
+      expect(signedFetchMock).toHaveBeenCalledWith(expect.stringContaining('/collaborator?limit=10&offset=20'), expect.anything())
+    })
+
+    it('returns an empty page when the caller collaborates on no scenes', async () => {
+      signedFetchMock.mockResolvedValue(makeResponse({ data: [], pagination: { limit: 20, offset: 0, total: 0 } }))
+      const store = setupStore()
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
+      expect(result.data).toEqual({ data: [], pagination: { limit: 20, offset: 0, total: 0 } })
+    })
+
+    it('surfaces the 400 Invalid Auth Chain response as an error', async () => {
+      signedFetchMock.mockResolvedValue(
+        makeResponse(
+          { error: 'Invalid Auth Chain', message: 'This endpoint requires a signed fetch request. See ADR-44.' },
+          { status: 400 }
+        )
+      )
+      const store = setupStore()
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity }))
+      expect((result.error as { status: number }).status).toBe(400)
+    })
+
+    it('accumulates offset pages into one cache entry and drops repeated scenes', async () => {
+      const first = { sceneId: 's1', worldName: 'foo.dcl.eth', baseParcel: '0,0', title: 'One', realmKind: 'world' }
+      const second = { sceneId: 's2', worldName: '', baseParcel: '10,10', title: null, realmKind: 'genesis' }
+      const third = { sceneId: 's3', worldName: 'bar.dcl.eth', baseParcel: '1,1', title: 'Three', realmKind: 'world' }
+      signedFetchMock
+        .mockResolvedValueOnce(makeResponse({ data: [first, second], pagination: { limit: 2, offset: 0, total: 3 } }))
+        .mockResolvedValueOnce(makeResponse({ data: [second, third], pagination: { limit: 2, offset: 2, total: 3 } }))
+      const store = setupStore()
+      await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 2, offset: 0 }))
+      const result = await store.dispatch(storageEndpoints.endpoints.getCollaboratorScenes.initiate({ identity, limit: 2, offset: 2 }))
+      expect(result.data?.data.map(scene => scene.sceneId)).toEqual(['s1', 's2', 's3'])
+    })
+  })
+
+  describe('signed-fetch endpoints surface HTTP errors from their catch branch', () => {
+    it.each([
+      ['deleteEnv', () => storageEndpoints.endpoints.deleteEnv.initiate({ identity, key: 'API_KEY', ...ctx })],
+      ['clearEnv', () => storageEndpoints.endpoints.clearEnv.initiate({ identity, ...ctx })],
+      ['setSceneValue', () => storageEndpoints.endpoints.setSceneValue.initiate({ identity, key: 'k', value: 1, ...ctx })],
+      ['deleteSceneValue', () => storageEndpoints.endpoints.deleteSceneValue.initiate({ identity, key: 'k', ...ctx })],
+      ['clearScene', () => storageEndpoints.endpoints.clearScene.initiate({ identity, ...ctx })],
+      [
+        'setPlayerValue',
+        () => storageEndpoints.endpoints.setPlayerValue.initiate({ identity, address: '0xa', key: 'k', value: 1, ...ctx })
+      ],
+      ['deletePlayerValue', () => storageEndpoints.endpoints.deletePlayerValue.initiate({ identity, address: '0xa', key: 'k', ...ctx })],
+      ['clearPlayer', () => storageEndpoints.endpoints.clearPlayer.initiate({ identity, address: '0xa', ...ctx })],
+      ['clearAllPlayers', () => storageEndpoints.endpoints.clearAllPlayers.initiate({ identity, ...ctx })],
+      ['getContributableDomains', () => storageEndpoints.endpoints.getContributableDomains.initiate({ identity })]
+    ] as const)('%s returns the wrapped error when the request is rejected', async (_name, dispatch) => {
+      signedFetchMock.mockResolvedValue(makeResponse('forbidden', { status: 403 }))
+      const store = setupStore()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await store.dispatch(dispatch() as never)
+      expect((result.error as { status: number }).status).toBe(403)
+    })
+  })
+})
+
+describe('when two accounts read the same storage realm and position', () => {
+  let store: ReturnType<typeof setupStore>
+  let otherIdentity: typeof identity
+
+  beforeEach(() => {
+    signedFetchMock.mockReset()
+    store = setupStore()
+    otherIdentity = { ...identity, authChain: [{ type: 'SIGNER', payload: '0xother', signature: '' }] } as typeof identity
+    signedFetchMock
+      .mockResolvedValueOnce(makeResponse({ data: ['PRIVATE_KEY'] }))
+      .mockResolvedValueOnce(makeResponse('denied', { status: 403 }))
+  })
+
+  afterEach(() => {
+    store.dispatch(storageClient.util.resetApiState())
+    jest.resetAllMocks()
+  })
+
+  it('should check the second account permissions without serving the first account keys', async () => {
+    await store.dispatch(storageEndpoints.endpoints.listEnvKeys.initiate({ identity, ...ctx })).unwrap()
+    await expect(
+      store.dispatch(storageEndpoints.endpoints.listEnvKeys.initiate({ identity: otherIdentity, ...ctx })).unwrap()
+    ).rejects.toMatchObject({ status: 403 })
+    expect(storageEndpoints.endpoints.listEnvKeys.select({ identity: otherIdentity, ...ctx })(store.getState()).data).toBeUndefined()
+    expect(signedFetchMock).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('when fetching an export file', () => {
+  let selection: { world: { keys: string[] }; players: { addresses: string[] } }
+  let controller: AbortController
+
+  beforeEach(() => {
+    selection = { world: { keys: [] }, players: { addresses: ['0xa'] } }
+    controller = new AbortController()
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('and the server streams the file', () => {
+    let file: Blob
+
+    beforeEach(() => {
+      file = new Blob(['scope,player_address,key,value\r\n'])
+      signedFetchMock.mockResolvedValueOnce(makeResponse(file))
+    })
+
+    it('should POST the selection as JSON to the export endpoint with the format and the abort signal', async () => {
+      await fetchExportFile({ identity, format: 'csv', selection, signal: controller.signal, ...ctx })
+      expect(signedFetchMock).toHaveBeenCalledWith(
+        'https://storage/exports?format=csv',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selection),
+          signal: controller.signal
+        })
+      )
+    })
+
+    it('should resolve to the streamed file', async () => {
+      await expect(fetchExportFile({ identity, format: 'csv', selection, ...ctx })).resolves.toBe(file)
+    })
+  })
+
+  describe('and another export of the scene is already streaming', () => {
+    beforeEach(() => {
+      signedFetchMock.mockResolvedValueOnce(makeResponse('busy', { status: 429 }))
+    })
+
+    it('should reject with the 429 status', async () => {
+      await expect(fetchExportFile({ identity, format: 'json', selection, ...ctx })).rejects.toMatchObject({ status: 429 })
+    })
+  })
+
+  describe('and the stream breaks while the body is read', () => {
+    beforeEach(() => {
+      signedFetchMock.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        blob: () => Promise.reject(new TypeError('network error'))
+      } as unknown as Response)
+    })
+
+    it('should reject with a fetch error', async () => {
+      await expect(fetchExportFile({ identity, format: 'json', selection, ...ctx })).rejects.toMatchObject({ status: 'FETCH_ERROR' })
+    })
   })
 })

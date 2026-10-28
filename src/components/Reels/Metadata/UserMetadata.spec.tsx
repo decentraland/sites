@@ -35,6 +35,15 @@ jest.mock('../../../features/reels', () => ({
   buildProfileUrl: (address: string) => `https://profile/${address}`
 }))
 
+// UserMetadata now calls `useOpenProfileModal()` internally, which depends on
+// react-router (`useNavigate` + `useLocation`). The spec has no <Router> in
+// scope and doesn't need to assert the modal/navigate plumbing, so mock the
+// hook to a noop — keeps tests focused on UserMetadata's own behavior.
+const openProfileMock = jest.fn()
+jest.mock('../../profile/ProfileModal/useOpenProfileModal', () => ({
+  useOpenProfileModal: () => openProfileMock
+}))
+
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string) => key
 }))
@@ -48,12 +57,17 @@ const baseUser = {
 }
 
 describe('UserMetadata', () => {
-  beforeEach(() => trackMock.mockReset())
+  beforeEach(() => {
+    trackMock.mockReset()
+    openProfileMock.mockReset()
+  })
 
   it('should render the user name as a link to the profile', () => {
     render(<UserMetadata user={baseUser} isFirst={true} />)
     const link = screen.getByText('alice').closest('a')
-    expect(link).toHaveAttribute('href', 'https://profile/0xa')
+    // Visible href is now the internal SPA route; the legacy URL still rides
+    // along in the Segment payload (see UserMetadata.tsx:handleProfileClick).
+    expect(link).toHaveAttribute('href', '/profile/0xa')
   })
 
   it('should render the guest badge when isGuest is true', () => {
@@ -67,6 +81,39 @@ describe('UserMetadata', () => {
     fireEvent.click(screen.getByRole('button', { name: 'toggle-wearables' }))
     expect(screen.getByTestId('reels-chevron-up')).toBeInTheDocument()
     expect(trackMock).toHaveBeenCalledWith('Reels Show Wearables', { userAddress: '0xa' })
+  })
+
+  it('should track the click, prevent default and open the profile modal on a plain left-click', () => {
+    render(<UserMetadata user={baseUser} isFirst={true} />)
+    const link = screen.getByText('alice').closest('a') as HTMLAnchorElement
+
+    const prevented = !fireEvent.click(link, { button: 0 })
+
+    expect(trackMock).toHaveBeenCalledWith('Reels Click Profile', {
+      userAddress: '0xa',
+      legacyProfileUrl: 'https://profile/0xa'
+    })
+    expect(openProfileMock).toHaveBeenCalledWith('0xa')
+    expect(prevented).toBe(true)
+  })
+
+  it('should let modifier clicks fall through so the profile can open in a new tab', () => {
+    render(<UserMetadata user={baseUser} isFirst={true} />)
+    const link = screen.getByText('alice').closest('a') as HTMLAnchorElement
+
+    fireEvent.click(link, { button: 0, metaKey: true })
+
+    // Tracking still fires, but navigation is left to the browser.
+    expect(trackMock).toHaveBeenCalledWith('Reels Click Profile', {
+      userAddress: '0xa',
+      legacyProfileUrl: 'https://profile/0xa'
+    })
+    expect(openProfileMock).not.toHaveBeenCalled()
+  })
+
+  it('should render a static name without a link when the user has no address', () => {
+    render(<UserMetadata user={{ ...baseUser, userAddress: '' }} isFirst={true} />)
+    expect(screen.getByText('alice').closest('a')).toBeNull()
   })
 
   it('should render NoWearables placeholder when wearablesParsed is empty', () => {

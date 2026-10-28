@@ -50,6 +50,7 @@ function useCardActions(event: CardActionsParams) {
         finishAt: event.finishAt,
         x: event.x,
         y: event.y,
+        realm: event.realm,
         url: eventUrl
       })
       if (url) {

@@ -1,15 +1,44 @@
+import publicLinks from '../config/publicLinks.json'
+import { OperativeSystem } from '../types/download.types'
+import { collectCampaignParams } from './campaignParams'
+import { buildGooglePlayUrl } from './googlePlayUrl'
+
+/**
+ * Default Play Store campaign tag (the site's own "QR code" attribution), used when the visitor
+ * didn't arrive via a live campaign. The base URL in publicLinks.json carries no utm_* on purpose:
+ * llms.txt builds its own attribution on the same base.
+ */
+/* eslint-disable @typescript-eslint/naming-convention -- utm_* are the query param names on the wire */
+const GOOGLE_PLAY_DEFAULT_UTM = {
+  utm_org: 'dclrgl',
+  utm_source: 'fdn',
+  utm_medium: 'qr',
+  utm_campaign: 'dclpage',
+  utm_content: 'android'
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
 /**
  * Centralized download URLs.
  * Mirrors decentraland-ui2/modules/downloadUrls but avoids deep imports
  * that break with module federation's shared scope.
  */
 const DOWNLOAD_URLS = {
-  windows: 'https://decentraland.org/download',
-  apple: 'https://decentraland.org/download',
-  epic: 'https://store.epicgames.com/en-US/p/decentraland-b692fb',
-  googlePlay:
-    'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_org=dclrgl&utm_source=fdn&utm_medium=qr&utm_campaign=dclpage&utm_content=android',
-  appStore: 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=Decentraland%20Home%20iOS&mt=8'
+  windows: publicLinks.download.desktop,
+  apple: publicLinks.download.desktop,
+  epic: publicLinks.download.epic,
+  // Getter (not a plain string) so it's computed fresh on every read: overlays
+  // the visitor's incoming campaign params onto the default QR-code
+  // attribution, so a click that arrived via a live campaign carries that
+  // campaign into the Play Store handoff instead of always reporting
+  // "fdn/qr/dclpage". Without this, no Play Store install can ever be
+  // attributed to a dynamic campaign — the store link always shipped the same
+  // static tag regardless of how the visitor actually landed. See
+  // buildGooglePlayUrl for the `referrer` install-attribution mirror.
+  get googlePlay(): string {
+    return buildGooglePlayUrl(publicLinks.download.googlePlay, { ...GOOGLE_PLAY_DEFAULT_UTM, ...collectCampaignParams() })
+  },
+  appStore: publicLinks.download.appStore
 } as const
 
 type DownloadOS = 'apple' | 'windows' | 'android' | 'ios'
@@ -22,6 +51,25 @@ function detectDownloadOS(): DownloadOS {
   if (/iphone|ipad|ipod/.test(ua)) return 'ios'
   if (/mac/.test(ua)) return 'apple'
   return 'windows'
+}
+
+/**
+ * The desktop installer this browser can run, or null when there is none to start
+ * straight away. Stricter than `detectDownloadOS`, which defaults every unknown
+ * platform (Linux, ChromeOS) to 'windows' and reads an iPad's Macintosh user agent
+ * as 'apple'.
+ */
+function detectDesktopInstallerOs(): OperativeSystem | null {
+  if (typeof navigator === 'undefined') return null
+  const os = detectDownloadOS()
+  // iPadOS reports a Macintosh user agent; touch points tell it apart. A touch-capable Mac
+  // is sent to the /download chooser too: the safe side of the trade-off.
+  if (os === 'apple') return navigator.maxTouchPoints > 1 ? null : OperativeSystem.MACOS
+  // Xbox and Windows Phone user agents also say Windows but cannot run the installer.
+  if (os === 'windows' && /windows/i.test(navigator.userAgent) && !/xbox|windows phone/i.test(navigator.userAgent)) {
+    return OperativeSystem.WINDOWS
+  }
+  return null
 }
 
 function getDownloadUrl(os: DownloadOS): string {
@@ -37,5 +85,5 @@ function getDownloadUrl(os: DownloadOS): string {
   }
 }
 
-export { DOWNLOAD_URLS, detectDownloadOS, getDownloadUrl }
+export { DOWNLOAD_URLS, detectDesktopInstallerOs, detectDownloadOS, getDownloadUrl }
 export type { DownloadOS }

@@ -1,291 +1,298 @@
-jest.mock('livekit-client', () => ({
-  Track: { Source: { Camera: 'camera', ScreenShare: 'screen_share', Microphone: 'microphone' } }
+import React from 'react'
+import { useTracks } from '@livekit/components-react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { Track } from 'livekit-client'
+import { ParticipantGrid } from './ParticipantGrid'
+
+jest.mock('decentraland-ui2', () => jest.requireActual('../../../__test-utils__/styledMock'))
+jest.mock('@livekit/components-react', () => ({
+  useTracks: jest.fn(),
+  useIsSpeaking: () => false,
+  VideoTrack: () => React.createElement('video', { 'data-testid': 'video-track' })
 }))
-
-jest.mock('@livekit/components-react', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const ReactLib = require('react') as typeof import('react')
-  return {
-    useTracks: jest.fn(),
-    useIsSpeaking: jest.fn(),
-    VideoTrack: () => ReactLib.createElement('div', { 'data-testid': 'video-track' })
-  }
-})
-
-jest.mock('@mui/icons-material/MicOff', () => ({ __esModule: true, default: () => null }))
-jest.mock('@mui/icons-material/VideocamOff', () => ({ __esModule: true, default: () => null }))
-
-jest.mock('../../../features/cast2/useCastTranslation', () => ({
-  useCastTranslation: () => ({ t: (key: string) => key })
-}))
-
 jest.mock('../../../features/cast2/cast2.utils', () => ({
-  getDisplayName: (p: { identity?: string }) => p?.identity ?? 'Anonymous',
-  isPresentationBot: (p: { __isBot?: boolean }) => !!p?.__isBot
+  ...jest.requireActual('../../../features/cast2/cast2.utils'),
+  isPresentationBot: (participant: { identity: string }) => participant.identity.startsWith('presentation-bot:'),
+  getDisplayName: (participant: { identity: string }) => participant.identity
 }))
-
+jest.mock('../../../features/cast2/useCastTranslation', () => ({ useCastTranslation: () => ({ t: (key: string) => key }) }))
 jest.mock('../Avatar/Avatar', () => ({ Avatar: () => null }))
 jest.mock('../LiveKitEnhancements/SpeakingIndicator', () => ({ SpeakingIndicator: () => null }))
 
-// Plain-tag stand-ins for the styled components. Transient ($-prefixed) style props are surfaced
-// as data-* attributes so tests can assert layout state without the real styled engine.
-jest.mock('./ParticipantGrid.styled', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const ReactLib = require('react') as typeof import('react')
-  const create =
-    (tag: string, testId?: string) =>
-    ({ children, ...rest }: { children?: unknown } & Record<string, unknown>) => {
-      const props: Record<string, unknown> = {}
-      Object.keys(rest).forEach(key => {
-        if (key.startsWith('$')) {
-          props[`data-${key.slice(1).toLowerCase()}`] = String(rest[key])
-        } else {
-          props[key] = rest[key]
-        }
-      })
-      if (testId) props['data-testid'] = testId
-      return ReactLib.createElement(tag, props, children as never)
-    }
-  return {
-    ParticipantGridContainer: create('div', 'grid-container'),
-    NoParticipants: create('div', 'no-participants'),
-    NoParticipantsIcon: create('div'),
-    ParticipantTileContainer: create('div', 'tile'),
-    FloatingVideoContainer: create('div', 'floating'),
-    ThumbnailGrid: create('div', 'thumbnails'),
-    ThumbnailItem: create('div'),
-    SpeakingIndicatorWrapper: create('div'),
-    OverflowCard: create('div', 'overflow-card'),
-    OverflowAvatarStack: create('div'),
-    OverflowCount: create('div'),
-    ParticipantName: create('div'),
-    ThumbnailOverflowCard: create('div', 'thumbnail-overflow-card'),
-    AvatarFallback: create('div', 'avatar-fallback'),
-    LoadingSpinner: create('div'),
-    LoadingText: create('div'),
-    MutedIndicator: create('div', 'muted-indicator')
-  }
+const trackRef = (identity: string, source: Track.Source, publication: { isMuted?: boolean; track?: object; trackName?: string } = {}) => ({
+  participant: { sid: `${identity}-sid`, identity, isLocal: identity === 'me' },
+  source,
+  publication: { isMuted: false, track: {}, ...publication }
 })
 
-import { useIsSpeaking, useTracks } from '@livekit/components-react'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { ParticipantGrid } from './ParticipantGrid'
+type FakeTrack = ReturnType<typeof trackRef>
 
-const mockUseTracks = useTracks as jest.Mock
-const mockUseIsSpeaking = useIsSpeaking as jest.Mock
+const BOT = 'presentation-bot:room:1'
+const cameras = (count: number) => Array.from({ length: count }, (_, index) => trackRef(`cam-${index + 1}`, Track.Source.Camera))
+const visibleNames = () => screen.queryAllByText(/^(cam-\d+|me)$/).map(element => element.textContent)
+const SHARE = trackRef('sharer', Track.Source.ScreenShare)
+const tileNames = () =>
+  screen.queryAllByText(/^(cam-\d+|sharer - screen|other - screen|streaming_controls\.presentation)$/).map(element => element.textContent)
 
-type Participant = { sid: string; identity: string; isLocal: boolean; __isBot: boolean }
-type TrackRef = { source: string; participant: Participant; publication: Record<string, unknown> }
-
-const participant = (over: Partial<Participant> = {}): Participant => ({
-  sid: over.identity ?? 's',
-  identity: 'anon',
-  isLocal: false,
-  __isBot: false,
-  ...over
-})
-
-const videoPublication = (over: Record<string, unknown> = {}) => ({
-  isMuted: false,
-  track: { mediaStream: { active: true }, readyState: 'live' },
-  ...over
-})
-
-const cameraTrack = (identity: string, pOver: Partial<Participant> = {}, pubOver: Record<string, unknown> = {}): TrackRef => ({
-  source: 'camera',
-  participant: participant({ sid: identity, identity, ...pOver }),
-  publication: videoPublication(pubOver)
-})
-
-const screenTrack = (identity: string): TrackRef => ({
-  source: 'screen_share',
-  participant: participant({ sid: identity, identity }),
-  publication: videoPublication()
-})
-
-const presentationTrack = (identity = 'bot'): TrackRef => ({
-  source: 'screen_share',
-  participant: participant({ sid: identity, identity, __isBot: true }),
-  publication: videoPublication()
-})
-
-const fullscreenTile = () => screen.getAllByTestId('tile').find(el => el.getAttribute('data-isfullscreen') === 'true')
-const isExpanded = () => screen.getByTestId('grid-container').getAttribute('data-expandedview') === 'true'
-
-describe('ParticipantGrid', () => {
-  let videoTracks: TrackRef[]
-  let audioTracks: Array<{ participant: { identity: string }; publication: { isMuted: boolean } }>
+describe('when the participant grid renders', () => {
+  let videoTracks: FakeTrack[]
+  let audioTracks: FakeTrack[]
+  let view: RenderResult
 
   beforeEach(() => {
-    videoTracks = []
     audioTracks = []
-    mockUseTracks.mockImplementation((sources: string[]) => (sources.includes('microphone') ? audioTracks : videoTracks))
-    mockUseIsSpeaking.mockReturnValue(false)
+    jest
+      .mocked(useTracks)
+      .mockImplementation(sources => ((sources as Track.Source[]).includes(Track.Source.Microphone) ? audioTracks : videoTracks) as never)
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe('when there are no tracks', () => {
-    it('should render the no-video-streams empty state', () => {
-      render(<ParticipantGrid />)
-      expect(screen.getByText('empty_state.no_video_streams')).toBeInTheDocument()
+  describe.each([
+    ['the presentation bot is the only tile', [trackRef(BOT, Track.Source.ScreenShare)], 1],
+    ['the presentation bot video is still initialising', [trackRef(BOT, Track.Source.ScreenShare, { track: { readyState: 'new' } })], 0],
+    ['the presentation bot is auto-expanded next to a camera', [trackRef(BOT, Track.Source.ScreenShare), ...cameras(1)], 1],
+    ['only a camera tile is shown', cameras(1), 0]
+  ])('and %s', (_, tracks, overlays) => {
+    beforeEach(() => {
+      videoTracks = tracks
+      render(<ParticipantGrid presentationOverlay={<span data-testid="slot" />} />)
+    })
+
+    it(`should render the presentation overlay ${overlays} time(s)`, () => {
+      expect(screen.queryAllByTestId('slot')).toHaveLength(overlays)
     })
   })
 
-  describe('when localParticipantVisible is false and only local tracks exist', () => {
-    it('should filter out local tracks and show the waiting state', () => {
-      videoTracks = [cameraTrack('me', { isLocal: true })]
+  describe.each([
+    ['client-composition video', 'presentation-video', 0],
+    ['legacy composited', 'presentation', 1]
+  ])('and the bot publishes its %s track', (_, trackName, tiles) => {
+    beforeEach(() => {
+      videoTracks = [trackRef(BOT, Track.Source.ScreenShare, { trackName })]
+      render(<ParticipantGrid />)
+    })
+
+    it(`should render ${tiles} video tile(s) for it`, () => {
+      expect(screen.queryAllByTestId('video-track')).toHaveLength(tiles)
+    })
+  })
+
+  describe.each([
+    ['there are no video tracks', true, 'empty_state.no_video_streams'],
+    ['the hidden local participant is the only track', false, 'empty_state.waiting_participants']
+  ])('and %s', (_, localParticipantVisible, message) => {
+    beforeEach(() => {
+      videoTracks = localParticipantVisible ? [] : [trackRef('me', Track.Source.Camera)]
+      render(<ParticipantGrid localParticipantVisible={localParticipantVisible} />)
+    })
+
+    it('should render the matching empty state', () => {
+      expect(screen.getByText(message)).toBeInTheDocument()
+    })
+  })
+
+  describe('and the local participant is hidden next to a remote camera', () => {
+    beforeEach(() => {
+      videoTracks = [trackRef('me', Track.Source.Camera), ...cameras(1)]
       render(<ParticipantGrid localParticipantVisible={false} />)
-      expect(screen.getByText('empty_state.waiting_participants')).toBeInTheDocument()
+    })
+
+    it('should render only the remote camera tile', () => {
+      expect(visibleNames()).toEqual(['cam-1'])
     })
   })
 
-  describe('when a single participant is present', () => {
-    it('should render its video without expansion', () => {
-      videoTracks = [cameraTrack('alice')]
+  describe('and two cameras are shown', () => {
+    beforeEach(() => {
+      videoTracks = cameras(2)
       render(<ParticipantGrid />)
-      expect(screen.getByText('alice')).toBeInTheDocument()
-      expect(screen.getByTestId('video-track')).toBeInTheDocument()
-      expect(isExpanded()).toBe(false)
+      fireEvent.click(screen.getByText('cam-2'))
+    })
+
+    it('should expand the clicked tile ahead of the floating tile', () => {
+      expect(visibleNames()).toEqual(['cam-2', 'cam-1'])
+    })
+
+    describe('and the floating tile is clicked', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByText('cam-1'))
+      })
+
+      it('should expand the floating tile instead', () => {
+        expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
+      })
     })
   })
 
-  describe('when multiple participants are present without a share', () => {
-    it('should expand and collapse a tile on click', () => {
-      videoTracks = [cameraTrack('alice'), cameraTrack('bob')]
-      render(<ParticipantGrid />)
-      expect(isExpanded()).toBe(false)
+  describe('and four cameras are shown with one expanded', () => {
+    beforeEach(() => {
+      videoTracks = cameras(4)
+      view = render(<ParticipantGrid />)
+      fireEvent.click(screen.getByText('cam-3'))
+    })
 
-      fireEvent.click(screen.getByText('alice'))
-      expect(isExpanded()).toBe(true)
-      expect(fullscreenTile()?.textContent).toContain('alice')
+    it('should render the expanded tile and a single thumbnail', () => {
+      expect(visibleNames()).toEqual(['cam-3', 'cam-1'])
+    })
 
-      fireEvent.click(screen.getByText('alice'))
-      expect(isExpanded()).toBe(false)
+    it('should summarise the remaining thumbnails in an overflow card', () => {
+      expect(screen.getByText('+2')).toBeInTheDocument()
+    })
+
+    describe.each([
+      ['the thumbnail is clicked', 'cam-1', ['cam-1', 'cam-2']],
+      ['the expanded tile is clicked again', 'cam-3', ['cam-1', 'cam-2', 'cam-3', 'cam-4']]
+    ])('and %s', (_, name, expected) => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByText(name))
+      })
+
+      it('should rearrange the tiles', () => {
+        expect(visibleNames()).toEqual(expected)
+      })
+    })
+
+    describe.each([
+      ['the expanded camera leaves', ['cam-1', 'cam-2', 'cam-4'], ['cam-1', 'cam-2', 'cam-4']],
+      ['the expanded camera stays', ['cam-1', 'cam-2', 'cam-3', 'cam-4'], ['cam-3', 'cam-1']]
+    ])('and the grid re-renders as %s', (_, remaining, expected) => {
+      beforeEach(() => {
+        videoTracks = cameras(4).filter(track => remaining.includes(track.participant.identity))
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should render the tiles in the expected layout', () => {
+        expect(visibleNames()).toEqual(expected)
+      })
     })
   })
 
-  describe('when a screen share is present among camera tracks', () => {
-    it('should auto-focus the first screen share with the other track floating', () => {
-      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
+  describe('and ten cameras are shown', () => {
+    beforeEach(() => {
+      videoTracks = cameras(10)
       render(<ParticipantGrid />)
-      expect(isExpanded()).toBe(true)
-      expect(fullscreenTile()?.textContent).toContain('bob - screen')
-      expect(screen.getByTestId('floating')).toBeInTheDocument()
     })
 
-    it('should refocus when the floating tile is clicked', () => {
-      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
-      render(<ParticipantGrid />)
-      fireEvent.click(screen.getByText('alice'))
-      expect(fullscreenTile()?.textContent).toContain('alice')
+    it('should render the first eight tiles', () => {
+      expect(visibleNames()).toHaveLength(8)
     })
 
-    it('should not steal focus when a second participant shares', () => {
-      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
-      const { rerender } = render(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('bob - screen')
+    describe('and the overflow card is clicked', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByText('+2'))
+      })
 
-      videoTracks = [cameraTrack('alice'), screenTrack('bob'), screenTrack('carol')]
-      rerender(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('bob - screen')
-    })
-
-    it('should collapse back to the grid when the focused share ends', () => {
-      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
-      const { rerender } = render(<ParticipantGrid />)
-      expect(isExpanded()).toBe(true)
-
-      videoTracks = [cameraTrack('alice')]
-      rerender(<ParticipantGrid />)
-      expect(isExpanded()).toBe(false)
+      it('should render every tile', () => {
+        expect(visibleNames()).toHaveLength(10)
+      })
     })
   })
 
-  describe('when a presentation bot and a screen share are both present', () => {
-    it('should focus the presentation and hide other thumbnails', () => {
-      videoTracks = [screenTrack('bob'), presentationTrack('botpres')]
+  describe.each([
+    ['an unmuted', false, 0],
+    ['a muted', true, 1]
+  ])('and a camera participant publishes %s microphone', (_, isMuted, icons) => {
+    beforeEach(() => {
+      videoTracks = cameras(1)
+      audioTracks = [trackRef('cam-1', Track.Source.Microphone, { isMuted })]
       render(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('streaming_controls.presentation')
-      expect(screen.queryByText('bob - screen')).not.toBeInTheDocument()
     })
 
-    it('should let a presentation preempt an already-spotlighted screen share', () => {
-      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
-      const { rerender } = render(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('bob - screen')
-
-      // presentation starts later — it must take over the spotlight
-      videoTracks = [cameraTrack('alice'), screenTrack('bob'), presentationTrack('botpres')]
-      rerender(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('streaming_controls.presentation')
-    })
-
-    it('should let the screen share reclaim the spotlight when the presentation ends', () => {
-      videoTracks = [cameraTrack('alice'), screenTrack('bob'), presentationTrack('botpres')]
-      const { rerender } = render(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('streaming_controls.presentation')
-
-      // presentation ends while the screen share is still live
-      videoTracks = [cameraTrack('alice'), screenTrack('bob')]
-      rerender(<ParticipantGrid />)
-      expect(fullscreenTile()?.textContent).toContain('bob - screen')
+    it(`should render ${icons} muted indicator(s)`, () => {
+      expect(screen.queryAllByTestId('MicOffIcon')).toHaveLength(icons)
     })
   })
 
-  describe('when the expanded view has more thumbnails than the maximum', () => {
-    it('should render a thumbnail overflow card and refocus a thumbnail on click', () => {
-      videoTracks = [screenTrack('bob'), cameraTrack('a'), cameraTrack('b'), cameraTrack('c')]
-      render(<ParticipantGrid />)
-      expect(screen.getByTestId('thumbnails')).toBeInTheDocument()
-      expect(screen.getByTestId('thumbnail-overflow-card')).toBeInTheDocument()
+  describe('and the auto-expanded presentation bot leaves', () => {
+    beforeEach(() => {
+      videoTracks = [trackRef(BOT, Track.Source.ScreenShare), ...cameras(2)]
+      view = render(<ParticipantGrid />)
+      videoTracks = cameras(2)
+      view.rerender(<ParticipantGrid />)
+    })
 
-      fireEvent.click(screen.getByText('a'))
-      expect(fullscreenTile()?.textContent).toContain('a')
+    it('should collapse back to the full grid', () => {
+      expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
     })
   })
 
-  describe('when there are more participants than the grid maximum', () => {
-    it('should show an overflow card and reveal all on click', () => {
-      videoTracks = Array.from({ length: 11 }, (_, i) => cameraTrack(`u${i}`))
-      render(<ParticipantGrid />)
-      expect(screen.getByTestId('overflow-card')).toBeInTheDocument()
+  describe('and a participant shares their screen next to the cameras', () => {
+    beforeEach(() => {
+      videoTracks = [...cameras(2), SHARE]
+      view = render(<ParticipantGrid />)
+    })
 
-      fireEvent.click(screen.getByTestId('overflow-card'))
-      expect(screen.queryByTestId('overflow-card')).not.toBeInTheDocument()
+    it('should spotlight the screen share', () => {
+      expect(tileNames()[0]).toBe('sharer - screen')
+    })
+
+    describe('and the visitor clicks a thumbnail', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByText('cam-1'))
+      })
+
+      it('should spotlight the clicked tile instead', () => {
+        expect(tileNames()[0]).toBe('cam-1')
+      })
+    })
+
+    describe('and a second participant starts sharing', () => {
+      beforeEach(() => {
+        videoTracks = [...cameras(2), SHARE, trackRef('other', Track.Source.ScreenShare)]
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should keep the first screen share in the spotlight', () => {
+        expect(tileNames()[0]).toBe('sharer - screen')
+      })
+    })
+
+    describe('and the screen share ends', () => {
+      beforeEach(() => {
+        videoTracks = cameras(2)
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should collapse back to the full grid', () => {
+        expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
+      })
+    })
+
+    describe('and a presentation starts', () => {
+      beforeEach(() => {
+        videoTracks = [...cameras(2), SHARE, trackRef(BOT, Track.Source.ScreenShare)]
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should move the spotlight to the presentation', () => {
+        expect(tileNames()).toEqual(['streaming_controls.presentation'])
+      })
+
+      describe('and the presentation ends while the screen share is still live', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2), SHARE]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should hand the spotlight back to the screen share', () => {
+          expect(tileNames()[0]).toBe('sharer - screen')
+        })
+      })
     })
   })
 
-  describe('ParticipantTile render states', () => {
-    it('should show an avatar fallback when the camera video is inactive', () => {
-      videoTracks = [cameraTrack('alice', {}, { track: { mediaStream: { active: false }, readyState: 'live' } })]
+  describe('and a presentation and a screen share appear together', () => {
+    beforeEach(() => {
+      videoTracks = [SHARE, trackRef(BOT, Track.Source.ScreenShare)]
       render(<ParticipantGrid />)
-      expect(screen.getByTestId('avatar-fallback')).toBeInTheDocument()
-      expect(screen.queryByTestId('video-track')).not.toBeInTheDocument()
     })
 
-    it('should show the initializing state when the track is not yet live', () => {
-      videoTracks = [cameraTrack('alice', {}, { track: { mediaStream: { active: true }, readyState: 'pending' } })]
-      render(<ParticipantGrid />)
-      expect(screen.getByText('streaming_controls.initializing_video')).toBeInTheDocument()
-    })
-
-    it('should render speaking/muted indicators driven by the audio track', () => {
-      mockUseIsSpeaking.mockReturnValue(true)
-      videoTracks = [cameraTrack('alice'), cameraTrack('bob')]
-      audioTracks = [{ participant: { identity: 'alice' }, publication: { isMuted: false } }]
-      render(<ParticipantGrid />)
-      // bob has no audio track -> treated as muted -> at least one muted indicator
-      expect(screen.getAllByTestId('muted-indicator').length).toBeGreaterThanOrEqual(1)
-    })
-
-    it('should mirror the local participant camera', () => {
-      videoTracks = [cameraTrack('me', { isLocal: true }), cameraTrack('bob')]
-      render(<ParticipantGrid />)
-      const mirrored = screen.getAllByTestId('tile').find(el => el.getAttribute('data-mirror') === 'true')
-      expect(mirrored?.textContent).toContain('me')
+    it('should spotlight the presentation alone', () => {
+      expect(tileNames()).toEqual(['streaming_controls.presentation'])
     })
   })
 })

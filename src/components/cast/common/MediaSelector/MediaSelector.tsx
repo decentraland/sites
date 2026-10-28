@@ -70,7 +70,6 @@ export function MediaSelector({ type, selectedDeviceId, onDeviceSelect, childCom
       selectedDeviceId={selectedDeviceId}
       onDeviceSelect={onDeviceSelect}
       childComponents={childComponents}
-      logPrefix={config.logPrefix}
     />
   )
 }

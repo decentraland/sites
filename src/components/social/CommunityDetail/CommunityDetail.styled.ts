@@ -1,4 +1,4 @@
-import { Box, styled } from 'decentraland-ui2'
+import { Box, Skeleton, styled } from 'decentraland-ui2'
 
 const ContentContainer = styled(Box)({
   display: 'flex',
@@ -6,33 +6,28 @@ const ContentContainer = styled(Box)({
   width: '100%'
 })
 
+// Same lateral cap as InfoSection — legacy account-dapp page padding
+// (240px lateral on xl, 80px on lg-xl) collapses Members + Events columns
+// inside the Paper. Keep a modest 24/32px inset so columns get the room.
 const BottomSection = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(7.5),
-  paddingTop: theme.spacing(2.5),
-  paddingBottom: theme.spacing(1),
-  paddingLeft: theme.spacing(30),
-  paddingRight: theme.spacing(30),
-  [theme.breakpoints.between('lg', 'xl')]: {
-    paddingLeft: theme.spacing(10),
-    paddingRight: theme.spacing(10)
-  },
-  [theme.breakpoints.between('md', 'lg')]: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3)
-  },
-  [theme.breakpoints.down('md')]: {
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3)
+  gap: theme.spacing(4),
+  paddingTop: theme.spacing(3),
+  paddingBottom: theme.spacing(2),
+  paddingLeft: theme.spacing(3),
+  paddingRight: theme.spacing(3),
+  [theme.breakpoints.up('md')]: {
+    gap: theme.spacing(5),
+    paddingLeft: theme.spacing(4),
+    paddingRight: theme.spacing(4)
   },
   [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
-    gap: theme.spacing(6)
+    gap: theme.spacing(4)
   },
   [theme.breakpoints.down('xs')]: {
     paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    gap: theme.spacing(4)
+    paddingRight: theme.spacing(2)
   }
 }))
 
@@ -78,4 +73,28 @@ const PageContainer = styled(Box)(({ theme }) => ({
   [theme.breakpoints.up('md')]: { paddingTop: 96 }
 }))
 
-export { BottomSection, ContentContainer, EventsColumn, HiddenStatus, InitialLoader, MembersColumn, PageContainer }
+// Profile-lookup placeholders shared by the owner row and the member cards: the /v2
+// payloads carry addresses only, so a face and a name wait on the Catalyst batch.
+// Fills whatever avatar ring it is dropped into.
+const AvatarSkeleton = styled(Skeleton)({
+  width: '100%',
+  height: '100%'
+})
+
+// Sized off the body font so the row keeps its height when the name lands; callers
+// pass Skeleton's own `width` for the slot they are holding.
+const NameSkeleton = styled(Skeleton)(({ theme }) => ({
+  fontSize: theme.typography.body1.fontSize
+}))
+
+export {
+  AvatarSkeleton,
+  BottomSection,
+  ContentContainer,
+  EventsColumn,
+  HiddenStatus,
+  InitialLoader,
+  MembersColumn,
+  NameSkeleton,
+  PageContainer
+}

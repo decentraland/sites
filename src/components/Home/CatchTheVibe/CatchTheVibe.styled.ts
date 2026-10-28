@@ -136,6 +136,40 @@ const UserInfo = styled(Box, { shouldForwardProp: prop => prop !== '$avatarBackg
   })
 )
 
+// Clickable variant of UserInfo — same visual chrome, rendered as a <button>
+// so the avatar + username open the profile modal via useOpenProfileModal.
+const UserInfoButton = styled('button', { shouldForwardProp: prop => prop !== '$avatarBackgroundColor' })<UserInfoProps>(
+  ({ theme, $avatarBackgroundColor }) => ({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: 0,
+    margin: 0,
+    background: 'transparent',
+    border: 'none',
+    color: 'inherit',
+    font: 'inherit',
+    cursor: 'pointer',
+    borderRadius: theme.spacing(0.75),
+    transition: 'opacity 150ms ease',
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '&:hover': {
+      opacity: 0.85
+    },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '&:focus-visible': {
+      outline: `2px solid ${dclColors.base.primary}`,
+      outlineOffset: 2
+    },
+    ...($avatarBackgroundColor && {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      '&& .MuiAvatar-root': {
+        backgroundColor: $avatarBackgroundColor
+      }
+    })
+  })
+)
+
 const UserName = styled(Typography)({
   color: dclColors.neutral.white,
   fontWeight: 600,
@@ -266,6 +300,7 @@ export {
   PlayBadge,
   PlayIcon,
   UserInfo,
+  UserInfoButton,
   UserName,
   VideoCard,
   VideoCardFooter,

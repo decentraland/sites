@@ -18,7 +18,9 @@ const RelatedPost = memo((props: RelatedPostProps) => {
   return (
     <RelatedSection>
       <RelatedContainer>
-        <RelatedTitle variant="h6">{t('blog.related_post')}</RelatedTitle>
+        <RelatedTitle variant="h6" component="h2">
+          {t('blog.related_post')}
+        </RelatedTitle>
         <RelatedWrapper>
           {visiblePosts.map(post => (
             <PostCard key={post.id} post={post} />

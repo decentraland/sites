@@ -124,10 +124,10 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
     const startedAt = Date.now()
     triggerFileDownload(url, filename)
     const holdMs = await estimateDownloadHoldMs(url, signal)
-    if (signal.aborted) return {}
+    if (signal.aborted) return { deliveryMode: 'anchor_native' }
     const remaining = Math.max(0, holdMs - (Date.now() - startedAt))
     await sleep(remaining, signal)
-    return {}
+    return { deliveryMode: 'anchor_native' }
   }
 
   // Tracked across the progress callback so the caller can include the
@@ -137,7 +137,7 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
   let bytesTransferred = 0
 
   try {
-    await downloadFileWithProgress(
+    const streamResult = await downloadFileWithProgress(
       url,
       filename,
       ({ loaded, total }) => {
@@ -150,7 +150,7 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
       },
       signal
     )
-    return { bytesTransferred }
+    return { bytesTransferred, deliveryMode: 'streamed', gatewayRequestId: streamResult?.gatewayRequestId }
   } catch (error) {
     if (signal.aborted) throw error
     console.warn('Streamed download failed, falling back to native anchor', {
@@ -158,7 +158,7 @@ const streamOrFallback = async ({ url, filename, os, signal, onProgress }: Strea
     })
     triggerFileDownload(url, filename)
     await sleep(FALLBACK_LOADER_HOLD_MS, signal)
-    return {}
+    return { deliveryMode: 'anchor_fallback' }
   }
 }
 

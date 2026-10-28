@@ -1,0 +1,166 @@
+import { OperativeSystem } from '../types/download.types'
+import { DOWNLOAD_URLS, detectDesktopInstallerOs, detectDownloadOS, getDownloadUrl } from './downloadConstants'
+import type { DownloadOS } from './downloadConstants'
+
+describe('downloadConstants', () => {
+  describe('DOWNLOAD_URLS', () => {
+    it('should expose the known store destinations', () => {
+      expect(DOWNLOAD_URLS.windows).toBe('https://decentraland.org/download')
+      expect(DOWNLOAD_URLS.apple).toBe('https://decentraland.org/download')
+      expect(DOWNLOAD_URLS.epic).toContain('store.epicgames.com')
+      expect(DOWNLOAD_URLS.googlePlay).toContain('play.google.com')
+      expect(DOWNLOAD_URLS.appStore).toContain('apps.apple.com')
+    })
+
+    describe('googlePlay', () => {
+      afterEach(() => {
+        window.history.pushState({}, '', '/')
+      })
+
+      it('should default to the static QR-code campaign tag when no campaign params are present', () => {
+        expect(DOWNLOAD_URLS.googlePlay).toContain('utm_source=fdn')
+        expect(DOWNLOAD_URLS.googlePlay).toContain('utm_medium=qr')
+        expect(DOWNLOAD_URLS.googlePlay).toContain('utm_campaign=dclpage')
+      })
+
+      it('should carry the visitor incoming campaign instead of the default tag when present', () => {
+        window.history.pushState({}, '', '/?utm_source=x&utm_medium=paid&utm_campaign=ad')
+        const url = new URL(DOWNLOAD_URLS.googlePlay)
+        expect(url.searchParams.get('utm_source')).toBe('x')
+        expect(url.searchParams.get('utm_medium')).toBe('paid')
+        expect(url.searchParams.get('utm_campaign')).toBe('ad')
+        expect(url.searchParams.get('id')).toBe('org.decentraland.godotexplorer')
+      })
+
+      it('should mirror the default utm set into the Install Referrer param when no campaign is present', () => {
+        const referrer = new URLSearchParams(new URL(DOWNLOAD_URLS.googlePlay).searchParams.get('referrer') ?? '')
+        expect(referrer.get('utm_source')).toBe('fdn')
+        expect(referrer.get('utm_medium')).toBe('qr')
+        expect(referrer.get('utm_campaign')).toBe('dclpage')
+      })
+
+      it('should mirror the incoming campaign into the Install Referrer param when present', () => {
+        window.history.pushState({}, '', '/?utm_source=x&utm_medium=paid&utm_campaign=ad')
+        const referrer = new URLSearchParams(new URL(DOWNLOAD_URLS.googlePlay).searchParams.get('referrer') ?? '')
+        expect(referrer.get('utm_source')).toBe('x')
+        expect(referrer.get('utm_medium')).toBe('paid')
+        expect(referrer.get('utm_campaign')).toBe('ad')
+        // Non-utm routing params never leak into the referrer payload.
+        expect(referrer.get('id')).toBeNull()
+      })
+    })
+  })
+
+  describe('detectDesktopInstallerOs', () => {
+    const stubNavigator = (userAgent: string, maxTouchPoints = 0) => {
+      Object.defineProperty(window.navigator, 'userAgent', { configurable: true, value: userAgent })
+      Object.defineProperty(window.navigator, 'maxTouchPoints', { configurable: true, value: maxTouchPoints })
+    }
+
+    afterEach(() => {
+      delete (window.navigator as unknown as Record<string, unknown>).userAgent
+      delete (window.navigator as unknown as Record<string, unknown>).maxTouchPoints
+    })
+
+    it.each([
+      ['Windows', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 0, OperativeSystem.WINDOWS],
+      ['a Mac', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 0, OperativeSystem.MACOS],
+      ['an iPad reporting a Mac user agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 5, null],
+      ['Linux', 'Mozilla/5.0 (X11; Linux x86_64)', 0, null],
+      ['ChromeOS', 'Mozilla/5.0 (X11; CrOS x86_64 14541.0.0)', 0, null],
+      ['Android', 'Mozilla/5.0 (Linux; Android 13)', 5, null],
+      ['an iPhone', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', 5, null],
+      ['an Xbox', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Xbox; Xbox One) AppleWebKit/537.36 Edge/44.18363', 0, null],
+      ['Windows Phone', 'Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Microsoft; Lumia 950) AppleWebKit/537.36', 0, null]
+    ])('when the browser runs on %s it should return %s', (_label, userAgent, maxTouchPoints, expected) => {
+      stubNavigator(userAgent, maxTouchPoints)
+
+      expect(detectDesktopInstallerOs()).toBe(expected)
+    })
+  })
+
+  describe('detectDownloadOS', () => {
+    let userAgentSpy: jest.SpyInstance | undefined
+
+    const stubUserAgent = (ua: string) => {
+      userAgentSpy = jest.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(ua)
+    }
+
+    afterEach(() => {
+      userAgentSpy?.mockRestore()
+      userAgentSpy = undefined
+    })
+
+    describe('when the user agent is Android', () => {
+      beforeEach(() => stubUserAgent('Mozilla/5.0 (Linux; Android 13)'))
+
+      it('should return "android"', () => {
+        expect(detectDownloadOS()).toBe('android')
+      })
+    })
+
+    describe('when the user agent is an iPhone', () => {
+      beforeEach(() => stubUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)'))
+
+      it('should return "ios"', () => {
+        expect(detectDownloadOS()).toBe('ios')
+      })
+    })
+
+    describe('when the user agent is an iPad', () => {
+      beforeEach(() => stubUserAgent('Mozilla/5.0 (iPad; CPU OS 17_0)'))
+
+      it('should return "ios"', () => {
+        expect(detectDownloadOS()).toBe('ios')
+      })
+    })
+
+    describe('when the user agent is a Mac', () => {
+      beforeEach(() => stubUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'))
+
+      it('should return "apple"', () => {
+        expect(detectDownloadOS()).toBe('apple')
+      })
+    })
+
+    describe('when the user agent is Windows', () => {
+      beforeEach(() => stubUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'))
+
+      it('should default to "windows"', () => {
+        expect(detectDownloadOS()).toBe('windows')
+      })
+    })
+
+    describe('when navigator is unavailable (SSR / prerender)', () => {
+      let originalNavigatorDescriptor: PropertyDescriptor | undefined
+
+      beforeEach(() => {
+        originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+        Object.defineProperty(globalThis, 'navigator', { configurable: true, value: undefined })
+      })
+
+      afterEach(() => {
+        if (originalNavigatorDescriptor) {
+          Object.defineProperty(globalThis, 'navigator', originalNavigatorDescriptor)
+        }
+      })
+
+      it('should default to "windows"', () => {
+        expect(detectDownloadOS()).toBe('windows')
+      })
+    })
+  })
+
+  describe('getDownloadUrl', () => {
+    const cases: Array<[DownloadOS, string]> = [
+      ['apple', DOWNLOAD_URLS.apple],
+      ['ios', DOWNLOAD_URLS.appStore],
+      ['android', DOWNLOAD_URLS.googlePlay],
+      ['windows', DOWNLOAD_URLS.windows]
+    ]
+
+    it.each(cases)('should map "%s" to its store url', (os, expected) => {
+      expect(getDownloadUrl(os)).toBe(expected)
+    })
+  })
+})

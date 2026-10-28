@@ -14,7 +14,7 @@ jest.mock('../../../config/env', () => ({ getEnv: jest.fn(() => 'https://example
 jest.mock('../../../features/storage/storage.client', () => ({
   __esModule: true,
   useSetPlayerValueMutation: () => [mockSetPlayerValue, { isLoading: false }],
-  useGetPlayerValueQuery: () => ({ data: { key: 'k', value: '"existing"' }, isLoading: false })
+  useGetPlayerValueQuery: () => ({ currentData: { key: 'k', value: '"existing"' }, isLoading: false })
 }))
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({

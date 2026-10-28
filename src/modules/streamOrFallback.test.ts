@@ -186,6 +186,21 @@ describe('streamOrFallback', () => {
       expect(result.bytesTransferred).toBeUndefined()
     })
 
+    it('should report delivery_mode anchor_native', async () => {
+      const promise = streamOrFallback({
+        url: 'https://example.com/file.dmg',
+        filename: 'Decentraland-Installer.dmg',
+        os: OperativeSystem.MACOS,
+        signal: abortController.signal,
+        onProgress
+      })
+
+      await jest.advanceTimersByTimeAsync(ESTIMATE_MAX_HOLD_MS)
+      const result = await promise
+
+      expect(result.deliveryMode).toBe('anchor_native')
+    })
+
     it('should HEAD the URL to get Content-Length for the adaptive estimate', async () => {
       const promise = streamOrFallback({
         url: 'https://example.com/file.dmg',
@@ -261,7 +276,20 @@ describe('streamOrFallback', () => {
   describe('when the OS is Windows', () => {
     describe('and the streamed fetch succeeds', () => {
       beforeEach(() => {
-        mockDownloadFileWithProgress.mockResolvedValue(undefined)
+        mockDownloadFileWithProgress.mockResolvedValue({ gatewayRequestId: 'req-abc' })
+      })
+
+      it('should report delivery_mode streamed and surface the gateway request id', async () => {
+        const result = await streamOrFallback({
+          url: 'https://example.com/file.exe',
+          filename: 'Decentraland-Installer.exe',
+          os: OperativeSystem.WINDOWS,
+          signal: abortController.signal,
+          onProgress
+        })
+
+        expect(result.deliveryMode).toBe('streamed')
+        expect(result.gatewayRequestId).toBe('req-abc')
       })
 
       it('should use downloadFileWithProgress and skip the native anchor', async () => {
@@ -390,6 +418,22 @@ describe('streamOrFallback', () => {
         const result = await promise
 
         expect(result.bytesTransferred).toBeUndefined()
+      })
+
+      it('should report delivery_mode anchor_fallback without a gateway request id', async () => {
+        const promise = streamOrFallback({
+          url: 'https://example.com/file.exe',
+          filename: 'Decentraland-Installer.exe',
+          os: OperativeSystem.WINDOWS,
+          signal: abortController.signal,
+          onProgress
+        })
+
+        await jest.advanceTimersByTimeAsync(FALLBACK_LOADER_HOLD_MS)
+        const result = await promise
+
+        expect(result.deliveryMode).toBe('anchor_fallback')
+        expect(result.gatewayRequestId).toBeUndefined()
       })
 
       it('should rethrow when the failure is due to the signal being aborted', async () => {

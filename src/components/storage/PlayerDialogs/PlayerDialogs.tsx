@@ -112,7 +112,10 @@ interface PlayerEditDialogProps {
 
 const PlayerEditDialog = ({ open, address, keyName, onClose, onSuccess, onError, identity, realm, position }: PlayerEditDialogProps) => {
   const t = useFormatMessage()
-  const { data, isLoading } = useGetPlayerValueQuery({ identity, address, key: keyName, realm, position }, { skip: !open || !keyName })
+  const { currentData: data, isLoading } = useGetPlayerValueQuery(
+    { identity, address, key: keyName, realm, position },
+    { skip: !identity || !open || !keyName }
+  )
   const [setPlayerValue] = useSetPlayerValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)

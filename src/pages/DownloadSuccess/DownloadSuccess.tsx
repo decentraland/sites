@@ -1,45 +1,76 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useTranslation } from '@dcl/hooks'
-import { Logo, Typography } from 'decentraland-ui2'
+import { useAdvancedUserAgentData, useTranslation } from '@dcl/hooks'
+import { Logo } from 'decentraland-ui2'
 import { LandingFooter } from '../../components/LandingFooter'
+import { collectDeepLinkParams } from '../../features/places/places.helpers'
 import { ANON_USER_ID_PARAM, useAnonUserId } from '../../hooks/useAnonUserId'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
-import { useDeferredTrack } from '../../hooks/useDeferredTrack'
+import { useDownloadFunnelExit } from '../../hooks/useDownloadFunnelExit'
 import { useGetIdentityId } from '../../hooks/useGetIdentityId'
-import appleLogo from '../../images/apple-logo.svg'
-import macOsLauncher from '../../images/download/macos_launcher.webp'
-import macOsLaunchingDecentraland from '../../images/download/macos_launching_decentraland.webp'
-import macOsRecentDownload from '../../images/download/macos_recent_download.webp'
-import windowsDownloadsFolder from '../../images/download/windows_downloads_folder.webp'
-import windowsLaunchingDecentraland from '../../images/download/windows_launching_decentraland.webp'
-import windowsSetup from '../../images/download/windows_setup.webp'
-import microsoftLogo from '../../images/microsoft-logo.svg'
-import { createDownloadTracker } from '../../modules/downloadTracking'
+import { usePageView } from '../../hooks/usePageView'
+import externalLinkIcon from '../../images/download/steps/external-link-icon.svg'
+import macosStepTwo from '../../images/download/steps/macos-step2.webp'
+import stepThree from '../../images/download/steps/step3.webp'
+import windowsStepTwo from '../../images/download/steps/windows-step2.webp'
+import { collectCampaignParams } from '../../modules/campaignParams'
+import { readDownloadClickCorrelation } from '../../modules/downloadClickCorrelation'
+import type { DownloadFunnelExitData } from '../../modules/downloadFunnelExit.types'
+import { captureDownloadError, recordDownloadMilestone } from '../../modules/downloadFunnelSentry'
+import { createDownloadTracker, toAuthState } from '../../modules/downloadTracking'
 import type { DownloadTracker } from '../../modules/downloadTracking.types'
-import { calculateDownloadUrl } from '../../modules/downloadWithIdentity'
+import { calculateDownloadUrl, resolveGatewayAnonUserId } from '../../modules/downloadWithIdentity'
 import { collectClientFingerprint } from '../../modules/fingerprint'
-import { DownloadPlace, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { DownloadPlace, DownloadTarget, SegmentEvent, resolveDownloadPlace } from '../../modules/segment'
+import { ensureSegmentAnonymousId } from '../../modules/segmentAnonymousId'
+import { postSegmentEvent } from '../../modules/segmentBeacon'
 import { streamOrFallback } from '../../modules/streamOrFallback'
+import type { StreamOrFallbackResult } from '../../modules/streamOrFallback.types'
 import { FALLBACK_CDN_RELEASE_LINKS, addQueryParamsToUrlString } from '../../modules/url'
 import { Architecture, OperativeSystem } from '../../types/download.types'
-import { DownloadSuccessLayout } from './DownloadSuccessLayout'
-import type { DownloadSuccessStep, DownloadSuccessStepsWithOs } from './DownloadSuccess.types'
+import { resolveReferrer } from '../../utils/referrer'
+import { DownloadStepsLayout } from './DownloadStepsLayout'
+import { getStepOneVariant, resolveDownloadBrowser } from './DownloadSuccess.helpers'
+import type { DownloadStepsStep } from './DownloadSuccess.types'
+import { DownloadStepsExternalIcon, DownloadStepsFooterLine, DownloadStepsFooterLink } from './DownloadSteps.styled'
 import {
   DownloadBackdropContent,
   DownloadBackdropText,
   DownloadDetailContainer,
   DownloadProgressBar,
-  DownloadProgressContainer,
-  HighlightAnimation
+  DownloadProgressContainer
 } from './DownloadSuccess.styled'
 
 const VALID_ARCHS = new Set<string>(['amd64', 'arm64'])
 
+// GPU-detected Mac architecture the originating landing (jump-in etc.) forwards
+// on the /download_success URL as `mac_arch`. Analytics-only — unlike `arch` it
+// never selects a binary. Allowlisted because it comes off an untrusted query
+// param; anything else is dropped rather than emitted.
+const MAC_ARCH_VALUES = new Set<string>(['apple_silicon', 'intel', 'unknown'])
+
+/**
+ * Maps a resolved download into the event-level extras appended to
+ * `download_success`: which path delivered it (`delivery_mode`) and, on the
+ * streamed path, the gateway's `X-Request-Id` for the client↔server join.
+ * `gateway_request_id` is omitted when absent (macOS / anchor fallback / CDN).
+ */
+const buildDeliveryExtra = (result: StreamOrFallbackResult): Record<string, unknown> => {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  const extra: Record<string, unknown> = { delivery_mode: result.deliveryMode }
+  if (result.gatewayRequestId) {
+    extra.gateway_request_id = result.gatewayRequestId
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+  return extra
+}
+
 const DownloadSuccess = memo(() => {
   const [searchParams] = useSearchParams()
   const { intl } = useTranslation()
-  const deferredTrack = useDeferredTrack()
+  // Fullscreen route: mounted outside <Layout />, which owns the shared page()
+  // call, so the pageview has to be emitted here.
+  usePageView()
   const getIdentityId = useGetIdentityId()
   const anonUserId = useAnonUserId()
   const { hasValidIdentity } = useAuthIdentity()
@@ -49,7 +80,7 @@ const DownloadSuccess = memo(() => {
   // on anon_user_id. Useful for breaking down the funnel by login state and
   // for catching regressions where authenticated users fall back to the
   // anonymous gateway path.
-  const authState: 'authenticated' | 'anonymous' = hasValidIdentity ? 'authenticated' : 'anonymous'
+  const authState = toAuthState(hasValidIdentity)
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
@@ -60,9 +91,43 @@ const DownloadSuccess = memo(() => {
   const getIdentityIdRef = useRef(getIdentityId)
   const anonUserIdRef = useRef(anonUserId)
   const authStateRef = useRef(authState)
+  // Keep gateway attribution in the exit event's anon_user_id property. The
+  // envelope always uses browser identity, which can differ for custom SDK ids.
+  const gatewayAnonUserIdRef = useRef<string | undefined>(undefined)
   getIdentityIdRef.current = getIdentityId
   anonUserIdRef.current = anonUserId
   authStateRef.current = authState
+
+  // Diagnostic state for `download_funnel_exit`: which download_* events had
+  // fired by the time the user leaves, and how long they stayed. Refs (not
+  // state) so flipping them never re-renders and the visibility (hidden)
+  // handler reads the latest values. `pageLoadedAtRef` is stamped once at
+  // first render.
+  const startedFiredRef = useRef(false)
+  const successFiredRef = useRef(false)
+  const failedFiredRef = useRef(false)
+  const pageLoadedAtRef = useRef(Date.now())
+
+  // Wraps a tracker so every download_* event also records that it fired,
+  // without sprinkling ref writes across the four tracker call sites.
+  const withFiredRefs = useCallback(
+    (tracker: DownloadTracker): DownloadTracker => ({
+      started: () => {
+        startedFiredRef.current = true
+        recordDownloadMilestone('download_started')
+        tracker.started()
+      },
+      success: (filename, bytesTransferred, extra) => {
+        successFiredRef.current = true
+        tracker.success(filename, bytesTransferred, extra)
+      },
+      failed: (reason, extra) => {
+        failedFiredRef.current = true
+        tracker.failed(reason, extra)
+      }
+    }),
+    []
+  )
 
   const rawOs = searchParams.get('os') || ''
   const osMap: Record<string, OperativeSystem> = {
@@ -73,7 +138,95 @@ const DownloadSuccess = memo(() => {
   const defaultArch = clientOS === OperativeSystem.WINDOWS ? 'amd64' : 'arm64'
   const rawArch = searchParams.get('arch') || defaultArch
   const clientArch = (VALID_ARCHS.has(rawArch) ? rawArch : defaultArch) as Architecture
+  const rawMacArch = searchParams.get('mac_arch') ?? ''
+  const macArch = MAC_ARCH_VALUES.has(rawMacArch) ? rawMacArch : undefined
   const place = resolveDownloadPlace(searchParams.get('place'))
+
+  // Single source of truth for the Sentry tags shared by both catch blocks.
+  // `errorPlace` is the flow's own place (page-level for auto-download,
+  // DOWNLOAD_SUCCESS_FOOTER for the re-download) so the Sentry issue joins to
+  // the matching `download_failed` event; `step` marks where it broke.
+  const buildDownloadErrorTags = useCallback(
+    (errorPlace: DownloadPlace, step: 'stream' | 'calculate_url'): Record<string, string | undefined> => ({
+      feature: 'download_funnel',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      click_id: readDownloadClickCorrelation()?.click_id,
+      place: errorPlace,
+      os: clientOS,
+      arch: clientArch,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      download_target: DownloadTarget.DESKTOP_INSTALLER,
+      step
+    }),
+    [clientOS, clientArch]
+  )
+
+  // Partner campaign params (utm_*) forwarded from the /download landing click.
+  // Captured off the URL and re-attached to every download_* event so the
+  // desktop installer funnel keeps the attribution the landing click carried.
+  const campaignParams = useMemo(() => collectCampaignParams(searchParams), [searchParams])
+  const campaignParamsRef = useRef(campaignParams)
+  campaignParamsRef.current = campaignParams
+
+  // First-launch deep-link params (position/realm) forwarded from the jump-in
+  // flow. Appended to the file URL so the launcher can parse them from the
+  // file-origin URL (kMDItemWhereFroms / Zone.Identifier) on first run.
+  const deepLinkParams = useMemo(() => collectDeepLinkParams(searchParams), [searchParams])
+  const deepLinkParamsRef = useRef(deepLinkParams)
+  deepLinkParamsRef.current = deepLinkParams
+
+  // Referral attribution (gated by the direct-download flag). Appended to the
+  // gateway file URL so the launcher can attribute the referral. This page is
+  // the actual download trigger, so the referrer must be added here too — not
+  // just on the /download page.
+  const referrer = useMemo(() => resolveReferrer(), [searchParams])
+  const referrerRef = useRef(referrer)
+  referrerRef.current = referrer
+
+  // Shared `extra` for every tracker built on this page: the client
+  // fingerprint, the campaign params, the click→download correlation, and
+  // `download_target: desktop_installer`. Every landing on /download_success
+  // is a desktop installer attempt — the mobile App Store / Google Play CTAs
+  // exit to their stores and never reach this page — so tagging it lets
+  // analytics exclude mobile store exits from the desktop activation metric.
+  // Non-throwing by contract: this runs in the footer click handler BEFORE its
+  // try/finally arms (a throw there would latch `downloadingRef` and brick the
+  // button) and again INSIDE the mount effect's catch when building the
+  // download_failed fallback (a throw there would kill the fallback emission).
+  // Attribution extras are best-effort — they must never break the download.
+  // Only `collectClientFingerprint()` can realistically throw, so the try/catch
+  // is scoped to just that call (ex P2-4: a wider try/catch here used to let a
+  // fingerprint failure also drop the utm_* campaign params).
+  const buildTrackerExtra = useCallback((): Record<string, unknown> => {
+    let fingerprint: Record<string, unknown> = {}
+    try {
+      // Spread into a fresh literal: ClientFingerprint has no index signature,
+      // so it isn't directly assignable to Record<string, unknown>.
+      fingerprint = { ...(collectClientFingerprint() ?? {}) }
+    } catch (error) {
+      console.error('collectClientFingerprint failed:', error)
+    }
+    const correlation = readDownloadClickCorrelation()
+    return {
+      ...fingerprint,
+      ...campaignParamsRef.current,
+      ...(correlation
+        ? {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            click_id: correlation.click_id,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            ms_since_click: Date.now() - correlation.clicked_at
+          }
+        : {}),
+      // GPU-detected Mac architecture forwarded from the landing URL. Rides in
+      // `extra` so download_started/_success/_failed carry it like the campaign
+      // params; absent for non-Mac arrivals and unrecognized values.
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ...(macArch ? { mac_arch: macArch } : {}),
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      download_target: DownloadTarget.DESKTOP_INSTALLER
+    }
+  }, [macArch])
 
   // Revisit counter — captured once at mount via a lazy useState initializer
   // so re-renders don't double-increment. Keyed by os:arch so that switching
@@ -86,57 +239,81 @@ const DownloadSuccess = memo(() => {
     return current
   })
 
-  const osIcon = clientOS === OperativeSystem.WINDOWS ? microsoftLogo : appleLogo
   const osLink =
     clientOS === OperativeSystem.WINDOWS ? FALLBACK_CDN_RELEASE_LINKS[clientOS]?.amd64 : FALLBACK_CDN_RELEASE_LINKS[clientOS]?.[clientArch]
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const l = useCallback((id: string, values?: Record<string, any>) => intl.formatMessage({ id }, values), [intl])
 
-  const productAction = l('page.download.success.subtitle_action_exploring') as string
+  // Only picks the Step 1 image and highlight. It never feeds the download flow: no effect, ref or key
+  // reads it, so the browser resolving after mount cannot restart or repeat the download.
+  const [, userAgentData] = useAdvancedUserAgentData()
+  const stepOneVariant = getStepOneVariant(clientOS, resolveDownloadBrowser(userAgentData?.browser.name))
 
-  const steps: DownloadSuccessStepsWithOs = useMemo(() => {
-    const spanTag = (chunks: React.ReactNode) => <span>{chunks}</span>
+  const currentSteps: DownloadStepsStep[] = useMemo(() => {
+    const os = clientOS === OperativeSystem.WINDOWS ? 'windows' : 'macOS'
 
-    return {
-      [OperativeSystem.WINDOWS]: [
-        {
-          title: l('page.download.success.steps.windows.step1.title'),
-          text: l('page.download.success.steps.windows.step1.text', { span: spanTag }),
-          image: windowsDownloadsFolder
-        },
-        {
-          title: l('page.download.success.steps.windows.step2.title'),
-          text: l('page.download.success.steps.windows.step2.text', { span: spanTag }),
-          image: windowsSetup
-        },
-        {
-          title: l('page.download.success.steps.windows.step3.title'),
-          text: l('page.download.success.steps.windows.step3.text', { span: spanTag }),
-          image: windowsLaunchingDecentraland
-        }
-      ],
-      [OperativeSystem.MACOS]: [
-        {
-          title: l('page.download.success.steps.macOS.step1.title'),
-          text: l('page.download.success.steps.macOS.step1.text', { span: spanTag }),
-          image: macOsRecentDownload
-        },
-        {
-          title: l('page.download.success.steps.macOS.step2.title'),
-          text: l('page.download.success.steps.macOS.step2.text', { span: spanTag }),
-          image: macOsLauncher
-        },
-        {
-          title: l('page.download.success.steps.macOS.step3.title'),
-          text: l('page.download.success.steps.macOS.step3.text', { span: spanTag }),
-          image: macOsLaunchingDecentraland
-        }
-      ]
-    }
-  }, [l])
+    return [
+      {
+        title: l(`page.download.success.steps.${os}.step1.title`),
+        text: l(`page.download.success.steps.${os}.step1.text`),
+        image: stepOneVariant.image,
+        imageFit: 'cover',
+        highlight: stepOneVariant.highlight
+      },
+      {
+        title: l(`page.download.success.steps.${os}.step2.title`),
+        text: l(`page.download.success.steps.${os}.step2.text`),
+        image: clientOS === OperativeSystem.WINDOWS ? windowsStepTwo : macosStepTwo,
+        imageFit: clientOS === OperativeSystem.WINDOWS ? 'cover' : 'contain'
+      },
+      {
+        title: l(`page.download.success.steps.${os}.step3.title`),
+        text: l(`page.download.success.steps.${os}.step3.text`),
+        image: stepThree,
+        imageFit: 'cover'
+      }
+    ]
+  }, [l, clientOS, stepOneVariant])
 
-  const currentSteps: DownloadSuccessStep[] = steps[clientOS] || steps[OperativeSystem.MACOS]
+  // Page-arrival marker: splits the click→started drop into "never arrived"
+  // (Click with no arrived) vs "arrived but never fired started" (arrived
+  // with no started). Fires before the anon_user_id gate on purpose — it
+  // measures the document's arrival, not Segment's readiness. `place` is
+  // ALWAYS included (even 'unknown') so direct landings are measurable,
+  // unlike the tracker, which omits it.
+  const arrivedFiredRef = useRef(false)
+  useEffect(() => {
+    if (arrivedFiredRef.current) return
+    arrivedFiredRef.current = true
+    const correlation = readDownloadClickCorrelation()
+    const now = Date.now()
+    /* eslint-disable @typescript-eslint/naming-convention */
+    postSegmentEvent(
+      SegmentEvent.DOWNLOAD_SUCCESS_ARRIVED,
+      {
+        os: clientOS,
+        arch: clientArch,
+        place,
+        revisit: revisitNumber,
+        auth_state: authStateRef.current,
+        ...campaignParamsRef.current,
+        ...(correlation ? { click_id: correlation.click_id, ms_since_click: now - correlation.clicked_at } : {}),
+        download_target: DownloadTarget.DESKTOP_INSTALLER,
+        // track_delivered_at intentionally mirrors track_called_at — the
+        // beacon transport (sendBeacon/fetch keepalive) never reports actual
+        // delivery time, so this isn't a latency measurement. Matches the
+        // same audit-field convention already shipped by withTrackAuditFields
+        // (downloadTracking.ts) and useDownloadClick's cold path.
+        track_called_at: now,
+        track_delivered_at: now,
+        track_deferred: true
+      },
+      ensureSegmentAnonymousId()
+    )
+    /* eslint-enable @typescript-eslint/naming-convention */
+    recordDownloadMilestone('download_success_arrived')
+  }, [clientOS, clientArch, place, revisitNumber])
 
   // Gate the auto-download on the anon_user_id resolution. `useAnonUserId` is
   // reactive to `isInitialized` (see hook docstring), so a cold load that
@@ -173,35 +350,66 @@ const DownloadSuccess = memo(() => {
       // best context we have at that point.
       let tracker: DownloadTracker | null = null
 
+      // Deep-link downloads (position/realm) must route through the gateway —
+      // only it bakes those params into the signed binary; the CDN-direct
+      // fallback drops them. Guarantee an anon_user_id so we stay on the
+      // anonymous gateway route instead of falling back to the CDN.
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserIdRef.current, deepLinkParamsRef.current, referrerRef.current)
+      gatewayAnonUserIdRef.current = gatewayAnonUserId
+
       try {
         const { url, filename } = await calculateDownloadUrl({
           os: clientOS,
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           getIdentityId: getIdentityIdRef.current,
-          anonUserId: anonUserIdRef.current
+          anonUserId: gatewayAnonUserId
         })
 
         if (signal.aborted) return
 
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserIdRef.current })
+        // NOTE (2026-08-04): `click_id` was removed from this URL. It used to
+        // ride along so the gateway could echo it into its server-side
+        // telemetry (added 2026-07-13, PR #679), but on macOS this URL is also
+        // the auth-token channel: the browser stores it in the DMG's
+        // `kMDItemWhereFroms` xattr and the launcher parses it to recover the
+        // `identityId` from the path. Launchers up to 1.21.2 scan the query
+        // params first and accept ANY UUID-shaped value as the token, so
+        // `click_id` shadowed the real one and auto-login failed with a 404
+        // (reproduced end-to-end; fixed launcher-side by launcher-rust#321).
+        // Do NOT put UUID-shaped values in query params here: the fix only
+        // reaches users once a launcher build carrying it ships as the
+        // gateway's base binary, so old parsers stay in the field for a long
+        // time. The client-side click→download join is unaffected (the id
+        // still travels via sessionStorage into `buildTrackerExtra`); only the
+        // gateway's server-side join is lost. Restoring it needs a non-UUID
+        // format plus normalization in the gateway (`download-telemetry.ts`
+        // validates with `isValidUUID` and silently drops anything else).
+        const downloadUrl = addQueryParamsToUrlString(url, {
+          [ANON_USER_ID_PARAM]: gatewayAnonUserId,
+          ...deepLinkParamsRef.current,
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {})
+        })
 
         // Fingerprint snapshot used by the data team's server-side join to
         // match this download with the launcher's first-run event from the
-        // same machine. Lives in `extra` so every event the tracker emits
-        // carries it without polluting the tracker's core schema.
-        tracker = createDownloadTracker(deferredTrack, {
-          place,
-          href: downloadUrl,
-          os: clientOS,
-          arch: clientArch,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          anon_user_id: anonUserIdRef.current ?? undefined,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          auth_state: authStateRef.current,
-          revisit: revisitNumber,
-          extra: { ...(collectClientFingerprint() ?? {}) }
-        })
+        // same machine, plus campaign params + download_target. Lives in
+        // `extra` so every event the tracker emits carries it without polluting
+        // the tracker's core schema.
+        tracker = withFiredRefs(
+          createDownloadTracker({
+            place,
+            href: downloadUrl,
+            os: clientOS,
+            arch: clientArch,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            anon_user_id: gatewayAnonUserId ?? undefined,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            auth_state: authStateRef.current,
+            revisit: revisitNumber,
+            extra: buildTrackerExtra()
+          })
+        )
 
         // Fire intent BEFORE the stream so a mid-stream tab close still
         // leaves a `_STARTED` in the warehouse — paired with no `_SUCCESS`
@@ -226,12 +434,17 @@ const DownloadSuccess = memo(() => {
         if (signal.aborted) return
         setDownloadProgress(100)
         setIsFileSaved(true)
-        tracker.success(filename, result.bytesTransferred)
+        tracker.success(filename, result.bytesTransferred, buildDeliveryExtra(result))
       } catch (error) {
         if (signal.aborted) return
         console.error('Download error:', error)
         const reason = error instanceof Error ? error.message : 'Download failed'
         setDownloadError(reason)
+
+        // Segment records THAT the download failed (download_failed); Sentry
+        // records WHY, with the stack trace + milestone buffer. click_id tags
+        // the issue so a warehouse drop row joins to the exact Sentry error.
+        void captureDownloadError(error, buildDownloadErrorTags(place, tracker ? 'stream' : 'calculate_url'))
 
         if (tracker) {
           tracker.failed(reason)
@@ -239,18 +452,20 @@ const DownloadSuccess = memo(() => {
           // URL resolution rejected — no downloadUrl in hand. Emit `_FAILED`
           // with osLink as the best-known href so analytics still records the
           // attempt with consistent shape.
-          const fallbackTracker = createDownloadTracker(deferredTrack, {
-            place,
-            href: osLink,
-            os: clientOS,
-            arch: clientArch,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            anon_user_id: anonUserIdRef.current ?? undefined,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            auth_state: authStateRef.current,
-            revisit: revisitNumber,
-            extra: { ...(collectClientFingerprint() ?? {}) }
-          })
+          const fallbackTracker = withFiredRefs(
+            createDownloadTracker({
+              place,
+              href: osLink,
+              os: clientOS,
+              arch: clientArch,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              anon_user_id: gatewayAnonUserId ?? undefined,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              auth_state: authStateRef.current,
+              revisit: revisitNumber,
+              extra: buildTrackerExtra()
+            })
+          )
           fallbackTracker.failed(reason)
         }
       } finally {
@@ -265,7 +480,7 @@ const DownloadSuccess = memo(() => {
     return () => {
       abortController.abort()
     }
-  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, deferredTrack])
+  }, [anonUserIdReady, clientOS, clientArch, osLink, place, revisitNumber, withFiredRefs, buildTrackerExtra])
 
   const handleDownloadClick = useCallback(
     async (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -283,7 +498,11 @@ const DownloadSuccess = memo(() => {
 
       const footerPlace = DownloadPlace.DOWNLOAD_SUCCESS_FOOTER
       let tracker: DownloadTracker | null = null
-      const fingerprint: Record<string, unknown> = { ...(collectClientFingerprint() ?? {}) }
+      const extra = buildTrackerExtra()
+      // Deep-link downloads must route through the gateway (see the auto-download
+      // effect above); guarantee an anon_user_id to avoid the CDN-direct fallback.
+      const gatewayAnonUserId = resolveGatewayAnonUserId(anonUserId, deepLinkParamsRef.current, referrerRef.current)
+      gatewayAnonUserIdRef.current = gatewayAnonUserId
 
       try {
         const { url, filename } = await calculateDownloadUrl({
@@ -291,22 +510,32 @@ const DownloadSuccess = memo(() => {
           arch: clientArch,
           fallbackLinks: FALLBACK_CDN_RELEASE_LINKS,
           getIdentityId,
-          anonUserId
+          anonUserId: gatewayAnonUserId
         })
-        const downloadUrl = addQueryParamsToUrlString(url, { [ANON_USER_ID_PARAM]: anonUserId })
+        // No `click_id` here either: this URL lands in the DMG's
+        // `kMDItemWhereFroms` xattr and a UUID-shaped query param shadows the
+        // auth token the launcher reads from the path. See the NOTE on the
+        // auto-download effect above.
+        const downloadUrl = addQueryParamsToUrlString(url, {
+          [ANON_USER_ID_PARAM]: gatewayAnonUserId,
+          ...deepLinkParamsRef.current,
+          ...(referrerRef.current ? { referrer: referrerRef.current } : {})
+        })
 
-        tracker = createDownloadTracker(deferredTrack, {
-          place: footerPlace,
-          href: downloadUrl,
-          os: clientOS,
-          arch: clientArch,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          anon_user_id: anonUserId ?? undefined,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          auth_state: authState,
-          revisit: revisitNumber,
-          extra: fingerprint
-        })
+        tracker = withFiredRefs(
+          createDownloadTracker({
+            place: footerPlace,
+            href: downloadUrl,
+            os: clientOS,
+            arch: clientArch,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            anon_user_id: gatewayAnonUserId ?? undefined,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            auth_state: authState,
+            revisit: revisitNumber,
+            extra
+          })
+        )
 
         tracker.started()
 
@@ -320,28 +549,35 @@ const DownloadSuccess = memo(() => {
 
         if (signal.aborted) return
         setDownloadProgress(100)
-        tracker.success(filename, result.bytesTransferred)
+        tracker.success(filename, result.bytesTransferred, buildDeliveryExtra(result))
       } catch (error) {
         if (signal.aborted) return
         console.error('Download error:', error)
         const reason = error instanceof Error ? error.message : 'Download failed'
         setDownloadError(reason)
 
+        // Segment records THAT the download failed (download_failed); Sentry
+        // records WHY, with the stack trace + milestone buffer. click_id tags
+        // the issue so a warehouse drop row joins to the exact Sentry error.
+        void captureDownloadError(error, buildDownloadErrorTags(footerPlace, tracker ? 'stream' : 'calculate_url'))
+
         if (tracker) {
           tracker.failed(reason)
         } else {
-          const fallbackTracker = createDownloadTracker(deferredTrack, {
-            place: footerPlace,
-            href: osLink,
-            os: clientOS,
-            arch: clientArch,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            anon_user_id: anonUserId ?? undefined,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            auth_state: authState,
-            revisit: revisitNumber,
-            extra: fingerprint
-          })
+          const fallbackTracker = withFiredRefs(
+            createDownloadTracker({
+              place: footerPlace,
+              href: osLink,
+              os: clientOS,
+              arch: clientArch,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              anon_user_id: gatewayAnonUserId ?? undefined,
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              auth_state: authState,
+              revisit: revisitNumber,
+              extra
+            })
+          )
           fallbackTracker.failed(reason)
         }
       } finally {
@@ -354,7 +590,7 @@ const DownloadSuccess = memo(() => {
         }
       }
     },
-    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, deferredTrack]
+    [clientOS, clientArch, anonUserId, getIdentityId, osLink, authState, revisitNumber, withFiredRefs, buildTrackerExtra]
   )
 
   // Cancel any in-flight footer-initiated stream when the page unmounts so
@@ -366,6 +602,33 @@ const DownloadSuccess = memo(() => {
     },
     []
   )
+
+  // Diagnostic: snapshot the funnel state on departure so we can measure how
+  // many sessions leave before the download_* events fire/deliver. Reads refs
+  // at fire time; os/arch/place/revisit are stable per page.
+  const getExitData = useCallback(
+    (): DownloadFunnelExitData => ({
+      os: clientOS,
+      arch: clientArch,
+      place,
+      // Prefer the id the download actually used (may be minted for deep-link
+      // sessions) so this exit row joins to the same funnel rows; fall back to
+      // the plain anon id when no download ran.
+      anonUserId: gatewayAnonUserIdRef.current ?? anonUserIdRef.current ?? undefined,
+      clickId: readDownloadClickCorrelation()?.click_id,
+      startedFired: startedFiredRef.current,
+      successFired: successFiredRef.current,
+      failedFired: failedFiredRef.current,
+      msOnPage: Date.now() - pageLoadedAtRef.current,
+      revisit: revisitNumber,
+      authState: authStateRef.current
+    }),
+    [clientOS, clientArch, place, revisitNumber]
+  )
+  // Only measure sessions that entered via a download CTA — a known `place`
+  // means a button click navigated here. Direct/campaign landings, refreshes
+  // and bots resolve to UNKNOWN and aren't part of the click → download funnel.
+  useDownloadFunnelExit(getExitData, place !== DownloadPlace.UNKNOWN)
 
   const showBackdrop = isDownloading || (!downloadError && !isFileSaved)
 
@@ -382,24 +645,34 @@ const DownloadSuccess = memo(() => {
   ) : undefined
 
   return (
-    <DownloadSuccessLayout
+    <DownloadStepsLayout
       loading={showBackdrop}
       backdropContent={backdropContent}
-      osIcon={osIcon}
-      title={l('page.download.success.title')}
-      subtitle={l('page.download.success.subtitle', { action: productAction })}
+      title={l('page.download.success.started.title')}
+      subtitle={l('page.download.success.started.subtitle')}
       steps={currentSteps}
-      renderCardOverlay={(_step, index) => (index === 0 && productAction === 'exploring' ? <HighlightAnimation /> : null)}
       footer={
-        <Typography variant="body1">
-          {l('page.download.success.footer', {
-            link: (
-              <a href={osLink} onClick={handleDownloadClick} data-event={SegmentEvent.DOWNLOAD}>
-                {l('page.download.success.footer_link_label')}
-              </a>
-            )
-          })}
-        </Typography>
+        <>
+          <DownloadStepsFooterLine variant="body1">
+            {l('page.download.success.footer_retry', {
+              link: (
+                <DownloadStepsFooterLink href={osLink} onClick={handleDownloadClick} data-event={SegmentEvent.DOWNLOAD}>
+                  {l('page.download.success.footer_retry_link')}
+                </DownloadStepsFooterLink>
+              )
+            })}
+          </DownloadStepsFooterLine>
+          <DownloadStepsFooterLine variant="body1">
+            {l('page.download.success.footer_help', {
+              link: (
+                <DownloadStepsFooterLink href="/help" target="_blank" rel="noopener noreferrer">
+                  {l('page.download.success.footer_help_link')}
+                  <DownloadStepsExternalIcon src={externalLinkIcon} alt="" />
+                </DownloadStepsFooterLink>
+              )
+            })}
+          </DownloadStepsFooterLine>
+        </>
       }
       afterContent={<LandingFooter />}
     />

@@ -11,14 +11,15 @@ import { isMember as checkIsMember } from '../../../features/communities/communi
 import { Privacy, RequestStatus, RequestType } from '../../../features/communities/communities.types'
 import { mapCommunityEventToEventEntry } from '../../../features/communities/events.helpers'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useCommunityMemberCards } from '../../../hooks/useCommunityMemberCards'
 import { useEventDetailModal } from '../../../hooks/useEventDetailModal'
 import { usePaginatedCommunityEvents } from '../../../hooks/usePaginatedCommunityEvents'
 import { usePaginatedCommunityMembers } from '../../../hooks/usePaginatedCommunityMembers'
-import { EventDetailModal } from '../../whats-on/EventDetailModal'
+import { EventDetailModal } from '../../events/EventDetailModal'
 import { CommunityInfo } from './CommunityInfo'
 import { describeError } from './errorUtils'
 import { EventsList } from './EventsList'
-import { type MemberCardProps, MembersList } from './MembersList'
+import { MembersList } from './MembersList'
 import { PrivateMessage } from './PrivateMessage'
 import { type TabType, Tabs } from './Tabs'
 import { AllowedAction, type CommunityDetailProps } from './CommunityDetail.types'
@@ -40,7 +41,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
   const shouldFetchMembersAndEvents = !isPrivate || member
 
   const shouldFetchRequests = isLoggedIn && !!address && isPrivate && !member
-  const { data: memberRequestsData, isLoading: isLoadingMemberRequests } = useGetMemberRequestsQuery(
+  const { currentData: memberRequestsData, isLoading: isLoadingMemberRequests } = useGetMemberRequestsQuery(
     { address: address ?? '', type: RequestType.REQUEST_TO_JOIN },
     { skip: !shouldFetchRequests }
   )
@@ -76,7 +77,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
     async (communityId: string) => {
       if (!isLoggedIn || !address) return
       try {
-        await joinCommunity(communityId).unwrap()
+        await joinCommunity({ id: communityId, account: address.toLowerCase() }).unwrap()
         setErrorKind(null)
       } catch (err) {
         // Log raw error for debugging; surface a generic message via i18n (rule 10).
@@ -162,13 +163,7 @@ function CommunityDetailComponent({ community, isLoggedIn, address }: CommunityD
     handleRequestToJoin
   ])
 
-  const memberCards: MemberCardProps[] = members.map(item => ({
-    memberAddress: item.memberAddress,
-    name: item.name ?? item.memberAddress,
-    role: item.role,
-    profilePictureUrl: item.profilePictureUrl ?? '',
-    hasClaimedName: item.hasClaimedName ?? false
-  }))
+  const memberCards = useCommunityMemberCards(members)
 
   const eventListItems = events.map(mapCommunityEventToEventEntry)
 

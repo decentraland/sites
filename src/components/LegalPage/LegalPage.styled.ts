@@ -69,7 +69,10 @@ const ContentArea = styled(Box)({
   minWidth: 0
 })
 
-const DocumentTitle = styled(Typography)(({ theme }) => ({
+// Renders as h1 so each legal page has one, above the h2/h3 the sections already
+// emit. Typography defaults to <p>, which left these documents with no heading at
+// the top for screen readers, crawlers and the prerendered artifacts alike.
+const DocumentTitle = styled('h1')(({ theme }) => ({
   fontSize: 34,
   fontWeight: 500,
   lineHeight: '42px',

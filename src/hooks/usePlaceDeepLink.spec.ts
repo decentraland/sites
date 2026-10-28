@@ -30,7 +30,7 @@ jest.mock('../features/places', () => {
 
 const mockNormalizeJumpPlace = jest.fn()
 
-jest.mock('../components/whats-on/PlaceDetailModal', () => ({
+jest.mock('../components/events/PlaceDetailModal', () => ({
   normalizeJumpPlace: (...args: unknown[]) => mockNormalizeJumpPlace(...args)
 }))
 

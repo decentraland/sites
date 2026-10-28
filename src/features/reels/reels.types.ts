@@ -38,6 +38,10 @@ interface Image {
   id: string
   url: string
   thumbnailUrl: string
+  // Whether the owner published this snapshot to their public gallery. Only meaningful when the
+  // listing was fetched signed-as-owner (the unsigned listing already excludes private images);
+  // drives the owner-only visibility filter in the profile "My Photos" tab.
+  isPublic: boolean
   metadata: ImageMetadata
 }
 

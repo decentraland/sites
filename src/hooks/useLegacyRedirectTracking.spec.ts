@@ -12,7 +12,7 @@ const useAnalyticsMock = useAnalytics as jest.MockedFunction<typeof useAnalytics
 const baseArgs = {
   origin: 'events' as const,
   source: '/events/event?id=abc',
-  destination: '/whats-on?id=abc',
+  destination: '/events?id=abc',
   preservedParams: { id: 'abc' }
 }
 
@@ -43,7 +43,7 @@ describe('useLegacyRedirectTracking', () => {
         SegmentEvent.LEGACY_EVENTS_REDIRECTED,
         expect.objectContaining({
           source: '/events/event?id=abc',
-          destination: '/whats-on?id=abc',
+          destination: '/events?id=abc',
           origin: 'events',
           preservedParams: { id: 'abc' }
         })
@@ -53,7 +53,7 @@ describe('useLegacyRedirectTracking', () => {
 
     it('should fire track with the places SegmentEvent for origin "places"', () => {
       renderHook(() =>
-        useLegacyRedirectTracking({ ...baseArgs, origin: 'places', source: '/places/place', destination: '/whats-on', preservedParams: {} })
+        useLegacyRedirectTracking({ ...baseArgs, origin: 'places', source: '/places/place', destination: '/events', preservedParams: {} })
       )
 
       expect(trackMock).toHaveBeenCalledWith(

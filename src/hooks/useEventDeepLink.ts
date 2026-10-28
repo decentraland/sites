@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
-import type { ModalEventData } from '../components/whats-on/EventDetailModal'
-import { normalizeEventEntry } from '../components/whats-on/EventDetailModal/normalizers'
+import type { ModalEventData } from '../components/events/EventDetailModal'
+import { normalizeEventEntry } from '../components/events/EventDetailModal/normalizers'
 import { useGetEventByIdQuery } from '../features/events'
 import { EVENT_ID_PARAM } from '../utils/whatsOnUrl'
 import { isClientError } from './deepLinkErrors'
@@ -19,7 +19,7 @@ function useEventDeepLink(): UseEventDeepLinkResult {
   const eventId = searchParams.get(EVENT_ID_PARAM)
   const { identity } = useAuthIdentity()
 
-  const { data: event, error } = useGetEventByIdQuery(eventId ? { eventId, identity } : skipToken)
+  const { currentData: event, error } = useGetEventByIdQuery(eventId ? { eventId, identity } : skipToken)
 
   const modalData = useMemo<ModalEventData | null>(() => (event ? normalizeEventEntry(event) : null), [event])
 

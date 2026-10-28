@@ -38,6 +38,10 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string, values?: Record<string, string>) => `${key}:${values?.userName ?? ''}`
 }))
 
+jest.mock('../../hooks/usePageView', () => ({
+  usePageView: () => {}
+}))
+
 const renderWithRouter = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>

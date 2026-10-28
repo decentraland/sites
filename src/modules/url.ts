@@ -1,6 +1,31 @@
 import { config } from 'decentraland-ui2/dist/config'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
-import { Architecture } from '../types/download.types'
+import { Architecture, OperativeSystem } from '../types/download.types'
+import { DownloadPlace } from './segment.types'
+
+const ANON_USER_ID_PARAM = 'anon_user_id'
+
+interface DownloadSuccessHrefOptions {
+  anonUserId?: string
+  arch?: string
+  /**
+   * Partner campaign params (utm_*) collected from the landing URL, forwarded
+   * verbatim so the desktop installer funnel keeps the attribution the click
+   * carried. Snake_case keys are appended as-is (see `collectCampaignParams`).
+   */
+  campaignParams?: Record<string, string>
+  /**
+   * First-launch deep-link params (position/realm, see `collectDeepLinkParams`)
+   * forwarded so `/download_success` can put them on the file-origin URL the
+   * launcher parses on first run (kMDItemWhereFroms / Zone.Identifier).
+   */
+  deepLinkParams?: Record<string, string>
+  /**
+   * Referral attribution address, forwarded so `/download_success` embeds it in
+   * the gateway download URL the launcher parses for attribution.
+   */
+  referrer?: string
+}
 
 const addQueryParamsToUrlString = (url: string, params: Record<string, string | undefined | null>): string => {
   if (!params || Object.keys(params).length === 0) {
@@ -16,6 +41,41 @@ const addQueryParamsToUrlString = (url: string, params: Record<string, string | 
   })
 
   return urlObj.toString()
+}
+
+/**
+ * Appends download/tracking params to a download CTA URL, resolving relative
+ * env URLs (dev/zone use `/download`) against the current origin so `new URL`
+ * doesn't throw. The params are an enhancement — a malformed base must never
+ * block the download, so any failure returns `base` untouched.
+ */
+const buildTrackedDownloadUrl = (base: string, params: Record<string, string | undefined | null>): string => {
+  try {
+    return addQueryParamsToUrlString(new URL(base, window.location.origin).toString(), params)
+  } catch {
+    return base
+  }
+}
+
+/**
+ * Primary CTA URL of the "install first" DownloadModal. With a known desktop
+ * installer it goes straight to `/download_success`, which starts the download,
+ * the same one-click path the homepage hero takes. Without one it keeps
+ * `fallbackBase` (the `/download` chooser). `params` carry the attribution and
+ * deep-link either way, and never overwrite the routing params.
+ */
+const buildModalDownloadUrl = (
+  installerOs: OperativeSystem | null,
+  fallbackBase: string,
+  params: Record<string, string | undefined | null>
+): string => {
+  if (!installerOs) return buildTrackedDownloadUrl(fallbackBase, params)
+  // NOTE: on desktop the env DOWNLOAD_URL is intentionally not used. The relative
+  // `/download_success` keeps the download on the current origin (stg stays on
+  // stg instead of hopping to the absolute decentraland.org URL in stg.json).
+  const routing = buildDownloadSuccessHref(installerOs, DownloadPlace.DOWNLOAD_MODAL)
+  const extra = Object.fromEntries(Object.entries(params).filter(([key]) => key !== 'os' && key !== 'place'))
+  return buildTrackedDownloadUrl(routing, extra)
 }
 
 const updateUrlWithLastValue = (url: string, paramKey: string, paramValue: string) => {
@@ -138,9 +198,43 @@ const extractDownloadLinkFromCDNReleaseOption = (
 
 const FALLBACK_CDN_RELEASE_LINKS = sanitizeCDNReleaseLinks(getCDNRelease(CDNSource.LAUNCHER)) || {}
 
+const buildDownloadSuccessHref = (os: string, place: string, options: DownloadSuccessHrefOptions = {}): string => {
+  const params = new URLSearchParams({ os, place })
+  if (options.anonUserId) {
+    params.set(ANON_USER_ID_PARAM, options.anonUserId)
+  }
+  if (options.arch) {
+    params.set('arch', options.arch)
+  }
+  if (options.referrer) {
+    params.set('referrer', options.referrer)
+  }
+  if (options.deepLinkParams) {
+    for (const [key, value] of Object.entries(options.deepLinkParams)) {
+      // Same guard as campaignParams below: never overwrite the routing params.
+      if (params.has(key)) continue
+      params.set(key, value)
+    }
+  }
+  if (options.campaignParams) {
+    for (const [key, value] of Object.entries(options.campaignParams)) {
+      // Never let a campaign param overwrite the routing params set above
+      // (os/place/arch/anon_user_id). Unreachable via collectCampaignParams
+      // (utm_* allowlist), but the option is a bare Record — a future caller
+      // passing raw searchParams entries must not corrupt the funnel.
+      if (params.has(key)) continue
+      params.set(key, value)
+    }
+  }
+  return `/download_success?${params.toString()}`
+}
+
 export {
   FALLBACK_CDN_RELEASE_LINKS,
   addQueryParamsToUrlString,
+  buildDownloadSuccessHref,
+  buildModalDownloadUrl,
+  buildTrackedDownloadUrl,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,
   sanitizeCDNReleaseLinks,
