@@ -357,21 +357,24 @@ function DiscoverHomePage() {
   // NOTE: 2026-10-28 (Braian) the curated rail above the grid was removed on purpose; the curated set is
   // browsed through the Featured category, and only Live Now takes part in rail deduplication. Bringing a
   // rail back means restoring it from history.
-  const exploreCards = useMemo<DiscoverPlace[]>(() => {
+  const visibleBrowse = useMemo(() => {
     // Curation overrides the junk heuristic under Featured, as places-api does server-side.
     const isHidden = activeCategory === FEATURED_CATEGORY ? isHiddenFeaturedPlace : isHiddenPlace
-    const kept = browseDestinations.filter(p => !isHidden(p))
+    return browseDestinations.filter(p => !isHidden(p))
+  }, [browseDestinations, activeCategory])
+  const exploreCards = useMemo<DiscoverPlace[]>(() => {
     // Under a category the grid is the whole filtered result, so Live Now never takes rows out of it.
-    if (repeatAcrossSections || activeCategory !== 'all') return kept
-    const shownAbove = new Set([...liveRail.map(c => c.id)])
-    return kept.filter(p => !shownAbove.has(p.id))
-  }, [browseDestinations, activeCategory, repeatAcrossSections, liveRail])
+    if (repeatAcrossSections || activeCategory !== 'all') return visibleBrowse
+    const shownAbove = new Set(liveRail.map(c => c.id))
+    return visibleBrowse.filter(p => !shownAbove.has(p.id))
+  }, [visibleBrowse, activeCategory, repeatAcrossSections, liveRail])
 
   // Wait for everything on first paint so Live Now and the grid appear together. Polling / search
   // refetches use `isFetching`, not `isLoading`, so they don't re-trigger this gate.
   const isLoadingLiveFeed = showLiveRail && liveFeedQuery.isLoading
   const isInitialLoading = isLoadingBrowse || isLoadingLiveFeed
-  const isEmpty = !isInitialLoading && section === 'all' && exploreCards.length === 0
+  // Judged before the Live Now dedupe: a first page fully held by Live Now is not an empty result.
+  const isEmpty = !isInitialLoading && section === 'all' && visibleBrowse.length === 0
 
   // Cold load: render the spinner straight inside `CenteredBox` so the
   // page-level loader anchors at the exact viewport Y as the DappsShell

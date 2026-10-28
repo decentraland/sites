@@ -3,9 +3,9 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { Box, Drawer, IconButton, Select, Typography, dclColors, styled } from 'decentraland-ui2'
 import { SearchField } from '../../components/places/_shared'
 
-// Track floor for both rails that render decentraland-ui2's EventSmallCard: the
-// card carries a 300px minimum, and a 4-up row spends three 24px gaps, so a
-// narrower track would overflow the card instead of dropping a column.
+// Track floor for the Live Now carousel slides, which render decentraland-ui2's
+// EventSmallCard: the card carries a 300px minimum, and a 4-up row spends three
+// 24px gaps, so a narrower track would overflow the card instead of dropping a column.
 const SHARED_CARD_TRACK = 'max(300px, calc((100% - 72px) / 4))'
 
 // Exact tokens from the "Places - Desktop" Figma.

@@ -1149,5 +1149,27 @@ describe('DiscoverHomePage', () => {
 
       expect(screen.getByText('discover.explore.empty')).toBeInTheDocument()
     })
+
+    it('should keep the empty state under a category while Live Now stays populated', () => {
+      render(<DiscoverHomePage />)
+
+      fireEvent.change(screen.getByRole('combobox', { name: 'discover.explore.category.all' }), { target: { value: 'game' } })
+
+      expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+      expect(screen.getByText('discover.explore.empty')).toBeInTheDocument()
+    })
+  })
+
+  describe('when every row of the first page is already in Live Now', () => {
+    it('should not render the empty state with repetition off', () => {
+      mockRepeat.mockReturnValue(false)
+      browseDestinations = { data: { ok: true, total: 4, data: liveFeed.data?.data ?? [] }, isLoading: false }
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.getAllByTestId('live-card')).toHaveLength(4)
+      expect(screen.queryByTestId('place-card')).not.toBeInTheDocument()
+      expect(screen.queryByText('discover.explore.empty')).not.toBeInTheDocument()
+    })
   })
 })
