@@ -2,8 +2,11 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAnalytics } from '@dcl/hooks'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useDeferredTrack } from '../../hooks/useDeferredTrack'
 import { MIN_DISPLAY_BALANCE } from '../../hooks/useManaBalances'
 import { useLocale } from '../../intl/LocaleContext'
+import { isAnalyticsOffForVisitor } from '../../modules/analyticsSessionGate'
+import { postDeferredClick } from '../../modules/deferredClickBeacon'
 import { SectionViewedTrack, SegmentEvent } from '../../modules/segment'
 import { assetUrl } from '../../utils/assetUrl'
 import { getAvatarBackgroundColor, getDisplayName } from '../../utils/avatarColor'
@@ -29,9 +32,10 @@ import {
   ShoppingBagIcon,
   WearableIcon
 } from './icons'
-import { isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
+import { isSameTabNavigation, isSectionActive, toNavbarAction, toNotificationLocale } from './LandingNavbar.helpers'
 import { DROPDOWN_SECTIONS, MENU_CONFIG, USER_MENU_ITEMS } from './navbarConfig'
 import type { DropdownSection } from './navbarConfig'
+import type { NavbarClickLink, NavbarClickOptions } from './LandingNavbar.types'
 import {
   AvatarButton,
   AvatarImage,
@@ -252,19 +256,40 @@ const LandingNavbar = memo(function LandingNavbar({
   // ui2 renders notifications in en/es/zh only, so the site locale cannot go
   // straight through (SITES-2S0).
   const notificationLocale = toNotificationLocale(locale)
-  const { isInitialized, track } = useAnalytics()
+  const { isInitialized } = useAnalytics()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Read through a ref (as useDownloadClick does) so trackNavbar keeps its identity when analytics becomes
+  // ready, instead of rebuilding every memoized handler.
+  const isInitializedRef = useRef(isInitialized)
+  isInitializedRef.current = isInitialized
+
+  const deferredTrack = useDeferredTrack()
+
   const trackNavbar = useCallback(
-    (action: string, link?: { section: string; href: string }) => {
-      if (!isInitialized) return
-      track(SegmentEvent.CLICK, { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link })
+    (action: string, link?: NavbarClickLink, { leavesPage = true }: NavbarClickOptions = {}) => {
+      const properties = { place: SectionViewedTrack.LANDING_NAVBAR, event: 'click', action, ...link }
+      // Once analytics is ready the queue sends at once, so every navbar click carries the same `track_*` fields.
+      if (isInitializedRef.current) {
+        deferredTrack(SegmentEvent.CLICK, properties)
+        return
+      }
+      // Analytics loads once the page is idle and is ready only after Segment fetched its settings. A click
+      // that stays on the page (new tab, Jump In) waits in the queue with the SDK's full context, unless analytics
+      // never boots for this visitor and the queue would wait forever.
+      if (!leavesPage) {
+        if (!isAnalyticsOffForVisitor()) deferredTrack(SegmentEvent.CLICK, properties)
+        return
+      }
+      // One that replaces the page would be lost with it; the beacon survives the unload.
+      postDeferredClick(properties)
     },
-    [isInitialized, track]
+    [deferredTrack]
   )
 
   const trackNavbarLink = useCallback(
-    (section: string, labelKey: string, href: string) => trackNavbar(toNavbarAction(labelKey), { section, href }),
+    (section: string, labelKey: string, href: string, options?: NavbarClickOptions) =>
+      trackNavbar(toNavbarAction(labelKey), { section, href }, options),
     [trackNavbar]
   )
 
@@ -273,10 +298,10 @@ const LandingNavbar = memo(function LandingNavbar({
   const navbarLinkHandlers = useCallback(
     (section: string, labelKey: string, href: string) => ({
       onClick: (event: React.MouseEvent) => {
-        if (event.button === 0) trackNavbarLink(section, labelKey, href)
+        if (event.button === 0) trackNavbarLink(section, labelKey, href, { leavesPage: isSameTabNavigation(event) })
       },
       onAuxClick: (event: React.MouseEvent) => {
-        if (event.button === 1) trackNavbarLink(section, labelKey, href)
+        if (event.button === 1) trackNavbarLink(section, labelKey, href, { leavesPage: false })
       }
     }),
     [trackNavbarLink]
@@ -556,7 +581,7 @@ const LandingNavbar = memo(function LandingNavbar({
           {scrolled && onClickJumpIn ? (
             <NavJumpInButton
               onClick={e => {
-                trackNavbar('jump_in')
+                trackNavbar('jump_in', undefined, { leavesPage: false })
                 onClickJumpIn(e)
               }}
             >

@@ -48,6 +48,12 @@ const ScopeChip = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.action.hover
 }))
 
+const HeaderActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: theme.spacing(1)
+}))
+
 const StorageTabsRoot = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`
 }))
@@ -59,4 +65,4 @@ const LoaderBox = styled(Box)(() => ({
   minHeight: 200
 }))
 
-export { BackButton, LoaderBox, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot }
+export { BackButton, HeaderActions, LoaderBox, ScopeChip, ScopeRow, StorageHeader, StoragePageContainer, StorageTabsRoot }

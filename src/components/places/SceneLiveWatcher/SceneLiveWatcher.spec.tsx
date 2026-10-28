@@ -200,7 +200,7 @@ describe('SceneLiveWatcher', () => {
         props = {
           status: 'no-broadcast',
           mode: 'scene',
-          streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
+          streamingHref: 'https://decentraland.zone/play/?position=-9%2C-9',
           coverImage: 'https://img.test/cover.png',
           place
         }
@@ -357,7 +357,7 @@ describe('SceneLiveWatcher', () => {
         props = {
           status: 'ready',
           mode: 'scene',
-          streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
+          streamingHref: 'https://decentraland.zone/play/?position=-9%2C-9',
           place
         }
         mockUseTracks.mockReturnValue([])

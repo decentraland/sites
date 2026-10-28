@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { CanonicalSync } from './components/CanonicalSync'
 import { RouteErrorBoundary } from './components/ErrorBoundary'
 import { ScrollToTop } from './components/ScrollToTop'
 import { lazyWithRetry } from './utils/lazyWithRetry'
@@ -36,7 +37,6 @@ const CreatorHubDownloadSuccessPage = lazyWithRetry(() =>
   import('./pages/download/CreatorHubDownloadSuccess').then(m => ({ default: m.CreatorHubDownloadSuccess }))
 )
 const HelpPage = lazyWithRetry(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
-const PlayPage = lazyWithRetry(() => import('./pages/play').then(m => ({ default: m.PlayPage })))
 const InvitePage = lazyWithRetry(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
 const CreatePage = lazyWithRetry(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazyWithRetry(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
@@ -182,6 +182,7 @@ const AccountNotFoundPage = lazyWithRetry(() =>
 const App = () => {
   return (
     <BrowserRouter>
+      <CanonicalSync />
       <ScrollToTop />
       {/* Inside BrowserRouter so the boundary can clear itself on navigation, and
           outside Suspense so a rejected lazy import is caught rather than left to
@@ -232,7 +233,6 @@ const App = () => {
               <Route path="/terms" element={<TermsOfUse />} />
               {/* route-manifest: sitemap */}
               <Route path="/help" element={<HelpPage />} />
-              <Route path="/play" element={<PlayPage />} />
               {/* route-manifest: sitemap */}
               <Route path="/create" element={<CreatePage />} />
               {/* route-manifest: sitemap */}
