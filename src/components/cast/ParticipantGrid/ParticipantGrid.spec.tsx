@@ -33,7 +33,7 @@ const cameras = (count: number) => Array.from({ length: count }, (_, index) => t
 const visibleNames = () => screen.queryAllByText(/^(cam-\d+|me)$/).map(element => element.textContent)
 const SHARE = trackRef('sharer', Track.Source.ScreenShare)
 const tileNames = () =>
-  screen.queryAllByText(/^(cam-\d+|sharer - screen|other - screen|streaming_controls\.presentation)$/).map(element => element.textContent)
+  screen.queryAllByText(/^(cam-\d+|(sharer|other|me) - screen|streaming_controls\.presentation)$/).map(element => element.textContent)
 
 describe('when the participant grid renders', () => {
   let videoTracks: FakeTrack[]
@@ -227,7 +227,7 @@ describe('when the participant grid renders', () => {
     })
 
     it('should spotlight the screen share', () => {
-      expect(tileNames()[0]).toBe('sharer - screen')
+      expect(tileNames()).toEqual(['sharer - screen', 'cam-1', 'cam-2'])
     })
 
     describe('and the visitor clicks a thumbnail', () => {
@@ -236,7 +236,29 @@ describe('when the participant grid renders', () => {
       })
 
       it('should spotlight the clicked tile instead', () => {
-        expect(tileNames()[0]).toBe('cam-1')
+        expect(tileNames()).toEqual(['cam-1', 'cam-2', 'sharer - screen'])
+      })
+
+      describe('and that camera leaves while the share is live', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2).slice(1), SHARE]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should hand the spotlight back to the screen share', () => {
+          expect(tileNames()).toEqual(['sharer - screen', 'cam-2'])
+        })
+      })
+
+      describe('and a presentation starts', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2), SHARE, trackRef(BOT, Track.Source.ScreenShare)]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should move the spotlight to the presentation over the visitor choice', () => {
+          expect(tileNames()).toEqual(['streaming_controls.presentation'])
+        })
       })
     })
 
@@ -247,7 +269,18 @@ describe('when the participant grid renders', () => {
       })
 
       it('should keep the first screen share in the spotlight', () => {
-        expect(tileNames()[0]).toBe('sharer - screen')
+        expect(tileNames()).toEqual(['sharer - screen', 'cam-1'])
+      })
+
+      describe('and the first sharer stops', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2), trackRef('other', Track.Source.ScreenShare)]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should move the spotlight to the remaining screen share', () => {
+          expect(tileNames()).toEqual(['other - screen', 'cam-1', 'cam-2'])
+        })
       })
     })
 
@@ -279,9 +312,20 @@ describe('when the participant grid renders', () => {
         })
 
         it('should hand the spotlight back to the screen share', () => {
-          expect(tileNames()[0]).toBe('sharer - screen')
+          expect(tileNames()).toEqual(['sharer - screen', 'cam-1', 'cam-2'])
         })
       })
+    })
+  })
+
+  describe('and the local participant shares their own screen', () => {
+    beforeEach(() => {
+      videoTracks = [...cameras(2), trackRef('me', Track.Source.ScreenShare)]
+      render(<ParticipantGrid />)
+    })
+
+    it('should keep the full grid instead of spotlighting their own share', () => {
+      expect(tileNames()).toEqual(['cam-1', 'cam-2', 'me - screen'])
     })
   })
 
