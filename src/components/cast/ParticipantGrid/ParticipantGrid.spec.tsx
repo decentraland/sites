@@ -31,6 +31,9 @@ type FakeTrack = ReturnType<typeof trackRef>
 const BOT = 'presentation-bot:room:1'
 const cameras = (count: number) => Array.from({ length: count }, (_, index) => trackRef(`cam-${index + 1}`, Track.Source.Camera))
 const visibleNames = () => screen.queryAllByText(/^(cam-\d+|me)$/).map(element => element.textContent)
+const SHARE = trackRef('sharer', Track.Source.ScreenShare)
+const tileNames = () =>
+  screen.queryAllByText(/^(cam-\d+|(sharer|other|me) - screen|streaming_controls\.presentation)$/).map(element => element.textContent)
 
 describe('when the participant grid renders', () => {
   let videoTracks: FakeTrack[]
@@ -214,6 +217,126 @@ describe('when the participant grid renders', () => {
 
     it('should collapse back to the full grid', () => {
       expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
+    })
+  })
+
+  describe('and a participant shares their screen next to the cameras', () => {
+    beforeEach(() => {
+      videoTracks = [...cameras(2), SHARE]
+      view = render(<ParticipantGrid />)
+    })
+
+    it('should spotlight the screen share', () => {
+      expect(tileNames()).toEqual(['sharer - screen', 'cam-1', 'cam-2'])
+    })
+
+    describe('and the visitor clicks a thumbnail', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByText('cam-1'))
+      })
+
+      it('should spotlight the clicked tile instead', () => {
+        expect(tileNames()).toEqual(['cam-1', 'cam-2', 'sharer - screen'])
+      })
+
+      describe('and that camera leaves while the share is live', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2).slice(1), SHARE]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should hand the spotlight back to the screen share', () => {
+          expect(tileNames()).toEqual(['sharer - screen', 'cam-2'])
+        })
+      })
+
+      describe('and a presentation starts', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2), SHARE, trackRef(BOT, Track.Source.ScreenShare)]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should move the spotlight to the presentation over the visitor choice', () => {
+          expect(tileNames()).toEqual(['streaming_controls.presentation'])
+        })
+      })
+    })
+
+    describe('and a second participant starts sharing', () => {
+      beforeEach(() => {
+        videoTracks = [...cameras(2), SHARE, trackRef('other', Track.Source.ScreenShare)]
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should keep the first screen share in the spotlight', () => {
+        expect(tileNames()).toEqual(['sharer - screen', 'cam-1'])
+      })
+
+      describe('and the first sharer stops', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2), trackRef('other', Track.Source.ScreenShare)]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should move the spotlight to the remaining screen share', () => {
+          expect(tileNames()).toEqual(['other - screen', 'cam-1', 'cam-2'])
+        })
+      })
+    })
+
+    describe('and the screen share ends', () => {
+      beforeEach(() => {
+        videoTracks = cameras(2)
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should collapse back to the full grid', () => {
+        expect(visibleNames()).toEqual(['cam-1', 'cam-2'])
+      })
+    })
+
+    describe('and a presentation starts', () => {
+      beforeEach(() => {
+        videoTracks = [...cameras(2), SHARE, trackRef(BOT, Track.Source.ScreenShare)]
+        view.rerender(<ParticipantGrid />)
+      })
+
+      it('should move the spotlight to the presentation', () => {
+        expect(tileNames()).toEqual(['streaming_controls.presentation'])
+      })
+
+      describe('and the presentation ends while the screen share is still live', () => {
+        beforeEach(() => {
+          videoTracks = [...cameras(2), SHARE]
+          view.rerender(<ParticipantGrid />)
+        })
+
+        it('should hand the spotlight back to the screen share', () => {
+          expect(tileNames()).toEqual(['sharer - screen', 'cam-1', 'cam-2'])
+        })
+      })
+    })
+  })
+
+  describe('and the local participant shares their own screen', () => {
+    beforeEach(() => {
+      videoTracks = [...cameras(2), trackRef('me', Track.Source.ScreenShare)]
+      render(<ParticipantGrid />)
+    })
+
+    it('should keep the full grid instead of spotlighting their own share', () => {
+      expect(tileNames()).toEqual(['cam-1', 'cam-2', 'me - screen'])
+    })
+  })
+
+  describe('and a presentation and a screen share appear together', () => {
+    beforeEach(() => {
+      videoTracks = [SHARE, trackRef(BOT, Track.Source.ScreenShare)]
+      render(<ParticipantGrid />)
+    })
+
+    it('should spotlight the presentation alone', () => {
+      expect(tileNames()).toEqual(['streaming_controls.presentation'])
     })
   })
 })

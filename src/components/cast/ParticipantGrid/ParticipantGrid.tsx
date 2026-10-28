@@ -32,6 +32,8 @@ import {
 const MAX_VISIBLE_PARTICIPANTS = 9
 const MAX_THUMBNAILS = 1
 
+const trackKey = (track: TrackReferenceOrPlaceholder) => track.participant.sid + track.source
+
 function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }: ParticipantGridProps) {
   const { t } = useCastTranslation()
   const [expandedTrackSid, setExpandedTrackSid] = useState<string | null>(null)
@@ -58,15 +60,26 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
   )
 
   const autoExpandedRef = useRef(false)
+  const hadPresentationRef = useRef(false)
   useEffect(() => {
-    const presentationTrack = finalTracks.find(t => isPresentationBot(t.participant))
-    if (presentationTrack && !autoExpandedRef.current) {
-      setExpandedTrackSid(presentationTrack.participant.sid + presentationTrack.source)
+    const presentationTrack = finalTracks.find(track => isPresentationBot(track.participant))
+    const screenShareTrack = finalTracks.find(
+      track => track.source === Track.Source.ScreenShare && !track.participant.isLocal && !isPresentationBot(track.participant)
+    )
+    const focusTrack = presentationTrack ?? screenShareTrack
+    const focusKey = focusTrack ? trackKey(focusTrack) : null
+
+    const hasPresentation = Boolean(presentationTrack)
+    if (hasPresentation !== hadPresentationRef.current) autoExpandedRef.current = false
+    hadPresentationRef.current = hasPresentation
+
+    if (focusKey && !autoExpandedRef.current) {
+      setExpandedTrackSid(focusKey)
       autoExpandedRef.current = true
-    } else if (!presentationTrack) {
-      autoExpandedRef.current = false
-      setExpandedTrackSid(prev => (prev && !finalTracks.some(t => t.participant.sid + t.source === prev) ? null : prev))
+      return
     }
+    if (!focusKey) autoExpandedRef.current = false
+    setExpandedTrackSid(prev => (prev && !finalTracks.some(track => trackKey(track) === prev) ? focusKey : prev))
   }, [finalTracks])
 
   const participantCount = finalTracks.length
@@ -112,10 +125,11 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
     )
   }
 
-  if (hasMultipleParticipants && expandedTrackSid) {
-    const expandedTrack = finalTracks.find(t => t.participant.sid + t.source === expandedTrackSid)
-    const otherTracks = finalTracks.filter(t => t.participant.sid + t.source !== expandedTrackSid)
-    const isPresentationExpanded = expandedTrack ? isPresentationBot(expandedTrack.participant) : false
+  const expandedTrack = expandedTrackSid ? finalTracks.find(track => trackKey(track) === expandedTrackSid) : undefined
+
+  if (hasMultipleParticipants && expandedTrack) {
+    const otherTracks = finalTracks.filter(track => track !== expandedTrack)
+    const isPresentationExpanded = isPresentationBot(expandedTrack.participant)
 
     const hasEnoughForOverflow = otherTracks.length > MAX_THUMBNAILS + 1
     const hasThumbnailOverflow = hasEnoughForOverflow
@@ -125,14 +139,13 @@ function ParticipantGrid({ localParticipantVisible = true, presentationOverlay }
 
     return (
       <ParticipantGridContainer $participantCount={participantCount} $expandedView={true}>
-        {expandedTrack && (
-          <ParticipantTile
-            trackRef={expandedTrack}
-            isFullscreen={true}
-            onClick={isPresentationExpanded ? undefined : () => handleTileClick(expandedTrack.participant.sid + expandedTrack.source)}
-            overlay={presentationOverlay}
-          />
-        )}
+        <ParticipantTile
+          trackRef={expandedTrack}
+          isFullscreen={true}
+          onClick={isPresentationExpanded ? undefined : () => handleTileClick(trackKey(expandedTrack))}
+          overlay={presentationOverlay}
+        />
+
         {isPresentationExpanded ? null : otherTracks.length === 1 ? (
           <FloatingVideoContainer>
             <ParticipantTile
