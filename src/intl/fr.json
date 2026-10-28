@@ -183,6 +183,7 @@
         "connected": "Connecté",
         "mute_cast": "Couper le son du Cast pendant que vous êtes dans le monde",
         "unmute_cast": "Réactiver le son du Cast",
+        "click_to_unmute": "Cliquez pour activer le son",
         "share_presentation": "Partager une présentation",
         "stop_presentation": "Arrêter la présentation",
         "uploading_presentation": "Téléversement de la présentation...",

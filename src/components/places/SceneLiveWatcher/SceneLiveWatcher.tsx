@@ -12,6 +12,8 @@ import { Button, CircularProgress, Typography } from 'decentraland-ui2'
 import type { LiveKitCredentials } from '../../../features/cast2/cast2.types'
 import { ChatProvider, useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { LiveKitProvider } from '../../../features/cast2/contexts/LiveKitContext'
+import { NotificationProvider } from '../../../features/cast2/contexts/NotificationContext'
+import { PresentationProvider, usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import type { DiscoverPlace } from '../../../features/discover'
 import { getLivePeerUrl } from '../../../features/discover/sceneAdapter'
@@ -90,7 +92,11 @@ function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredent
         screen={false}
         onError={handleError}
       >
-        <ChatProvider peerUrl={getLivePeerUrl()}>{children}</ChatProvider>
+        <ChatProvider peerUrl={getLivePeerUrl()}>
+          <NotificationProvider>
+            <PresentationProvider>{children}</PresentationProvider>
+          </NotificationProvider>
+        </ChatProvider>
       </LiveKitRoom>
     </LiveKitProvider>
   )
@@ -351,12 +357,9 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const isMobile = Boolean(advancedUserAgent?.mobile)
 
-  // Watch published camera/screen-share tracks. The VIDEO tab is only shown
-  // when at least one remote participant has an active (non-muted) video
-  // track — empty rooms shouldn't advertise a video tab that has nothing
-  // to show. Reacts live to publish / unpublish events.
   const videoTracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], { updateOnlyOn: [] })
-  const hasLiveVideo = videoTracks.some(track => track.publication && !track.publication.isMuted)
+  const presentation = usePresentationOptional()
+  const hasLiveVideo = videoTracks.some(track => track.publication && !track.publication.isMuted) || Boolean(presentation?.state.slide)
 
   // Tab state. `videoAvailable` toggles availability of the VIDEO tab; we
   // keep the user on their current selection unless the video disappears

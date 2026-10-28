@@ -231,6 +231,7 @@
         "connected": "Connected",
         "mute_cast": "Mute this Cast audio while you're in World",
         "unmute_cast": "Unmute Cast audio",
+        "click_to_unmute": "Click to unmute",
         "share_presentation": "Share Presentation",
         "stop_presentation": "Stop Presentation",
         "uploading_presentation": "Uploading presentation...",

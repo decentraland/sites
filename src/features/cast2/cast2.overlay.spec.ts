@@ -1,48 +1,72 @@
-import { containRect, overlayRect } from './cast2.overlay'
+import { containRect, controllableOverlay, overlayRect } from './cast2.overlay'
+import type { MediaRect, OverlayLayout, OverlayRect, SlideInfo } from './cast2.types'
 
-describe('overlayRect', () => {
-  describe('when the small bubble sits bottom-left on a 960x540 frame', () => {
-    it('should return the clamped even rectangle', () => {
-      expect(overlayRect({ x: 0, y: 1, size: 'small' }, 960, 540)).toEqual({ left: 18, top: 376, d: 144 })
-    })
+const LAYOUT: OverlayLayout = { x: 0, y: 1, size: 'small' }
+const SLIDE: SlideInfo = { url: 'https://presenter.test/slide.png', width: 1920, height: 1080 }
+
+describe.each<[string, OverlayLayout, number, OverlayRect]>([
+  ['the small bubble sits bottom-left on a 960x540 frame', { x: 0, y: 1, size: 'small' }, 540, { left: 18, top: 376, d: 144 }],
+  ['the large bubble sits top-right on a 960x540 frame', { x: 1, y: 0, size: 'large' }, 540, { left: 700, top: 18, d: 240 }],
+  ['x lies beyond a 960x540 frame', { x: 5, y: 0.5, size: 'small' }, 540, { left: 796, top: 198, d: 144 }],
+  ['a 960x100 frame is too short for the bubble', { x: 0, y: 0, size: 'small' }, 100, { left: 18, top: 18, d: 62 }]
+])('when computing the overlay rectangle and %s', (_label, layout, height, expected) => {
+  let rect: OverlayRect
+
+  beforeEach(() => {
+    rect = overlayRect(layout, 960, height)
   })
 
-  describe('when the large bubble sits top-right on a 960x540 frame', () => {
-    it('should return the clamped even rectangle', () => {
-      expect(overlayRect({ x: 1, y: 0, size: 'large' }, 960, 540)).toEqual({ left: 700, top: 18, d: 240 })
-    })
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
-  describe('when x lies beyond the frame', () => {
-    it('should clamp it to the same rectangle as x = 1', () => {
-      expect(overlayRect({ x: 5, y: 0.5, size: 'small' }, 960, 540)).toEqual(overlayRect({ x: 1, y: 0.5, size: 'small' }, 960, 540))
-    })
+  it('should return the clamped even rectangle', () => {
+    expect(rect).toEqual(expected)
+  })
+})
+
+describe.each<[string, [number, number], MediaRect]>([
+  ['a 16:9 media is letterboxed in a square box', [1600, 900], { left: 0, top: 218.75, width: 1000, height: 562.5 }],
+  ['a 9:16 media is pillarboxed in a square box', [900, 1600], { left: 218.75, top: 0, width: 562.5, height: 1000 }],
+  ['the media has no width', [0, 900], { left: 0, top: 0, width: 1000, height: 1000 }],
+  ['the media has no height', [1600, 0], { left: 0, top: 0, width: 1000, height: 1000 }]
+])('when containing a media and %s', (_label, [mediaWidth, mediaHeight], expected) => {
+  let rect: MediaRect
+
+  beforeEach(() => {
+    rect = containRect(1000, 1000, mediaWidth, mediaHeight)
   })
 
-  describe('when the frame is too short for the bubble', () => {
-    it('should cap the diameter to the height minus both margins', () => {
-      expect(overlayRect({ x: 0, y: 0, size: 'small' }, 960, 100).d).toBe(62)
-    })
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should return the rectangle the media occupies', () => {
+    expect(rect).toEqual(expected)
   })
 })
 
-describe('containRect', () => {
-  describe('when a 16:9 media is contained in a square box', () => {
-    it('should letterbox it vertically', () => {
-      expect(containRect(1000, 1000, 1600, 900)).toEqual({ left: 0, top: 218.75, width: 1000, height: 562.5 })
-    })
-  })
+describe.each<[string, OverlayLayout | null, SlideInfo | null, string | null, OverlayLayout | null]>([
+  ['the server sends no overlay', null, null, null, null],
+  ['the server composites the deck', LAYOUT, null, null, LAYOUT],
+  ['the local participant presents a client-composed deck', LAYOUT, SLIDE, '0xme', LAYOUT],
+  ['another participant presents a client-composed deck', LAYOUT, SLIDE, '0xother', null],
+  ['a client-composed deck has no presenter yet', LAYOUT, SLIDE, null, null]
+])(
+  'when deciding whether the local participant controls the camera bubble and %s',
+  (_label, overlay, slide, presenterIdentity, expected) => {
+    let controlled: OverlayLayout | null
 
-  describe('when a 9:16 media is contained in a square box', () => {
-    it('should pillarbox it horizontally', () => {
-      expect(containRect(1000, 1000, 900, 1600)).toEqual({ left: 218.75, top: 0, width: 562.5, height: 1000 })
+    beforeEach(() => {
+      controlled = controllableOverlay({ overlay, slide, presenterIdentity }, '0xme')
     })
-  })
 
-  describe('when a media dimension is zero', () => {
-    it('should return the whole box', () => {
-      expect(containRect(800, 600, 0, 900)).toEqual({ left: 0, top: 0, width: 800, height: 600 })
-      expect(containRect(800, 600, 1600, 0)).toEqual({ left: 0, top: 0, width: 800, height: 600 })
+    afterEach(() => {
+      jest.resetAllMocks()
     })
-  })
-})
+
+    it('should return the overlay only when the local participant may move it', () => {
+      expect(controlled).toEqual(expected)
+    })
+  }
+)

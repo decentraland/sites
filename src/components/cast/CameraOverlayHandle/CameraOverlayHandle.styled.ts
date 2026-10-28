@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { VideoTrack } from '@livekit/components-react'
 import { styled } from 'decentraland-ui2'
 
 const HandleLayer = styled('div')({
@@ -31,4 +32,22 @@ const HandleCircle = styled('button', {
   }
 }))
 
-export { HandleCircle, HandleLayer }
+const HandlePreview = styled('div')({
+  position: 'absolute',
+  inset: 0,
+  borderRadius: '50%',
+  overflow: 'hidden',
+  pointerEvents: 'none'
+})
+
+const HandlePreviewVideo = styled(VideoTrack)({
+  '&&&': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    transform: 'scaleX(-1)',
+    borderRadius: 0
+  }
+})
+
+export { HandleCircle, HandleLayer, HandlePreview, HandlePreviewVideo }

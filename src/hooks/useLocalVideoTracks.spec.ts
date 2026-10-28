@@ -9,47 +9,28 @@ jest.mock('@livekit/components-react', () => ({
 
 const mockUseTracks = useTracks as jest.MockedFunction<typeof useTracks>
 
-const localTrack = (source: Track.Source, isMuted: boolean) =>
-  ({ participant: { isLocal: true }, source, publication: { isMuted } }) as unknown as ReturnType<typeof useTracks>[number]
-
-describe('useLocalVideoTracks', () => {
-  let tracks: ReturnType<typeof useTracks>
+describe.each([
+  ['muted', true, false],
+  ['live', false, true]
+])('when the local camera publication is %s', (_, isMuted, hasLocalCamera) => {
+  let result: { current: ReturnType<typeof useLocalVideoTracks> }
 
   beforeEach(() => {
-    tracks = []
-    mockUseTracks.mockImplementation(() => tracks)
+    mockUseTracks.mockReturnValue([
+      { participant: { isLocal: true }, source: Track.Source.Camera, publication: { isMuted } }
+    ] as unknown as ReturnType<typeof useTracks>)
+    ;({ result } = renderHook(() => useLocalVideoTracks()))
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe('when subscribing to the room tracks', () => {
-    it('should re-evaluate when a track is muted or unmuted', () => {
-      renderHook(() => useLocalVideoTracks())
-      expect(mockUseTracks.mock.calls[0][1]?.updateOnlyOn).toEqual(expect.arrayContaining([RoomEvent.TrackMuted, RoomEvent.TrackUnmuted]))
-    })
+  it(`should report hasLocalCamera as ${hasLocalCamera}`, () => {
+    expect(result.current.hasLocalCamera).toBe(hasLocalCamera)
   })
 
-  describe('when the local camera publication is muted', () => {
-    beforeEach(() => {
-      tracks = [localTrack(Track.Source.Camera, true)]
-    })
-
-    it('should report no local camera', () => {
-      const { result } = renderHook(() => useLocalVideoTracks())
-      expect(result.current.hasLocalCamera).toBe(false)
-    })
-  })
-
-  describe('when the local camera publication is live', () => {
-    beforeEach(() => {
-      tracks = [localTrack(Track.Source.Camera, false)]
-    })
-
-    it('should report a local camera', () => {
-      const { result } = renderHook(() => useLocalVideoTracks())
-      expect(result.current.hasLocalCamera).toBe(true)
-    })
+  it('should re-evaluate on track mute and unmute', () => {
+    expect(mockUseTracks.mock.calls[0][1]?.updateOnlyOn).toEqual([RoomEvent.TrackMuted, RoomEvent.TrackUnmuted])
   })
 })

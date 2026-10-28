@@ -58,6 +58,16 @@ interface PresentationInfo {
 interface SlideVideoInfo {
   url: string
   geometry: { x: number; y: number; width: number; height: number }
+  source?: 'client' | 'stream'
+}
+
+/** How the stage plays a client-played video. */
+type ClientPlayerSource = { kind: 'youtube'; id: string } | { kind: 'file'; src: string } | { kind: 'hls'; src: string }
+
+interface SlideInfo {
+  url: string
+  width: number
+  height: number
 }
 
 type OverlaySize = 'small' | 'large'
@@ -129,6 +139,7 @@ export { CastApiError, CastRoomType }
 export type {
   AnonymousIdentity,
   CastMessage,
+  ClientPlayerSource,
   LiveKitCredentials,
   MeasuredMedia,
   MediaRect,
@@ -137,6 +148,7 @@ export type {
   OverlaySize,
   PresentationBotToken,
   PresentationInfo,
+  SlideInfo,
   SlideVideoInfo,
   StreamInfo,
   TokenPayload,
