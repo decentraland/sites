@@ -1322,9 +1322,6 @@
         "sports": "スポーツ",
         "business": "ビジネス"
       },
-      "section": {
-        "featured": "注目の場所"
-      },
       "tab": {
         "explore_all": "すべて見る",
         "favourites": "お気に入り",
@@ -1375,10 +1372,6 @@
       "explore_scene": "シーンを探索",
       "jump_to_location": "{location}に入る（新しいタブで開きます）",
       "copied": "コピーしました！"
-    },
-    "featured": {
-      "view_all": "注目の場所をすべて見る",
-      "view_less": "表示を減らす"
     }
   },
   "account": {

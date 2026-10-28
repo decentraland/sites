@@ -1,6 +1,6 @@
 # places (routes: /places, formerly Discover)
 
-The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live Now rail + Featured rail + Explore band), `/places/communities`, `/places/place/:position`, `/places/world/:name`, `/places/*` (404, reuses `SocialNotFoundPage`). All render inside `<DiscoverLayout />` (purple radial page background, 64/96 navbar clearance).
+The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live Now rail + Explore band), `/places/communities`, `/places/place/:position`, `/places/world/:name`, `/places/*` (404, reuses `SocialNotFoundPage`). All render inside `<DiscoverLayout />` (purple radial page background, 64/96 navbar clearance).
 
 ## Data layer
 
@@ -20,9 +20,9 @@ The `/places` explore section (heavy `DappsShell` tier). Routes: `/places` (Live
 
 ## Pages + components
 
-- `src/pages/places/DiscoverHomePage.tsx` — Live Now rail (top 4 live, mobile carousel), Featured rail (collapsed to 2 rows behind VIEW ALL / VIEW LESS), Explore band (tabs, search, category; grid = live-not-in-rails first by user count, then curated `/destinations` order, deduped against both rails). Failed queries render a shared error + retry state.
+- `src/pages/places/DiscoverHomePage.tsx` — Live Now rail (top 4 live, mobile carousel), Explore band (tabs, search, category incl. Featured = `only_highlighted`; grid = live-not-in-Live-Now first by user count, then curated `/destinations` order, deduped against Live Now only on the unfiltered view). Failed queries render a shared error + retry state.
 - `src/pages/places/DiscoverScenePage.tsx` — live-presence-gated detail. Desktop live → bevy iframe (`BEVY_WEB_URL` + `systemScene=tortilla.dcl.eth&portables=none&guest=1&hud=0`) + always-visible read-only chat; empty/mobile → JUMP IN modal/full page.
-- `src/components/places/` — cards (`PlaceCard`, `FeaturedCard`, `LiveEventCard`, `CommunityCard`, all `memo()`d, covers via `safeCssUrl`), `SceneLiveWatcher` (viewer card + chat dock; its `SceneRoomContent` shows any participant's camera or screen share — the OBS publisher, the kernel scene client — unlike cast's `WatcherViewContent`, which only shows `metadata.role === 'streamer'` participants), `SceneJumpInModal`, `_shared/` (tokens: `SCENE_PANEL_GRADIENT`, `FEATURED_GRADIENT`, `HOVER_GLOW`, error/retry styled).
+- `src/components/places/` — cards (`PlaceCard`, `LiveEventCard`, `CommunityCard`, all `memo()`d, covers via `safeCssUrl`), `SceneLiveWatcher` (viewer card + chat dock; its `SceneRoomContent` shows any participant's camera or screen share — the OBS publisher, the kernel scene client — unlike cast's `WatcherViewContent`, which only shows `metadata.role === 'streamer'` participants), `SceneJumpInModal`, `_shared/` (tokens: `SCENE_PANEL_GRADIENT`, `FEATURED_GRADIENT`, `HOVER_GLOW`, error/retry styled).
 - Owner by-lines resolve the owner's profile name first (batched `POST /lambdas/profiles` in `features/profile/profile.client.ts`), falling back to scene metadata.
 
 ## Observability

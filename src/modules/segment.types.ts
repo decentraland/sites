@@ -90,7 +90,6 @@ enum SegmentEvent {
   // fired it); LAUNCH_SCENE is the in-browser bevy iframe boot.
   DISCOVER_CLICK_LIVE_CARD = 'Discover Click Live Card',
   DISCOVER_CLICK_PLACE_CARD = 'Discover Click Place Card',
-  DISCOVER_CLICK_FEATURED_CARD = 'Discover Click Featured Card',
   DISCOVER_JUMP_IN = 'Discover Jump In',
   DISCOVER_FILTER_CATEGORY = 'Discover Filter Category',
   DISCOVER_LAUNCH_SCENE = 'Discover Launch Scene'

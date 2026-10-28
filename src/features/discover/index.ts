@@ -14,7 +14,6 @@ export {
   parseCategoryParam,
   buildDetailPath,
   buildJumpLandingHref,
-  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenFeaturedPlace,

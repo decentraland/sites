@@ -1322,9 +1322,6 @@
         "sports": "运动",
         "business": "商业"
       },
-      "section": {
-        "featured": "精选地点"
-      },
       "tab": {
         "explore_all": "浏览全部",
         "favourites": "收藏",
@@ -1375,10 +1372,6 @@
       "explore_scene": "探索场景",
       "jump_to_location": "进入 {location}（在新标签页中打开）",
       "copied": "已复制！"
-    },
-    "featured": {
-      "view_all": "查看全部精选地点",
-      "view_less": "收起"
     }
   },
   "account": {

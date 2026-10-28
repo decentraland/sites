@@ -2,7 +2,6 @@ import {
   DISCOVER_CATEGORY_OPTIONS,
   buildJumpLandingHref,
   categoryQueryArgs,
-  countGridTracks,
   discoverDeepLinkOptions,
   discoverPlacePayload,
   isHiddenFeaturedPlace,
@@ -431,26 +430,6 @@ describe('when deciding whether a contact name is junk', () => {
 
   it('should accept a real contact name', () => {
     expect(isJunkContactName('LowPolyModels')).toBe(false)
-  })
-})
-
-describe('when counting the tracks of a resolved grid-template-columns', () => {
-  it('should count each track a four-up grid resolved to', () => {
-    expect(countGridTracks('326px 326px 326px 326px')).toBe(4)
-  })
-
-  it('should count a single-column grid', () => {
-    expect(countGridTracks('430px')).toBe(1)
-  })
-
-  it('should return 0 when there is no layout to measure', () => {
-    // jsdom reports an empty string, and so does a node that has not been laid
-    // out yet; callers keep their own fallback for this.
-    expect(countGridTracks('')).toBe(0)
-  })
-
-  it('should ignore the padding browsers add between tracks', () => {
-    expect(countGridTracks('  326px   326px  ')).toBe(2)
   })
 })
 
