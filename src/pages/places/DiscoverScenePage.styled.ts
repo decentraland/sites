@@ -114,12 +114,9 @@ const ByText = styled(Typography)({
   whiteSpace: 'nowrap'
 })
 
-const CreatorName = styled('span')({
-  color: RUBY,
-  fontWeight: 500
-})
-
-const LocationTag = styled(Box)({
+// An anchor so the tag jumps into the scene once the place resolves; until
+// then it renders without `href`, which is inert and gets no hover state.
+const LocationTag = styled('a')({
   display: 'inline-flex',
   alignItems: 'center',
   gap: 8,
@@ -128,7 +125,11 @@ const LocationTag = styled(Box)({
   fontSize: 'clamp(12px, 0.729vw, 14px)', // 14px
   fontWeight: 400,
   lineHeight: 1.43,
-  color: SNOW
+  color: SNOW,
+  textDecoration: 'none',
+  ['&[href]:hover']: { textDecoration: 'underline' },
+  ['&[href]:active']: { textDecoration: 'underline' },
+  ['&:focus-visible']: { outline: `2px solid ${SNOW}`, outlineOffset: 2 }
 })
 
 // WHAT TO EXPECT panel — r24, px-32 py-24, purple radial gradient.
@@ -214,7 +215,6 @@ export {
   ChatColumn,
   ChatFill,
   Content,
-  CreatorName,
   CreatorRow,
   HeaderRight,
   InfoLabel,

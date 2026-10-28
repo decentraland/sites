@@ -141,7 +141,7 @@ function useSceneCtas(streamingHref?: string | null, place?: DiscoverPlace | nul
   return { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn }
 }
 
-// Mobile "not supported" card — bevy-web can't run on touch devices, so the
+// Mobile "not supported" card — the bevy web client can't run on touch devices, so the
 // overlay offers the official store badge instead (same pill the Hero uses).
 function MobileStoreCard() {
   const isAndroid = detectDownloadOS() === 'android'
@@ -198,7 +198,7 @@ function JumpInFloatCard({ onJumpIn }: { onJumpIn: () => void }) {
   )
 }
 
-// The bevy-web iframe with the credentialless opt-in + sandbox/permission set.
+// The bevy web client iframe with the credentialless opt-in + sandbox/permission set.
 // `credentialless` has to be part of the initial markup: the browser starts the
 // frame's navigation as soon as the element enters the document, so setting the
 // attribute afterwards (a ref callback) arrives too late to matter.
@@ -225,7 +225,7 @@ interface SceneWatcherCardProps {
   // missing client falls back to the download modal). Its presence also gates
   // whether the JUMP IN CTAs render (launch overlay + floating card).
   place?: DiscoverPlace | null
-  // bevy-web URL embedded in the iframe — usually the `scene viewer` variant
+  // bevy web client URL embedded in the iframe — usually the `scene viewer` variant
   // (no launcher / portables). Optional because Genesis City parcels with no
   // resolved sceneId can't deep-link; the SCENE WEB tab is disabled when
   // absent.
@@ -366,7 +366,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
     if (!hasLiveVideo && tab === 'video') setTab('scene')
   }, [hasLiveVideo, tab])
 
-  // Explicit launch gate. The bevy-web bundle is ~10MB and triggers a
+  // Explicit launch gate. The bevy web client bundle is ~10MB and triggers a
   // multi-second cold start, so we don't auto-load it just because the user
   // landed on the SCENE WEB tab. Instead show a CTA overlay and only mount
   // the iframe when they click "Launch". Once launched, the iframe stays

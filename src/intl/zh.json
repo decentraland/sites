@@ -31,52 +31,43 @@
       "success": {
         "title": "即将完成！",
         "subtitle": "打开刚下载的文件完成 Decentraland 安装并开始{action}",
-        "subtitle_action_exploring": "探索",
         "step": "步骤",
-        "footer": "下载遇到问题？再试一次：{link}",
-        "footer_link_label": "重新下载",
+        "started": {
+          "title": "下载已开始！",
+          "subtitle": "按照以下 3 个步骤安装 Decentraland，马上进入。"
+        },
+        "footer_retry": "下载没有开始？{link}",
+        "footer_retry_link": "重试",
+        "footer_help": "需要帮助？请访问 {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "下载完成后，返回 {event} 活动页面即可进入。{seconds} 秒后自动跳转。",
         "steps": {
           "windows": {
             "step1": {
-              "title": "打开",
-              "text": "从下载文件夹打开 <span>Decentraland</span> 文件以启动安装向导。"
+              "title": "找到文件",
+              "text": "点击浏览器工具栏中的下载图标，然后打开 Decentraland 安装程序（.exe）。"
             },
             "step2": {
               "title": "安装",
-              "text": "按照安装向导的说明操作。点击 <span>完成</span> 后将开始安装。"
+              "text": "按照安装向导操作，点击“下一步”直至完成。如果 Windows 请求权限，请点击“是”。"
             },
             "step3": {
-              "title": "准备开始探索！",
-              "text": "安装完成后，Decentraland 应用将出现在任务栏中并自动启动。"
+              "title": "进入世界！",
+              "text": "安装完成后，Decentraland 会自动打开。我们在世界里见！"
             }
           },
           "macOS": {
             "step1": {
-              "title": "打开",
-              "text": "从浏览器的\"最近下载\"或\"下载\"文件夹中点击 <span>Decentraland</span> 文件打开。"
+              "title": "找到文件",
+              "text": "点击浏览器工具栏中的下载图标，然后打开 Decentraland-Installer.dmg。"
             },
             "step2": {
               "title": "安装",
-              "text": "此窗口将会出现——双击 <span>Decentraland</span> 按钮开始安装。"
+              "text": "在打开的窗口中双击 Decentraland 图标。出现 macOS 安全提示时，点击“打开”。"
             },
             "step3": {
-              "title": "准备开始探索！",
-              "text": "安装完成后，Decentraland 应用将出现在 Dock 中并自动启动。"
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "打开",
-              "text": "从浏览器的\"最近下载\"或\"下载\"文件夹中点击 <span>Decentraland</span> 文件打开。"
-            },
-            "step2": {
-              "title": "安装",
-              "text": "此窗口将会出现——双击 <span>Decentraland</span> 按钮开始安装。"
-            },
-            "step3": {
-              "title": "准备开始探索！",
-              "text": "安装完成后，Decentraland 应用将出现在 Dock 中并自动启动。"
+              "title": "进入世界！",
+              "text": "安装完成后，Decentraland 会自动打开。我们在世界里见！"
             }
           }
         }
@@ -384,15 +375,6 @@
       "invalid_source_description": "确认来源无效。请检查邮件中的链接。",
       "missing_address_title": "缺少地址",
       "missing_address_description": "URL 中需要地址参数。请检查邮件中的链接。"
-    },
-    "play": {
-      "title": "网页版已不再提供。",
-      "subtitle": "在桌面或移动应用上继续游玩。",
-      "also_available_on": "同时支持",
-      "already_downloaded": "已经下载了？",
-      "jump_in": "立即进入！",
-      "experimental": "想继续在网页上游玩？点击{here}体验实验版",
-      "here": "这里"
     },
     "not_found": {
       "title_oops": "哎呀！",
@@ -723,11 +705,30 @@
         "delete": "删除",
         "close": "关闭",
         "loading": "加载中",
-        "actions": "操作",
         "key": "键",
         "add": "添加",
         "owner": "所有者",
-        "collaborator": "协作者"
+        "collaborator": "协作者",
+        "download_all": "全部下载",
+        "download_selected": "下载所选项 ({count})",
+        "delete_selected": "删除所选项 ({count})",
+        "delete_all": "全部删除",
+        "delete_selected_dialog": {
+          "title": "删除所选项？",
+          "message": "{count, plural, other {这将永久删除 # 个所选项。}}"
+        },
+        "select_all": "全选",
+        "select_row": "选择 {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "正在准备下载…",
+        "keep_page_open": "请保持此页面打开，直到下载开始。"
+      },
+      "leave_dialog": {
+        "title": "导出仍在进行，确定要离开吗？",
+        "message": "离开将停止下载。稍后重新开始，文件会立即就绪。",
+        "stay": "留下",
+        "leave": "离开"
       },
       "role": {
         "owner": "所有者",
@@ -773,12 +774,17 @@
         "scene_count_one": "1 个场景",
         "edit": "编辑",
         "edit_scenes": "编辑场景",
-        "select_scene": "选择场景"
+        "select_scene": "选择场景",
+        "collaborations": "协作",
+        "no_collaborations": "未找到协作",
+        "collaborations_error": "无法加载您的协作，请重试。",
+        "collaborations_hint": "最近授予的场景可能需要一些时间才会显示。",
+        "realm_world": "世界",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "环境变量",
         "add": "添加",
-        "clear_all": "全部清除",
         "no_keys": "未找到环境变量",
         "add_dialog": {
           "title": "添加环境变量",
@@ -803,7 +809,6 @@
       "scene_page": {
         "title": "场景存储",
         "add": "添加",
-        "clear_all": "全部清除",
         "no_keys": "未找到场景值",
         "add_dialog": {
           "title": "添加场景值",
@@ -827,7 +832,6 @@
       "player_page": {
         "title": "玩家存储",
         "add": "添加",
-        "clear_all_players": "清除所有玩家",
         "description": "浏览有存储数据的玩家,或按名称或地址搜索。",
         "search_players": "按名称或地址搜索…",
         "no_players": "未找到玩家",
@@ -840,7 +844,6 @@
         "address_placeholder": "0x…",
         "load_keys": "加载键",
         "keys_for": "{address} 的键",
-        "clear_this_player": "清除此玩家",
         "no_keys": "未找到此玩家的键",
         "loading_keys": "正在加载玩家的键",
         "add_dialog": {
@@ -883,7 +886,9 @@
         "payload_too_large": "值对该存储空间来说过大。",
         "rate_limited": "请求过多。请稍候后再试。",
         "server": "存储服务返回了错误。请几分钟后再试。",
-        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。"
+        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。",
+        "export_failed": "导出失败。请重试。",
+        "bulk_delete_failed": "部分项目无法删除。请重试。"
       }
     },
     "report": {
@@ -1061,6 +1066,8 @@
       "remove_friend": "删除好友",
       "unblock": "解除屏蔽",
       "block": "屏蔽",
+      "blocked_toast": "已屏蔽 {name}。",
+      "unblocked_toast": "已解除屏蔽 {name}。",
       "more_actions": "更多操作",
       "copy_address": "复制地址",
       "address_copied": "地址已复制！",
@@ -1364,6 +1371,7 @@
       "copy_link": "复制链接",
       "close": "关闭",
       "explore_scene": "探索场景",
+      "jump_to_location": "进入 {location}（在新标签页中打开）",
       "copied": "已复制！"
     },
     "featured": {
@@ -1629,7 +1637,6 @@
       },
       "learn_more": "了解更多",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "加入计划",
       "leave_button": "离开计划",
       "leave_modal": {
         "warning": "离开市场积分？",
@@ -1640,10 +1647,6 @@
           "generic": "目前无法离开计划。请重试。",
           "already_claimed": "您本周无法离开，因为您已经领取了积分。请下周再试。"
         }
-      },
-      "join_errors": {
-        "generic": "目前无法加入该计划，请重试。",
-        "email_required": "加入积分计划前，请在通知中添加并确认电子邮件。"
       }
     },
     "delete": {

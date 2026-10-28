@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import { dclColors } from 'decentraland-ui2'
+import { CreatorByLineName } from '../../components/places/_shared'
 import { PinGlyph } from '../../components/places/_shared/CardIcons'
 import { SceneJumpInModal } from '../../components/places/SceneJumpInModal'
 import { SceneChatDock, SceneRoomMount, SceneWatcherCard } from '../../components/places/SceneLiveWatcher'
@@ -31,7 +32,6 @@ import {
   ChatColumn,
   ChatFill,
   Content,
-  CreatorName,
   CreatorRow,
   HeaderRight,
   InfoLabel,
@@ -68,7 +68,7 @@ function synthWorldPlace(worldName: string): DiscoverPlace {
   }
 }
 
-// bevy-web iframe URL for the scene viewer. `systemScene=tortilla.dcl.eth
+// bevy web client iframe URL for the scene viewer. `systemScene=tortilla.dcl.eth
 // &portables=none` strips the launcher and portables UI so only the scene
 // renders inside the watcher card. `guest=1` auto-logs-in as a guest (no bevy
 // sign-in screen) and `hud=0` hides bevy's entire React HUD (sidebar, chat,
@@ -77,7 +77,7 @@ function synthWorldPlace(worldName: string): DiscoverPlace {
 // dev/stg point at .zone, prd at .org — .org's `frame-ancestors` CSP rejects a
 // non-.org parent (e.g. localhost), so dev must frame the .zone build.
 function buildBevyHref(location: string): string {
-  const base = getEnv('BEVY_WEB_URL') || 'https://decentraland.zone/bevy-web/'
+  const base = getEnv('BEVY_WEB_URL') || 'https://decentraland.zone/play/'
   const param = location.endsWith('.eth') ? `?realm=${encodeURIComponent(location)}` : `?position=${encodeURIComponent(location)}`
   return `${base}${param}&systemScene=tortilla.dcl.eth&portables=none&guest=1&hud=0`
 }
@@ -189,9 +189,10 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   }, [kind, place, parsedPosition, worldName, hotScenesQuery.data, liveWorldsQuery.data])
   const isLoadingPlayers = kind === 'place' ? hotScenesQuery.isLoading : liveWorldsQuery.isLoading
 
-  // The chat footer's "Jump into <Scene>" anchor points at the /jump/ landing
-  // page (deep-link + download fallback), not a bare protocol link.
-  const chatJumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
+  // The chat footer's "Jump into <Scene>" anchor and the header location tag
+  // point at the /jump/ landing page (deep-link + download fallback), not a
+  // bare protocol link.
+  const jumpHref = useMemo(() => (place ? buildJumpLandingHref(place) : null), [place])
 
   // `/places/*` is in `isPageTrackingExempt`, so Layout's route-level
   // `page()` is suppressed. Fire once the place title resolves so Segment
@@ -228,7 +229,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
   const streamingHref = useMemo(() => (watcherTarget ? buildBevyHref(watcherTarget.location) : null), [watcherTarget])
 
-  const { creatorName, creatorAvatar, avatarBg } = usePlaceCreator(place)
+  const { creatorName, creatorAddress, creatorAvatar, avatarBg } = usePlaceCreator(place)
 
   // Coordinates (places) and the world name are known from the URL on the
   // first frame, so the header title never blanks even before the places-api
@@ -264,7 +265,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   }
 
   // Scene → JUMP IN modal instead of the watcher when EITHER the scene is empty
-  // (a live watcher would render an empty world) OR we're on mobile (bevy-web
+  // (a live watcher would render an empty world) OR we're on mobile (the bevy web client
   // can't run on touch devices). On mobile the modal shows the LIVE + presence
   // badges when the scene has players; on desktop-empty `livePlayers` is 0 so
   // no badges render. Gated on presence being known so we never flash the modal
@@ -298,12 +299,17 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
                 <CreatorRow>
                   {creatorAvatar && <Avatar src={creatorAvatar} alt="" loading="lazy" $bg={avatarBg} />}
                   <ByText>
-                    {t('discover.card.by')} <CreatorName>{creatorName}</CreatorName>
+                    {t('discover.card.by')} <CreatorByLineName name={creatorName} address={creatorAddress} />
                   </ByText>
                 </CreatorRow>
               )}
               {locationLabel && (
-                <LocationTag>
+                <LocationTag
+                  href={jumpHref ?? undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={jumpHref ? t('discover.scene.jump_to_location', { location: locationLabel }) : undefined}
+                >
                   <PinGlyph size="clamp(13px, 0.833vw, 16px)" color={dclColors.neutral.softWhite} />
                   {locationLabel}
                 </LocationTag>
@@ -322,7 +328,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
 
         <ChatColumn>
           <ChatFill>
-            <SceneChatDock status={canRenderWatcher ? room.status : 'loading'} sceneName={headerTitle} jumpHref={chatJumpHref} />
+            <SceneChatDock status={canRenderWatcher ? room.status : 'loading'} sceneName={headerTitle} jumpHref={jumpHref} />
           </ChatFill>
         </ChatColumn>
 

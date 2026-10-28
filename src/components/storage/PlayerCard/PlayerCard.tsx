@@ -1,29 +1,49 @@
 import { memo } from 'react'
 import type { FC } from 'react'
-import { Card, CardActionArea, CardContent, Typography } from 'decentraland-ui2'
+import { Card, CardContent, Typography } from 'decentraland-ui2'
 import { truncateAddress } from '../../../features/storage'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { CardArea, SelectCheckbox, SelectableCardRow } from './PlayerCard.styled'
 
 interface PlayerCardProps {
   address: string
   displayName?: string
   onClick: () => void
+  selected?: boolean
+  onToggle?: (address: string) => void
 }
 
-const PlayerCardComponent: FC<PlayerCardProps> = ({ address, displayName, onClick }) => {
+const PlayerCardComponent: FC<PlayerCardProps> = props => {
+  const { address, displayName, onClick, selected = false, onToggle } = props
   const t = useFormatMessage()
   const label = displayName ?? truncateAddress(address)
 
+  const cardArea = (
+    <CardArea onClick={onClick} aria-label={t('component.storage.player_page.select_player', { address })}>
+      <CardContent>
+        <Typography variant="subtitle1">{label}</Typography>
+        <Typography variant="caption" color="text.secondary">
+          {truncateAddress(address)}
+        </Typography>
+      </CardContent>
+    </CardArea>
+  )
+
   return (
     <Card variant="outlined">
-      <CardActionArea onClick={onClick} aria-label={t('component.storage.player_page.select_player', { address })}>
-        <CardContent>
-          <Typography variant="subtitle1">{label}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {truncateAddress(address)}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
+      {onToggle ? (
+        <SelectableCardRow>
+          <SelectCheckbox
+            checked={selected}
+            onChange={() => onToggle(address)}
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            inputProps={{ 'aria-label': t('component.storage.common.select_row', { name: label }) }}
+          />
+          {cardArea}
+        </SelectableCardRow>
+      ) : (
+        cardArea
+      )}
     </Card>
   )
 }

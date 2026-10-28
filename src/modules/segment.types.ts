@@ -61,6 +61,8 @@ enum SegmentEvent {
   STORAGE_SCENE_DELETE_FAILURE = 'Storage Scene Delete Failure',
   STORAGE_SCENE_CLEAR_SUCCESS = 'Storage Scene Clear Success',
   STORAGE_SCENE_CLEAR_FAILURE = 'Storage Scene Clear Failure',
+  STORAGE_SCENE_DOWNLOAD_SUCCESS = 'Storage Scene Download Success',
+  STORAGE_SCENE_DOWNLOAD_FAILURE = 'Storage Scene Download Failure',
   STORAGE_PLAYER_SET_SUCCESS = 'Storage Player Set Success',
   STORAGE_PLAYER_SET_FAILURE = 'Storage Player Set Failure',
   STORAGE_PLAYER_DELETE_SUCCESS = 'Storage Player Delete Success',
@@ -69,6 +71,11 @@ enum SegmentEvent {
   STORAGE_PLAYER_CLEAR_FAILURE = 'Storage Player Clear Failure',
   STORAGE_PLAYER_CLEAR_ALL_SUCCESS = 'Storage Player Clear All Success',
   STORAGE_PLAYER_CLEAR_ALL_FAILURE = 'Storage Player Clear All Failure',
+  STORAGE_EXPORT_SUCCESS = 'Storage Export Success',
+  STORAGE_EXPORT_FAILURE = 'Storage Export Failure',
+  STORAGE_SELECTION_DOWNLOAD_SUCCESS = 'Storage Selection Download Success',
+  STORAGE_PLAYER_DOWNLOAD_SUCCESS = 'Storage Player Download Success',
+  STORAGE_PLAYER_DOWNLOAD_FAILURE = 'Storage Player Download Failure',
   COMMUNITY_CLICK_JOIN = 'Click on Join',
   COMMUNITY_CLICK_REQUEST_TO_JOIN = 'Click on Request to Join',
   COMMUNITY_CLICK_CANCEL_REQUEST = 'Click on Cancel Request',
@@ -96,16 +103,16 @@ enum DownloadPlace {
   COME_HANG_OUT = 'come-hang-out',
   COME_HANG_OUT_PLATFORM_SWITCH = 'come-hang-out-platform-switch',
   JUMP_IN_ALREADY_USER = 'jump-in-already-user',
-  PLAY_HERO = 'play-hero',
-  PLAY_HERO_EPIC = 'play-hero-epic',
-  PLAY_HERO_APP_STORE = 'play-hero-app-store',
-  PLAY_HERO_GOOGLE_PLAY = 'play-hero-google-play',
-  PLAY_EXPERIMENTAL_WEB = 'play-experimental-web',
   DOWNLOAD_PAGE = 'download-page',
+  // The "install first" DownloadModal raised by Jump In / Hang Out CTAs across the site.
+  DOWNLOAD_MODAL = 'download-modal',
   DOWNLOAD_SUCCESS_FOOTER = 'download-success-footer',
   CREATOR_HUB_DOWNLOAD_PAGE = 'creator-hub-download-page',
   CREATOR_HUB_SUCCESS_PAGE = 'creator-hub-success-page',
   CREATORS_HERO = 'creators-hero',
+  // Jump In landing (jumpin.decentraland.org). LETS_PLAY_LANDING is the value it
+  // sent before; kept so links and data from that period still resolve.
+  JUMP_IN_LANDING = 'jump-in-landing',
   LETS_PLAY_LANDING = 'lets-play-landing',
   UNKNOWN = 'unknown'
 }

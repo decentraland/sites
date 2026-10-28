@@ -33,7 +33,7 @@ function createMockPlaceData(overrides: Partial<ModalPlaceData> = {}): ModalPlac
     image: 'https://example.com/place.png',
     coordinates: [10, 20],
     ownerAddress: '0xOwner',
-    ownerName: 'Owner',
+    contactName: 'Owner',
     favorites: 100,
     userCount: 5,
     isWorld: false,

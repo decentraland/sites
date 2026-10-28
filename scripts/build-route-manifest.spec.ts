@@ -16,6 +16,14 @@ const routesOf = (stdout: string) =>
     .filter(line => line.startsWith('  /') || line.trim() === '*')
     .map(line => line.trim())
 
+const sitemapOf = (stdout: string) =>
+  stdout
+    .split('\n')
+    .find(line => line.startsWith('sitemap: '))
+    ?.slice('sitemap: '.length)
+    .split(' ')
+    .filter(Boolean) ?? []
+
 describe('when extracting the route manifest from a router', () => {
   let dir: string
   let srcPath: string
@@ -89,6 +97,95 @@ describe('when extracting the route manifest from a router', () => {
 
     it('should map it to the parent path', () => {
       expect(routesOf(runCheck(srcPath).stdout)).toEqual(['/storage'])
+    })
+  })
+
+  describe('and a literal route is marked for the sitemap', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      {/* route-manifest: sitemap */}
+      <Route path="/events" element={<Events />} />
+      <Route path="/sign-in" element={<SignIn />} />
+    </Routes>`)
+    })
+
+    it('should list the marked path and exclude the unmarked path', () => {
+      expect(sitemapOf(runCheck(srcPath).stdout)).toEqual(['/events'])
+    })
+  })
+
+  describe('and no route is marked for the sitemap', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/events" element={<Events />} />
+    </Routes>`)
+    })
+
+    it('should return an empty sitemap list', () => {
+      expect(sitemapOf(runCheck(srcPath).stdout)).toEqual([])
+    })
+  })
+
+  describe('and a relative child route is marked for the sitemap', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/places" element={<Layout />}>
+        {/* route-manifest: sitemap */}
+        <Route path="communities" element={<Communities />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should list the resolved child path', () => {
+      expect(sitemapOf(runCheck(srcPath).stdout)).toEqual(['/places/communities'])
+    })
+  })
+
+  describe('and a marked parent has a not-found index', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      {/* route-manifest: sitemap */}
+      <Route path="/cast" element={<Layout />}>
+        {/* route-manifest: not-found */}
+        <Route index element={<NotFound />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should reject a sitemap entry that the edge answers with 404', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('not a live route')
+    })
+  })
+
+  describe('and an index route is marked for the sitemap', () => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      <Route path="/places" element={<Layout />}>
+        {/* route-manifest: sitemap */}
+        <Route index element={<Places />} />
+      </Route>
+    </Routes>`)
+    })
+
+    it('should list the parent path', () => {
+      expect(sitemapOf(runCheck(srcPath).stdout)).toEqual(['/places'])
+    })
+  })
+
+  describe.each(['/events/:eventId', '/places/*'])('and %s is marked for the sitemap', path => {
+    beforeEach(() => {
+      writeRouter(`    <Routes>
+      {/* route-manifest: sitemap */}
+      <Route path="${path}" element={<Page />} />
+    </Routes>`)
+    })
+
+    it('should reject a path that is not a literal address', () => {
+      const result = runCheck(srcPath)
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('not a literal')
     })
   })
 
@@ -401,6 +498,33 @@ describe('when a file merely looks like it declares routing', () => {
 })
 
 describe('when extracting the manifest from this repo router', () => {
+  it('should publish only the agreed public pages in the sitemap', () => {
+    const result = runCheck(join(__dirname, '..', 'src', 'App.tsx'))
+
+    expect(result.status).toBe(0)
+    expect(sitemapOf(result.stdout)).toEqual([
+      '/',
+      '/blog',
+      '/brand',
+      '/content',
+      '/create',
+      '/credits-terms',
+      '/download',
+      '/download/creator-hub',
+      '/ethics',
+      '/events',
+      '/help',
+      '/places',
+      '/places/communities',
+      '/press',
+      '/privacy',
+      '/referral-terms',
+      '/rewards-terms',
+      '/security',
+      '/terms'
+    ])
+  })
+
   it('should include every event route the worker will enforce', () => {
     const result = runCheck(join(__dirname, '..', 'src', 'App.tsx'))
     const routes = routesOf(result.stdout)

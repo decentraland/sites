@@ -16,7 +16,9 @@ const fakeTheme = {
   palette: {
     primary: { main: '#0f0', contrastText: '#000', dark: '#080' },
     secondary: { main: '#fff', contrastText: '#000' },
-    common: { white: '#fff', black: '#000' }
+    common: { white: '#fff', black: '#000' },
+    text: { primary: '#000', secondary: '#666' },
+    divider: '#ddd'
   },
   breakpoints: {
     down: () => '@media (max-width:1199.95px)',
@@ -115,7 +117,10 @@ const Box = forwardRef(({ children, ...rest }: { children?: ReactNode } & Record
 )
 ;(Box as unknown as { displayName: string }).displayName = 'BoxMock'
 
-const keyframes = (chunks: TemplateStringsArray | string) => (typeof chunks === 'string' ? chunks : chunks.join(''))
+const keyframes = (chunks: TemplateStringsArray | string | Record<string, unknown>) => {
+  if (typeof chunks === 'string') return chunks
+  return Array.isArray(chunks) ? chunks.join('') : JSON.stringify(chunks)
+}
 
 // Mirror of decentraland-ui2's dclColors constants (dist/theme/colors.js) so
 // styled files that read tokens at module scope evaluate under this mock.

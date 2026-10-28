@@ -1,15 +1,18 @@
 import { getStorageApiUrl, getWorldsContentServerUrl, storageClient } from '../../services/storageClient'
 import { identityAddress } from '../../utils/identityScope'
-import { createScopedSignedFetch, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
+import { createScopedSignedFetch, fetchSignedBlob, sendSignedFetch, storageContextId, wrapSignedFetch } from './storage.helpers'
 import type {
   AuthParams,
   ClearPlayerParams,
+  CollaboratorScenesResponse,
   ContributableDomain,
   ContributableDomainsResponse,
   DeleteEnvParams,
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  ExportFileParams,
+  GetCollaboratorScenesParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   ListEnvKeysResponse,
@@ -103,7 +106,7 @@ const storageEndpoints = storageClient.injectEndpoints({
         const signedFetch = createScopedSignedFetch(identity, realm, position)
         try {
           const response = await wrapSignedFetch<ListStorageItemsResponse>(signedFetch, `${getStorageApiUrl()}/values`)
-          return { data: response.data.map(({ key }) => ({ key })) }
+          return { data: response.data.map(({ key, value }) => ({ key, value })) }
         } catch (error) {
           return { error: error as WrapSignedFetchError }
         }
@@ -214,7 +217,7 @@ const storageEndpoints = storageClient.injectEndpoints({
             signedFetch,
             `${getStorageApiUrl()}/players/${encodeURIComponent(address)}/values`
           )
-          return { data: response.data.map(({ key }) => ({ key })) }
+          return { data: response.data.map(({ key, value }) => ({ key, value })) }
         } catch (error) {
           return { error: error as WrapSignedFetchError }
         }
@@ -360,6 +363,39 @@ const storageEndpoints = storageClient.injectEndpoints({
       providesTags: ['ContributableDomains' as const]
     }),
 
+    getCollaboratorScenes: build.query<CollaboratorScenesResponse, GetCollaboratorScenesParams & AuthParams>({
+      queryFn: async ({ identity, limit, offset }) => {
+        const signedFetch = createScopedSignedFetch(identity)
+        try {
+          const params = new URLSearchParams()
+          if (limit !== undefined) params.set('limit', String(limit))
+          if (offset !== undefined) params.set('offset', String(offset))
+          const query = params.toString()
+          const response = await wrapSignedFetch<CollaboratorScenesResponse>(
+            signedFetch,
+            `${getStorageApiUrl()}/collaborator${query ? `?${query}` : ''}`
+          )
+          return { data: response }
+        } catch (error) {
+          return { error: error as WrapSignedFetchError }
+        }
+      },
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { offset, ...rest } = queryArgs
+        return rest
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if ((arg.offset ?? 0) === 0) return newItems
+        const existingIds = new Set(currentCache.data.map(scene => scene.sceneId))
+        return {
+          ...newItems,
+          data: [...currentCache.data, ...newItems.data.filter(scene => !existingIds.has(scene.sceneId))]
+        }
+      },
+      forceRefetch: ({ currentArg, previousArg }) => currentArg?.offset !== previousArg?.offset,
+      providesTags: ['CollaboratorScenes' as const]
+    }),
+
     getWorldScenes: build.query<WorldScene[], { worldName: string }>({
       queryFn: async ({ worldName }) => {
         try {
@@ -392,10 +428,13 @@ const {
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
+  useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,
   useListPlayersQuery,
@@ -405,7 +444,28 @@ const {
   useSetSceneValueMutation
 } = storageEndpoints
 
+/** Streams a storage export for the selection and resolves to the file. */
+const fetchExportFile = ({
+  identity,
+  realm,
+  position,
+  format,
+  selection,
+  signal
+}: ExportFileParams & AuthParams & StorageContext): Promise<Blob> =>
+  fetchSignedBlob(
+    createScopedSignedFetch(identity, realm, position),
+    `${getStorageApiUrl()}/exports?format=${encodeURIComponent(format)}`,
+    {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(selection),
+      signal
+    }
+  )
+
 export {
+  fetchExportFile,
   storageEndpoints,
   useClearAllPlayersMutation,
   useClearEnvMutation,
@@ -414,10 +474,13 @@ export {
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
+  useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,
   useListPlayersQuery,

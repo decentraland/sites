@@ -27,8 +27,7 @@ jest.mock('./CreditsStatusCard.styled', () => ({
       {children}
     </a>
   ),
-  ActionRow: ({ children }: ChildrenProps) => <div>{children}</div>,
-  ErrorText: ({ children, 'data-role': dataRole }: ChildrenProps & { 'data-role'?: string }) => <p data-role={dataRole}>{children}</p>
+  ActionRow: ({ children }: ChildrenProps) => <div>{children}</div>
 }))
 
 jest.mock('../../../../hooks/adapters/useFormatMessage', () => ({
@@ -42,9 +41,15 @@ describe('CreditsStatusCard', () => {
 
   describe('when the status is still loading', () => {
     it('should render a skeleton instead of the status and no action button', () => {
-      render(<CreditsStatusCard status={undefined} isLoading onJoin={jest.fn()} onLeave={jest.fn()} />)
+      render(<CreditsStatusCard status={undefined} isLoading onLeave={jest.fn()} />)
 
       expect(screen.getByTestId('skeleton')).toBeInTheDocument()
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    })
+
+    it('should not render the Leave Program button for an enrolled wallet until loading ends', () => {
+      render(<CreditsStatusCard status={UserCreditsStatus.ENROLLED} isLoading onLeave={jest.fn()} />)
+
       expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
   })
@@ -52,7 +57,7 @@ describe('CreditsStatusCard', () => {
   describe('when the user is enrolled', () => {
     it('should render the enrolled status and a Leave Program button', () => {
       const onLeave = jest.fn()
-      render(<CreditsStatusCard status={UserCreditsStatus.ENROLLED} isLoading={false} onJoin={jest.fn()} onLeave={onLeave} />)
+      render(<CreditsStatusCard status={UserCreditsStatus.ENROLLED} isLoading={false} onLeave={onLeave} />)
 
       expect(screen.getByText('account.credits.status.enrolled')).toBeInTheDocument()
       fireEvent.click(screen.getByText('account.credits.leave_button'))
@@ -60,30 +65,20 @@ describe('CreditsStatusCard', () => {
     })
   })
 
-  describe('when the user is not registered', () => {
-    it('should render a Join Program button that invokes onJoin', () => {
-      const onJoin = jest.fn()
-      render(<CreditsStatusCard status={UserCreditsStatus.NOT_REGISTERED} isLoading={false} onJoin={onJoin} onLeave={jest.fn()} />)
+  describe.each([
+    [UserCreditsStatus.NOT_REGISTERED, 'account.credits.status.not_registered'],
+    [UserCreditsStatus.OPTED_OUT, 'account.credits.status.opted_out']
+  ])('when the status is %s', (status, labelKey) => {
+    it('should render the status without any action button', () => {
+      render(<CreditsStatusCard status={status} isLoading={false} onLeave={jest.fn()} />)
 
-      expect(screen.getByText('account.credits.status.not_registered')).toBeInTheDocument()
-      fireEvent.click(screen.getByText('account.credits.join_button'))
-      expect(onJoin).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('when the user has opted out', () => {
-    it('should render the opted-out status and a Join Program button', () => {
-      const onJoin = jest.fn()
-      render(<CreditsStatusCard status={UserCreditsStatus.OPTED_OUT} isLoading={false} onJoin={onJoin} onLeave={jest.fn()} />)
-
-      expect(screen.getByText('account.credits.status.opted_out')).toBeInTheDocument()
-      fireEvent.click(screen.getByText('account.credits.join_button'))
-      expect(onJoin).toHaveBeenCalledTimes(1)
+      expect(screen.getByText(labelKey)).toBeInTheDocument()
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
   })
 
   it('should render the Learn more link', () => {
-    render(<CreditsStatusCard status={UserCreditsStatus.NOT_REGISTERED} isLoading={false} onJoin={jest.fn()} onLeave={jest.fn()} />)
+    render(<CreditsStatusCard status={UserCreditsStatus.NOT_REGISTERED} isLoading={false} onLeave={jest.fn()} />)
 
     expect(screen.getByText('account.credits.learn_more')).toBeInTheDocument()
   })

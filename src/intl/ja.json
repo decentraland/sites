@@ -31,52 +31,43 @@
       "success": {
         "title": "もう少しで完了です！",
         "subtitle": "ダウンロードしたファイルを開いてDecentralandのインストールを完了し、{action}を始めましょう",
-        "subtitle_action_exploring": "探検",
         "step": "ステップ",
-        "footer": "ダウンロードに問題がありますか？もう一度試しましょう：{link}",
-        "footer_link_label": "再ダウンロード",
+        "started": {
+          "title": "ダウンロードを開始しました！",
+          "subtitle": "次の3ステップでDecentralandをインストールして、世界に飛び込みましょう。"
+        },
+        "footer_retry": "ダウンロードが始まりませんか？{link}",
+        "footer_retry_link": "もう一度試す",
+        "footer_help": "お困りですか？{link}をご覧ください",
+        "footer_help_link": "decentraland.org/help",
         "event": "ダウンロード完了後、{event}のイベントページに戻って入場してください。{seconds}秒後にリダイレクトされます。",
         "steps": {
           "windows": {
             "step1": {
-              "title": "開く",
-              "text": "ダウンロードフォルダから<span>Decentraland</span>ファイルを開いてセットアップウィザードを起動します。"
+              "title": "ファイルを探す",
+              "text": "ブラウザのツールバーにあるダウンロードアイコンをクリックし、Decentralandインストーラー（.exe）を開きます。"
             },
             "step2": {
               "title": "インストール",
-              "text": "セットアップウィザードの指示に従ってください。<span>完了</span>をクリックするとインストールが始まります。"
+              "text": "セットアップウィザードの指示に従い、完了するまで「次へ」をクリックします。Windowsが許可を求めたら「はい」をクリックします。"
             },
             "step3": {
-              "title": "探検の準備をしましょう！",
-              "text": "インストールが完了すると、Decentralandアプリがタスクバーに表示され、自動的に起動します。"
+              "title": "いざ、出発！",
+              "text": "インストールが完了すると、Decentralandが自動的に起動します。ワールドでお会いしましょう！"
             }
           },
           "macOS": {
             "step1": {
-              "title": "開く",
-              "text": "ブラウザの「最近のダウンロード」または「ダウンロード」フォルダから<span>Decentraland</span>ファイルをクリックして開きます。"
+              "title": "ファイルを探す",
+              "text": "ブラウザのツールバーにあるダウンロードアイコンをクリックし、Decentraland-Installer.dmgを開きます。"
             },
             "step2": {
               "title": "インストール",
-              "text": "このウィンドウが表示されます。<span>Decentraland</span>ボタンをダブルクリックしてインストールを開始します。"
+              "text": "開いたウィンドウでDecentralandのアイコンをダブルクリックします。macOSのセキュリティメッセージが表示されたら、「開く」をクリックします。"
             },
             "step3": {
-              "title": "探検の準備をしましょう！",
-              "text": "インストールが完了すると、DecentralandアプリがDockに表示され、自動的に起動します。"
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "開く",
-              "text": "ブラウザの「最近のダウンロード」または「ダウンロード」フォルダから<span>Decentraland</span>ファイルをクリックして開きます。"
-            },
-            "step2": {
-              "title": "インストール",
-              "text": "このウィンドウが表示されます。<span>Decentraland</span>ボタンをダブルクリックしてインストールを開始します。"
-            },
-            "step3": {
-              "title": "探検の準備をしましょう！",
-              "text": "インストールが完了すると、DecentralandアプリがDockに表示され、自動的に起動します。"
+              "title": "いざ、出発！",
+              "text": "インストールが完了すると、Decentralandが自動的に起動します。ワールドでお会いしましょう！"
             }
           }
         }
@@ -384,15 +375,6 @@
       "invalid_source_description": "確認元が無効です。メールのリンクをご確認ください。",
       "missing_address_title": "アドレスがありません",
       "missing_address_description": "URL にアドレスのパラメータが必要です。メールのリンクをご確認ください。"
-    },
-    "play": {
-      "title": "ウェブ版は提供を終了しました。",
-      "subtitle": "デスクトップまたはモバイルアプリでプレイを続けましょう。",
-      "also_available_on": "こちらでも利用可能",
-      "already_downloaded": "すでにダウンロード済みですか？",
-      "jump_in": "入場する！",
-      "experimental": "ウェブでプレイを続けたいですか？実験版を{here}でお試しください",
-      "here": "こちら"
     },
     "not_found": {
       "title_oops": "おっと！",
@@ -723,11 +705,30 @@
         "delete": "削除",
         "close": "閉じる",
         "loading": "読み込み中",
-        "actions": "アクション",
         "key": "キー",
         "add": "追加",
         "owner": "オーナー",
-        "collaborator": "コラボレーター"
+        "collaborator": "コラボレーター",
+        "download_all": "すべてダウンロード",
+        "download_selected": "選択項目をダウンロード ({count})",
+        "delete_selected": "選択項目を削除 ({count})",
+        "delete_all": "すべて削除",
+        "delete_selected_dialog": {
+          "title": "選択した項目を削除しますか？",
+          "message": "{count, plural, other {選択した#件の項目が完全に削除されます。}}"
+        },
+        "select_all": "すべて選択",
+        "select_row": "{name} を選択",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "ダウンロードを準備中…",
+        "keep_page_open": "ダウンロードが始まるまで、このページを開いたままにしてください。"
+      },
+      "leave_dialog": {
+        "title": "エクスポートの実行中にページを離れますか？",
+        "message": "ページを離れるとダウンロードは停止します。後でもう一度開始すると、ファイルはすぐに用意されます。",
+        "stay": "とどまる",
+        "leave": "離れる"
       },
       "role": {
         "owner": "オーナー",
@@ -773,12 +774,17 @@
         "scene_count_one": "1 個のシーン",
         "edit": "編集",
         "edit_scenes": "シーンを編集",
-        "select_scene": "シーンを選択"
+        "select_scene": "シーンを選択",
+        "collaborations": "コラボレーション",
+        "no_collaborations": "コラボレーションが見つかりません",
+        "collaborations_error": "コラボレーションを読み込めませんでした。もう一度お試しください。",
+        "collaborations_hint": "最近付与されたシーンは表示されるまで少し時間がかかる場合があります。",
+        "realm_world": "ワールド",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "環境変数",
         "add": "追加",
-        "clear_all": "すべてクリア",
         "no_keys": "環境変数が見つかりません",
         "add_dialog": {
           "title": "環境変数を追加",
@@ -803,7 +809,6 @@
       "scene_page": {
         "title": "シーンストレージ",
         "add": "追加",
-        "clear_all": "すべてクリア",
         "no_keys": "シーン値が見つかりません",
         "add_dialog": {
           "title": "シーン値を追加",
@@ -827,7 +832,6 @@
       "player_page": {
         "title": "プレイヤーストレージ",
         "add": "追加",
-        "clear_all_players": "すべてのプレイヤーを削除",
         "description": "保存データのあるプレイヤーを閲覧するか、名前やアドレスで検索できます。",
         "search_players": "名前またはアドレスで検索…",
         "no_players": "プレイヤーが見つかりません",
@@ -840,7 +844,6 @@
         "address_placeholder": "0x…",
         "load_keys": "キーを読み込む",
         "keys_for": "{address} のキー",
-        "clear_this_player": "このプレイヤーを削除",
         "no_keys": "このプレイヤーのキーは見つかりません",
         "loading_keys": "プレイヤーのキーを読み込み中",
         "add_dialog": {
@@ -883,7 +886,9 @@
         "payload_too_large": "値がこのストレージ領域には大きすぎます。",
         "rate_limited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
         "server": "ストレージサービスがエラーを返しました。数分後にもう一度お試しください。",
-        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。"
+        "world_scene_unresolved": "このワールドのシーンの場所を特定できませんでした。まだシーンがデプロイされていない可能性があります。",
+        "export_failed": "エクスポートに失敗しました。もう一度お試しください。",
+        "bulk_delete_failed": "一部の項目を削除できませんでした。もう一度お試しください。"
       }
     },
     "report": {
@@ -1061,6 +1066,8 @@
       "remove_friend": "友達解除",
       "unblock": "ブロック解除",
       "block": "ブロック",
+      "blocked_toast": "{name}をブロックしました。",
+      "unblocked_toast": "{name}のブロックを解除しました。",
       "more_actions": "その他",
       "copy_address": "アドレスをコピー",
       "address_copied": "アドレスをコピーしました！",
@@ -1364,6 +1371,7 @@
       "copy_link": "リンクをコピー",
       "close": "閉じる",
       "explore_scene": "シーンを探索",
+      "jump_to_location": "{location}に入る（新しいタブで開きます）",
       "copied": "コピーしました！"
     },
     "featured": {
@@ -1629,7 +1637,6 @@
       },
       "learn_more": "詳細はこちら",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "プログラムに参加",
       "leave_button": "プログラムを退会",
       "leave_modal": {
         "warning": "マーケットプレイス クレジットを退会しますか？",
@@ -1640,10 +1647,6 @@
           "generic": "現在プログラムを退会できませんでした。もう一度お試しください。",
           "already_claimed": "今週はすでにクレジットを請求しているため退会できません。来週もう一度お試しください。"
         }
-      },
-      "join_errors": {
-        "generic": "現在プログラムに参加できませんでした。もう一度お試しください。",
-        "email_required": "クレジットプログラムに参加する前に、通知でメールを追加して確認してください。"
       }
     },
     "delete": {

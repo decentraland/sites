@@ -38,54 +38,45 @@
       "success": {
         "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
-        "subtitle_action_exploring": "exploring",
         "subtitle_action_creating": "creating",
         "step": "Step",
-        "footer": "Trouble with the download? Let's try that again: {link}",
         "footer_prefix": "Trouble with the download? Let's try that again:",
-        "footer_link_label": "Download again",
+        "started": {
+          "title": "Your download has started!",
+          "subtitle": "Follow these 3 steps to install Decentraland and jump in."
+        },
+        "footer_retry": "Download didn't start? {link}",
+        "footer_retry_link": "Try again",
+        "footer_help": "Need help? Go to {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "After the download is complete, go back to the {event} event page so you can jump in. Redirecting in {seconds} seconds.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "Open",
-              "text": "Open the <span>Decentraland</span> file from your Downloads Folder to launch the Setup Wizard."
+              "title": "Find your file",
+              "text": "Click the download icon in your browser toolbar, then open the Decentraland installer (.exe)."
             },
             "step2": {
               "title": "Install",
-              "text": "Follow the instructions in the Setup Wizard. When you click <span>Finish</span> the installation process will begin."
+              "text": "Follow the Setup Wizard and click Next until it finishes. If Windows asks for permission, click Yes."
             },
             "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your taskbar and will launch automatically."
+              "title": "Jump in!",
+              "text": "Once installed, Decentraland opens on its own. See you in-world!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "Open",
-              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
+              "title": "Find your file",
+              "text": "Click the download icon in your browser toolbar, then open Decentraland-Installer.dmg."
             },
             "step2": {
               "title": "Install",
-              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
+              "text": "Double-click the Decentraland icon in the window that opens. When the macOS security message appears, click Open."
             },
             "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "Open",
-              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
-            },
-            "step2": {
-              "title": "Install",
-              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
-            },
-            "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
+              "title": "Jump in!",
+              "text": "Once installed, Decentraland opens on its own. See you in-world!"
             }
           }
         }
@@ -432,15 +423,6 @@
       "invalid_source_description": "Invalid confirmation source. Please check your email link.",
       "missing_address_title": "Missing Address",
       "missing_address_description": "Address parameter is required in the URL. Please check your email link."
-    },
-    "play": {
-      "title": "The Web Version Is No Longer Available.",
-      "subtitle": "Continue Playing on Desktop or Mobile App.",
-      "also_available_on": "Also Available on",
-      "already_downloaded": "Already Downloaded?",
-      "jump_in": "JUMP IN!",
-      "experimental": "Want to keep playing on web? Try the experimental version {here}",
-      "here": "HERE"
     },
     "not_found": {
       "title_oops": "Oops!",
@@ -863,11 +845,30 @@
         "delete": "Delete",
         "close": "Close",
         "loading": "Loading",
-        "actions": "Actions",
         "key": "Key",
         "add": "Add",
         "owner": "Owner",
-        "collaborator": "Collaborator"
+        "collaborator": "Collaborator",
+        "download_all": "Download all",
+        "download_selected": "Download selected ({count})",
+        "delete_selected": "Delete selected ({count})",
+        "delete_all": "Delete all",
+        "delete_selected_dialog": {
+          "title": "Delete selected items?",
+          "message": "{count, plural, one {This will permanently delete # selected item.} other {This will permanently delete # selected items.}}"
+        },
+        "select_all": "Select all",
+        "select_row": "Select {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Preparing download…",
+        "keep_page_open": "Keep this page open until the download starts."
+      },
+      "leave_dialog": {
+        "title": "Leave while your export is running?",
+        "message": "Leaving stops the download. Start it again later and the file will be ready right away.",
+        "stay": "Stay",
+        "leave": "Leave"
       },
       "role": {
         "owner": "Owner",
@@ -913,12 +914,17 @@
         "scene_count_one": "1 scene",
         "edit": "Edit",
         "edit_scenes": "Edit Scenes",
-        "select_scene": "Select scene"
+        "select_scene": "Select scene",
+        "collaborations": "Collaborations",
+        "no_collaborations": "No collaborations found",
+        "collaborations_error": "Could not load your collaborations. Please try again.",
+        "collaborations_hint": "Recently granted scenes may take a moment to appear.",
+        "realm_world": "World",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Environment Variables",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No environment variables found",
         "add_dialog": {
           "title": "Add Environment Variable",
@@ -943,7 +949,6 @@
       "scene_page": {
         "title": "Scene Storage",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No scene values found",
         "add_dialog": {
           "title": "Add Scene Value",
@@ -967,7 +972,6 @@
       "player_page": {
         "title": "Player Storage",
         "add": "Add",
-        "clear_all_players": "Clear All Players",
         "description": "Browse players with stored data, or search by name or address.",
         "search_players": "Search by name or address…",
         "no_players": "No players found",
@@ -980,7 +984,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Load keys",
         "keys_for": "Keys for {address}",
-        "clear_this_player": "Clear this player",
         "no_keys": "No keys found for this player",
         "loading_keys": "Loading player keys",
         "add_dialog": {
@@ -1023,7 +1026,9 @@
         "payload_too_large": "Value is too large for this storage namespace.",
         "rate_limited": "Too many requests. Wait a moment and try again.",
         "server": "The storage service returned an error. Try again in a few minutes.",
-        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet."
+        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet.",
+        "export_failed": "The export failed. Please try again.",
+        "bulk_delete_failed": "Some items could not be deleted. Please try again."
       }
     },
     "report": {
@@ -1598,6 +1603,7 @@
       "copy_link": "Copy link",
       "close": "Close",
       "explore_scene": "Explore the scene",
+      "jump_to_location": "Jump into {location} (opens in a new tab)",
       "copied": "Copied!"
     },
     "featured": {
@@ -1618,6 +1624,8 @@
       "remove_friend": "Unfriend",
       "unblock": "Unblock",
       "block": "Block",
+      "blocked_toast": "{name} has been blocked.",
+      "unblocked_toast": "{name} has been unblocked.",
       "more_actions": "More actions",
       "copy_address": "Copy address",
       "address_copied": "Address copied!",
@@ -2051,7 +2059,6 @@
       },
       "learn_more": "Learn more",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Join Program",
       "leave_button": "Leave Program",
       "leave_modal": {
         "warning": "Leave Marketplace Credits?",
@@ -2062,10 +2069,6 @@
           "generic": "Couldn't leave the program right now. Please try again.",
           "already_claimed": "You can't leave this week because you've already claimed credits. Please try again next week."
         }
-      },
-      "join_errors": {
-        "generic": "Couldn't join the program right now. Please try again.",
-        "email_required": "Add and confirm an email in Notifications before joining the Credits Program."
       }
     },
     "delete": {

@@ -1,15 +1,25 @@
 import * as mockReact from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
+import type { AssetsQuery } from '../../../features/profile/profile.assets.client'
 import { AssetsTab } from './AssetsTab'
 
 jest.mock('decentraland-ui2', () => ({
-  AssetPreviewPlayerProvider: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', null, children),
+  AssetPreviewPlayerProvider: ({ children, enabled }: { children?: React.ReactNode; enabled: boolean }) =>
+    mockReact.createElement('div', { 'data-testid': 'preview-provider', 'data-enabled': String(enabled) }, children),
   Box: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('div', null, children),
   Button: ({ children, onClick }: { children?: React.ReactNode; onClick?: () => void }) =>
     mockReact.createElement('button', { onClick }, children),
-  CatalogCard: ({ bottomAction, infoBadges }: { bottomAction?: React.ReactNode; infoBadges?: React.ReactNode }) =>
-    mockReact.createElement('div', { 'data-testid': 'catalog-card' }, infoBadges, bottomAction),
+  CatalogCard: ({
+    asset,
+    bottomAction,
+    infoBadges
+  }: {
+    asset: { name: string }
+    bottomAction?: React.ReactNode
+    infoBadges?: React.ReactNode
+  }) => mockReact.createElement('div', { 'data-testid': 'catalog-card' }, asset.name, infoBadges, bottomAction),
   CircularProgress: () => mockReact.createElement('div', { role: 'progressbar' }),
   Typography: ({ children }: { children?: React.ReactNode }) => mockReact.createElement('p', null, children)
 }))
@@ -44,34 +54,15 @@ jest.mock('../../../components/profile/ProfileEmptyState', () => ({
     )
 }))
 
-const mockedQuery = useGetProfileAssetsQuery as jest.MockedFunction<typeof useGetProfileAssetsQuery>
+let mockedQuery: jest.MockedFunction<typeof useGetProfileAssetsQuery>
 const ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const SECOND_ADDRESS = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
-type QueryArg = { address: string; category?: string; limit?: number; offset?: number }
-
-const emptyResult = { data: { total: 0, data: [] }, isLoading: false, isFetching: false }
-
-// The component fires 5 `limit:1` availability probes (one per category) plus the
-// main paginated query. This helper lets a test declare which categories exist
-// and what the paginated query returns, by inspecting each call's arguments.
-function installQuery(options: {
-  availableCategories?: string[]
-  page?: { total: number; data: unknown[]; isFetching?: boolean; isLoading?: boolean }
-}) {
-  const { availableCategories = [], page } = options
-  mockedQuery.mockImplementation((arg, opts) => {
-    const { category, limit } = (arg ?? {}) as QueryArg
-    // Availability probes use limit:1.
-    if (limit === 1) {
-      const total = category && availableCategories.includes(category) ? 1 : 0
-      return { data: { total, data: [] }, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
-    }
-    // Skipped main query (no effective category).
-    if ((opts as { skip?: boolean } | undefined)?.skip) {
-      return { data: undefined, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
-    }
+function installQuery(options: { page?: { total: number; data: unknown[]; isFetching?: boolean; isLoading?: boolean } }) {
+  const { page } = options
+  mockedQuery.mockImplementation(() => {
     return {
-      data: { total: page?.total ?? 0, data: page?.data ?? [] },
+      currentData: { total: page?.total ?? 0, data: page?.data ?? [] },
       isLoading: page?.isLoading ?? false,
       isFetching: page?.isFetching ?? false
     } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
@@ -116,16 +107,22 @@ function makeEnsEntry(id: string, name: string) {
   }
 }
 
-describe('AssetsTab', () => {
+describe('when viewing profile assets', () => {
+  let user: ReturnType<typeof userEvent.setup>
+
   beforeEach(() => {
-    mockedQuery.mockReturnValue(emptyResult as unknown as ReturnType<typeof useGetProfileAssetsQuery>)
+    mockedQuery = useGetProfileAssetsQuery as jest.MockedFunction<typeof useGetProfileAssetsQuery>
+    mockedQuery.mockReturnValue({ currentData: { total: 0, data: [] }, isLoading: false, isFetching: false } as unknown as ReturnType<
+      typeof useGetProfileAssetsQuery
+    >)
+    user = userEvent.setup()
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  describe('when the owner has no assets', () => {
+  describe('and the owner has no assets', () => {
     it('should render the rich empty state with a marketplace CTA on the own profile', () => {
       render(<AssetsTab address={ADDRESS} isOwnProfile={true} />)
 
@@ -143,21 +140,21 @@ describe('AssetsTab', () => {
     })
   })
 
-  describe('when the initial page is loading', () => {
+  describe('and the initial page is loading', () => {
+    beforeEach(() => {
+      installQuery({ page: { total: 0, data: [], isLoading: true } })
+    })
+
     it('should render a loading spinner', () => {
-      installQuery({ availableCategories: ['wearable'], page: { total: 0, data: [], isLoading: true } })
       render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
 
       expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })
   })
 
-  describe('when the owner has wearables', () => {
+  describe('and the owner has wearables', () => {
     beforeEach(() => {
-      installQuery({
-        availableCategories: ['wearable', 'emote'],
-        page: { total: 1, data: [makeWearableEntry('w1')] }
-      })
+      installQuery({ page: { total: 1, data: [makeWearableEntry('w1')] } })
     })
 
     it('should render the item count and a card grid', () => {
@@ -167,50 +164,93 @@ describe('AssetsTab', () => {
       expect(screen.getByText('profile.assets.view')).toBeInTheDocument()
     })
 
-    it('should render only the filter chips for categories that have items', () => {
+    it('should offer the All category', () => {
       render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
 
-      expect(screen.getByText('profile.assets.filter_wearables')).toBeInTheDocument()
-      expect(screen.getByText('profile.assets.filter_emotes')).toBeInTheDocument()
-      expect(screen.queryByText('profile.assets.filter_names')).toBeNull()
+      expect(screen.getByText('profile.assets.filter_all')).toBeInTheDocument()
+    })
+
+    it('should offer category filters even before their counts are known', () => {
+      render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByText('profile.assets.filter_names')).toBeInTheDocument()
+    })
+
+    it('should keep wearable previews enabled in the All view', () => {
+      render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByTestId('preview-provider')).toHaveAttribute('data-enabled', 'true')
     })
   })
 
-  describe('when the owner has ENS names', () => {
+  describe('and the owner has ENS names', () => {
     beforeEach(() => {
-      installQuery({
-        availableCategories: ['ens'],
-        page: { total: 1, data: [makeEnsEntry('n1', 'Brai.dcl.eth')] }
-      })
+      installQuery({ page: { total: 1, data: [makeEnsEntry('n1', 'Brai.dcl.eth')] } })
     })
 
-    it('should render the name stem with edit and transfer actions', () => {
+    it('should keep the Edit action visible in the All view when only names are owned', () => {
       render(<AssetsTab address={ADDRESS} isOwnProfile={true} />)
+
+      expect(screen.getByText('profile.assets.edit')).toBeInTheDocument()
+    })
+
+    it('should render the name stem with edit and transfer actions', async () => {
+      render(<AssetsTab address={ADDRESS} isOwnProfile={true} />)
+      await user.click(screen.getByText('profile.assets.filter_names'))
 
       expect(screen.getByText('Brai')).toBeInTheDocument()
       expect(screen.getByText('profile.assets.edit')).toBeInTheDocument()
       expect(screen.getByText('profile.assets.transfer')).toBeInTheDocument()
     })
+
+    it('should leave previews off for a names-only All view', () => {
+      render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByTestId('preview-provider')).toHaveAttribute('data-enabled', 'false')
+    })
   })
 
-  describe('when more items are available than the first page', () => {
-    it('should render a load-more button', () => {
-      installQuery({
-        availableCategories: ['wearable'],
-        page: { total: 50, data: [makeWearableEntry('w1')] }
+  describe('and the owner has names across multiple pages', () => {
+    let firstName: ReturnType<typeof makeEnsEntry>
+    let secondName: ReturnType<typeof makeEnsEntry>
+
+    beforeEach(() => {
+      firstName = makeEnsEntry('n1', 'Brai.dcl.eth')
+      secondName = makeEnsEntry('n2', 'Second.dcl.eth')
+      mockedQuery.mockImplementation(arg => {
+        const query = arg as AssetsQuery
+        const page = { total: 2, data: query.offset === 0 ? [firstName] : [secondName] }
+        return { currentData: page, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
       })
+    })
+
+    it('should keep direct Edit actions visible after loading another page', async () => {
+      render(<AssetsTab address={ADDRESS} isOwnProfile={true} />)
+
+      await user.click(screen.getByText('profile.creations.load_more'))
+
+      expect(screen.getAllByText('profile.assets.edit')).toHaveLength(2)
+    })
+  })
+
+  describe('and more items are available than the first page', () => {
+    beforeEach(() => {
+      installQuery({ page: { total: 50, data: [makeWearableEntry('w1')] } })
+    })
+
+    it('should render a load-more button', () => {
       render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
 
       expect(screen.getByText('profile.creations.load_more')).toBeInTheDocument()
     })
   })
 
-  describe('when a subsequent page is fetching', () => {
+  describe('and a subsequent page is fetching', () => {
+    beforeEach(() => {
+      installQuery({ page: { total: 1, data: [makeWearableEntry('w1')], isFetching: true } })
+    })
+
     it('should render a trailing spinner alongside the existing items', () => {
-      installQuery({
-        availableCategories: ['wearable'],
-        page: { total: 1, data: [makeWearableEntry('w1')], isFetching: true }
-      })
       render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
 
       // Items already rendered, plus the in-flight spinner.
@@ -219,58 +259,113 @@ describe('AssetsTab', () => {
     })
   })
 
-  describe('when the user switches categories', () => {
-    it('should query the newly selected category and reset the accumulated page', () => {
-      installQuery({
-        availableCategories: ['wearable', 'ens'],
-        page: { total: 1, data: [makeWearableEntry('w1')] }
+  describe('and the user loads more items', () => {
+    let firstPage: ReturnType<typeof makeWearableEntry>
+    let secondPage: ReturnType<typeof makeWearableEntry>
+
+    beforeEach(() => {
+      firstPage = makeWearableEntry('w1')
+      secondPage = makeWearableEntry('w2')
+      mockedQuery.mockImplementation(arg => {
+        const query = arg as AssetsQuery
+        const page = { total: 2, data: query.offset === 0 ? [firstPage] : [secondPage] }
+        return { currentData: page, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
       })
+    })
+
+    it('should show the second page after loading more', async () => {
       render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
 
-      fireEvent.click(screen.getByText('profile.assets.filter_names'))
+      await user.click(screen.getByText('profile.creations.load_more'))
 
-      // After switching to ENS the cache key changes, resetting the accumulator,
-      // and the main query is re-issued for the `ens` category.
-      expect(mockedQuery).toHaveBeenCalledWith(expect.objectContaining({ address: ADDRESS, category: 'ens', limit: 24 }), expect.anything())
+      expect(screen.getByText('Wearable w2')).toBeInTheDocument()
     })
   })
 
-  describe('when the user loads more items', () => {
-    it('should advance the offset to fetch the next page', () => {
-      installQuery({
-        availableCategories: ['wearable'],
-        page: { total: 50, data: [makeWearableEntry('w1')] }
+  describe('and the visitor switches categories after loading more assets', () => {
+    let wearable: ReturnType<typeof makeWearableEntry>
+    let name: ReturnType<typeof makeEnsEntry>
+
+    beforeEach(() => {
+      wearable = makeWearableEntry('w1')
+      name = makeEnsEntry('n1', 'Brai.dcl.eth')
+      mockedQuery.mockImplementation(arg => {
+        const query = arg as AssetsQuery
+        const page = query.category === 'ens' && query.offset === 0 ? { total: 1, data: [name] } : { total: 50, data: [wearable] }
+        return { currentData: page, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
       })
+    })
+
+    it('should show the first page of the newly selected category', async () => {
       render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
+      await user.click(screen.getByText('profile.creations.load_more'))
 
-      mockedQuery.mockClear()
-      fireEvent.click(screen.getByText('profile.creations.load_more'))
+      await user.click(screen.getByText('profile.assets.filter_names'))
 
-      // The paginated query is re-issued with a non-zero offset (the count of items shown).
-      expect(mockedQuery).toHaveBeenCalledWith(expect.objectContaining({ offset: 1, limit: 24 }), expect.anything())
+      expect(screen.getByText('Brai')).toBeInTheDocument()
     })
   })
 
-  describe('when the selected category drops to zero availability', () => {
-    it('should clear the local pick and fall back to the next available category', () => {
-      // First render: emote is available and selected by the user.
-      installQuery({
-        availableCategories: ['wearable', 'emote'],
-        page: { total: 1, data: [makeWearableEntry('w1')] }
-      })
-      const { rerender } = render(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
-      fireEvent.click(screen.getByText('profile.assets.filter_emotes'))
+  describe('and the visitor opens another profile', () => {
+    let rerender: ReturnType<typeof render>['rerender']
+    let firstAsset: ReturnType<typeof makeWearableEntry>
+    let secondAsset: ReturnType<typeof makeWearableEntry>
 
-      // Data refreshes: emote no longer has items.
-      installQuery({
-        availableCategories: ['wearable'],
-        page: { total: 1, data: [makeWearableEntry('w1')] }
+    beforeEach(async () => {
+      firstAsset = makeWearableEntry('w1')
+      secondAsset = makeWearableEntry('w2')
+      mockedQuery.mockImplementation(arg => {
+        const query = arg as AssetsQuery
+        const page = { total: 1, data: [query.address === SECOND_ADDRESS ? secondAsset : firstAsset] }
+        return { currentData: page, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
       })
-      rerender(<AssetsTab address={ADDRESS} isOwnProfile={false} />)
+      rerender = render(<AssetsTab address={ADDRESS} isOwnProfile={false} />).rerender
+      await user.click(screen.getByText('profile.assets.filter_names'))
+    })
 
-      // The emote chip disappears; wearable remains the fallback.
-      expect(screen.queryByText('profile.assets.filter_emotes')).toBeNull()
-      expect(screen.getByText('profile.assets.filter_wearables')).toBeInTheDocument()
+    it('should show the other profile in the All view', () => {
+      rerender(<AssetsTab address={SECOND_ADDRESS} isOwnProfile={false} />)
+
+      expect(screen.getByText('Wearable w2')).toBeInTheDocument()
+    })
+  })
+
+  describe('and the selected category has no items', () => {
+    let rerender: ReturnType<typeof render>['rerender']
+    let allPage: { total: number; data: unknown[] }
+    let emptyPage: { total: number; data: unknown[] }
+
+    beforeEach(() => {
+      allPage = { total: 1, data: [makeWearableEntry('w1')] }
+      emptyPage = { total: 0, data: [] }
+      mockedQuery.mockImplementation(arg => {
+        const query = arg as AssetsQuery
+        const page = query.category === 'emote' ? emptyPage : allPage
+        return { currentData: page, isLoading: false, isFetching: false } as unknown as ReturnType<typeof useGetProfileAssetsQuery>
+      })
+      rerender = render(<AssetsTab address={ADDRESS} isOwnProfile={false} />).rerender
+    })
+
+    it('should show an empty state for that category', async () => {
+      await user.click(screen.getByText('profile.assets.filter_emotes'))
+
+      expect(screen.getByText('profile.assets.count')).toBeInTheDocument()
+    })
+
+    it('should let the visitor return to all assets', async () => {
+      await user.click(screen.getByText('profile.assets.filter_emotes'))
+
+      await user.click(screen.getByText('profile.assets.filter_all'))
+
+      expect(screen.getByText('profile.assets.view')).toBeInTheDocument()
+    })
+
+    it('should not claim that the owner has no assets', async () => {
+      rerender(<AssetsTab address={ADDRESS} isOwnProfile={true} />)
+
+      await user.click(screen.getByText('profile.assets.filter_emotes'))
+
+      expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument()
     })
   })
 })

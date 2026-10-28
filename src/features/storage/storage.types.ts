@@ -25,11 +25,18 @@ interface DeleteEnvParams {
 
 interface SceneKey {
   key: string
+  value: unknown
 }
 
 interface SceneValue {
   key: string
   value: unknown
+}
+
+interface StorageValueFile {
+  filename: string
+  type: string
+  content: string
 }
 
 interface GetSceneValueParams {
@@ -47,6 +54,7 @@ interface DeleteSceneValueParams {
 
 interface PlayerKey {
   key: string
+  value: unknown
 }
 
 interface PlayerValue {
@@ -258,12 +266,67 @@ interface ContributableDomainsResponse {
   domains: ContributableDomainRaw[]
 }
 
+type RealmKind = 'world' | 'genesis'
+
+interface CollaboratorScene {
+  sceneId: string
+  worldName: string
+  baseParcel: string
+  title: string | null
+  realmKind: RealmKind
+}
+
+interface GetCollaboratorScenesParams {
+  limit?: number
+  offset?: number
+}
+
+interface CollaboratorScenesResponse {
+  data: CollaboratorScene[]
+  pagination: { limit: number; offset: number; total: number }
+}
+
+type ExportFormat = 'json' | 'csv'
+
+interface ExportSelection {
+  world?: { keys?: string[] }
+  players?: { addresses?: string[]; keys?: string[] }
+}
+
+interface ExportFileParams {
+  format: ExportFormat
+  selection: ExportSelection
+  signal?: AbortSignal
+}
+
+interface ExportWorldRow {
+  key: string
+  value: unknown
+}
+
+interface ExportPlayerRow {
+  address: string
+  key: string
+  value: unknown
+}
+
+interface DeleteSelectionParams {
+  allSelected: boolean
+  ids: ReadonlyArray<string>
+  deleteOne: (id: string) => Promise<unknown>
+  clearAll: () => Promise<unknown>
+  concurrency?: number
+}
+
 type WrapSignedFetchError = { status: number; data?: unknown } | { status: 'FETCH_ERROR'; error: string }
 
 export { LandType, RoleType }
 export type {
   AuthParams,
   ClearPlayerParams,
+  DeleteSelectionParams,
+  CollaboratorScene,
+  CollaboratorScenesResponse,
   ContributableDomain,
   ContributableDomainRaw,
   ContributableDomainsResponse,
@@ -272,6 +335,12 @@ export type {
   DeletePlayerValueParams,
   DeleteSceneValueParams,
   EnvKey,
+  ExportFileParams,
+  ExportFormat,
+  ExportPlayerRow,
+  ExportSelection,
+  ExportWorldRow,
+  GetCollaboratorScenesParams,
   GetPlayerValueParams,
   GetSceneValueParams,
   Land,
@@ -286,6 +355,7 @@ export type {
   PlayerValue,
   Rental,
   RentalFields,
+  RealmKind,
   RentalsQueryResponse,
   RentalsQueryResult,
   SceneKey,
@@ -294,6 +364,7 @@ export type {
   SetPlayerValueParams,
   SetSceneValueParams,
   StorageContext,
+  StorageValueFile,
   StorageValueResponse,
   SubgraphAuthorization,
   SubgraphEstate,

@@ -7,8 +7,29 @@ import { FallbackContainer, FallbackMessage, FallbackTitle, ReloadButton } from 
 // A failed dynamic import surfaces with browser-specific wording, so match on the
 // shapes all of them share rather than on one engine's message.
 const CHUNK_ERROR_PATTERNS = [/dynamically imported module/i, /Importing a module script failed/i, /error loading dynamically imported/i]
+const CHUNK_RELOAD_KEY = 'dcl:chunk-reload-at'
+const CHUNK_RELOAD_COOLDOWN_MS = 60_000
+const CHUNK_REPORT_TIMEOUT_MS = 1500
+const SENTRY_FLUSH_TIMEOUT_MS = 1000
 
 const isChunkLoadError = (error: Error): boolean => CHUNK_ERROR_PATTERNS.some(pattern => pattern.test(error.message))
+
+// A failed import is cached by the current document in some browsers. A single
+// full reload gives the route a fresh module graph after a transient CDN failure.
+// Keep the fallback after a second failure so a persistent outage cannot loop.
+function reloadFailedChunkOnce(): void {
+  try {
+    const now = Date.now()
+    const previous = window.sessionStorage.getItem(CHUNK_RELOAD_KEY)
+    const elapsed = now - Number(previous)
+    if (previous !== null && elapsed >= 0 && elapsed < CHUNK_RELOAD_COOLDOWN_MS) return
+
+    window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(now))
+    window.location.reload()
+  } catch {
+    // Storage can be blocked; leave the existing fallback and manual reload CTA.
+  }
+}
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -35,12 +56,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    void captureHandledError(error, {
+    const chunkError = isChunkLoadError(error)
+    const report = captureHandledError(error, {
       /* eslint-disable @typescript-eslint/naming-convention -- Sentry tag keys are
          data read in the Sentry UI, where the convention is snake_case. */
       tags: {
         boundary: 'route',
-        chunk_load_error: String(isChunkLoadError(error)),
+        chunk_load_error: String(chunkError),
         // Distinguishes "the user went offline" from "the asset is unreachable
         // while the connection is up", which need different follow-ups.
         //
@@ -52,8 +74,22 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         online: typeof navigator === 'undefined' ? undefined : String(navigator.onLine)
       },
       /* eslint-enable @typescript-eslint/naming-convention */
-      extra: { componentStack: errorInfo.componentStack }
+      extra: { componentStack: errorInfo.componentStack },
+      flushTimeoutMs: chunkError ? SENTRY_FLUSH_TIMEOUT_MS : undefined
     })
+    if (!chunkError) return
+
+    // Give Sentry time to load and send this diagnostic before navigation.
+    // A blocked SDK must not leave the user on the error page indefinitely.
+    let timer: ReturnType<typeof setTimeout>
+    const timeout = new Promise<void>(resolve => {
+      timer = setTimeout(resolve, CHUNK_REPORT_TIMEOUT_MS)
+    })
+    const finish = () => {
+      clearTimeout(timer)
+      reloadFailedChunkOnce()
+    }
+    void Promise.race([report, timeout]).then(finish, finish)
   }
 
   componentDidUpdate(previousProps: ErrorBoundaryProps): void {

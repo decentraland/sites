@@ -97,14 +97,18 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
         <CardImage src={imageSrc} alt={formatMessage(altKey, { title: data.title })} />
         {isEvent && (
           <AttendeesBadge backgroundColor={data.live ? '#FF2D55' : '#FCFCFC'} style={{ color: data.live ? '#ffffff' : '#161518' }}>
+            {/* Keyed spans so React replaces the whole span on a live flip: same translator reason as the creator name below. */}
             {data.live ? (
               <>
                 <LiveEventIcon />
-                {formatMessage('component.jump.card.event.live')} +{data.user_count || 0}
+                <span key="live">
+                  {formatMessage('component.jump.card.event.live')} +{data.user_count || 0}
+                </span>
               </>
             ) : (
               <>
-                <NotificationsRoundedIcon sx={{ fontSize: 16, color: '#FF2D55' }} />+{data.total_attendees ?? 0}
+                <NotificationsRoundedIcon sx={{ fontSize: 16, color: '#FF2D55' }} />
+                <span key="attendees">+{data.total_attendees ?? 0}</span>
               </>
             )}
           </AttendeesBadge>
@@ -139,7 +143,9 @@ const Card = memo(function Card({ data, isLoading = false, creator, children }: 
                 {displayUserName}
               </UserProfileLink>
             ) : (
-              displayUserName
+              // Wrapped so React removes an element when the creator link replaces it: browser translators swap a
+              // bare text node for their own <font>, and React's removeChild on the original node then throws.
+              <span>{displayUserName}</span>
             )}
           </CardCreator>
           <MetaRow>

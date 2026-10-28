@@ -4,13 +4,13 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 ## Layers
 
-| Layer           | Where                                      | What                                                                                                               |
-| --------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| 1. Memory       | `CLAUDE.md` (repo root)                    | Always-loaded constitution. Architecture, conventions, pre-PR rules (1-25), security checklist. **Authoritative**. |
-| 2. Knowledge    | `.claude/skills/`                          | On-demand workflows (auto-invoked by description match).                                                           |
-| 3. Guardrails   | `.claude/hooks/` + `.claude/settings.json` | Deterministic shell scripts on tool events.                                                                        |
-| 4. Delegation   | `.claude/agents/`                          | Subagents with isolated context.                                                                                   |
-| 5. Distribution | _not packaged_                             | See "Bundling later" below.                                                                                        |
+| Layer           | Where                                      | What                                                                                                                 |
+| --------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| 1. Memory       | `CLAUDE.md` (repo root)                    | Always-loaded constitution. Architecture, conventions, numbered pre-PR rules, security checklist. **Authoritative**. |
+| 2. Knowledge    | `.claude/skills/`                          | On-demand workflows (auto-invoked by description match).                                                             |
+| 3. Guardrails   | `.claude/hooks/` + `.claude/settings.json` | Deterministic shell scripts on tool events.                                                                          |
+| 4. Delegation   | `.claude/agents/`                          | Subagents with isolated context.                                                                                     |
+| 5. Distribution | _not packaged_                             | See "Bundling later" below.                                                                                          |
 
 ## Skills
 
@@ -29,7 +29,7 @@ Project-level configuration for Claude Code working in this repo. Every hook, sk
 
 ## Agents
 
-- `code-reviewer` — repo-aware diff review against rules 1-25 + security checklist.
+- `code-reviewer` — repo-aware diff review against the numbered Pre-PR rules + security checklist.
 - `coverage-keeper` — writes Jest specs to bring listed files above the 95% floor (rule 6) without violating rules 17 / 18 / 22.
 - `i18n-auditor` — verifies locale parity and detects duplicate keys.
 - `route-architect` — designs new routes respecting the dual-shell boundary.

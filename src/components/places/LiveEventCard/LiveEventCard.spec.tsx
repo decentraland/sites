@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { DiscoverPlace } from '../../../features/discover'
 import { SegmentEvent } from '../../../modules/segment.types'
+import { getSyntheticAvatarUrl } from '../../../utils/avatarColor'
 // Import through the barrel so the re-export contract is exercised too.
 import { LiveEventCard } from '.'
 
@@ -288,17 +289,27 @@ describe('LiveEventCard', () => {
   })
 
   describe('when rendering the creator identity', () => {
-    it('should render the owner face256 only when the scene names no contact', () => {
-      mockUseGetProfileQuery.mockReturnValue({
-        data: {
-          avatars: [
-            { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
-          ]
-        }
-      })
-      const { container } = render(<LiveEventCard place={createPlace({ contact_name: undefined })} />)
+    describe('and the scene declares no contact', () => {
+      let container: HTMLElement
 
-      expect(container.querySelector('img')).toHaveAttribute('src', 'https://peer.decentraland.org/face256.png')
+      beforeEach(() => {
+        mockUseGetProfileQuery.mockReturnValue({
+          data: {
+            avatars: [
+              { name: 'LandOwner', hasClaimedName: true, avatar: { snapshots: { face256: 'https://peer.decentraland.org/face256.png' } } }
+            ]
+          }
+        })
+        ;({ container } = render(<LiveEventCard place={createPlace({ contact_name: undefined })} />))
+      })
+
+      it('should credit the place title with a synthetic avatar', () => {
+        expect(container.querySelector('img')).toHaveAttribute('src', getSyntheticAvatarUrl('Live Concert'))
+      })
+
+      it('should skip the wallet profile query', () => {
+        expect(mockUseGetProfileQuery).toHaveBeenCalledWith(undefined, { skip: true })
+      })
     })
 
     it('should show the resolved face next to the contact name it links to', () => {
@@ -328,8 +339,8 @@ describe('LiveEventCard', () => {
       expect(screen.getByText('DJName')).toBeInTheDocument()
     })
 
-    it('should render an empty By row when the place has no creator name', () => {
-      const { container } = render(<LiveEventCard place={createPlace({ contact_name: undefined, owner: null })} />)
+    it('should render no by-line when the place has neither an author nor a title', () => {
+      const { container } = render(<LiveEventCard place={createPlace({ contact_name: undefined, owner: null, title: '' })} />)
 
       expect(screen.queryByText(/discover\.card\.by/)).not.toBeInTheDocument()
       expect(container.querySelector('img')).not.toBeInTheDocument()

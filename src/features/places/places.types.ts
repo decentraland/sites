@@ -28,6 +28,7 @@ interface JumpEvent {
 }
 
 interface JumpPlace {
+  creator_address?: string | null
   id: string
   title: string
   image: string

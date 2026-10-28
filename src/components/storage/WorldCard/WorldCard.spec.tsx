@@ -6,6 +6,7 @@ import { WorldCard } from './WorldCard'
 const mockUseGetWorldScenes = jest.fn()
 
 jest.mock('decentraland-ui2', () => {
+  const actual = jest.requireActual('../../../__test-utils__/styledMock')
   const h = React.createElement as unknown as (
     type: string,
     props?: Record<string, unknown> | null,
@@ -18,6 +19,7 @@ jest.mock('decentraland-ui2', () => {
   const button = (props: Record<string, unknown>) =>
     h('button', { type: 'button', onClick: props.onClick, disabled: props.disabled, 'aria-label': props['aria-label'] }, props.children)
   return {
+    ...actual,
     Box: pass('div'),
     Button: button,
     ButtonBase: (props: Record<string, unknown>) =>
@@ -42,18 +44,6 @@ jest.mock('decentraland-ui2', () => {
 
 jest.mock('@mui/icons-material/ArrowDropDown', () => ({ __esModule: true, default: () => null }))
 jest.mock('@mui/icons-material/FmdGood', () => ({ __esModule: true, default: () => null }))
-
-jest.mock('./WorldCard.styled', () => {
-  const h = React.createElement as unknown as (
-    type: string,
-    props?: Record<string, unknown> | null,
-    ...children: unknown[]
-  ) => React.ReactElement
-  return {
-    CardLabel: ({ children }: { children?: unknown }) => h('div', null, children),
-    MenuDivider: () => null
-  }
-})
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (key: string) => key

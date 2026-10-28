@@ -207,7 +207,7 @@ describe('SceneLiveWatcher', () => {
       const props = {
         status: 'no-broadcast' as const,
         mode: 'scene' as const,
-        streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
+        streamingHref: 'https://decentraland.zone/play/?position=-9%2C-9',
         coverImage: 'https://img.test/cover.png',
         place: mockPlace
       }
@@ -345,7 +345,7 @@ describe('SceneLiveWatcher', () => {
       const props = {
         status: 'ready' as const,
         mode: 'scene' as const,
-        streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
+        streamingHref: 'https://decentraland.zone/play/?position=-9%2C-9',
         place: mockPlace,
         initialUserCount: 5
       }
@@ -371,7 +371,7 @@ describe('SceneLiveWatcher', () => {
       const props = {
         status: 'ready' as const,
         mode: 'scene' as const,
-        streamingHref: 'https://decentraland.zone/bevy-web/?position=-9%2C-9',
+        streamingHref: 'https://decentraland.zone/play/?position=-9%2C-9',
         place: mockPlace
       }
 

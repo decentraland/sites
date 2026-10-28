@@ -31,52 +31,43 @@
       "success": {
         "title": "¡Ya casi está!",
         "subtitle": "Abre el archivo que acabas de descargar para terminar de instalar Decentraland y comenzar a {action}",
-        "subtitle_action_exploring": "explorar",
         "step": "Paso",
-        "footer": "¿Problemas con la descarga? Intentemos de nuevo: {link}",
-        "footer_link_label": "Descargar de nuevo",
+        "started": {
+          "title": "¡Tu descarga ha comenzado!",
+          "subtitle": "Sigue estos 3 pasos para instalar Decentraland y entrar."
+        },
+        "footer_retry": "¿No empezó la descarga? {link}",
+        "footer_retry_link": "Inténtalo de nuevo",
+        "footer_help": "¿Necesitas ayuda? Ve a {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "Después de que se complete la descarga, vuelve a la página del evento {event} para poder entrar. Redireccionando en {seconds} segundos.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "Abrir",
-              "text": "Abre el archivo <span>Decentraland</span> desde tu carpeta de Descargas para iniciar el Asistente de Instalación."
+              "title": "Encuentra tu archivo",
+              "text": "Haz clic en el icono de descarga de la barra de herramientas de tu navegador y abre el instalador de Decentraland (.exe)."
             },
             "step2": {
-              "title": "Instalar",
-              "text": "Sigue las instrucciones del Asistente de Instalación. Cuando hagas clic en <span>Finalizar</span>, comenzará el proceso de instalación."
+              "title": "Instala",
+              "text": "Sigue el Asistente de Instalación y haz clic en Siguiente hasta que termine. Si Windows pide permiso, haz clic en Sí."
             },
             "step3": {
-              "title": "¡Prepárate para explorar!",
-              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu barra de tareas y se iniciará automáticamente."
+              "title": "¡Entra!",
+              "text": "Una vez instalado, Decentraland se abre solo. ¡Nos vemos dentro!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "Abrir",
-              "text": "Haz clic en el archivo <span>Decentraland</span> desde las 'Descargas recientes' de tu navegador o tu carpeta de 'Descargas' para abrirlo."
+              "title": "Encuentra tu archivo",
+              "text": "Haz clic en el icono de descarga de la barra de herramientas de tu navegador y abre Decentraland-Installer.dmg."
             },
             "step2": {
-              "title": "Instalar",
-              "text": "Debería aparecer esta ventana. Haz doble clic en el botón <span>Decentraland</span> para iniciar la instalación."
+              "title": "Instala",
+              "text": "Haz doble clic en el icono de Decentraland en la ventana que se abre. Cuando aparezca el mensaje de seguridad de macOS, haz clic en Abrir."
             },
             "step3": {
-              "title": "¡Prepárate para explorar!",
-              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu Dock y se iniciará automáticamente."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "Abrir",
-              "text": "Haz clic en el archivo <span>Decentraland</span> desde las 'Descargas recientes' de tu navegador o tu carpeta de 'Descargas' para abrirlo."
-            },
-            "step2": {
-              "title": "Instalar",
-              "text": "Debería aparecer esta ventana. Haz doble clic en el botón <span>Decentraland</span> para iniciar la instalación."
-            },
-            "step3": {
-              "title": "¡Prepárate para explorar!",
-              "text": "Una vez completada la instalación, la app de Decentraland debería aparecer en tu Dock y se iniciará automáticamente."
+              "title": "¡Entra!",
+              "text": "Una vez instalado, Decentraland se abre solo. ¡Nos vemos dentro!"
             }
           }
         }
@@ -384,15 +375,6 @@
       "invalid_source_description": "Origen de confirmación no válido. Revisa el enlace de tu correo.",
       "missing_address_title": "Falta la dirección",
       "missing_address_description": "El parámetro de dirección es obligatorio en la URL. Revisa el enlace de tu correo."
-    },
-    "play": {
-      "title": "La versión web ya no está disponible.",
-      "subtitle": "Seguí jugando en la app de escritorio o móvil.",
-      "also_available_on": "También disponible en",
-      "already_downloaded": "¿Ya lo descargaste?",
-      "jump_in": "¡ENTRAR!",
-      "experimental": "¿Querés seguir jugando en la web? Probá la versión experimental {here}",
-      "here": "AQUÍ"
     },
     "not_found": {
       "title_oops": "¡Ups!",
@@ -723,11 +705,30 @@
         "delete": "Eliminar",
         "close": "Cerrar",
         "loading": "Cargando",
-        "actions": "Acciones",
         "key": "Clave",
         "add": "Agregar",
         "owner": "Propietario",
-        "collaborator": "Colaborador"
+        "collaborator": "Colaborador",
+        "download_all": "Descargar todo",
+        "download_selected": "Descargar selección ({count})",
+        "delete_selected": "Borrar selección ({count})",
+        "delete_all": "Borrar todo",
+        "delete_selected_dialog": {
+          "title": "¿Borrar los elementos seleccionados?",
+          "message": "{count, plural, one {Esto borrará de forma permanente # elemento seleccionado.} other {Esto borrará de forma permanente # elementos seleccionados.}}"
+        },
+        "select_all": "Seleccionar todo",
+        "select_row": "Seleccionar {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Preparando la descarga…",
+        "keep_page_open": "Mantén esta página abierta hasta que empiece la descarga."
+      },
+      "leave_dialog": {
+        "title": "¿Salir mientras se ejecuta la exportación?",
+        "message": "Si sales, la descarga se detiene. Si vuelves a iniciarla más tarde, el archivo estará listo al instante.",
+        "stay": "Quedarme",
+        "leave": "Salir"
       },
       "role": {
         "owner": "Propietario",
@@ -773,12 +774,17 @@
         "scene_count_one": "1 escena",
         "edit": "Editar",
         "edit_scenes": "Editar escenas",
-        "select_scene": "Seleccionar escena"
+        "select_scene": "Seleccionar escena",
+        "collaborations": "Colaboraciones",
+        "no_collaborations": "No se encontraron colaboraciones",
+        "collaborations_error": "No se pudieron cargar tus colaboraciones. Inténtalo de nuevo.",
+        "collaborations_hint": "Las escenas concedidas recientemente pueden tardar un momento en aparecer.",
+        "realm_world": "Mundo",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Variables de entorno",
         "add": "Agregar",
-        "clear_all": "Borrar todo",
         "no_keys": "No se encontraron variables de entorno",
         "add_dialog": {
           "title": "Agregar variable de entorno",
@@ -803,7 +809,6 @@
       "scene_page": {
         "title": "Almacenamiento de escena",
         "add": "Agregar",
-        "clear_all": "Borrar todo",
         "no_keys": "No se encontraron valores de escena",
         "add_dialog": {
           "title": "Agregar valor de escena",
@@ -827,7 +832,6 @@
       "player_page": {
         "title": "Almacenamiento de jugador",
         "add": "Agregar",
-        "clear_all_players": "Borrar todos los jugadores",
         "description": "Explorá los jugadores con datos guardados o buscalos por nombre o dirección.",
         "search_players": "Buscar por nombre o dirección…",
         "no_players": "No se encontraron jugadores",
@@ -840,7 +844,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Cargar claves",
         "keys_for": "Claves de {address}",
-        "clear_this_player": "Borrar este jugador",
         "no_keys": "No se encontraron claves para este jugador",
         "loading_keys": "Cargando claves del jugador",
         "add_dialog": {
@@ -883,7 +886,9 @@
         "payload_too_large": "El valor es demasiado grande para este espacio de almacenamiento.",
         "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
         "server": "El servicio de almacenamiento devolvió un error. Inténtalo de nuevo en unos minutos.",
-        "world_scene_unresolved": "No pudimos resolver la ubicación de la escena de este mundo. Puede que aún no tenga una escena desplegada."
+        "world_scene_unresolved": "No pudimos resolver la ubicación de la escena de este mundo. Puede que aún no tenga una escena desplegada.",
+        "export_failed": "La exportación falló. Inténtalo de nuevo.",
+        "bulk_delete_failed": "No se pudieron borrar algunos elementos. Inténtalo de nuevo."
       }
     },
     "report": {
@@ -1061,6 +1066,8 @@
       "remove_friend": "Quitar amigo",
       "unblock": "Desbloquear",
       "block": "Bloquear",
+      "blocked_toast": "Bloqueaste a {name}.",
+      "unblocked_toast": "Desbloqueaste a {name}.",
       "more_actions": "Más acciones",
       "copy_address": "Copiar dirección",
       "address_copied": "¡Dirección copiada!",
@@ -1364,6 +1371,7 @@
       "copy_link": "Copiar enlace",
       "close": "Cerrar",
       "explore_scene": "Explorar la escena",
+      "jump_to_location": "Entrar a {location} (se abre en una pestaña nueva)",
       "copied": "¡Copiado!"
     },
     "featured": {
@@ -1629,7 +1637,6 @@
       },
       "learn_more": "Más información",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Unirse al Programa",
       "leave_button": "Abandonar Programa",
       "leave_modal": {
         "warning": "¿Abandonar Créditos del Marketplace?",
@@ -1640,10 +1647,6 @@
           "generic": "No se pudo abandonar el programa en este momento. Por favor, inténtalo de nuevo.",
           "already_claimed": "No puedes abandonar esta semana porque ya has reclamado créditos. Por favor, inténtalo de nuevo la próxima semana."
         }
-      },
-      "join_errors": {
-        "generic": "No se pudo unir al programa en este momento. Intentá de nuevo.",
-        "email_required": "Agregá y confirmá un email en Notificaciones antes de unirte al Programa de Créditos."
       }
     },
     "delete": {

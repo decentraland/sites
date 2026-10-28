@@ -1,4 +1,4 @@
-import { safeParseStoredId } from './segmentAnonymousId'
+import { safeParseStoredId } from './segmentAnonymousId.helpers'
 
 const USER_ID_KEY = 'ajs_user_id'
 
@@ -12,14 +12,15 @@ const USER_ID_KEY = 'ajs_user_id'
  * `download_funnel_exit`, the cold-load `Click`) shipped with only an
  * `anonymousId`, dropping the authenticated wallet and forcing the warehouse to
  * join the download funnel to the user indirectly. Reading the SDK's own
- * `ajs_user_id` key (the same localStorage shape `ensureSegmentAnonymousId`
- * reads for `ajs_anonymous_id`) guarantees the beacon's `userId` matches the
+ * `ajs_user_id` key (the JSON-encoded identity store) keeps the beacon's
+ * `userId` aligned with the
  * SDK's exactly — same value, same casing.
  *
  * Returns `undefined` for anonymous visitors (no `ajs_user_id`), so the beacon
  * omits `userId` and ships anonymously — mirroring the SDK's own behavior.
  *
- * localStorage-only by design, matching `ensureSegmentAnonymousId`. Two authed
+ * Identified userId remains localStorage-first in the SDK; anonymousId is
+ * separately reconciled through the shared cookie. Two authed
  * cases therefore fall back to anonymous rather than mismatch the SDK: (1) a
  * cookie-only session where localStorage was blocked when the SDK called
  * `identify()` — analytics-next still writes the cookie, which we don't read;

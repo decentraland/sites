@@ -1,6 +1,7 @@
 import { config } from 'decentraland-ui2/dist/config'
 import { CDNSource, getCDNRelease } from 'decentraland-ui2/dist/modules/cdnReleases'
-import { Architecture } from '../types/download.types'
+import { Architecture, OperativeSystem } from '../types/download.types'
+import { DownloadPlace } from './segment.types'
 
 const ANON_USER_ID_PARAM = 'anon_user_id'
 
@@ -54,6 +55,27 @@ const buildTrackedDownloadUrl = (base: string, params: Record<string, string | u
   } catch {
     return base
   }
+}
+
+/**
+ * Primary CTA URL of the "install first" DownloadModal. With a known desktop
+ * installer it goes straight to `/download_success`, which starts the download,
+ * the same one-click path the homepage hero takes. Without one it keeps
+ * `fallbackBase` (the `/download` chooser). `params` carry the attribution and
+ * deep-link either way, and never overwrite the routing params.
+ */
+const buildModalDownloadUrl = (
+  installerOs: OperativeSystem | null,
+  fallbackBase: string,
+  params: Record<string, string | undefined | null>
+): string => {
+  if (!installerOs) return buildTrackedDownloadUrl(fallbackBase, params)
+  // NOTE: on desktop the env DOWNLOAD_URL is intentionally not used. The relative
+  // `/download_success` keeps the download on the current origin (stg stays on
+  // stg instead of hopping to the absolute decentraland.org URL in stg.json).
+  const routing = buildDownloadSuccessHref(installerOs, DownloadPlace.DOWNLOAD_MODAL)
+  const extra = Object.fromEntries(Object.entries(params).filter(([key]) => key !== 'os' && key !== 'place'))
+  return buildTrackedDownloadUrl(routing, extra)
 }
 
 const updateUrlWithLastValue = (url: string, paramKey: string, paramValue: string) => {
@@ -211,6 +233,7 @@ export {
   FALLBACK_CDN_RELEASE_LINKS,
   addQueryParamsToUrlString,
   buildDownloadSuccessHref,
+  buildModalDownloadUrl,
   buildTrackedDownloadUrl,
   calculateCDNReleaseLinksWithIdentity,
   extractDownloadLinkFromCDNReleaseOption,

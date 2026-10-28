@@ -1,6 +1,7 @@
 interface CaptureHandledErrorOptions {
   tags?: Record<string, string | undefined>
   extra?: Record<string, unknown>
+  flushTimeoutMs?: number
 }
 
 /**
@@ -24,12 +25,13 @@ interface CaptureHandledErrorOptions {
  * reporting failure must not surface to the user. But a silent failure is also how
  * a genuinely broken reporting path hides, so outside production it warns.
  */
-async function captureHandledError(error: unknown, { tags = {}, extra }: CaptureHandledErrorOptions = {}): Promise<void> {
+async function captureHandledError(error: unknown, { tags = {}, extra, flushTimeoutMs }: CaptureHandledErrorOptions = {}): Promise<void> {
   try {
     await import('./sentry')
-    const { captureException } = await import('@sentry/browser')
+    const { captureException, flush } = await import('@sentry/browser')
     const definedTags = Object.fromEntries(Object.entries(tags).filter((entry): entry is [string, string] => entry[1] !== undefined))
     captureException(error, { tags: definedTags, extra })
+    if (flushTimeoutMs !== undefined) await flush(flushTimeoutMs)
   } catch (reportingError) {
     // `process.env.NODE_ENV` rather than the more idiomatic `import.meta.env.DEV`
     // on purpose: ts-jest cannot parse `import.meta` in CJS mode, so a module that

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { keyframes } from '@emotion/react'
-import { Typography, styled } from 'decentraland-ui2'
+import { Typography, keyframes, styled } from 'decentraland-ui2'
 
 const fadeInOut = keyframes({
   '0%, 100%': { opacity: 0.6 },

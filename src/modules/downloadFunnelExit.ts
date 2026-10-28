@@ -1,5 +1,5 @@
 import { SegmentEvent } from './segment'
-import { generateUuid } from './segmentAnonymousId'
+import { ensureSegmentAnonymousId } from './segmentAnonymousId'
 import { postSegmentEvent } from './segmentBeacon'
 import type { DownloadFunnelExitData } from './downloadFunnelExit.types'
 
@@ -27,17 +27,9 @@ function buildProperties(data: DownloadFunnelExitData): Record<string, unknown> 
   return properties
 }
 
-/**
- * Fires the `download_funnel_exit` diagnostic event via the shared unload-safe
- * transport. The funnel usually threads `anon_user_id`; when it does not, mint
- * a throwaway UUID so Segment accepts the event.
- */
+/** Sends the exit snapshot with browser identity independently of URL attribution. */
 function sendDownloadFunnelExit(data: DownloadFunnelExitData): void {
-  // `generateUuid()` is a throwaway id (NOT persisted). This event fires on
-  // `visibilitychange` after the download flow, so Segment adopting the id later
-  // is moot. Do NOT copy this for an event that can fire before Segment boots —
-  // use `ensureSegmentAnonymousId()` (persisted + adoptable) as `useDownloadClick` does.
-  postSegmentEvent(SegmentEvent.DOWNLOAD_FUNNEL_EXIT, buildProperties(data), data.anonUserId || generateUuid())
+  postSegmentEvent(SegmentEvent.DOWNLOAD_FUNNEL_EXIT, buildProperties(data), ensureSegmentAnonymousId())
 }
 
 export { sendDownloadFunnelExit }

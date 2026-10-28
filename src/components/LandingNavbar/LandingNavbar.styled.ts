@@ -1,5 +1,4 @@
-import { keyframes } from '@emotion/react'
-import { dclColors, styled } from 'decentraland-ui2'
+import { dclColors, keyframes, styled } from 'decentraland-ui2'
 
 const MOBILE_BREAKPOINT = '@media (max-width: 991px)'
 const DESKTOP_BREAKPOINT = '@media (min-width: 992px)'

@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { CanonicalSync } from './components/CanonicalSync'
 import { RouteErrorBoundary } from './components/ErrorBoundary'
 import { ScrollToTop } from './components/ScrollToTop'
 import { lazyWithRetry } from './utils/lazyWithRetry'
@@ -36,7 +37,6 @@ const CreatorHubDownloadSuccessPage = lazyWithRetry(() =>
   import('./pages/download/CreatorHubDownloadSuccess').then(m => ({ default: m.CreatorHubDownloadSuccess }))
 )
 const HelpPage = lazyWithRetry(() => import('./pages/help').then(m => ({ default: m.HelpPage })))
-const PlayPage = lazyWithRetry(() => import('./pages/play').then(m => ({ default: m.PlayPage })))
 const InvitePage = lazyWithRetry(() => import('./pages/invite/InvitePage').then(m => ({ default: m.InvitePage })))
 const CreatePage = lazyWithRetry(() => import('./pages/create').then(m => ({ default: m.CreatePage })))
 const DiscordPage = lazyWithRetry(() => import('./pages/discord').then(m => ({ default: m.DiscordPage })))
@@ -182,6 +182,7 @@ const AccountNotFoundPage = lazyWithRetry(() =>
 const App = () => {
   return (
     <BrowserRouter>
+      <CanonicalSync />
       <ScrollToTop />
       {/* Inside BrowserRouter so the boundary can clear itself on navigation, and
           outside Suspense so a rejected lazy import is caught rather than left to
@@ -189,6 +190,7 @@ const App = () => {
       <RouteErrorBoundary>
         <Suspense fallback={null}>
           <Routes>
+            {/* route-manifest: sitemap */}
             <Route path="/download" element={<DownloadPage />} />
             <Route path="/download_success" element={<DownloadSuccessPage />} />
             <Route path="/invite/:referrer" element={<InvitePage />} />
@@ -209,22 +211,35 @@ const App = () => {
             <Route path="/reels/list/:address" element={<ReelsListPage />} />
             <Route path="/reels/:imageId" element={<ReelsImagePage />} />
             <Route element={<Layout />}>
+              {/* route-manifest: sitemap */}
               <Route path="/" element={<IndexPage />} />
+              {/* route-manifest: sitemap */}
               <Route path="/brand" element={<BrandTerms />} />
+              {/* route-manifest: sitemap */}
               <Route path="/content" element={<ContentPolicy />} />
+              {/* route-manifest: sitemap */}
               <Route path="/ethics" element={<CodeOfEthics />} />
+              {/* route-manifest: sitemap */}
               <Route path="/rewards-terms" element={<RewardsTerms />} />
+              {/* route-manifest: sitemap */}
               <Route path="/credits-terms" element={<CreditsTerms />} />
+              {/* route-manifest: sitemap */}
               <Route path="/security" element={<SecurityPage />} />
+              {/* route-manifest: sitemap */}
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              {/* route-manifest: sitemap */}
               <Route path="/referral-terms" element={<ReferralTerms />} />
+              {/* route-manifest: sitemap */}
               <Route path="/terms" element={<TermsOfUse />} />
+              {/* route-manifest: sitemap */}
               <Route path="/help" element={<HelpPage />} />
-              <Route path="/play" element={<PlayPage />} />
+              {/* route-manifest: sitemap */}
               <Route path="/create" element={<CreatePage />} />
+              {/* route-manifest: sitemap */}
               <Route path="/download/creator-hub" element={<CreatorHubDownloadPage />} />
               <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
               <Route path="/discord" element={<DiscordPage />} />
+              {/* route-manifest: sitemap */}
               <Route path="/press" element={<PressPage />} />
               <Route path="/report" element={<ReportPage />} />
               <Route path="/report/success" element={<ReportSuccessPage />} />
@@ -256,6 +271,7 @@ const App = () => {
                 stay dev/stg-only at any point, reintroduce a getEnv() check here. */}
               <Route element={<DappsShell />}>
                 <Route element={<WhatsOnLayout />}>
+                  {/* route-manifest: sitemap */}
                   <Route path="/events" element={<WhatsOnHomePage />} />
                   <Route path="/events/new-event" element={<CreateEventPage />} />
                   <Route path="/events/edit-event/:eventId" element={<CreateEventPage />} />
@@ -277,6 +293,7 @@ const App = () => {
                 {/* Legacy singular `/jump/event` URL — prod still uses it (e.g. /jump/event?position=0,5).
                   Preserves query params via a tiny component that reads useLocation(). */}
                 <Route path="/jump/event" element={<JumpLegacyEventRedirect />} />
+                {/* route-manifest: sitemap */}
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/preview" element={<PreviewPage />} />
                 <Route path="/blog/search" element={<BlogSearchPage />} />
@@ -309,7 +326,9 @@ const App = () => {
                   scene preview). Communities LIST is a Discover tab; community DETAIL is
                   the pre-existing /social page below, which list cards link into. */}
                 <Route element={<DiscoverLayout />}>
+                  {/* route-manifest: sitemap */}
                   <Route path="/places" element={<DiscoverHomePage />} />
+                  {/* route-manifest: sitemap */}
                   <Route path="/places/communities" element={<DiscoverCommunitiesPage />} />
                   <Route path="/places/place/:position" element={<DiscoverScenePage kind="place" />} />
                   <Route path="/places/world/:name" element={<DiscoverScenePage kind="world" />} />
