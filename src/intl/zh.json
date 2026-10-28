@@ -1311,6 +1311,7 @@
       "category": {
         "label": "类别",
         "all": "所有类别",
+        "featured": "精选",
         "social": "社交",
         "music": "音乐",
         "art": "艺术",

@@ -1311,6 +1311,7 @@
       "category": {
         "label": "Categoría",
         "all": "Cualquier categoría",
+        "featured": "Destacados",
         "social": "Social",
         "music": "Música",
         "art": "Arte",

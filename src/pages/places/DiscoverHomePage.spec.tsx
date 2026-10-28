@@ -251,7 +251,8 @@ describe('DiscoverHomePage', () => {
     mockDestinationsQuery.mockImplementation((args: unknown) => {
       if (args === skipToken) return { data: undefined, isLoading: false }
       const a = args as { only_highlighted?: boolean; owner?: string; limit?: number }
-      if (a.only_highlighted) return featuredPlaces
+      // The Featured CATEGORY reads the grid's query (it always carries `offset`), so only the rail's lands here.
+      if (a.only_highlighted && !('offset' in a)) return featuredPlaces
       if (a.owner) return myDestinations
       // The rail and the grid are different cache entries (different `limit`); keying the stub the
       // same way is what lets a test notice the rail reading the wrong one.
@@ -453,13 +454,14 @@ describe('DiscoverHomePage', () => {
   })
 
   describe('when the category filter changes on desktop', () => {
-    it('should track the filter and collapse the curated rails', () => {
+    it('should track the filter, keep Live Now and drop the Featured rail', () => {
       render(<DiscoverHomePage />)
 
       fireEvent.change(screen.getByRole('combobox', { name: 'discover.explore.category.all' }), { target: { value: 'art' } })
 
       expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: 'art' })
-      expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+      expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+      expect(screen.queryByTestId('featured-card')).not.toBeInTheDocument()
       expect(mockDestinationsQuery).toHaveBeenCalledWith(expect.objectContaining({ categories: ['art'] }))
     })
   })
@@ -636,6 +638,243 @@ describe('DiscoverHomePage', () => {
 
       expect(screen.queryByRole('button', { name: 'discover.live.scroll_next' })).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: 'discover.live.scroll_previous' })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the Featured category is used', () => {
+    const FEATURED_LABEL = 'discover.explore.category.featured'
+    const hiddenButCurated = () =>
+      createPlace({
+        id: 'curated-hidden',
+        title: 'Curated Placeholder',
+        highlighted: true,
+        image: 'https://api.decentraland.org/v2/map.png?height=1024&width=1024',
+        owner: null
+      })
+
+    const lastBrowseArgs = () =>
+      mockDestinationsQuery.mock.calls
+        .map(call => call[0] as Record<string, unknown>)
+        .filter(a => a && a !== (skipToken as unknown) && 'offset' in a)
+        .pop()
+
+    const selectCategory = (value: string) =>
+      fireEvent.change(screen.getByRole('combobox', { name: 'discover.explore.category.all' }), { target: { value } })
+
+    afterEach(() => {
+      window.history.replaceState({}, '', '/places')
+    })
+
+    it('should list Featured right after All in the dropdown and the drawer', () => {
+      render(<DiscoverHomePage />)
+      fireEvent.click(screen.getByRole('button', { name: 'discover.explore.filters' }))
+
+      screen.getAllByRole('combobox', { name: 'discover.explore.category.all' }).forEach(select => {
+        const labels = within(select)
+          .getAllByRole('option')
+          .map(o => o.textContent)
+        expect(labels.slice(0, 3)).toEqual(['discover.explore.category.all', FEATURED_LABEL, 'discover.explore.category.social'])
+      })
+    })
+
+    describe('and it is selected', () => {
+      it('should query only highlighted rows, keep Live Now, drop the Featured rail and track the choice', () => {
+        render(<DiscoverHomePage />)
+
+        selectCategory('featured')
+
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true, offset: 0 }))
+        expect(lastBrowseArgs()).not.toHaveProperty('categories')
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+        expect(screen.queryByTestId('featured-card')).not.toBeInTheDocument()
+        expect(mockTrack).toHaveBeenCalledWith(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: 'featured' })
+      })
+
+      it('should show the Featured chip and return to All when it is cleared', () => {
+        render(<DiscoverHomePage />)
+        selectCategory('featured')
+
+        expect(screen.getByRole('button', { name: 'discover.explore.remove_filter' })).toHaveTextContent(FEATURED_LABEL)
+        fireEvent.click(screen.getByRole('button', { name: 'discover.explore.remove_filter' }))
+
+        expect(lastBrowseArgs()).not.toHaveProperty('only_highlighted')
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+      })
+
+      it('should keep Live Now and leave the grid whole when repetition is off', () => {
+        mockRepeat.mockReturnValue(false)
+        browseDestinations = {
+          data: { ok: true, total: 1, data: [createPlace({ id: 'live-a', title: 'Live Plaza', highlighted: true })] },
+          isLoading: false
+        }
+        render(<DiscoverHomePage />)
+
+        selectCategory('featured')
+
+        expect(screen.getAllByTestId('live-card').length).toBeGreaterThan(0)
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(['Live Plaza'])
+      })
+
+      it('should keep Live Now under a regular category and hide it while searching', () => {
+        render(<DiscoverHomePage />)
+        selectCategory('game')
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+
+        fireEvent.change(screen.getByPlaceholderText('discover.explore.search_placeholder'), { target: { value: 'gen' } })
+        expect(screen.queryByText('discover.live.heading')).not.toBeInTheDocument()
+      })
+
+      it('should render a curated row that the junk filter would hide', () => {
+        browseDestinations = { data: { ok: true, total: 1, data: [hiddenButCurated()] }, isLoading: false }
+        render(<DiscoverHomePage />)
+
+        selectCategory('featured')
+
+        expect(screen.getByRole('button', { name: 'Curated Placeholder' })).toBeInTheDocument()
+      })
+
+      it('should keep hiding that same row under All and under a regular category', () => {
+        browseDestinations = { data: { ok: true, total: 1, data: [hiddenButCurated()] }, isLoading: false }
+        render(<DiscoverHomePage />)
+        expect(screen.queryByRole('button', { name: 'Curated Placeholder' })).not.toBeInTheDocument()
+
+        selectCategory('game')
+
+        expect(screen.queryByRole('button', { name: 'Curated Placeholder' })).not.toBeInTheDocument()
+      })
+
+      it('should restart at offset 0 after a second page was loaded', () => {
+        browseDestinations = {
+          data: { ok: true, total: 96, data: [createPlace({ id: 'p-0', title: 'Quiet Gallery' })] },
+          isLoading: false
+        }
+        render(<DiscoverHomePage />)
+        act(() => {
+          intersectionCallback?.([{ isIntersecting: true }] as IntersectionObserverEntry[], {} as IntersectionObserver)
+        })
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ offset: 48 }))
+
+        selectCategory('featured')
+
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ offset: 0, only_highlighted: true }))
+      })
+
+      it('should drop the highlight filter when switching to All or to a regular category', () => {
+        render(<DiscoverHomePage />)
+        selectCategory('featured')
+
+        selectCategory('game')
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ categories: ['game'] }))
+        expect(lastBrowseArgs()).not.toHaveProperty('only_highlighted')
+
+        selectCategory('featured')
+        selectCategory('all')
+        expect(lastBrowseArgs()).not.toHaveProperty('only_highlighted')
+        expect(lastBrowseArgs()).not.toHaveProperty('categories')
+      })
+
+      it('should keep the highlight filter when a search is typed', () => {
+        render(<DiscoverHomePage />)
+        selectCategory('featured')
+
+        fireEvent.change(screen.getByPlaceholderText('discover.explore.search_placeholder'), { target: { value: 'gen' } })
+
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true, search: 'gen' }))
+      })
+
+      it('should still be offered and still filter when the Featured rail flag is on', () => {
+        mockHideFeatured.mockReturnValue(true)
+        render(<DiscoverHomePage />)
+
+        selectCategory('featured')
+
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true }))
+      })
+    })
+
+    it('should render a curated row in the Featured rail even when the junk filter would hide it', () => {
+      featuredPlaces = { data: { ok: true, total: 1, data: [hiddenButCurated()] }, isLoading: false }
+
+      render(<DiscoverHomePage />)
+
+      expect(screen.getByRole('button', { name: 'Curated Placeholder' })).toBeInTheDocument()
+    })
+
+    describe('and the URL carries ?category=featured', () => {
+      beforeEach(() => {
+        window.history.replaceState({}, '', '/places?category=featured')
+      })
+
+      it('should open filtered, show Featured in the dropdown and not track the seed', () => {
+        render(<DiscoverHomePage />)
+
+        expect(screen.getByRole('combobox', { name: 'discover.explore.category.all' })).toHaveValue('featured')
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ only_highlighted: true }))
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+        expect(mockTrack).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and a regular category is selected', () => {
+      const liveTitles = () => screen.getAllByTestId('live-card').map(card => card.textContent)
+
+      it('should show the same Live Now cards as All and no Featured rail', () => {
+        render(<DiscoverHomePage />)
+        const underAll = liveTitles()
+
+        selectCategory('social')
+
+        expect(liveTitles()).toEqual(underAll)
+        expect(screen.queryByTestId('featured-card')).not.toBeInTheDocument()
+      })
+
+      it('should not request a new live feed when the category changes', () => {
+        const liveFeedCalls = () => mockDestinationsQuery.mock.calls.filter(([a]) => a && (a as { limit?: number }).limit === 40)
+        render(<DiscoverHomePage />)
+        const before = new Set(liveFeedCalls().map(([a]) => JSON.stringify(a)))
+
+        selectCategory('social')
+
+        expect(new Set(liveFeedCalls().map(([a]) => JSON.stringify(a)))).toEqual(before)
+      })
+    })
+
+    describe('and a regular category is selected with repetition off', () => {
+      it('should keep Live Now and leave the filtered grid whole', () => {
+        mockRepeat.mockReturnValue(false)
+        browseDestinations = {
+          data: { ok: true, total: 1, data: [createPlace({ id: 'live-a', title: 'Live Plaza', categories: ['social'] })] },
+          isLoading: false
+        }
+        render(<DiscoverHomePage />)
+
+        selectCategory('social')
+
+        expect(screen.getAllByTestId('live-card').length).toBeGreaterThan(0)
+        expect(screen.getAllByTestId('place-card').map(card => card.textContent)).toEqual(['Live Plaza'])
+      })
+    })
+
+    describe('and the URL carries a regular category', () => {
+      it('should seed that category', () => {
+        window.history.replaceState({}, '', '/places?category=Game')
+
+        render(<DiscoverHomePage />)
+
+        expect(lastBrowseArgs()).toEqual(expect.objectContaining({ categories: ['game'] }))
+      })
+    })
+
+    describe('and the URL carries an unknown category', () => {
+      it('should behave as All', () => {
+        window.history.replaceState({}, '', '/places?category=nope')
+
+        render(<DiscoverHomePage />)
+
+        expect(screen.getByRole('combobox', { name: 'discover.explore.category.all' })).toHaveValue('all')
+        expect(screen.getByText('discover.live.heading')).toBeInTheDocument()
+        expect(lastBrowseArgs()).not.toHaveProperty('only_highlighted')
+      })
     })
   })
 
