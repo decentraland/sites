@@ -1242,6 +1242,12 @@
       "invites_accepted": "{count} Friends Joined",
       "tooltip_title": "{count} Friends Joined",
       "tooltip_subtitle": "{count} More friends for your next Reward!"
+    },
+    "name_lookup": {
+      "loading": "プロフィール名を検索中…",
+      "not_found": "登録されたDecentraland名「{name}」が見つかりませんでした。",
+      "error": "プロフィール名を解決できませんでした。もう一度お試しください。",
+      "retry": "再試行"
     }
   },
   "event_detail": {

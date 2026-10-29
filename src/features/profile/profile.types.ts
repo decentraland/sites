@@ -8,4 +8,9 @@ interface ProfileSummary {
   avatarFace256?: string
 }
 
-export type { ProfileSummary }
+interface ProfileNameResponse {
+  data?: { nfts?: { name?: string; owner?: { address?: string } }[] }
+  errors?: unknown
+}
+
+export type { ProfileNameResponse, ProfileSummary }
