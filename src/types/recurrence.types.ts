@@ -4,4 +4,15 @@
 // in the opposite direction.
 type RecurrentFrequency = 'YEARLY' | 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'HOURLY' | 'MINUTELY' | 'SECONDLY'
 
-export type { RecurrentFrequency }
+// The API timestamps needed to derive one occurrence's end. Structural so both `EventEntry`
+// and the jump page's `JumpEvent` satisfy it.
+/* eslint-disable @typescript-eslint/naming-convention */
+interface OccurrenceTimes {
+  start_at: string
+  finish_at: string
+  next_start_at: string
+  next_finish_at: string
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
+export type { OccurrenceTimes, RecurrentFrequency }
