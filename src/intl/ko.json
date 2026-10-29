@@ -5,7 +5,7 @@
   "page": {
     "download": {
       "title": "Decentraland 다운로드",
-      "description": "Decentraland를 다운로드하고 메타버스 탐험을 시작하세요",
+      "description": "Decentraland를 다운로드하고 함께 어울려요",
       "download_onboarding_title": "Decentraland 다운로드\n함께 어울려요!",
       "not_available": "사용 중인 OS에서는 사용할 수 없습니다",
       "not_available_subtitle": "Decentraland는 <span>Windows</span>와 <span>macOS</span>에서 사용 가능합니다.",
@@ -31,52 +31,43 @@
       "success": {
         "title": "거의 다 됐어요!",
         "subtitle": "방금 다운로드한 파일을 열어 Decentraland 설치를 완료하고 {action}을 시작하세요",
-        "subtitle_action_exploring": "탐험",
         "step": "단계",
-        "footer": "다운로드에 문제가 있나요? 다시 시도해 보세요: {link}",
-        "footer_link_label": "다시 다운로드",
+        "started": {
+          "title": "다운로드가 시작되었습니다!",
+          "subtitle": "아래 3단계를 따라 Decentraland를 설치하고 바로 입장하세요."
+        },
+        "footer_retry": "다운로드가 시작되지 않았나요? {link}",
+        "footer_retry_link": "다시 시도",
+        "footer_help": "도움이 필요하신가요? 다음 페이지로 이동하세요: {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "다운로드가 완료되면 {event} 이벤트 페이지로 돌아가서 입장하세요. {seconds}초 후 리디렉션됩니다.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "열기",
-              "text": "다운로드 폴더에서 <span>Decentraland</span> 파일을 열어 설치 마법사를 시작하세요."
+              "title": "파일 찾기",
+              "text": "브라우저 도구 모음의 다운로드 아이콘을 클릭한 다음 Decentraland 설치 프로그램(.exe)을 여세요."
             },
             "step2": {
               "title": "설치",
-              "text": "설치 마법사의 안내를 따르세요. <span>완료</span>를 클릭하면 설치가 시작됩니다."
+              "text": "설치 마법사에서 완료될 때까지 '다음'을 클릭하세요. Windows에서 권한을 요청하면 '예'를 클릭하세요."
             },
             "step3": {
-              "title": "탐험할 준비를 하세요!",
-              "text": "설치가 완료되면 Decentraland 앱이 작업 표시줄에 나타나고 자동으로 실행됩니다."
+              "title": "입장하세요!",
+              "text": "설치가 끝나면 Decentraland가 자동으로 열립니다. 월드에서 만나요!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "열기",
-              "text": "브라우저의 '최근 다운로드' 또는 '다운로드' 폴더에서 <span>Decentraland</span> 파일을 클릭하여 여세요."
+              "title": "파일 찾기",
+              "text": "브라우저 도구 모음의 다운로드 아이콘을 클릭한 다음 Decentraland-Installer.dmg를 여세요."
             },
             "step2": {
               "title": "설치",
-              "text": "이 창이 나타납니다. <span>Decentraland</span> 버튼을 더블클릭하여 설치를 시작하세요."
+              "text": "열린 창에서 Decentraland 아이콘을 더블클릭하세요. macOS 보안 메시지가 나타나면 '열기'를 클릭하세요."
             },
             "step3": {
-              "title": "탐험할 준비를 하세요!",
-              "text": "설치가 완료되면 Decentraland 앱이 Dock에 나타나고 자동으로 실행됩니다."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "열기",
-              "text": "브라우저의 '최근 다운로드' 또는 '다운로드' 폴더에서 <span>Decentraland</span> 파일을 클릭하여 여세요."
-            },
-            "step2": {
-              "title": "설치",
-              "text": "이 창이 나타납니다. <span>Decentraland</span> 버튼을 더블클릭하여 설치를 시작하세요."
-            },
-            "step3": {
-              "title": "탐험할 준비를 하세요!",
-              "text": "설치가 완료되면 Decentraland 앱이 Dock에 나타나고 자동으로 실행됩니다."
+              "title": "입장하세요!",
+              "text": "설치가 끝나면 Decentraland가 자동으로 열립니다. 월드에서 만나요!"
             }
           }
         }
@@ -165,6 +156,16 @@
         "connect_wallet_prompt": "메시지를 보내려면 Decentraland 지갑을 연결하세요"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "title": "카메라 버블",
+          "size_small": "작게",
+          "size_large": "크게",
+          "top_left": "왼쪽 위",
+          "top_right": "오른쪽 위",
+          "bottom_left": "왼쪽 아래",
+          "bottom_right": "오른쪽 아래",
+          "drag_hint": "드래그하여 카메라 이동"
+        },
         "mute_mic": "마이크 음소거",
         "unmute_mic": "마이크 켜기",
         "stop_cam": "카메라 끄기",
@@ -182,6 +183,7 @@
         "connected": "연결됨",
         "mute_cast": "월드에 있는 동안 이 Cast 오디오를 음소거",
         "unmute_cast": "Cast 오디오 켜기",
+        "click_to_unmute": "클릭하여 음소거 해제",
         "share_presentation": "프레젠테이션 공유",
         "stop_presentation": "프레젠테이션 중지",
         "uploading_presentation": "프레젠테이션 업로드 중...",
@@ -374,15 +376,6 @@
       "invalid_source_description": "확인 소스가 유효하지 않습니다. 이메일 링크를 확인하세요.",
       "missing_address_title": "주소 없음",
       "missing_address_description": "URL에 주소 매개변수가 필요합니다. 이메일 링크를 확인하세요."
-    },
-    "play": {
-      "title": "웹 버전은 더 이상 제공되지 않습니다.",
-      "subtitle": "데스크톱 또는 모바일 앱에서 계속 플레이하세요.",
-      "also_available_on": "다음에서도 이용 가능",
-      "already_downloaded": "이미 다운로드하셨나요?",
-      "jump_in": "입장하기!",
-      "experimental": "웹에서 계속 플레이하고 싶으신가요? 실험 버전을 {here}에서 사용해 보세요",
-      "here": "여기"
     },
     "not_found": {
       "title_oops": "이런!",
@@ -713,11 +706,30 @@
         "delete": "삭제",
         "close": "닫기",
         "loading": "로딩 중",
-        "actions": "작업",
         "key": "키",
         "add": "추가",
         "owner": "소유자",
-        "collaborator": "협업자"
+        "collaborator": "협업자",
+        "download_all": "모두 다운로드",
+        "download_selected": "선택 항목 다운로드 ({count})",
+        "delete_selected": "선택 항목 삭제 ({count})",
+        "delete_all": "모두 삭제",
+        "delete_selected_dialog": {
+          "title": "선택한 항목을 삭제하시겠습니까?",
+          "message": "{count, plural, other {선택한 항목 #개가 영구적으로 삭제됩니다.}}"
+        },
+        "select_all": "모두 선택",
+        "select_row": "{name} 선택",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "다운로드 준비 중…",
+        "keep_page_open": "다운로드가 시작될 때까지 이 페이지를 열어 두세요."
+      },
+      "leave_dialog": {
+        "title": "내보내기가 진행 중인데 나가시겠어요?",
+        "message": "나가면 다운로드가 중지됩니다. 나중에 다시 시작하면 파일이 바로 준비됩니다.",
+        "stay": "머무르기",
+        "leave": "나가기"
       },
       "role": {
         "owner": "소유자",
@@ -763,12 +775,17 @@
         "scene_count_one": "1개의 씬",
         "edit": "편집",
         "edit_scenes": "씬 편집",
-        "select_scene": "씬 선택"
+        "select_scene": "씬 선택",
+        "collaborations": "협업",
+        "no_collaborations": "컬래버레이션을 찾을 수 없습니다",
+        "collaborations_error": "컬래버레이션을 불러오지 못했습니다. 다시 시도하세요.",
+        "collaborations_hint": "최근에 권한이 부여된 씬은 표시되기까지 잠시 걸릴 수 있습니다.",
+        "realm_world": "월드",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "환경 변수",
         "add": "추가",
-        "clear_all": "모두 지우기",
         "no_keys": "환경 변수를 찾을 수 없습니다",
         "add_dialog": {
           "title": "환경 변수 추가",
@@ -793,7 +810,6 @@
       "scene_page": {
         "title": "씬 저장소",
         "add": "추가",
-        "clear_all": "모두 지우기",
         "no_keys": "씬 값을 찾을 수 없습니다",
         "add_dialog": {
           "title": "씬 값 추가",
@@ -817,7 +833,6 @@
       "player_page": {
         "title": "플레이어 저장소",
         "add": "추가",
-        "clear_all_players": "모든 플레이어 지우기",
         "description": "저장된 데이터가 있는 플레이어를 탐색하거나 이름 또는 주소로 검색하세요.",
         "search_players": "이름 또는 주소로 검색…",
         "no_players": "플레이어를 찾을 수 없습니다",
@@ -830,7 +845,6 @@
         "address_placeholder": "0x…",
         "load_keys": "키 불러오기",
         "keys_for": "{address}의 키",
-        "clear_this_player": "이 플레이어 지우기",
         "no_keys": "이 플레이어의 키를 찾을 수 없습니다",
         "loading_keys": "플레이어 키를 불러오는 중",
         "add_dialog": {
@@ -873,7 +887,9 @@
         "payload_too_large": "값이 이 스토리지 네임스페이스에 비해 너무 큽니다.",
         "rate_limited": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
         "server": "스토리지 서비스가 오류를 반환했습니다. 몇 분 후에 다시 시도하세요.",
-        "world_scene_unresolved": "이 월드의 씬 위치를 확인할 수 없습니다. 아직 배포된 씬이 없을 수 있습니다."
+        "world_scene_unresolved": "이 월드의 씬 위치를 확인할 수 없습니다. 아직 배포된 씬이 없을 수 있습니다.",
+        "export_failed": "내보내기에 실패했습니다. 다시 시도하세요.",
+        "bulk_delete_failed": "일부 항목을 삭제하지 못했습니다. 다시 시도하세요."
       }
     },
     "report": {
@@ -978,6 +994,8 @@
     "featured_item_clear": "추천 아이템 지우기",
     "error_invalid_featured_item": "유효한 컬렉션 또는 아이템 URN이어야 합니다",
     "error_image_too_large": "이 이미지를 500KB 이하로 압축할 수 없습니다. 더 작은 파일을 선택해 주세요.",
+    "recommended_size": "(권장 크기: 1920 × 1080, 안전 영역: 1080 × 1080)",
+    "image_helper": "PNG, JPG 또는 GIF를 업로드하세요(1920×1080px, 최대 500kb). 모든 화면 해상도에 맞도록 주요 비주얼과 텍스트는 중앙의 1080×1080 안전 영역 안에 배치하세요.",
     "vertical_recommended_size": "권장 크기: 716 × 1814 px",
     "recurrence": "반복",
     "every_day": "매일",
@@ -1049,6 +1067,8 @@
       "remove_friend": "친구 삭제",
       "unblock": "차단 해제",
       "block": "차단",
+      "blocked_toast": "{name}님을 차단했습니다.",
+      "unblocked_toast": "{name}님의 차단을 해제했습니다.",
       "more_actions": "더 보기",
       "copy_address": "주소 복사",
       "address_copied": "주소가 복사되었습니다!",
@@ -1162,6 +1182,7 @@
       "filter_favorites": "즐겨찾기",
       "empty_owner_title": "아직 아무것도 없어요—하지만 쉽게 바꿀 수 있어요",
       "empty_owner_subtitle": "내 장소에는 Decentraland에서 소유하거나 관리하는 공간이 표시됩니다. 가장 쉬운 시작 방법은 NAME을 얻는 것이며, 나만의 World가 열립니다.",
+      "empty_owner_has_name_subtitle": "내 장소에는 Decentraland에서 소유하거나 관리하는 공간이 표시됩니다. 이미 NAME이 있으니 그 NAME으로 World를 게시하면 여기에 표시됩니다.",
       "empty_owner_cta": "NAME 받기",
       "empty_favorites_title": "아직 저장한 항목이 없어요",
       "empty_favorites_subtitle": "장소 카드나 Decentraland 지도에서 하트를 눌러 즐겨찾는 장소를 추가하세요. 여기에서 모두 확인할 수 있어요.",
@@ -1290,6 +1311,7 @@
       "category": {
         "label": "카테고리",
         "all": "모든 카테고리",
+        "featured": "추천",
         "social": "소셜",
         "music": "음악",
         "art": "아트",
@@ -1299,9 +1321,6 @@
         "shop": "쇼핑",
         "sports": "스포츠",
         "business": "비즈니스"
-      },
-      "section": {
-        "featured": "추천 장소"
       },
       "tab": {
         "explore_all": "모두 보기",
@@ -1351,11 +1370,8 @@
       "copy_link": "링크 복사",
       "close": "닫기",
       "explore_scene": "장면 둘러보기",
+      "jump_to_location": "{location}(으)로 이동 (새 탭에서 열림)",
       "copied": "복사됨!"
-    },
-    "featured": {
-      "view_all": "추천 장소 모두 보기",
-      "view_less": "접기"
     }
   },
   "account": {
@@ -1616,7 +1632,6 @@
       },
       "learn_more": "자세히 알아보기",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "프로그램 참여",
       "leave_button": "프로그램 탈퇴",
       "leave_modal": {
         "warning": "마켓플레이스 크레딧을 탈퇴하시겠습니까?",
@@ -1627,10 +1642,6 @@
           "generic": "지금은 프로그램을 탈퇴할 수 없습니다. 다시 시도해 주세요.",
           "already_claimed": "이번 주에는 이미 크레딧을 청구했기 때문에 탈퇴할 수 없습니다. 다음 주에 다시 시도해 주세요."
         }
-      },
-      "join_errors": {
-        "generic": "지금은 프로그램에 가입할 수 없습니다. 다시 시도하세요.",
-        "email_required": "크레딧 프로그램에 가입하기 전에 알림에서 이메일을 추가하고 확인하세요."
       }
     },
     "delete": {
@@ -1697,5 +1708,9 @@
     },
     "copy": "복사",
     "copied": "복사됨"
+  },
+  "live_now": {
+    "navigate_previous": "이전 라이브 장면 표시",
+    "navigate_next": "다음 라이브 장면 표시"
   }
 }

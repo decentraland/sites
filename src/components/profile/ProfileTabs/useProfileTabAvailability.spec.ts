@@ -1,3 +1,4 @@
+jest.mock('../../../hooks/useAuthIdentity', () => ({ useAuthIdentity: () => ({ hasValidIdentity: false }) }))
 import { renderHook } from '@testing-library/react'
 import { useGetProfileAssetsQuery } from '../../../features/profile/profile.assets.client'
 import { useGetProfileCreationsQuery } from '../../../features/profile/profile.creations.client'
@@ -31,7 +32,7 @@ describe('useProfileTabAvailability', () => {
     mockedUseCommunities.mockReturnValue({
       isSuccess: true,
       isLoading: false,
-      data: { data: { results: [], total: 0 } }
+      currentData: { data: { results: [], total: 0 } }
     } as unknown as ReturnType<typeof useGetProfileCommunitiesQuery>)
     mockedUseReelImages.mockReturnValue(emptyPhotosResult as unknown as ReturnType<typeof useReelImagesByUser>)
   })
@@ -55,7 +56,7 @@ describe('useProfileTabAvailability', () => {
         mockedUseCommunities.mockReturnValue({
           isSuccess: true,
           isLoading: false,
-          data: { data: { results: [{ id: 'community-1', name: 'Public Community' }], total: 2 } }
+          currentData: { data: { results: [{ id: 'community-1', name: 'Public Community' }], total: 2 } }
         } as unknown as ReturnType<typeof useGetProfileCommunitiesQuery>)
       })
 

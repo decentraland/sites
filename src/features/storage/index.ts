@@ -1,4 +1,5 @@
 export {
+  fetchExportFile,
   storageEndpoints,
   useClearAllPlayersMutation,
   useClearEnvMutation,
@@ -7,10 +8,13 @@ export {
   useDeleteEnvMutation,
   useDeletePlayerValueMutation,
   useDeleteSceneValueMutation,
+  useGetCollaboratorScenesQuery,
   useGetContributableDomainsQuery,
   useGetPlayerValueQuery,
   useGetSceneValueQuery,
   useGetWorldScenesQuery,
+  useLazyGetPlayerValueQuery,
+  useLazyGetSceneValueQuery,
   useListEnvKeysQuery,
   useListPlayerKeysQuery,
   useListPlayersQuery,
@@ -21,27 +25,40 @@ export {
 } from './storage.client'
 export { assetsEndpoints, useGetUserDCLNamesQuery, useGetUserLandsQuery, useGetUserRentalsQuery } from './assets.client'
 export {
+  buildExportFile,
+  deleteSelection,
   getLandPosition,
   getRoleLabelKey,
   getStorageErrorKey,
   getStorageErrorStatus,
   storageContextId,
+  toStorageValueFile,
   transformLandQueryResult,
   transformRentalsQueryResult,
   truncateAddress
 } from './storage.helpers'
 export { LandType, RoleType } from './storage.types'
 export type {
+  AuthParams,
+  CollaboratorScene,
+  CollaboratorScenesResponse,
   ContributableDomain,
   EnvKey,
+  ExportFormat,
+  ExportPlayerRow,
+  ExportSelection,
+  ExportWorldRow,
+  GetCollaboratorScenesParams,
   Land,
   PlayerKey,
   PlayerProfile,
   PlayerValue,
+  RealmKind,
   Rental,
   SceneKey,
   SceneValue,
   StorageContext,
+  StorageValueFile,
   World,
   WorldScene,
   WrapSignedFetchError

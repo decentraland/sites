@@ -29,7 +29,7 @@ describe('useEventDeepLink', () => {
     beforeEach(() => {
       mockUseSearchParams.mockReturnValue([new URLSearchParams(''), mockSetSearchParams])
       mockUseAuthIdentity.mockReturnValue({ identity: undefined })
-      mockUseGetEventByIdQuery.mockReturnValue({ data: undefined })
+      mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined })
     })
 
     it('should pass skipToken to useGetEventByIdQuery so the request never fires', () => {
@@ -55,7 +55,7 @@ describe('useEventDeepLink', () => {
     describe('and the event has been fetched successfully', () => {
       beforeEach(() => {
         const event = createMockEvent({ id: 'ev-42', name: 'Deep linked' })
-        mockUseGetEventByIdQuery.mockReturnValue({ data: event })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: event })
       })
 
       it('should request the event by id with the current identity', () => {
@@ -92,7 +92,7 @@ describe('useEventDeepLink', () => {
 
     describe('and the event has not been fetched yet', () => {
       beforeEach(() => {
-        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined })
       })
 
       it('should keep isOpen=false until the data resolves', () => {
@@ -105,7 +105,7 @@ describe('useEventDeepLink', () => {
 
     describe('and the event request fails with a 404 (invalid id)', () => {
       beforeEach(() => {
-        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, error: { status: 404, data: null } })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, error: { status: 404, data: null } })
       })
 
       it('should strip the id param from the URL so the broken deep link does not persist on reload', () => {
@@ -119,7 +119,7 @@ describe('useEventDeepLink', () => {
 
     describe('and the event request fails transiently (5xx or network error)', () => {
       it('should keep the id param in the URL so a transient API blip does not destroy the deep link', () => {
-        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, error: { status: 503, data: null } })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, error: { status: 503, data: null } })
 
         renderHook(() => useEventDeepLink())
 
@@ -127,7 +127,7 @@ describe('useEventDeepLink', () => {
       })
 
       it('should also keep the id when the error is a fetch error without a numeric status', () => {
-        mockUseGetEventByIdQuery.mockReturnValue({ data: undefined, error: { status: 'FETCH_ERROR', error: 'network down' } })
+        mockUseGetEventByIdQuery.mockReturnValue({ currentData: undefined, error: { status: 'FETCH_ERROR', error: 'network down' } })
 
         renderHook(() => useEventDeepLink())
 

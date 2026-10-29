@@ -1,20 +1,20 @@
 import { DEFAULT_SEGMENT_TRACK_URL, getSegmentApiHost, getSegmentCdnUrl, getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 
 let mockEnvValues: Record<string, string>
-let mockExempt: boolean
+let mockSessionDisabled: boolean
 
 jest.mock('../config/env', () => ({
   getEnv: (key: string) => mockEnvValues[key] ?? ''
 }))
 
-jest.mock('../utils/isAnalyticsExemptPath', () => ({
-  isAnalyticsExemptPath: () => mockExempt
+jest.mock('./analyticsSessionGate', () => ({
+  isAnalyticsDisabledForSession: () => mockSessionDisabled
 }))
 
 describe('segmentConfig', () => {
   beforeEach(() => {
     mockEnvValues = { SEGMENT_KEY: 'wk-test' }
-    mockExempt = false
+    mockSessionDisabled = false
   })
 
   afterEach(() => {
@@ -28,12 +28,12 @@ describe('segmentConfig', () => {
   })
 
   describe('getSegmentWriteKey', () => {
-    it('should return the configured write key on a non-exempt path', () => {
+    it('should return the configured write key when analytics is on for the session', () => {
       expect(getSegmentWriteKey()).toBe('wk-test')
     })
 
-    it('should return an empty string on an analytics-exempt path', () => {
-      mockExempt = true
+    it('should return an empty string when the session started on an exempt path', () => {
+      mockSessionDisabled = true
       expect(getSegmentWriteKey()).toBe('')
     })
 
@@ -44,10 +44,10 @@ describe('segmentConfig', () => {
 
     describe('and the exempt-path gate is bypassed', () => {
       beforeEach(() => {
-        mockExempt = true
+        mockSessionDisabled = true
       })
 
-      it('should return the write key on an analytics-exempt path', () => {
+      it('should return the write key even when the session started on an exempt path', () => {
         expect(getSegmentWriteKey({ bypassExemptPathGate: true })).toBe('wk-test')
       })
 

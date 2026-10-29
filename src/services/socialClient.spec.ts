@@ -127,7 +127,7 @@ describe('socialClient', () => {
       const api = socialClient.injectEndpoints({
         overrideExisting: true,
         endpoints: builder => ({
-          pingSigned: builder.query<unknown, void>({ query: () => '/v1/ping' })
+          pingSigned: builder.query<unknown, void>({ query: () => ({ url: '/v1/ping', account: 'addr' }) })
         })
       })
       const store = buildStore()
@@ -157,7 +157,7 @@ describe('socialClient', () => {
       const api = socialClient.injectEndpoints({
         overrideExisting: true,
         endpoints: builder => ({
-          pingNoExp: builder.query<unknown, void>({ query: () => '/v1/ping' })
+          pingNoExp: builder.query<unknown, void>({ query: () => ({ url: '/v1/ping', account: 'signer' }) })
         })
       })
       const store = buildStore()

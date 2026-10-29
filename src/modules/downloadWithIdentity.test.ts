@@ -277,18 +277,45 @@ describe('getDownloadLinkWithIdentity', () => {
 
 describe('resolveGatewayAnonUserId', () => {
   beforeEach(() => {
-    mockEnsureSegmentAnonymousId.mockReturnValue('generated-anon')
+    mockEnsureSegmentAnonymousId.mockReturnValue('11111111-1111-4111-8111-111111111111')
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
+  describe('when Segment uses a custom non-UUID identity', () => {
+    beforeEach(() => {
+      mockEnsureSegmentAnonymousId.mockReturnValue('custom-segment-id')
+    })
+    it('should reuse attribution across repeated downloads for the same custom identity', () => {
+      expect(resolveGatewayAnonUserId(undefined, { position: '10,20' })).toBe(
+        resolveGatewayAnonUserId(undefined, { realm: 'world.dcl.eth' })
+      )
+    })
+
+    it('should give the gateway a valid attribution UUID without replacing Segment identity', () => {
+      expect(resolveGatewayAnonUserId(undefined, { position: '10,20' })).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      )
+    })
+  })
+
   describe('when an anon_user_id is already present', () => {
     it('should return it verbatim without minting a new one', () => {
-      const result = resolveGatewayAnonUserId('existing-anon', { position: '10,20', realm: 'main' })
+      const result = resolveGatewayAnonUserId('22222222-2222-4222-8222-222222222222', { position: '10,20', realm: 'main' })
 
-      expect(result).toBe('existing-anon')
+      expect(result).toBe('22222222-2222-4222-8222-222222222222')
+      expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
+    })
+  })
+
+  describe.each(['invalid', '11111111-1111-7111-8111-111111111111'])('when unsupported attribution %s is supplied', supplied => {
+    it('should resolve the browser identity for a gateway download', () => {
+      expect(resolveGatewayAnonUserId(supplied, { position: '10,20' })).toBe('11111111-1111-4111-8111-111111111111')
+    })
+    it('should omit unsupported attribution without deep-link requirements', () => {
+      expect(resolveGatewayAnonUserId(supplied, {})).toBeUndefined()
       expect(mockEnsureSegmentAnonymousId).not.toHaveBeenCalled()
     })
   })
@@ -297,14 +324,14 @@ describe('resolveGatewayAnonUserId', () => {
     it('should mint one for a position param', () => {
       const result = resolveGatewayAnonUserId(undefined, { position: '10,20' })
 
-      expect(result).toBe('generated-anon')
+      expect(result).toBe('11111111-1111-4111-8111-111111111111')
       expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
     })
 
     it('should mint one for a realm param', () => {
       const result = resolveGatewayAnonUserId(undefined, { realm: 'myworld.dcl.eth' })
 
-      expect(result).toBe('generated-anon')
+      expect(result).toBe('11111111-1111-4111-8111-111111111111')
       expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
     })
   })
@@ -322,7 +349,7 @@ describe('resolveGatewayAnonUserId', () => {
     it('should mint one to force the gateway route (the referrer is baked into the installer)', () => {
       const result = resolveGatewayAnonUserId(undefined, {}, '0x24e5f44999c151f08609f8e27b2238c773c4d020')
 
-      expect(result).toBe('generated-anon')
+      expect(result).toBe('11111111-1111-4111-8111-111111111111')
       expect(mockEnsureSegmentAnonymousId).toHaveBeenCalledTimes(1)
     })
   })

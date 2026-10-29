@@ -19,7 +19,12 @@ import {
 function CommunityDetailSurface({ communityId, onClose, onBack }: CommunityDetailSurfaceProps) {
   const t = useFormatMessage()
   const { hasValidIdentity, address } = useAuthIdentity()
-  const { data, isLoading, isError } = useGetCommunityByIdQuery({ id: communityId, isSigned: hasValidIdentity }, { skip: !communityId })
+  const {
+    currentData: data,
+    isLoading,
+    isFetching,
+    isError
+  } = useGetCommunityByIdQuery({ id: communityId, account: hasValidIdentity ? address?.toLowerCase() : undefined }, { skip: !communityId })
   const community = data?.data
 
   return (
@@ -34,7 +39,7 @@ function CommunityDetailSurface({ communityId, onClose, onBack }: CommunityDetai
           <CloseIcon />
         </CommunityCloseButton>
       </CommunityHeaderRow>
-      {isLoading ? (
+      {isLoading || (isFetching && !community) ? (
         <CommunityStateBox>
           <CircularProgress size={28} />
         </CommunityStateBox>
@@ -43,7 +48,12 @@ function CommunityDetailSurface({ communityId, onClose, onBack }: CommunityDetai
           <Typography variant="body1">{t('community.detail.not_found')}</Typography>
         </CommunityStateBox>
       ) : (
-        <CommunityDetail community={community} isLoggedIn={hasValidIdentity} address={address} />
+        <CommunityDetail
+          key={hasValidIdentity ? address?.toLowerCase() : 'anon'}
+          community={community}
+          isLoggedIn={hasValidIdentity}
+          address={address}
+        />
       )}
     </CommunitySurfaceRoot>
   )

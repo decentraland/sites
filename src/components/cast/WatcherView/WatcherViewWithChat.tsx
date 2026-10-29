@@ -35,7 +35,7 @@ export function WatcherViewWithChat({ onLeave, isTabMuted, onToggleTabMute }: Wa
         <MainContent>
           <VideoContainer $sidebarOpen={sidebarOpen}>
             <VideoArea $sidebarOpen={sidebarOpen}>
-              <WatcherViewContent />
+              <WatcherViewContent isTabMuted={isTabMuted} />
             </VideoArea>
 
             <Sidebar $isOpen={sidebarOpen}>

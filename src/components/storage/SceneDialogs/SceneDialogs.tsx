@@ -101,7 +101,10 @@ interface SceneEditDialogProps {
 
 const SceneEditDialog = ({ open, keyName, onClose, onSuccess, onError, identity, realm, position }: SceneEditDialogProps) => {
   const t = useFormatMessage()
-  const { data, isLoading } = useGetSceneValueQuery({ identity, key: keyName, realm, position }, { skip: !open || !keyName })
+  const { currentData: data, isLoading } = useGetSceneValueQuery(
+    { identity, key: keyName, realm, position },
+    { skip: !identity || !open || !keyName }
+  )
   const [setSceneValue] = useSetSceneValueMutation()
   const fieldRef = useRef<StorageValueFieldRef>(null)
   const [isValid, setIsValid] = useState(false)

@@ -16,12 +16,14 @@ type EmailCardProps = {
 }
 
 const mockUpdateSubscription = jest.fn()
-let mockQueryResult: { data?: unknown; isLoading: boolean; isError: boolean } = {
-  data: undefined,
+let mockQueryResult: { currentData?: unknown; isLoading: boolean; isError: boolean } = {
+  currentData: undefined,
   isLoading: false,
   isError: false
 }
 let mockUpdateState = { isLoading: false }
+
+jest.mock('../../hooks/useAuthIdentity', () => ({ useAuthIdentity: () => ({ address: '0xabc', hasValidIdentity: true }) }))
 
 jest.mock('../../features/account-notifications/account-notifications.client', () => ({
   useGetSubscriptionQuery: () => mockQueryResult,
@@ -84,8 +86,9 @@ const getGroupButtons = () => screen.getAllByRole('button').filter(b => b.getAtt
 
 describe('NotificationsPage', () => {
   beforeEach(() => {
-    mockQueryResult = { data: undefined, isLoading: false, isError: false }
+    mockQueryResult = { currentData: undefined, isLoading: false, isError: false }
     mockUpdateState = { isLoading: false }
+    mockUpdateSubscription.mockReturnValue({ unwrap: () => Promise.resolve() })
   })
 
   afterEach(() => {
@@ -98,19 +101,19 @@ describe('NotificationsPage', () => {
   })
 
   it('should render the loading message while fetching with no data', () => {
-    mockQueryResult = { data: undefined, isLoading: true, isError: false }
+    mockQueryResult = { currentData: undefined, isLoading: true, isError: false }
     renderPage()
     expect(screen.getByText('account.notifications.loading')).toBeInTheDocument()
   })
 
   it('should render the error message on failure', () => {
-    mockQueryResult = { data: undefined, isLoading: false, isError: true }
+    mockQueryResult = { currentData: undefined, isLoading: false, isError: true }
     renderPage()
     expect(screen.getByText('account.notifications.load_error')).toBeInTheDocument()
   })
 
   it('should render an accordion per configured group', () => {
-    mockQueryResult = { data: buildSubscription(), isLoading: false, isError: false }
+    mockQueryResult = { currentData: buildSubscription(), isLoading: false, isError: false }
     renderPage()
     const groups = getGroupButtons()
     expect(groups).toHaveLength(2)
@@ -119,14 +122,14 @@ describe('NotificationsPage', () => {
   })
 
   it('should dispatch updateSubscription when a notification type is toggled', () => {
-    mockQueryResult = { data: buildSubscription(), isLoading: false, isError: false }
+    mockQueryResult = { currentData: buildSubscription(), isLoading: false, isError: false }
     renderPage()
     fireEvent.click(getGroupButtons()[0])
     expect(mockUpdateSubscription).toHaveBeenCalledTimes(1)
   })
 
   it('should dispatch updateSubscription when the master email toggle fires', () => {
-    mockQueryResult = { data: buildSubscription(), isLoading: false, isError: false }
+    mockQueryResult = { currentData: buildSubscription(), isLoading: false, isError: false }
     renderPage()
     fireEvent.click(screen.getByRole('button', { name: 'email-card' }))
     expect(mockUpdateSubscription).toHaveBeenCalledTimes(1)
@@ -134,7 +137,7 @@ describe('NotificationsPage', () => {
 
   it('should disable the accordions when the email is not yet confirmed', () => {
     mockQueryResult = {
-      data: buildSubscription({ email: '', unconfirmedEmail: 'pending@decentraland.org' }),
+      currentData: buildSubscription({ email: '', unconfirmedEmail: 'pending@decentraland.org' }),
       isLoading: false,
       isError: false
     }

@@ -35,8 +35,8 @@ function buildDestinationsUrl(baseUrl: string, args: GetDiscoverDestinationsArgs
   const params = new URLSearchParams()
   params.set('limit', String(args.limit ?? DESTINATIONS_DEFAULT_LIMIT))
   params.set('offset', String(args.offset ?? 0))
-  // Omitted rather than defaulted: the curated order is what the Featured rail
-  // and My Places want, so only the caller that wants live-first asks for it.
+  // Omitted rather than defaulted: the curated order is what My Places
+  // wants, so only the caller that wants live-first asks for it.
   if (args.order_by) params.set('order_by', args.order_by)
   if (args.search && args.search.trim().length >= 3) params.set('search', args.search.trim())
   if (args.owner) params.set('owner', args.owner)

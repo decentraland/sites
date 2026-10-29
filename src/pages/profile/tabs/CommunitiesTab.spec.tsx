@@ -1,3 +1,4 @@
+jest.mock('../../../hooks/useAuthIdentity', () => ({ useAuthIdentity: () => ({ hasValidIdentity: false }) }))
 import * as mockReact from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useGetProfileCommunitiesQuery } from '../../../features/profile/profile.social.client'
@@ -68,7 +69,7 @@ describe('CommunitiesTab', () => {
 
   describe('when there are no communities', () => {
     beforeEach(() => {
-      mockedQuery.mockReturnValue({ data: { data: { results: [] } }, isLoading: false } as unknown as ReturnType<
+      mockedQuery.mockReturnValue({ currentData: { data: { results: [] } }, isLoading: false } as unknown as ReturnType<
         typeof useGetProfileCommunitiesQuery
       >)
     })
@@ -91,7 +92,9 @@ describe('CommunitiesTab', () => {
 
   describe('when the communities are loading', () => {
     beforeEach(() => {
-      mockedQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as ReturnType<typeof useGetProfileCommunitiesQuery>)
+      mockedQuery.mockReturnValue({ currentData: undefined, isLoading: true } as unknown as ReturnType<
+        typeof useGetProfileCommunitiesQuery
+      >)
     })
 
     it('should render a loading spinner', () => {
@@ -117,7 +120,7 @@ describe('CommunitiesTab', () => {
     ]
 
     beforeEach(() => {
-      mockedQuery.mockReturnValue({ data: { data: { results: communities } }, isLoading: false } as unknown as ReturnType<
+      mockedQuery.mockReturnValue({ currentData: { data: { results: communities } }, isLoading: false } as unknown as ReturnType<
         typeof useGetProfileCommunitiesQuery
       >)
     })

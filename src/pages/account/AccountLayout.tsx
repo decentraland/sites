@@ -52,12 +52,12 @@ const AccountLayout = () => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { address } = useAuthIdentity()
+  const { address, hasValidIdentity } = useAuthIdentity()
   const signIn = useSignInRedirect()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const isIndex = isIndexPath(pathname)
 
-  if (!address) {
+  if (!address || !hasValidIdentity) {
     return (
       <AccountLayoutRoot>
         <SignInPrompt>
@@ -77,7 +77,7 @@ const AccountLayout = () => {
       return (
         <AccountLayoutRoot $dashboard>
           <AccountSidebar address={address} />
-          <Outlet />
+          <Outlet key={address?.toLowerCase()} />
         </AccountLayoutRoot>
       )
     }
@@ -102,7 +102,7 @@ const AccountLayout = () => {
             </MobileCloseButton>
           </MobileSectionHeader>
           <AccountContent>
-            <Outlet />
+            <Outlet key={address?.toLowerCase()} />
           </AccountContent>
         </MobileSection>
       </AccountLayoutRoot>
@@ -114,7 +114,7 @@ const AccountLayout = () => {
       <AccountPageContainer>
         <AccountSidebar address={address} />
         <AccountContent>
-          <Outlet />
+          <Outlet key={address?.toLowerCase()} />
         </AccountContent>
       </AccountPageContainer>
     </AccountLayoutRoot>

@@ -1,10 +1,13 @@
 import { renderHook } from '@testing-library/react'
 import { getEnv } from '../config/env'
-import { detectDownloadOS } from '../modules/downloadConstants'
+import { detectDesktopInstallerOs, detectDownloadOS } from '../modules/downloadConstants'
+import { buildModalDownloadUrl } from '../modules/url'
+import { OperativeSystem } from '../types/download.types'
 import { useAnonUserId } from './useAnonUserId'
 import { useDownloadModalProps } from './useDownloadModalProps'
 import { useTotalDownloads } from './useTotalDownloads'
 
+jest.mock('./useDownloadClick', () => ({ useDownloadClick: () => jest.fn() }))
 jest.mock('./useAnonUserId', () => ({ useAnonUserId: jest.fn() }))
 jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400K') }))
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
@@ -12,14 +15,17 @@ jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 // URL only earns its keep if it reaches the modal's CTA href, and a stubbed
 // builder would assert nothing about that hop.
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: () => ({}) }))
+// Stands in for the installer routing (covered in url.test.ts): it only joins base + params,
+// so these specs assert which installer OS the hook hands to the builder.
+const mockTrackedUrl = (base: string, params: Record<string, string | undefined | null>) => {
+  const url = new URL(base, 'https://sites.test')
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) url.searchParams.append(key, value)
+  })
+  return url.toString()
+}
 jest.mock('../modules/url', () => ({
-  buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
-    const url = new URL(base, 'https://sites.test')
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) url.searchParams.append(key, value)
-    })
-    return url.toString()
-  }
+  buildModalDownloadUrl: jest.fn()
 }))
 jest.mock('../modules/downloadConstants', () => ({
   DOWNLOAD_URLS: {
@@ -29,9 +35,12 @@ jest.mock('../modules/downloadConstants', () => ({
     googlePlay: 'https://gplay',
     appStore: 'https://appstore'
   },
+  detectDesktopInstallerOs: jest.fn(() => null),
   detectDownloadOS: jest.fn(() => 'apple')
 }))
 
+const mockedBuildModalDownloadUrl = buildModalDownloadUrl as jest.MockedFunction<typeof buildModalDownloadUrl>
+const mockedDetectInstallerOs = detectDesktopInstallerOs as jest.MockedFunction<typeof detectDesktopInstallerOs>
 const mockedAnonUserId = useAnonUserId as jest.MockedFunction<typeof useAnonUserId>
 const mockedTotalDownloads = useTotalDownloads as jest.MockedFunction<typeof useTotalDownloads>
 const mockedGetEnv = getEnv as jest.MockedFunction<typeof getEnv>
@@ -46,6 +55,8 @@ describe('useDownloadModalProps', () => {
     mockedTotalDownloads.mockReturnValue('+400K')
     mockedGetEnv.mockReturnValue(undefined as never)
     mockedDetectOS.mockReturnValue('apple')
+    mockedDetectInstallerOs.mockReturnValue(null)
+    mockedBuildModalDownloadUrl.mockImplementation((_os, base, params) => mockTrackedUrl(base, params))
   })
 
   afterEach(() => jest.resetAllMocks())
@@ -82,6 +93,26 @@ describe('useDownloadModalProps', () => {
     const { result } = renderHook(() => useDownloadModalProps({}))
 
     expect(result.current.downloadUrl).toContain('https://custom.test/dl')
+  })
+
+  it('should hand the detected desktop installer OS to the modal download URL builder', () => {
+    mockedDetectInstallerOs.mockReturnValue(OperativeSystem.MACOS)
+    renderHook(() => useDownloadModalProps({}))
+
+    expect(mockedBuildModalDownloadUrl).toHaveBeenCalledWith(OperativeSystem.MACOS, expect.any(String), expect.any(Object))
+  })
+
+  it('should return the direct download click handler when the browser has a desktop installer', () => {
+    mockedDetectInstallerOs.mockReturnValue(OperativeSystem.WINDOWS)
+    const { result } = renderHook(() => useDownloadModalProps({}))
+
+    expect(result.current.onDownloadClick).toEqual(expect.any(Function))
+  })
+
+  it('should not return a click handler when the browser has no desktop installer', () => {
+    const { result } = renderHook(() => useDownloadModalProps({}))
+
+    expect(result.current.onDownloadClick).toBeUndefined()
   })
 
   it('should fall back to the Windows installer on Windows when no env URL is set', () => {

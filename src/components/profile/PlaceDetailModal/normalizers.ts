@@ -1,6 +1,6 @@
 import type { ProfilePlace } from '../../../features/profile/profile.places.client'
 import { parseCoordinates } from '../../../utils/whatsOnUrl'
-import type { ModalPlaceData } from '../../whats-on/PlaceDetailModal'
+import type { ModalPlaceData } from '../../events/PlaceDetailModal'
 
 // Map the lightweight ProfilePlace shape returned by `/places?owner=` and
 // `/worlds?owner=` into the rich ModalPlaceData consumed by the whats-on
@@ -18,7 +18,7 @@ function normalizeProfilePlace(place: ProfilePlace): ModalPlaceData {
     image: place.image ?? null,
     coordinates,
     ownerAddress: place.owner ?? undefined,
-    ownerName: place.owner ?? place.contact_name ?? undefined,
+    contactName: place.contact_name ?? undefined,
     favorites: place.favorites ?? place.likes ?? 0,
     userCount: place.user_count ?? 0,
     isWorld,

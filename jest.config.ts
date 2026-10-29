@@ -7,9 +7,17 @@ const jestConfig: Config = {
   maxWorkers: '50%',
   workerIdleMemoryLimit: '1GB',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.spec.ts', '<rootDir>/src/**/*.spec.tsx', '<rootDir>/api/**/*.spec.ts'],
+  testMatch: [
+    '<rootDir>/src/**/*.test.ts',
+    '<rootDir>/src/**/*.spec.ts',
+    '<rootDir>/src/**/*.spec.tsx',
+    '<rootDir>/api/**/*.spec.ts',
+    '<rootDir>/scripts/**/*.spec.ts'
+  ],
   transform: {
-    ['^.+\\.tsx?$']: [
+    // `.js` too: src/modules/googlePlayUrl.js is plain ESM so Node build scripts can load it.
+    // One entry on purpose: ts-jest shares a single compiler config across entries.
+    ['^.+\\.(tsx?|js)$']: [
       'ts-jest',
       {
         tsconfig: {
@@ -19,14 +27,19 @@ const jestConfig: Config = {
           // (e.g. `10n ** 18n` in OverviewTab.helpers' `formatPriceMana`).
           target: 'ES2020',
           esModuleInterop: true,
+          allowJs: true,
           jsx: 'react-jsx'
         },
         diagnostics: false
       }
-    ]
+    ],
+    // Step 1 images export their file name (see assetNameTransformer) so specs can assert which one is shown.
+    ['images/download/steps/.+\\.webp$']: '<rootDir>/src/__mocks__/assetNameTransformer.cjs'
   },
+  // @dcl/hooks and decentraland-ui2 ship ESM: transform them so a spec can run the real browser detection and the real ui2 Logo.
+  transformIgnorePatterns: ['/node_modules/(?!(@dcl/hooks|decentraland-ui2)/)'],
   moduleNameMapper: {
-    '\\.(webp|png|jpg|jpeg|gif|svg|mp4|webm|mov)$': '<rootDir>/src/__mocks__/fileMock.js'
+    '^(?!.*images/download/steps/.+\\.webp$).*\\.(webp|png|jpg|jpeg|gif|svg|mp4|webm|mov)$': '<rootDir>/src/__mocks__/fileMock.js'
   },
   coveragePathIgnorePatterns: ['/node_modules/', '/src/__test-utils__/', '/src/__mocks__/', '/src/setupTests.ts'],
   globalSetup: '<rootDir>/src/__test-utils__/jestGlobalSetup.ts',

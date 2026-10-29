@@ -36,6 +36,13 @@ function CommunityJumpInButton({ communityId, onTrack }: CommunityJumpInButtonPr
   const handleClick = useCallback(async () => {
     onTrack?.({ type: 'JUMP_IN' })
     if (isMobile) {
+      // NOTE: 2026-09-16 — every other jump-in surface now hands mobile to the
+      // explorer's app link (`useExplorerLauncher`). This one stays on the store
+      // because a community jump has no target the app can route: its deep-link
+      // router only knows position/realm, `/events?id=` and `/places?id=`, so an
+      // app link here would open the explorer on its jump panel and lose both the
+      // community and the tagged store URL. Move it over once the app routes
+      // `community`.
       const storeUrl = downloadOs === 'android' ? DOWNLOAD_URLS.googlePlay : DOWNLOAD_URLS.appStore
       window.open(storeUrl, '_self')
       return

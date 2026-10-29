@@ -18,8 +18,9 @@ const profileReferralsApi = referralClient.injectEndpoints({
     // The endpoint is identity-scoped — the signed fetch attaches the auth
     // chain and the server returns the caller's own progress. There is no
     // `:address` parameter, so this only renders for own profile.
-    getReferralProgress: builder.query<ReferralProgressResponse, void>({
-      query: () => '/v1/referral-progress',
+    getReferralProgress: builder.query<ReferralProgressResponse, { address: string }>({
+      query: ({ address }) => ({ url: '/v1/referral-progress', account: address }),
+      serializeQueryArgs: ({ queryArgs }) => ({ address: queryArgs.address.toLowerCase() }),
       providesTags: ['ReferralState']
     })
   })

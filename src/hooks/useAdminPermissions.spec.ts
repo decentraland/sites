@@ -21,7 +21,7 @@ const { renderHook } = require('@testing-library/react') as typeof import('@test
 describe('when the user has no valid identity', () => {
   beforeEach(() => {
     useAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
-    useGetMyProfileSettingsQuery.mockReturnValue({ data: undefined, isLoading: false })
+    useGetMyProfileSettingsQuery.mockReturnValue({ currentData: undefined, isLoading: false })
   })
 
   afterEach(() => {
@@ -52,7 +52,7 @@ describe('when the user has a valid identity and admin permissions', () => {
       address: '0xabc'
     })
     useGetMyProfileSettingsQuery.mockReturnValue({
-      data: { user: '0xabc', email: null, permissions: [AdminPermission.EDIT_ANY_PROFILE, AdminPermission.APPROVE_ANY_EVENT] },
+      currentData: { user: '0xabc', email: null, permissions: [AdminPermission.EDIT_ANY_PROFILE, AdminPermission.APPROVE_ANY_EVENT] },
       isLoading: false
     })
   })
@@ -86,7 +86,7 @@ describe('when the user signs out after having been an admin', () => {
   beforeEach(() => {
     useAuthIdentity.mockReturnValue({ identity: undefined, hasValidIdentity: false, address: undefined })
     useGetMyProfileSettingsQuery.mockReturnValue({
-      data: { user: '0xabc', email: null, permissions: [AdminPermission.EDIT_ANY_PROFILE, AdminPermission.APPROVE_ANY_EVENT] },
+      currentData: { user: '0xabc', email: null, permissions: [AdminPermission.EDIT_ANY_PROFILE, AdminPermission.APPROVE_ANY_EVENT] },
       isLoading: false
     })
   })

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { StyledDialog } from '../../whats-on/DetailModal/DetailModal.styled'
-import { PlaceDetailModalContent, PlaceDetailModalHero } from '../../whats-on/PlaceDetailModal'
+import { StyledDialog } from '../../events/DetailModal/DetailModal.styled'
+import { PlaceDetailModalContent, PlaceDetailModalHero } from '../../events/PlaceDetailModal'
 import { normalizeProfilePlace } from './normalizers'
 import type { PlaceDetailModalProps } from './PlaceDetailModal.types'
 

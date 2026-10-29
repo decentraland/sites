@@ -654,7 +654,7 @@ describe('useCreateEventForm', () => {
         await result.current.handleImageSelect(file)
       })
 
-      expect(mockCompressImageFile).toHaveBeenCalledWith(file, expect.objectContaining({ cover: { width: 1340, height: 670 } }))
+      expect(mockCompressImageFile).toHaveBeenCalledWith(file, expect.objectContaining({ cover: { width: 1920, height: 1080 } }))
       expect(mockUploadPoster).toHaveBeenCalledWith({ file: converted, identity: mockIdentity })
       expect(result.current.form.imageUrl).toBe('https://cdn/test.png')
     })

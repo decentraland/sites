@@ -21,7 +21,12 @@ function CommunityDetailPage() {
   const { hasValidIdentity, address } = useAuthIdentity()
 
   const shouldSkip = !id
-  const { data, isLoading, isError } = useGetCommunityByIdQuery({ id: id ?? '', isSigned: hasValidIdentity }, { skip: shouldSkip })
+  const {
+    currentData: data,
+    isLoading,
+    isFetching,
+    isError
+  } = useGetCommunityByIdQuery({ id: id ?? '', account: hasValidIdentity ? address?.toLowerCase() : undefined }, { skip: shouldSkip })
 
   const community = data?.data
 
@@ -30,7 +35,7 @@ function CommunityDetailPage() {
     properties: community ? { communityId: community.id, privacy: community.privacy, membersCount: community.membersCount } : undefined
   })
 
-  if (isLoading) {
+  if (isLoading || (isFetching && !community)) {
     return (
       <PageContainer>
         <InitialLoader>
@@ -61,7 +66,12 @@ function CommunityDetailPage() {
         <title>{community.name} | Decentraland</title>
         <meta name="description" content={community.description} />
       </Helmet>
-      <CommunityDetail community={community} isLoggedIn={hasValidIdentity} address={address} />
+      <CommunityDetail
+        key={hasValidIdentity ? address?.toLowerCase() : 'anon'}
+        community={community}
+        isLoggedIn={hasValidIdentity}
+        address={address}
+      />
     </PageContainer>
   )
 }

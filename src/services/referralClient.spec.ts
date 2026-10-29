@@ -40,6 +40,8 @@ describe('referralClient', () => {
     envMap.REFERRAL_API_URL = 'https://referral-api.test'
     signedFetchMock.mockReset()
     resolveActiveIdentityMock.mockReset()
+    resolveActiveIdentityMock.mockReturnValue({ authChain: [{ payload: '0xabc' }] })
+    signedFetchMock.mockImplementation((input: RequestInfo, init?: RequestInit) => fetch(input, init))
     global.fetch = jest.fn(async () => jsonResponse()) as unknown as typeof fetch
   })
 
@@ -60,34 +62,34 @@ describe('referralClient', () => {
   })
 
   describe('when a query runs without an active identity', () => {
-    it('should fall back to the unsigned global fetch', async () => {
+    it('should reject private requests without an identity', async () => {
       resolveActiveIdentityMock.mockReturnValue(undefined)
       const api = referralClient.injectEndpoints({
         overrideExisting: true,
         endpoints: builder => ({
-          pingUnsigned: builder.query<unknown, void>({ query: () => '/referral' })
+          pingUnsigned: builder.query<unknown, void>({ query: () => ({ url: '/referral', account: '0xabc' }) })
         })
       })
       const store = buildStore()
 
       const result = await store.dispatch(api.endpoints.pingUnsigned.initiate())
 
-      expect(result.data).toEqual({ ok: true })
+      expect(result.error).toMatchObject({ status: 401 })
       expect(signedFetchMock).not.toHaveBeenCalled()
-      expect(global.fetch).toHaveBeenCalled()
+      expect(global.fetch).not.toHaveBeenCalled()
     })
   })
 
   describe('when a query runs with an active identity', () => {
     it('should sign the request via signedFetch with that identity', async () => {
-      const identity = { ephemeralIdentity: { address: '0xabc' } }
+      const identity = { authChain: [{ payload: '0xabc' }] }
       resolveActiveIdentityMock.mockReturnValue(identity)
       signedFetchMock.mockResolvedValue(jsonResponse())
 
       const api = referralClient.injectEndpoints({
         overrideExisting: true,
         endpoints: builder => ({
-          pingSigned: builder.query<unknown, void>({ query: () => '/referral' })
+          pingSigned: builder.query<unknown, void>({ query: () => ({ url: '/referral', account: '0xabc' }) })
         })
       })
       const store = buildStore()
@@ -104,12 +106,11 @@ describe('referralClient', () => {
 
   describe('when a custom baseUrl is supplied in the query args', () => {
     it('should use it instead of the REFERRAL_API_URL env value', async () => {
-      resolveActiveIdentityMock.mockReturnValue(undefined)
       const api = referralClient.injectEndpoints({
         overrideExisting: true,
         endpoints: builder => ({
           customBase: builder.query<unknown, void>({
-            query: () => ({ url: '/referral', baseUrl: 'https://override.test' })
+            query: () => ({ account: '0xabc', url: '/referral', baseUrl: 'https://override.test' })
           })
         })
       })
@@ -130,7 +131,7 @@ describe('referralClient', () => {
       const api = referralClient.injectEndpoints({
         overrideExisting: true,
         endpoints: builder => ({
-          pingNoUrl: builder.query<unknown, void>({ query: () => '/referral' })
+          pingNoUrl: builder.query<unknown, void>({ query: () => ({ url: '/referral', account: '0xabc' }) })
         })
       })
       const store = buildStore()

@@ -272,13 +272,13 @@ describe('OverviewTab', () => {
       expect(screen.queryByText('profile.header.get_a_name')).not.toBeInTheDocument()
     })
 
-    it('should open the builder names page when the get-a-name CTA is clicked', () => {
+    it('should send the get-a-name CTA to the shop, where NAMEs are sold', () => {
       const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null)
       useGetProfileQueryMock.mockReturnValue({ data: { avatars: [{ name: 'Anon', hasClaimedName: false }] }, isLoading: false })
       renderOverview({ address: '0xabc', isOwnProfile: true })
 
       fireEvent.click(screen.getByText('profile.header.get_a_name'))
-      expect(openSpy).toHaveBeenCalledWith('https://peer.test/names', '_blank', 'noopener,noreferrer')
+      expect(openSpy).toHaveBeenCalledWith('/shop/items?category=names', '_blank', 'noopener,noreferrer')
       openSpy.mockRestore()
     })
 

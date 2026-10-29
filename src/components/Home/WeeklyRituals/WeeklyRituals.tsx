@@ -1,11 +1,13 @@
-import { memo } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useMediaQuery } from 'decentraland-ui2'
 import { weeklyRitualsContent } from '../../../data/static-content'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useTrackClick } from '../../../hooks/adapters/useTrackLinkContext'
 import { SectionViewedTrack, SegmentEvent } from '../../../modules/segment'
 import { Carousel } from '../../Carousel'
-import { CardImage, MobileCardImage, SectionTitle, WeeklyRitualsContainer, WeeklyRitualsOuter } from './WeeklyRituals.styled'
+import type { HomeDetailSelection } from '../HomeDetailModal/HomeDetailModal.types'
+import { HomeDetailModalLoader } from '../HomeDetailModal/HomeDetailModalLoader'
+import { CardButton, CardImage, MobileCardImage, SectionTitle, WeeklyRitualsContainer, WeeklyRitualsOuter } from './WeeklyRituals.styled'
 
 const cards = weeklyRitualsContent.cards
 
@@ -13,6 +15,8 @@ const WeeklyRituals = memo(() => {
   const l = useFormatMessage()
   const isMobile = useMediaQuery('(max-width: 599px)')
   const onClickHandle = useTrackClick()
+  const [selection, setSelection] = useState<HomeDetailSelection | null>(null)
+  const closeDetail = useCallback(() => setSelection(null), [])
 
   return (
     <WeeklyRitualsOuter>
@@ -23,25 +27,26 @@ const WeeklyRituals = memo(() => {
           keyExtractor={card => card.id}
           slideAspectRatio="750 / 370"
           renderItem={card => (
-            <a
-              href={card.link}
-              target="_blank"
-              rel="noopener noreferrer"
+            <CardButton
+              type="button"
               draggable={false}
-              style={{ display: 'block', height: '100%' }}
               data-place={SectionViewedTrack.LANDING_WEEKLY_RITUALS}
               data-event={SegmentEvent.CLICK}
               data-card={card.id}
-              onClick={onClickHandle}
+              onClick={event => {
+                onClickHandle(event)
+                setSelection({ kind: 'event', id: card.eventId })
+              }}
             >
               {isMobile ? (
                 <MobileCardImage src={card.mobileImageUrl} alt={l(card.titleKey)} loading="lazy" draggable={false} />
               ) : (
                 <CardImage src={card.imageUrl} alt={l(card.titleKey)} loading="lazy" draggable={false} />
               )}
-            </a>
+            </CardButton>
           )}
         />
+        <HomeDetailModalLoader selection={selection} onClose={closeDetail} />
       </WeeklyRitualsContainer>
     </WeeklyRitualsOuter>
   )

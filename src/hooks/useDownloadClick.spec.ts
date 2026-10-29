@@ -1,8 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
+import { isAnalyticsOffForVisitor } from '../modules/analyticsSessionGate'
 import { markDownloadCtaClicked } from '../modules/downloadPageExit'
 import { attachMacArchHint } from '../modules/macArchHint'
 import { SegmentEvent } from '../modules/segment'
-import { ensureSegmentAnonymousId, generateUuid } from '../modules/segmentAnonymousId'
+import { generateUuid } from '../modules/segmentAnonymousId.helpers'
 import { postSegmentEvent } from '../modules/segmentBeacon'
 import { useDownloadClick } from './useDownloadClick'
 
@@ -13,15 +14,16 @@ jest.mock('@dcl/hooks', () => ({
   useAnalytics: () => ({ isInitialized: mockIsInitialized, track: mockTrack })
 }))
 
-jest.mock('../modules/segmentAnonymousId', () => ({
-  ensureSegmentAnonymousId: jest.fn(),
-  // `downloadClickCorrelation` (used by `useDownloadClick`) imports `generateUuid`
-  // from this same module, so the mock must keep exporting it.
+jest.mock('../modules/segmentAnonymousId.helpers', () => ({
   generateUuid: jest.fn(() => '11111111-1111-4111-8111-111111111111')
 }))
 
 jest.mock('../modules/segmentBeacon', () => ({
   postSegmentEvent: jest.fn()
+}))
+
+jest.mock('../modules/analyticsSessionGate', () => ({
+  isAnalyticsOffForVisitor: jest.fn()
 }))
 
 jest.mock('../modules/downloadPageExit', () => ({
@@ -44,7 +46,6 @@ describe('when tracking a download click', () => {
   beforeEach(() => {
     mockTrack = jest.fn()
     mockIsInitialized = true
-    ;(ensureSegmentAnonymousId as jest.Mock).mockReturnValue('33333333-3333-4333-8333-333333333333')
     // `jest.resetAllMocks()` in the outer `afterEach` wipes the implementation
     // set at mock-creation time above, so `generateUuid` (consumed by
     // `recordDownloadClickCorrelation`) needs to be re-armed here too.
@@ -92,7 +93,7 @@ describe('when tracking a download click', () => {
       mockIsInitialized = false
     })
 
-    it('should post an unload-safe Click beacon with a stable anonymous id', () => {
+    it('should post an unload-safe Click beacon', () => {
       const { result } = renderHook(() => useDownloadClick())
 
       act(() => {
@@ -107,9 +108,24 @@ describe('when tracking a download click', () => {
           track_deferred: true,
           track_called_at: expect.any(Number),
           track_delivered_at: expect.any(Number)
-        }),
-        '33333333-3333-4333-8333-333333333333'
+        })
       )
+    })
+
+    describe('and analytics stays off for the visitor, as on the exempt /download page', () => {
+      beforeEach(() => {
+        ;(isAnalyticsOffForVisitor as jest.Mock).mockReturnValue(true)
+      })
+
+      it('should still post the beacon, since a download click is a conversion', () => {
+        const { result } = renderHook(() => useDownloadClick())
+
+        act(() => {
+          result.current(buildClickEvent({ 'data-event': SegmentEvent.DOWNLOAD, 'data-place': 'download-page' }))
+        })
+
+        expect(postSegmentEvent).toHaveBeenCalledTimes(1)
+      })
     })
 
     it('should not enqueue a normal analytics track call', () => {
@@ -142,8 +158,7 @@ describe('when tracking a download click', () => {
 
       expect(postSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.CLICK,
-        expect.objectContaining({ utm_org: 'dcl', utm_source: 'shefi', utm_campaign: 'partner-launch', place: 'download-page' }),
-        expect.any(String)
+        expect.objectContaining({ utm_org: 'dcl', utm_source: 'shefi', utm_campaign: 'partner-launch', place: 'download-page' })
       )
     })
 
@@ -221,8 +236,7 @@ describe('when tracking a download click', () => {
         expect.objectContaining({
           place: 'Landing Hero',
           track_deferred: true
-        }),
-        expect.any(String)
+        })
       )
       expect((postSegmentEvent as jest.Mock).mock.calls[0][1]).not.toHaveProperty('event')
     })
@@ -273,8 +287,7 @@ describe('when tracking a download click', () => {
       })
       expect(postSegmentEvent).toHaveBeenCalledWith(
         SegmentEvent.CLICK,
-        expect.objectContaining({ click_id: expect.any(String), clicked_at: expect.any(Number) }),
-        expect.any(String)
+        expect.objectContaining({ click_id: expect.any(String), clicked_at: expect.any(Number) })
       )
     })
 

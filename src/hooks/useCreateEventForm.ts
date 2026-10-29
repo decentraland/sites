@@ -24,8 +24,8 @@ import type { CreateEventFormMode, CreateEventFormState, FormErrors, ImageErrorC
 const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif']
 const ACCEPTED_VERTICAL_IMAGE_TYPES = ['image/png', 'image/jpeg']
 const MAX_IMAGE_SIZE_BYTES = 500 * 1024
-const COVER_RECOMMENDED_WIDTH = 1340
-const COVER_RECOMMENDED_HEIGHT = 670
+const COVER_RECOMMENDED_WIDTH = 1920
+const COVER_RECOMMENDED_HEIGHT = 1080
 const VERTICAL_IMAGE_EXPECTED_WIDTH = 716
 const VERTICAL_IMAGE_EXPECTED_HEIGHT = 1814
 

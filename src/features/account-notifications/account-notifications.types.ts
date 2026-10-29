@@ -11,6 +11,7 @@ type SubscriptionResponse = Subscription & {
 
 /** Body of `PUT /set-email`. */
 type SetEmailRequest = {
+  address: string
   email: string
 }
 

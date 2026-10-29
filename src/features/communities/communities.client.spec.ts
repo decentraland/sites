@@ -5,6 +5,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 const signedFetchMock = jest.fn()
+const resolveIdentityMock = jest.fn()
 
 jest.mock('decentraland-crypto-fetch', () => ({
   signedFetchFactory: () => signedFetchMock
@@ -13,6 +14,8 @@ jest.mock('decentraland-crypto-fetch', () => ({
 jest.mock('@dcl/single-sign-on-client', () => ({
   localStorageGetIdentity: () => undefined
 }))
+
+jest.mock('../../utils/activeIdentity', () => ({ resolveActiveIdentity: () => resolveIdentityMock() }))
 
 jest.mock('../../config/env', () => ({
   getEnv: (key: string) => {
@@ -136,6 +139,7 @@ describe('communitiesApi', () => {
   let unexpectedRequests: string[]
 
   beforeEach(() => {
+    resolveIdentityMock.mockReturnValue({ authChain: [{ payload: '0xabc' }] })
     responses = []
     unexpectedRequests = []
     stores.length = 0
@@ -153,6 +157,7 @@ describe('communitiesApi', () => {
         headers: { 'Content-Type': 'application/json' }
       })
     }) as unknown as typeof fetch
+    signedFetchMock.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => global.fetch(input, init))
   })
 
   afterEach(async () => {
@@ -170,10 +175,36 @@ describe('communitiesApi', () => {
   }
 
   const selectCommunity = (store: SocialStore) =>
-    communitiesApi.endpoints.getCommunityById.select({ id: 'c-1', isSigned: true })(store.getState()).data?.data
+    communitiesApi.endpoints.getCommunityById.select({ id: 'c-1', account: '0xabc' })(store.getState()).data?.data
 
   const selectMemberRequests = (store: SocialStore) =>
     communitiesApi.endpoints.getMemberRequests.select({ address: '0xabc', type: RequestType.REQUEST_TO_JOIN })(store.getState()).data?.data
+
+  describe('when community roles belong to different accounts', () => {
+    let store: SocialStore
+
+    beforeEach(() => {
+      store = buildStore()
+      responses = [
+        { body: { data: { ...buildCommunity(), role: Role.OWNER } } },
+        { body: { data: buildCommunity() } },
+        { body: { data: buildCommunity() } }
+      ]
+    })
+
+    it('should not reuse the owner role for another signed-in account or an anonymous visitor', async () => {
+      await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', account: '0xabc' })).unwrap()
+      resolveIdentityMock.mockReturnValue({ authChain: [{ payload: '0xdef' }] })
+      await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', account: '0xdef' })).unwrap()
+      await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1' })).unwrap()
+      expect(communitiesApi.endpoints.getCommunityById.select({ id: 'c-1', account: '0xdef' })(store.getState()).data?.data.role).toBe(
+        Role.NONE
+      )
+      expect(communitiesApi.endpoints.getCommunityById.select({ id: 'c-1' })(store.getState()).data?.data.role).toBe(Role.NONE)
+      expect(signedFetchMock).toHaveBeenCalledTimes(2)
+      expect(global.fetch).toHaveBeenCalledTimes(3)
+    })
+  })
 
   describe('when reading a single community', () => {
     beforeEach(() => {
@@ -183,7 +214,7 @@ describe('communitiesApi', () => {
     it('should call the address-only v2 endpoint with the id encoded', async () => {
       const store = buildStore()
 
-      await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'weird id?#', isSigned: false }))
+      await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'weird id?#', account: undefined }))
 
       expect(readRequest().url).toBe('https://social-api.test/v2/communities/weird%20id%3F%23')
     })
@@ -271,7 +302,7 @@ describe('communitiesApi', () => {
     it('should surface the error without caching data for any of the v2 reads', async () => {
       const store = buildStore()
 
-      const community = await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', isSigned: false }))
+      const community = await store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', account: undefined }))
       const members = await store.dispatch(communitiesApi.endpoints.getCommunityMembers.initiate({ id: 'c-2' }))
       const requests = await store.dispatch(communitiesApi.endpoints.getMemberRequests.initiate({ address: '0xdead' }))
 
@@ -314,7 +345,7 @@ describe('communitiesApi', () => {
       responses = [{ body: { success: true } }]
       const store = buildStore()
 
-      await store.dispatch(communitiesApi.endpoints.joinCommunity.initiate('c-1'))
+      await store.dispatch(communitiesApi.endpoints.joinCommunity.initiate({ id: 'c-1', account: '0xabc' }))
 
       expect(readRequest()).toEqual({ url: 'https://social-api.test/v1/communities/c-1/members', method: 'POST' })
     })
@@ -323,12 +354,12 @@ describe('communitiesApi', () => {
       // The join, then the refetch its success invalidates.
       responses.push({ body: { success: true } }, { body: { data: buildCommunity() } })
       const store = buildStore()
-      const seeded = store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', isSigned: true }))
+      const seeded = store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', account: '0xabc' }))
       await seeded
 
       // Read before awaiting: the patch lands synchronously, the tag invalidation
       // that follows a successful join would refetch the entry away.
-      const pending = store.dispatch(communitiesApi.endpoints.joinCommunity.initiate('c-1'))
+      const pending = store.dispatch(communitiesApi.endpoints.joinCommunity.initiate({ id: 'c-1', account: '0xabc' }))
       const optimisticRole = selectCommunity(store)?.role
       await pending
       seeded.unsubscribe()
@@ -342,10 +373,10 @@ describe('communitiesApi', () => {
       const refetch = heldResponse({ body: { data: buildCommunity() } })
       responses.push({ status: 500 }, refetch.queued)
       const store = buildStore()
-      const seeded = store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', isSigned: true }))
+      const seeded = store.dispatch(communitiesApi.endpoints.getCommunityById.initiate({ id: 'c-1', account: '0xabc' }))
       await seeded
 
-      await store.dispatch(communitiesApi.endpoints.joinCommunity.initiate('c-1'))
+      await store.dispatch(communitiesApi.endpoints.joinCommunity.initiate({ id: 'c-1', account: '0xabc' }))
       const undoneRole = selectCommunity(store)?.role
       refetch.release()
       seeded.unsubscribe()
@@ -417,7 +448,9 @@ describe('communitiesApi', () => {
       responses = [{ body: {} }]
       const store = buildStore()
 
-      await store.dispatch(communitiesApi.endpoints.cancelCommunityRequest.initiate({ communityId: 'c-1', requestId: 'r-1' }))
+      await store.dispatch(
+        communitiesApi.endpoints.cancelCommunityRequest.initiate({ communityId: 'c-1', requestId: 'r-1', address: '0xabc' })
+      )
 
       expect(readRequest()).toEqual({ url: 'https://social-api.test/v1/communities/c-1/requests/r-1', method: 'PATCH' })
     })

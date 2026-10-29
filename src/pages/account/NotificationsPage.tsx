@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { Helmet } from 'react-helmet-async'
 import type { NotificationType } from '@dcl/schemas'
 import { EmailCard } from '../../components/account/Notifications/EmailCard/EmailCard'
@@ -10,13 +10,30 @@ import {
   setTypeEmail,
   subscriptionGroups
 } from '../../features/account-notifications/account-notifications.helpers'
+import type { SubscriptionDetails } from '../../features/account-notifications/account-notifications.types'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
+import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { GroupsColumn, GroupsColumns, NotificationsPanel, StateMessage } from './NotificationsPage.styled'
 
-const NotificationsPage = () => {
+const NotificationsContent = ({ address }: { address: string }) => {
   const t = useFormatMessage()
-  const { data: subscription, isLoading, isError } = useGetSubscriptionQuery()
-  const [updateSubscription] = useUpdateSubscriptionMutation()
+  const { currentData: subscription, isLoading, isError } = useGetSubscriptionQuery({ address })
+  const [updateSubscription, { isLoading: isUpdating, isError: updateFailed }] = useUpdateSubscriptionMutation()
+  const saving = useRef(false)
+  const saveDetails = useCallback(
+    (nextDetails: SubscriptionDetails) => {
+      if (saving.current) return
+      saving.current = true
+      // The mutation error state below owns the generic feedback; raw server bodies stay hidden.
+      void updateSubscription({ address, details: nextDetails })
+        .unwrap()
+        .catch(() => undefined)
+        .finally(() => {
+          saving.current = false
+        })
+    },
+    [address, updateSubscription]
+  )
 
   const details = subscription?.details
   // Per-type toggles only make sense once an email is confirmed — until then the user manages
@@ -26,17 +43,17 @@ const NotificationsPage = () => {
   const handleToggleType = useCallback(
     (type: NotificationType, checked: boolean) => {
       if (!details) return
-      void updateSubscription(setTypeEmail(details, type, checked))
+      saveDetails(setTypeEmail(details, type, checked))
     },
-    [details, updateSubscription]
+    [details, saveDetails]
   )
 
   const handleToggleAll = useCallback(
     (enabled: boolean) => {
       if (!details) return
-      void updateSubscription(setAllEmail(details, enabled))
+      saveDetails(setAllEmail(details, enabled))
     },
-    [details, updateSubscription]
+    [details, saveDetails]
   )
 
   return (
@@ -46,14 +63,15 @@ const NotificationsPage = () => {
       </Helmet>
       <NotificationsPanel data-role="notifications-page">
         <EmailCard
+          address={address}
           email={subscription?.email}
           unconfirmedEmail={subscription?.unconfirmedEmail}
           details={details}
-          disabled={isLoading}
+          disabled={isLoading || isUpdating}
           onToggleAll={handleToggleAll}
         />
 
-        {isError && <StateMessage data-role="notifications-error">{t('account.notifications.load_error')}</StateMessage>}
+        {(isError || updateFailed) && <StateMessage data-role="notifications-error">{t('account.notifications.load_error')}</StateMessage>}
 
         {isLoading && !details && <StateMessage data-role="notifications-loading">{t('account.notifications.loading')}</StateMessage>}
 
@@ -67,7 +85,7 @@ const NotificationsPage = () => {
                     group={group}
                     types={subscriptionGroups[group]}
                     details={details}
-                    disabled={!hasConfirmedEmail}
+                    disabled={!hasConfirmedEmail || isUpdating}
                     onToggleType={handleToggleType}
                   />
                 ))}
@@ -78,6 +96,11 @@ const NotificationsPage = () => {
       </NotificationsPanel>
     </>
   )
+}
+
+const NotificationsPage = () => {
+  const { address, hasValidIdentity } = useAuthIdentity()
+  return address && hasValidIdentity ? <NotificationsContent key={address.toLowerCase()} address={address.toLowerCase()} /> : null
 }
 
 export { NotificationsPage }

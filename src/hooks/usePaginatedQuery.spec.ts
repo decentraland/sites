@@ -7,7 +7,7 @@ describe('usePaginatedQuery', () => {
   describe('when the query is enabled', () => {
     it('should call the query hook with the default offset/limit', () => {
       const queryHook = jest.fn().mockReturnValue({
-        data: { items: [1, 2, 3], total: 3 } as FakeData,
+        currentData: { items: [1, 2, 3], total: 3 } as FakeData,
         isLoading: false,
         isFetching: false
       })
@@ -28,7 +28,7 @@ describe('usePaginatedQuery', () => {
 
     it('should advance offset by limit on loadMore when hasMore is true', () => {
       const queryHook = jest.fn().mockReturnValue({
-        data: { items: [1, 2], total: 5 } as FakeData,
+        currentData: { items: [1, 2], total: 5 } as FakeData,
         isLoading: false,
         isFetching: false
       })
@@ -54,7 +54,7 @@ describe('usePaginatedQuery', () => {
 
   describe('when the query is disabled', () => {
     it('should pass skip: true to the query hook', () => {
-      const queryHook = jest.fn().mockReturnValue({ data: undefined, isLoading: false, isFetching: false })
+      const queryHook = jest.fn().mockReturnValue({ currentData: undefined, isLoading: false, isFetching: false })
 
       renderHook(() =>
         usePaginatedQuery<{ id: string; limit?: number; offset?: number }, FakeData, number[]>({
@@ -68,6 +68,32 @@ describe('usePaginatedQuery', () => {
       )
 
       expect(queryHook).toHaveBeenCalledWith({ id: 'a', limit: 10, offset: 0 }, { skip: true })
+    })
+  })
+})
+
+describe('usePaginatedQuery error state', () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe('when the underlying query fails', () => {
+    it('should surface isError so callers can distinguish a failure from an empty page', () => {
+      const queryHook = jest.fn().mockReturnValue({ data: undefined, isLoading: false, isFetching: false, isError: true })
+
+      const { result } = renderHook(() =>
+        usePaginatedQuery<{ id: string; limit?: number; offset?: number }, FakeData, number[]>({
+          queryHook,
+          queryArg: { id: 'a' },
+          defaultLimit: 10,
+          extractItems: data => data.items,
+          extractTotal: data => data.total,
+          getHasMore: data => data.items.length < data.total
+        })
+      )
+
+      expect(result.current.isError).toBe(true)
+      expect(result.current.items).toEqual([])
     })
   })
 })

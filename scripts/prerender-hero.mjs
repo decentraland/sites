@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distPath = resolve(__dirname, '..', 'dist', 'index.html')
+const readSource = relativePath => readFileSync(resolve(__dirname, '..', relativePath), 'utf-8').trim()
 
 if (!existsSync(distPath)) {
   console.error(`❌ Hero shell prerender failed: ${distPath} not found. Was the build step successful?`)
@@ -22,6 +23,16 @@ const dclLogoSvg = `<svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.or
 
 // JumpIn icon SVG — exact from decentraland-ui2 JumpInIcon
 const jumpInSvg = `<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0.75" y="0.75" width="22.5" height="22.5" rx="5.25" stroke="#FCFCFC" stroke-opacity="0.3" stroke-width="1.5"></rect><path d="M18.7111 11.065L14.034 6.39027C13.2002 5.55695 11.7971 6.14637 11.7971 7.32523V8.86994C11.7564 8.86994 11.7361 8.86994 11.6954 8.86994H7.25895C6.50654 8.86994 5.89648 9.45936 5.89648 10.2114V13.7683C5.89648 14.5203 6.50654 15.1301 7.25895 15.1301H11.6751C11.7158 15.1301 11.7361 15.1301 11.7768 15.1301V16.6748C11.7768 17.8536 13.2002 18.4431 14.0137 17.6097L18.6908 12.935C19.2195 12.4065 19.2195 11.5732 18.7111 11.065Z" fill="#FCFCFC"></path></svg>`
+
+// OS icons for the download button, same files the React Hero uses. Both ship hidden;
+// hero-shell-os.js tags the button with data-os and the CSS shows the matching one.
+const windowsIconSvg = readSource('src/images/microsoft-logo.svg').replace('<svg ', '<svg data-os-icon="Windows" role="img" aria-label="Windows" ')
+const macosIconSvg = readSource('src/images/apple-logo.svg').replace('<svg ', '<svg data-os-icon="macOS" role="img" aria-label="macOS" ')
+const shellOsScript = readSource('scripts/hero-shell-os.js')
+if (/<\/script/i.test(shellOsScript)) {
+  console.error('❌ Hero shell prerender failed: scripts/hero-shell-os.js contains "</script", which would end the inline script early.')
+  process.exit(1)
+}
 
 // ============================================================
 // ALL CSS values below copied 1:1 from Chrome DevTools Computed tab
@@ -143,6 +154,11 @@ const criticalCss = `
   #hero-shell .hero-download-btn .hero-os-icon {
     display: block; width: 32px; height: 32px; flex-shrink: 0;
   }
+  #hero-shell .hero-download-btn .hero-os-icon svg {
+    display: none; width: 32px; height: 32px; filter: brightness(0) invert(1);
+  }
+  #hero-shell .hero-download-btn[data-os="Windows"] [data-os-icon="Windows"],
+  #hero-shell .hero-download-btn[data-os="macOS"] [data-os-icon="macOS"] { display: block; }
   #hero-shell .hero-epic-btn {
     display: flex; align-items: center; justify-content: center; gap: 24px;
     width: 304px; height: 64px;
@@ -224,7 +240,7 @@ const heroHtml = `<div id="hero-shell-nav">
     <div class="hero-mobile-download"><div class="hero-mobile-download-btn"></div></div>
     <div class="hero-cta-wrapper">
       <div class="hero-buttons-row">
-        <a class="hero-download-btn" href="/download">DOWNLOAD FOR <span class="hero-os-icon"></span></a>
+        <a class="hero-download-btn" href="/download">DOWNLOAD FOR <span class="hero-os-icon">${windowsIconSvg}${macosIconSvg}</span></a>
         <a class="hero-epic-btn" href="https://store.epicgames.com/en-US/p/decentraland-b692fb" target="_blank" rel="noopener noreferrer">DOWNLOAD ON <img src="./epic_icon.svg" alt="Epic Games" /></a>
       </div>
     </div>
@@ -239,6 +255,9 @@ const heroHtml = `<div id="hero-shell-nav">
     </div>
   </div>
 </div>
+<script>
+${shellOsScript}
+</script>
 <script>
 (function(){var p=location.pathname;if(p.length>1&&p[p.length-1]==='/'){p=p.slice(0,-1);}if(p!=='/'&&p!==''){var s=document.getElementById('hero-shell');var n=document.getElementById('hero-shell-nav');var st=document.querySelector('[data-hero-shell]');if(s)s.remove();if(n)n.remove();if(st)st.remove();}})();
 </script>`
@@ -282,20 +301,35 @@ html = html.replace(
   /<!-- HERO_SHELL_START -->[\s\S]*?<!-- HERO_SHELL_END -->/,
   '<!-- HERO_SHELL_START --><!-- HERO_SHELL_END -->'
 )
-html = html.replace(
-  '<div id="root">',
-  `${finalHeroHtml}\n<div id="root">`
-)
+// Function replacement: a string would expand `$&` and friends found in the inlined JS or SVG.
+html = html.replace('<div id="root">', () => `${finalHeroHtml}\n<div id="root">`)
 html = html.replace('</head>', `${fontPreload}\n${criticalCss}\n</head>`)
 
 // Inline the English locale into the HTML response so the main JS bundle
 // doesn't have to ship 56 KB / 17 KB gzip of static JSON. JSON.parse is ~5×
 // faster than JS object-literal parse for payloads this size, so even at the
 // same byte cost the visitor gets a faster TBT.
+//
+// It goes at the END of <body>, after #root, not in <head>: the dictionary is ~107 KB of script,
+// and in <head> it pushed every byte of page content (the hero, and the documents the edge worker
+// appends inside #root for crawlers) past the 120 KB mark. Readers that do not run JavaScript
+// and cap what they fetch saw script before content. The app bundle is a module script, which
+// runs only after the whole document is parsed, so `window.__dclEn` is still set before React
+// reads it (src/intl/LocaleContext.tsx).
 const enJson = readFileSync(resolve(__dirname, '..', 'src', 'intl', 'en.json'), 'utf8')
 const enLiteral = JSON.stringify(enJson) // escapes the JSON string for embedding
 const enScript = `<script data-dcl-en>window.__dclEn=JSON.parse(${enLiteral.replace(/<\/(script|!--)/gi, m => `\\u003c\\u002f${m.slice(2)}`)})</script>`
-html = html.replace('</head>', `${enScript}\n</head>`)
+html = html.replace('</body>', `${enScript}\n</body>`)
+
+// A dictionary that lands before #root, or not at all, silently costs every visitor a JSON chunk
+// and every crawler the content offset above; a shell without #root has nothing to mount into.
+// Fail the build instead of shipping either.
+const rootOffset = html.indexOf('<div id="root">')
+const dictionaryOffset = html.indexOf('<script data-dcl-en>')
+if (rootOffset === -1 || dictionaryOffset === -1 || dictionaryOffset < rootOffset) {
+  console.error('❌ Hero shell prerender failed: <div id="root"> must be present and precede the inline English dictionary.')
+  process.exit(1)
+}
 
 // Rewrite favicon href to CDN so it doesn't 404 on decentraland.zone
 // (the zone server's catch-all returns HTML for /favicon.ico)

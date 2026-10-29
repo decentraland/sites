@@ -1,4 +1,5 @@
 import { SegmentEvent } from './segment'
+import { ensureSegmentAnonymousId } from './segmentAnonymousId'
 import { postSegmentEvent } from './segmentBeacon'
 import { getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 
@@ -6,6 +7,7 @@ jest.mock('./segmentConfig', () => ({
   getSegmentTrackUrl: jest.fn(() => 'https://api.segment.io/v1/track'),
   getSegmentWriteKey: jest.fn()
 }))
+jest.mock('./segmentAnonymousId', () => ({ ensureSegmentAnonymousId: jest.fn() }))
 
 function readBlobText(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -81,6 +83,43 @@ describe('when posting a Segment event via beacon', () => {
     // The /v1/track endpoint infers the message type; the SDK does not send it
     // on this transport, so neither do we.
     expect(body).not.toHaveProperty('type')
+  })
+
+  describe('and the caller passes no anonymous id', () => {
+    beforeEach(() => {
+      ;(ensureSegmentAnonymousId as jest.Mock).mockReturnValue('stored-anon')
+    })
+
+    it('should send the stored anonymous id', async () => {
+      postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Navbar' })
+
+      const [, blob] = mockSendBeacon.mock.calls[0] as [string, Blob]
+      const body = JSON.parse(await readBlobText(blob))
+      expect(body.anonymousId).toBe('stored-anon')
+    })
+
+    describe('and there is no write key', () => {
+      beforeEach(() => {
+        ;(getSegmentWriteKey as jest.Mock).mockReturnValue('')
+        postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Navbar' })
+      })
+
+      it('should neither create an anonymous id nor send anything', () => {
+        expect(ensureSegmentAnonymousId).not.toHaveBeenCalled()
+        expect(mockSendBeacon).not.toHaveBeenCalled()
+        expect(mockFetch).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('and the caller passes an anonymous id', () => {
+    beforeEach(() => {
+      postSegmentEvent(SegmentEvent.CLICK, { place: 'Landing Hero' }, 'anon-1')
+    })
+
+    it('should not look up the stored one', () => {
+      expect(ensureSegmentAnonymousId).not.toHaveBeenCalled()
+    })
   })
 
   it('should use the proxy track URL when SEGMENT_API_HOST is configured', () => {

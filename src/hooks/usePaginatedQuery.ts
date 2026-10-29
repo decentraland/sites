@@ -4,9 +4,10 @@ type PaginatedQueryHook<TQueryArg, TData> = (
   arg: TQueryArg,
   options?: { skip?: boolean }
 ) => {
-  data?: TData
+  currentData?: TData
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
 }
 
 type UsePaginatedQueryOptions<TQueryArg extends { limit?: number; offset?: number }, TData, TItems extends unknown[]> = {
@@ -25,7 +26,14 @@ function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }
 ) {
   const { queryHook, queryArg, enabled = true, defaultLimit = 10, extractItems, extractTotal, getHasMore, resetDependency } = options
   const [limit] = useState(defaultLimit)
-  const [currentOffset, setCurrentOffset] = useState(0)
+  const [offset, setCurrentOffset] = useState(0)
+  const [scope, setScope] = useState(resetDependency)
+  const currentOffset = scope === resetDependency ? offset : 0
+  // Start the new account at page zero in this render, before a query can be issued.
+  if (scope !== resetDependency) {
+    setScope(resetDependency)
+    setCurrentOffset(0)
+  }
   const dataRef = useRef<TData | null>(null)
   const isFetchingRef = useRef<boolean>(false)
   const totalRef = useRef<number>(0)
@@ -46,7 +54,12 @@ function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }
     totalRef.current = 0
   }, [resetDependency])
 
-  const { data, isLoading, isFetching } = queryHook(
+  const {
+    currentData: data,
+    isLoading,
+    isFetching,
+    isError
+  } = queryHook(
     {
       ...(queryArg as TQueryArg),
       limit,
@@ -80,6 +93,7 @@ function usePaginatedQuery<TQueryArg extends { limit?: number; offset?: number }
 
   return {
     items,
+    isError,
     isLoading: isLoading && currentOffset === 0,
     isFetchingMore: isFetching && currentOffset > 0,
     hasMore,

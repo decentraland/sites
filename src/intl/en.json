@@ -11,7 +11,7 @@
     },
     "download": {
       "title": "Download Decentraland",
-      "description": "Download Decentraland and start exploring the metaverse",
+      "description": "Download Decentraland and come hang out",
       "download_onboarding_title": "Download Decentraland\nand Come Hang Out!",
       "not_available": "Not available for your OS",
       "not_available_subtitle": "Decentraland is available for <span>Windows</span> & <span>macOS</span>.",
@@ -38,54 +38,45 @@
       "success": {
         "title": "You're almost done!",
         "subtitle": "Open the file you just downloaded to finish installing Decentraland and start {action}",
-        "subtitle_action_exploring": "exploring",
         "subtitle_action_creating": "creating",
         "step": "Step",
-        "footer": "Trouble with the download? Let's try that again: {link}",
         "footer_prefix": "Trouble with the download? Let's try that again:",
-        "footer_link_label": "Download again",
+        "started": {
+          "title": "Your download has started!",
+          "subtitle": "Follow these 3 steps to install Decentraland and jump in."
+        },
+        "footer_retry": "Download didn't start? {link}",
+        "footer_retry_link": "Try again",
+        "footer_help": "Need help? Go to {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "After the download is complete, go back to the {event} event page so you can jump in. Redirecting in {seconds} seconds.",
         "steps": {
           "windows": {
             "step1": {
-              "title": "Open",
-              "text": "Open the <span>Decentraland</span> file from your Downloads Folder to launch the Setup Wizard."
+              "title": "Find your file",
+              "text": "Click the download icon in your browser toolbar, then open the Decentraland installer (.exe)."
             },
             "step2": {
               "title": "Install",
-              "text": "Follow the instructions in the Setup Wizard. When you click <span>Finish</span> the installation process will begin."
+              "text": "Follow the Setup Wizard and click Next until it finishes. If Windows asks for permission, click Yes."
             },
             "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your taskbar and will launch automatically."
+              "title": "Jump in!",
+              "text": "Once installed, Decentraland opens on its own. See you in-world!"
             }
           },
           "macOS": {
             "step1": {
-              "title": "Open",
-              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
+              "title": "Find your file",
+              "text": "Click the download icon in your browser toolbar, then open Decentraland-Installer.dmg."
             },
             "step2": {
               "title": "Install",
-              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
+              "text": "Double-click the Decentraland icon in the window that opens. When the macOS security message appears, click Open."
             },
             "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "Open",
-              "text": "Click on the <span>Decentraland</span> file from your browser's 'Recent Downloads' or your 'Downloads' folder to open it."
-            },
-            "step2": {
-              "title": "Install",
-              "text": "This window should then appear—double click the <span>Decentraland</span> button to start installation."
-            },
-            "step3": {
-              "title": "Get Ready to Explore!",
-              "text": "Once installation is complete, the Decentraland app should be visible in your Dock and will launch automatically."
+              "title": "Jump in!",
+              "text": "Once installed, Decentraland opens on its own. See you in-world!"
             }
           }
         }
@@ -215,6 +206,16 @@
         "connect_wallet_prompt": "Connect your Decentraland wallet to send messages"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "title": "Camera bubble",
+          "size_small": "Small",
+          "size_large": "Large",
+          "top_left": "Top left",
+          "top_right": "Top right",
+          "bottom_left": "Bottom left",
+          "bottom_right": "Bottom right",
+          "drag_hint": "Drag to move your camera"
+        },
         "mute_mic": "Mute Mic",
         "unmute_mic": "Unmute Mic",
         "stop_cam": "Stop Cam",
@@ -230,6 +231,7 @@
         "connected": "Connected",
         "mute_cast": "Mute this Cast audio while you're in World",
         "unmute_cast": "Unmute Cast audio",
+        "click_to_unmute": "Click to unmute",
         "share_presentation": "Share Presentation",
         "stop_presentation": "Stop Presentation",
         "uploading_presentation": "Uploading presentation...",
@@ -423,15 +425,6 @@
       "missing_address_title": "Missing Address",
       "missing_address_description": "Address parameter is required in the URL. Please check your email link."
     },
-    "play": {
-      "title": "The Web Version Is No Longer Available.",
-      "subtitle": "Continue Playing on Desktop or Mobile App.",
-      "also_available_on": "Also Available on",
-      "already_downloaded": "Already Downloaded?",
-      "jump_in": "JUMP IN!",
-      "experimental": "Want to keep playing on web? Try the experimental version {here}",
-      "here": "HERE"
-    },
     "not_found": {
       "title_oops": "Oops!",
       "title_rest": "This page has left the world.",
@@ -622,7 +615,7 @@
           "item_1_question": "Do I need crypto or a digital wallet to use Decentraland?",
           "item_1_answer": "No, you do not need to own crypto or already have a digital wallet to use Decentraland. Decentraland is free to use, and if you'd like to purchase something from the Marketplace, you can use a credit/debit card in addition to cryptocurrency. If you sign into Decentraland with a social account such as Google or Discord, a digital wallet will be made for your account behind the scenes, so you don't have to worry about anything.",
           "item_2_question": "What hardware do I need to run Decentraland?",
-          "item_2_answer": "Currently, Decentraland is available for PC on Windows and Mac. For Windows, you'll need at least Windows 10 64-bit, an Intel i5 7th gen or AMD Ryzen 5 CPU, an Nvidia RTX 20 Series or AMD Radeon RX 5000 Series GPU, 6 GB VRAM, 16 GB RAM, and 8 GB storage. For Mac, you'll need at least macOS 11 Big Sur with an Apple M1 chip, 16 GB RAM, and 8 GB storage. Decentraland currently does not run on mobile devices. For full hardware specs, visit docs.decentraland.org/faqs/decentraland-101.",
+          "item_2_answer": "Currently, Decentraland is available for PC on Windows and Mac. For Windows, you'll need at least Windows 10 64-bit, an Intel i5 7th gen or AMD Ryzen 5 CPU, an Nvidia RTX 20 Series or AMD Radeon RX 5000 Series GPU, 6 GB VRAM, 16 GB RAM, and 8 GB storage. For Mac, you'll need at least macOS 11 Big Sur with an Apple M1 chip, 16 GB RAM, and 8 GB storage. Decentraland is also available on mobile — download it on Android and iOS from the App Store or Google Play Store. For full hardware specs, visit docs.decentraland.org/faqs/decentraland-101.",
           "item_3_question": "How do I explore and navigate Decentraland?",
           "item_3_answer": "Decentraland consists of Genesis City, an open traversable world made up of community parcels referenced by coordinates, as well as individual Worlds, more intimate 3D spaces that can be teleported into. To explore Genesis City, use your arrow or WASD keys to move around, jump to locations from the map, or type '/goto x,y' in the chat to teleport to specific coordinates. To visit a World, type '/goto WorldName' in the chat.",
           "item_4_question": "How do I get Wearables, Emotes, LAND, and NAMEs in the Marketplace?",
@@ -853,11 +846,30 @@
         "delete": "Delete",
         "close": "Close",
         "loading": "Loading",
-        "actions": "Actions",
         "key": "Key",
         "add": "Add",
         "owner": "Owner",
-        "collaborator": "Collaborator"
+        "collaborator": "Collaborator",
+        "download_all": "Download all",
+        "download_selected": "Download selected ({count})",
+        "delete_selected": "Delete selected ({count})",
+        "delete_all": "Delete all",
+        "delete_selected_dialog": {
+          "title": "Delete selected items?",
+          "message": "{count, plural, one {This will permanently delete # selected item.} other {This will permanently delete # selected items.}}"
+        },
+        "select_all": "Select all",
+        "select_row": "Select {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "Preparing download…",
+        "keep_page_open": "Keep this page open until the download starts."
+      },
+      "leave_dialog": {
+        "title": "Leave while your export is running?",
+        "message": "Leaving stops the download. Start it again later and the file will be ready right away.",
+        "stay": "Stay",
+        "leave": "Leave"
       },
       "role": {
         "owner": "Owner",
@@ -903,12 +915,17 @@
         "scene_count_one": "1 scene",
         "edit": "Edit",
         "edit_scenes": "Edit Scenes",
-        "select_scene": "Select scene"
+        "select_scene": "Select scene",
+        "collaborations": "Collaborations",
+        "no_collaborations": "No collaborations found",
+        "collaborations_error": "Could not load your collaborations. Please try again.",
+        "collaborations_hint": "Recently granted scenes may take a moment to appear.",
+        "realm_world": "World",
+        "realm_genesis": "Genesis City"
       },
       "env_page": {
         "title": "Environment Variables",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No environment variables found",
         "add_dialog": {
           "title": "Add Environment Variable",
@@ -933,7 +950,6 @@
       "scene_page": {
         "title": "Scene Storage",
         "add": "Add",
-        "clear_all": "Clear All",
         "no_keys": "No scene values found",
         "add_dialog": {
           "title": "Add Scene Value",
@@ -957,7 +973,6 @@
       "player_page": {
         "title": "Player Storage",
         "add": "Add",
-        "clear_all_players": "Clear All Players",
         "description": "Browse players with stored data, or search by name or address.",
         "search_players": "Search by name or address…",
         "no_players": "No players found",
@@ -970,7 +985,6 @@
         "address_placeholder": "0x…",
         "load_keys": "Load keys",
         "keys_for": "Keys for {address}",
-        "clear_this_player": "Clear this player",
         "no_keys": "No keys found for this player",
         "loading_keys": "Loading player keys",
         "add_dialog": {
@@ -1013,7 +1027,9 @@
         "payload_too_large": "Value is too large for this storage namespace.",
         "rate_limited": "Too many requests. Wait a moment and try again.",
         "server": "The storage service returned an error. Try again in a few minutes.",
-        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet."
+        "world_scene_unresolved": "We couldn’t resolve this world’s scene location. It may not have a deployed scene yet.",
+        "export_failed": "The export failed. Please try again.",
+        "bulk_delete_failed": "Some items could not be deleted. Please try again."
       }
     },
     "report": {
@@ -1079,6 +1095,8 @@
     }
   },
   "live_now": {
+    "navigate_previous": "Show previous live scenes",
+    "navigate_next": "Show next live scenes",
     "title": "Live Now",
     "by_prefix": "by ",
     "unknown_creator": "Unknown",
@@ -1204,8 +1222,8 @@
     "select_cover": "Select an Event Cover",
     "choose_picture": "Choose a Picture",
     "drop_hint": "from your gallery or drop it here",
-    "recommended_size": "(recommended size: 1340 × 670)",
-    "image_helper": "Upload a PNG, JPG, or GIF (1340×670px, max 500kb). Center visuals and text to fit all screen resolutions.",
+    "recommended_size": "(recommended size: 1920 × 1080, safe area: 1080 × 1080)",
+    "image_helper": "Upload a PNG, JPG, or GIF (1920×1080px, max 500kb). Keep key visuals and text inside the centered 1080×1080 safe area to fit all screen resolutions.",
     "change_image": "Change Image",
     "event_name": "Event Name",
     "name_placeholder": "Be as descriptive as you can",
@@ -1269,7 +1287,6 @@
     "error_invalid_image_type": "Please upload a PNG, JPG, or GIF file.",
     "error_invalid_vertical_image_type": "Vertical cover must be PNG or JPG.",
     "error_image_too_large": "We couldn't compress this image below 500 KB. Please pick a smaller file.",
-    "error_image_dimensions": "Image must be 1340×670 pixels.",
     "error_vertical_image_dimensions": "Vertical cover must be 716×1814 pixels.",
     "error_vertical_image_decode": "We couldn't read this image. Please try a different file.",
     "error_not_signed_in": "Your session expired. Please sign in again to submit this event.",
@@ -1526,6 +1543,7 @@
       "category": {
         "label": "Category",
         "all": "Any Category",
+        "featured": "Featured",
         "social": "Social",
         "music": "Music",
         "art": "Art",
@@ -1535,9 +1553,6 @@
         "shop": "Shop",
         "sports": "Sports",
         "business": "Business"
-      },
-      "section": {
-        "featured": "Featured Places"
       },
       "tab": {
         "explore_all": "Explore all",
@@ -1587,11 +1602,8 @@
       "copy_link": "Copy link",
       "close": "Close",
       "explore_scene": "Explore the scene",
+      "jump_to_location": "Jump into {location} (opens in a new tab)",
       "copied": "Copied!"
-    },
-    "featured": {
-      "view_all": "View all featured places",
-      "view_less": "View less"
     }
   },
   "profile": {
@@ -1607,6 +1619,8 @@
       "remove_friend": "Unfriend",
       "unblock": "Unblock",
       "block": "Block",
+      "blocked_toast": "{name} has been blocked.",
+      "unblocked_toast": "{name} has been unblocked.",
       "more_actions": "More actions",
       "copy_address": "Copy address",
       "address_copied": "Address copied!",
@@ -1720,6 +1734,7 @@
       "filter_favorites": "Favourites",
       "empty_owner_title": "Nothing here yet—but that's easy to change",
       "empty_owner_subtitle": "My Places shows the spaces you own or manage in Decentraland. The easiest way to start is with a NAME, which unlocks your own World.",
+      "empty_owner_has_name_subtitle": "My Places shows the spaces you own or manage in Decentraland. You already have a NAME — publish a World on it and it will appear here.",
       "empty_owner_cta": "Get a name",
       "empty_favorites_title": "Nothing saved yet",
       "empty_favorites_subtitle": "Add favorite Places by tapping the heart on a place card or the map in Decentraland. You'll find them all here.",
@@ -2039,7 +2054,6 @@
       },
       "learn_more": "Learn more",
       "learn_more_url": "https://docs.decentraland.org/player/market/marketplace-credits/",
-      "join_button": "Join Program",
       "leave_button": "Leave Program",
       "leave_modal": {
         "warning": "Leave Marketplace Credits?",
@@ -2050,10 +2064,6 @@
           "generic": "Couldn't leave the program right now. Please try again.",
           "already_claimed": "You can't leave this week because you've already claimed credits. Please try again next week."
         }
-      },
-      "join_errors": {
-        "generic": "Couldn't join the program right now. Please try again.",
-        "email_required": "Add and confirm an email in Notifications before joining the Credits Program."
       }
     },
     "delete": {

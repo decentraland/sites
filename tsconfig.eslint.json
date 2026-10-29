@@ -1,4 +1,7 @@
 {
   "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "allowJs": true
+  },
   "include": ["src", "api", "vite.config.ts", "jest.config.ts"]
 }

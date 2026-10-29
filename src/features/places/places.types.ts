@@ -28,6 +28,7 @@ interface JumpEvent {
 }
 
 interface JumpPlace {
+  creator_address?: string | null
   id: string
   title: string
   image: string
@@ -154,10 +155,14 @@ interface DeepLinkOptions {
   multiInstance?: string
 }
 
+/** The validated position/realm pair a download hop or a mobile app link carries. */
+type DeepLinkParams = Pick<DeepLinkOptions, 'position' | 'realm'>
+
 export type {
   CardData,
   Creator,
   DeepLinkOptions,
+  DeepLinkParams,
   GetEventByIdArgs,
   GetEventsArgs,
   GetPlacesArgs,
