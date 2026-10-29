@@ -1,5 +1,5 @@
 /**
- * `localStorage` is not always there, and not always readable.
+ * `localStorage` and `sessionStorage` are not always there, and not always readable.
  *
  * Some Android WebViews expose it as `null`, and a document denied storage
  * access (third-party framing, a locked-down browser profile) throws
@@ -14,13 +14,20 @@
  * without.
  */
 
+/** Which Web Storage object to use. `localStorage` unless a caller asks for the per-tab one. */
+type StorageArea = 'local' | 'session'
+
 /**
  * Resolves the global binding rather than `window.localStorage` on purpose:
  * tests swap the global, and reaching through `window` would read past the
- * substitute.
+ * substitute. `sessionStorage` fails the same way (SITES-2TJ: a document
+ * denied storage access threw on `/download_success` and blanked the page).
  */
-function getStorage(): Storage | null {
+function getStorage(area: StorageArea = 'local'): Storage | null {
   try {
+    if (area === 'session') {
+      return typeof sessionStorage === 'undefined' ? null : sessionStorage
+    }
     return typeof localStorage === 'undefined' ? null : localStorage
   } catch {
     return null
@@ -28,18 +35,18 @@ function getStorage(): Storage | null {
 }
 
 /** Reads a key, or null when storage is missing, unreadable, or has no value. */
-function readStorageItem(key: string): string | null {
+function readStorageItem(key: string, area: StorageArea = 'local'): string | null {
   try {
-    return getStorage()?.getItem(key) ?? null
+    return getStorage(area)?.getItem(key) ?? null
   } catch {
     return null
   }
 }
 
 /** Writes a key, returning false when storage is unavailable or rejects the write. */
-function writeStorageItem(key: string, value: string): boolean {
+function writeStorageItem(key: string, value: string, area: StorageArea = 'local'): boolean {
   try {
-    const storage = getStorage()
+    const storage = getStorage(area)
     if (!storage) return false
     storage.setItem(key, value)
     return true

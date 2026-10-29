@@ -895,6 +895,31 @@ describe('when the same os/arch is revisited within the session', () => {
     })
   })
 
+  describe('and the document is denied sessionStorage access', () => {
+    const realSessionStorage = window.sessionStorage
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'sessionStorage', {
+        configurable: true,
+        get() {
+          throw new DOMException('Access is denied for this document.', 'SecurityError')
+        }
+      })
+    })
+
+    afterEach(() => {
+      Object.defineProperty(window, 'sessionStorage', { value: realSessionStorage, configurable: true, writable: true })
+    })
+
+    it('should still run the download flow, counting the arrival as a first visit', async () => {
+      render(<DownloadSuccess />)
+
+      await waitFor(() => {
+        expect(mockPostSegmentEvent).toHaveBeenCalledWith('download_started', expect.objectContaining({ revisit: 0 }), expect.anything())
+      })
+    })
+  })
+
   it('should re-run the full download flow on every revisit (no idempotency bail)', async () => {
     const { unmount } = render(<DownloadSuccess />)
     await waitFor(() => {
