@@ -1,10 +1,11 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 import { LiveBadge, UserCountBadge, dclColors } from 'decentraland-ui2'
 import { buildDetailPath, placeCoordsLabel, placeCoverImage } from '../../../features/discover'
 import type { DiscoverPlace } from '../../../features/discover'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { usePlaceCreator } from '../../../hooks/usePlaceCreator'
-import { CloseGlyph, CopyGlyph, JumpInGlyph, PinGlyph } from '../_shared/CardIcons'
+import { CloseGlyph, JumpInGlyph, PinGlyph } from '../_shared/CardIcons'
+import { SharePlaceButton } from '../_shared/SharePlaceButton'
 import { useDiscoverJumpIn } from '../DiscoverJumpInProvider'
 import {
   About,
@@ -14,8 +15,6 @@ import {
   Backdrop,
   ByText,
   CloseCta,
-  CopiedBubble,
-  CopyCta,
   CreatorName,
   CreatorRow,
   CtaRow,
@@ -58,31 +57,10 @@ function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpI
     jumpIn(place, 'jump-in-modal')
   }, [jumpIn, place])
 
-  // Copy the canonical detail URL — when the modal opens in place over the
-  // grid the address bar still reads /discover, so window.location.href
-  // would share a link with no place context. A transient "Copied!" bubble
-  // confirms success; failures (insecure context, permission denial) leave
-  // the bubble unshown so the user isn't told a lie about their clipboard.
-  const [copied, setCopied] = useState(false)
-  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(
-    () => () => {
-      if (copiedTimer.current) clearTimeout(copiedTimer.current)
-    },
-    []
-  )
-  const handleCopyLink = useCallback(() => {
-    const path = buildDetailPath(place)
-    const url = path ? `${window.location.origin}${path}` : window.location.href
-    navigator.clipboard
-      ?.writeText(url)
-      .then(() => {
-        setCopied(true)
-        if (copiedTimer.current) clearTimeout(copiedTimer.current)
-        copiedTimer.current = setTimeout(() => setCopied(false), 2000)
-      })
-      .catch(() => undefined)
-  }, [place])
+  // The canonical detail URL, not window.location.href: when the modal opens in
+  // place over the grid the address bar still reads /places, so the shared link
+  // would carry no place context.
+  const shareTarget = buildDetailPath(place) ?? window.location.pathname
 
   // Backdrop click closes; clicks inside the modal don't bubble out.
   const handleBackdropClick = useCallback(
@@ -140,10 +118,7 @@ function SceneJumpInModalComponent({ place, onClose, liveCount = 0 }: SceneJumpI
                 {t('discover.card.jump_in')}
                 <JumpInGlyph size="clamp(19px, 1.25vw, 24px)" />
               </JumpInCta>
-              <CopyCta type="button" aria-label={t('discover.scene.copy_link')} onClick={handleCopyLink}>
-                <CopyGlyph size="clamp(16px, 1.042vw, 20px)" />
-                {copied && <CopiedBubble role="status">{t('discover.scene.copied')}</CopiedBubble>}
-              </CopyCta>
+              <SharePlaceButton target={shareTarget} title={place.title} />
             </CtaRow>
           </HeroText>
         </HeroWrap>
