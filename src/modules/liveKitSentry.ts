@@ -1,3 +1,4 @@
+import { ConnectionErrorReason } from 'livekit-client'
 import { captureHandledError } from './captureHandledError'
 
 interface LiveKitConnectErrorContext {
@@ -37,6 +38,18 @@ function isDeniedPermission(error: unknown): boolean {
   return error.name === 'NotAllowedError' || DENIED_PERMISSION_REGEX.test(error.message)
 }
 
+// A connection attempt the page aborts itself (the room is disconnected while it is
+// still connecting: the streamer leaves, the view unmounts) rejects with a
+// `ConnectionError` whose reason is `Cancelled`. livekit-client copies the inner
+// reason onto the error it finally throws, so the reason holds even when the message
+// reads "could not establish signal connection: Abort handler called" (SITES-2SS).
+// Nothing failed there, so there is nothing to report.
+function isCancelledConnection(error: unknown): boolean {
+  return (
+    error instanceof Error && error.name === 'ConnectionError' && (error as { reason?: unknown }).reason === ConnectionErrorReason.Cancelled
+  )
+}
+
 /**
  * Captures a LiveKit room connection failure in Sentry.
  *
@@ -46,7 +59,7 @@ function isDeniedPermission(error: unknown): boolean {
  * behind the connection toast and we get no signal at all.
  */
 async function captureLiveKitConnectError(error: unknown, { surface, serverUrl }: LiveKitConnectErrorContext): Promise<void> {
-  if (isDeniedPermission(error)) return
+  if (isDeniedPermission(error) || isCancelledConnection(error)) return
   await captureHandledError(error, { tags: { surface, host: toHost(serverUrl), feature: 'livekit' } })
 }
 
