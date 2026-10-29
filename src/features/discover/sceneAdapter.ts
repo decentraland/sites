@@ -76,7 +76,7 @@ interface FetchSceneAdapterArgs {
 // derives the LiveKit participant identity from the signer, and LiveKit evicts
 // the older participant when two connections share one identity, so the real
 // wallet would kick that same user out of the scene in the Explorer. Full
-// rationale in `docs/domains/discover.md` → "Watcher identity invariant".
+// rationale in `docs/domains/places.md` → "Watcher identity invariant".
 // Returns null on any failure — the caller's job to render an empty state.
 // We never throw to keep the scene detail page resilient.
 async function fetchSceneAdapter(args: FetchSceneAdapterArgs): Promise<SceneAdapterCredentials | null> {
