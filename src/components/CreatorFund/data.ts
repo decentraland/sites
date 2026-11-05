@@ -12,7 +12,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
 import sceneCryocene from '../../images/creator-fund/scene-cryocene.jpg'
 import sceneGenesisPlaza from '../../images/creator-fund/scene-genesis-plaza.jpg'
-import type { CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
+import type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
 
 // Beta Season facts from the Creator Fund Program Rules. Amounts are USD.
 const betaProgram: CreatorFundProgram = {
@@ -56,10 +56,15 @@ const scenes = [
   { name: 'Cozy Farm', image: sceneCozyFarm }
 ]
 
-// Same order as the flyer: Build → Opt in → Get paid.
-const buildToEarnSteps: Required<IconCopy>[] = [
+// Opt in → Build → Get paid. The opt-in step opens with a link that downloads Creator Hub.
+const buildToEarnSteps: BuildStep[] = [
+  {
+    icon: PowerOutlinedIcon,
+    titleKey: 'page.creator_fund.how.opt_in_title',
+    linkKey: 'page.creator_fund.how.opt_in_link',
+    textKey: 'page.creator_fund.how.opt_in_text'
+  },
   { icon: BuildOutlinedIcon, titleKey: 'page.creator_fund.how.build_title', textKey: 'page.creator_fund.how.build_text' },
-  { icon: PowerOutlinedIcon, titleKey: 'page.creator_fund.how.opt_in_title', textKey: 'page.creator_fund.how.opt_in_text' },
   { icon: EmojiEventsOutlinedIcon, titleKey: 'page.creator_fund.how.paid_title', textKey: 'page.creator_fund.how.paid_text' }
 ]
 
@@ -103,6 +108,8 @@ const faqEntries: FaqEntry[] = ['join', 'rewards', 'worlds', 'wallet', 'transfer
 
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
+const CREATOR_HUB_DOWNLOAD_PATH = '/download/creator-hub'
+
 // Program Rules and Program Terms are two separate pages on the docs site
 // (decentraland/docs: creator/creator-fund/program-rules.md and program-terms.md).
 const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
@@ -112,6 +119,7 @@ export {
   CREATOR_FUND_CONTACT_EMAIL,
   CREATOR_FUND_RULES_URL,
   CREATOR_FUND_TERMS_URL,
+  CREATOR_HUB_DOWNLOAD_PATH,
   betaProgram,
   buildToEarnSteps,
   eligibilityCards,

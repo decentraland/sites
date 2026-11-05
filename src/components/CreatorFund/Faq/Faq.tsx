@@ -11,7 +11,7 @@ const Faq = memo(() => {
   const l = useFormatMessage()
 
   return (
-    <CreatorFundSection id="faq">
+    <CreatorFundSection id="faq" spacing="top">
       <FaqInner>
         <DisplayTitle>{l('page.creator_fund.faq.title')}</DisplayTitle>
         <FaqList>

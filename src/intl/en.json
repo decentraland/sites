@@ -103,9 +103,9 @@
         "join": "Join from Creator Hub"
       },
       "hero": {
-        "eyebrow": "Creator Fund · Beta starts Nov 15",
-        "title": "Get paid",
-        "title_highlight": "when people play.",
+        "eyebrow": "Beta starts Nov 15",
+        "title": "Creator Fund",
+        "title_highlight": "Get paid when people play.",
         "subtitle": "Bring players in, keep them playing, get paid in USDC.",
         "pool_amount": "{pool}",
         "pool_text": "Beta Season pool, shared across three cycles.",
@@ -122,11 +122,12 @@
       },
       "how": {
         "title": "Build to earn",
-        "subtitle": "Three steps from your first build to your first payout.",
-        "build_title": "Build",
-        "build_text": "Download Creator Hub and create your experience.",
+        "subtitle": "Three steps to your first payout.",
         "opt_in_title": "Opt in",
-        "opt_in_text": "Opt in to the Fund from Creator Hub and sign the Program Terms.",
+        "opt_in_link": "Download Creator Hub",
+        "opt_in_text": " and opt in to the Creator Fund.",
+        "build_title": "Build",
+        "build_text": "Create and publish your experience.",
         "paid_title": "Get paid",
         "paid_text": "Get a share of {amount} {currency} every cycle, based on how players engage."
       },

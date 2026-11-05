@@ -3,7 +3,14 @@ import { render, screen, within } from '@testing-library/react'
 import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import { connectCards } from '../../Create/data'
-import { CREATOR_FUND_CONTACT_EMAIL, CREATOR_FUND_TERMS_URL, faqEntries, moreWaysToEarnKeys, sectionLinks } from '../data'
+import {
+  CREATOR_FUND_CONTACT_EMAIL,
+  CREATOR_FUND_TERMS_URL,
+  CREATOR_HUB_DOWNLOAD_PATH,
+  faqEntries,
+  moreWaysToEarnKeys,
+  sectionLinks
+} from '../data'
 import { CreatorFundLanding } from './CreatorFundLanding'
 
 jest.mock('decentraland-ui2', () => {
@@ -13,6 +20,7 @@ jest.mock('decentraland-ui2', () => {
     Box,
     dclColors,
     keyframes,
+    AnimatedBackground: () => React.createElement('div', { 'data-testid': 'animated-background' }),
     Logo: (props: Record<string, unknown>) => React.createElement('svg', props),
     useMediaQuery: jest.fn()
   }
@@ -46,9 +54,14 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should render the hero as the page heading', () => {
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'page.creator_fund.hero.title page.creator_fund.hero.title_highlight'
-    )
+    const heading = screen.getByRole('heading', { level: 1 })
+
+    expect(heading).toHaveTextContent('page.creator_fund.hero.title')
+    expect(heading).toHaveTextContent('page.creator_fund.hero.title_highlight')
+  })
+
+  it('should paint every purple band with the decentraland.org animated background', () => {
+    expect(screen.getAllByTestId('animated-background')).toHaveLength(4)
   })
 
   it('should show the season pool in the hero', () => {
@@ -83,14 +96,20 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByText(/^Nov 15\s*–\s*Dec 31$/)).toBeInTheDocument()
   })
 
-  it('should list the steps in flyer order: build, opt in, get paid', () => {
+  it('should list the steps in order: opt in, build, get paid', () => {
     const steps = within(document.getElementById('how') as HTMLElement).getAllByRole('heading', { level: 3 })
 
     expect(steps.map(step => step.textContent)).toEqual([
-      'page.creator_fund.how.build_title',
       'page.creator_fund.how.opt_in_title',
+      'page.creator_fund.how.build_title',
       'page.creator_fund.how.paid_title'
     ])
+  })
+
+  it('should link the opt-in step to the Creator Hub download', () => {
+    const how = document.getElementById('how') as HTMLElement
+
+    expect(within(how).getByRole('link', { name: 'page.creator_fund.how.opt_in_link' })).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
   })
 
   it('should interpolate the cycle allocation into the get-paid step', () => {
@@ -132,6 +151,13 @@ describe('CreatorFundLanding', () => {
 
     expect(schedule.compareDocumentPosition(moreWays) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(schedule.contains(moreWays)).toBe(false)
+  })
+
+  it('should show the builders after the FAQ', () => {
+    const faq = document.getElementById('faq') as HTMLElement
+    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' })
+
+    expect(faq.compareDocumentPosition(builders) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('should show a quote for every builder', () => {

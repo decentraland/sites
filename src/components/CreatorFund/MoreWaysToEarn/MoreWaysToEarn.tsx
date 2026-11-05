@@ -3,21 +3,21 @@ import { memo } from 'react'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import TollOutlinedIcon from '@mui/icons-material/TollOutlined'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useScrollParallax } from '../../../hooks/useScrollParallax'
-import { CreatorFundSection, PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, RubyTile, SectionInner } from '../CreatorFund.styled'
+import { CreatorFundSection, RubyTile, SectionInner } from '../CreatorFund.styled'
 import { moreWaysToEarnKeys } from '../data'
 import { MoreWaysBand, MoreWaysHeader, MoreWaysItem, MoreWaysList, MoreWaysTitle } from './MoreWaysToEarn.styled'
 
 // Other income beyond the Fund, closing out the program details under the schedule.
 const MoreWaysToEarn = memo(() => {
   const l = useFormatMessage()
-  const bandRef = useScrollParallax<HTMLDivElement>(PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED)
 
   return (
     <CreatorFundSection spacing="bottom">
       <SectionInner>
-        <MoreWaysBand ref={bandRef}>
+        <MoreWaysBand>
+          <AnimatedBackground variant="absolute" />
           <MoreWaysHeader>
             <RubyTile>
               <TollOutlinedIcon aria-hidden="true" />

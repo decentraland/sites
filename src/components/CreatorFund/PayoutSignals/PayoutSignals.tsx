@@ -21,7 +21,9 @@ const PayoutSignals = memo(() => {
             {payoutSignals.map(({ icon: Icon, titleKey }) => (
               <li key={titleKey}>
                 <SignalCard>
-                  <Icon aria-hidden="true" />
+                  <RubyTile size="large">
+                    <Icon aria-hidden="true" />
+                  </RubyTile>
                   <SignalTitle>{l(titleKey)}</SignalTitle>
                 </SignalCard>
               </li>

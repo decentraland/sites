@@ -39,9 +39,14 @@ type IconCopy = {
   textKey?: string
 }
 
+type BuildStep = Required<IconCopy> & {
+  // Optional link text rendered before `textKey`, pointing at the Creator Hub download.
+  linkKey?: string
+}
+
 type FaqEntry = {
   questionKey: string
   answerKey: string
 }
 
-export type { CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, ProgramCycle, SectionLink }
+export type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, ProgramCycle, SectionLink }

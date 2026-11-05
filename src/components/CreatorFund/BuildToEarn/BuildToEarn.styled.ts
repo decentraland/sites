@@ -41,4 +41,19 @@ const StepText = styled('p')(({ theme }) => ({
   color: creatorFundColors.text
 }))
 
-export { StepCard, StepNumber, StepText, StepTitle, StepsGrid }
+const StepLink = styled('a')({
+  fontWeight: 600,
+  color: creatorFundColors.white,
+  textDecoration: 'underline',
+  textUnderlineOffset: 4,
+  ['&:hover']: {
+    color: creatorFundColors.linkHover
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${creatorFundColors.white}`,
+    outlineOffset: 2,
+    borderRadius: 2
+  }
+})
+
+export { StepCard, StepLink, StepNumber, StepText, StepTitle, StepsGrid }

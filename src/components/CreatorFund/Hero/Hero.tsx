@@ -56,7 +56,9 @@ const Hero = memo(() => {
           {l('page.creator_fund.hero.eyebrow')}
         </HeroEyebrow>
         <HeroTitle>
-          {l('page.creator_fund.hero.title')} <HeroTitleHighlight>{l('page.creator_fund.hero.title_highlight')}</HeroTitleHighlight>
+          {l('page.creator_fund.hero.title')}
+          <br />
+          <HeroTitleHighlight>{l('page.creator_fund.hero.title_highlight')}</HeroTitleHighlight>
         </HeroTitle>
         <HeroSubtitle>
           <SubtitleLine>{l('page.creator_fund.hero.subtitle')}</SubtitleLine>

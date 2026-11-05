@@ -94,9 +94,9 @@
         "join": "Únete desde Creator Hub"
       },
       "hero": {
-        "eyebrow": "Creator Fund · La Beta empieza el 15 nov",
-        "title": "Cobra",
-        "title_highlight": "cuando la gente juega.",
+        "eyebrow": "La Beta empieza el 15 nov",
+        "title": "Creator Fund",
+        "title_highlight": "Cobra cuando la gente juega.",
         "subtitle": "Atrae jugadores, mantenlos jugando y cobra en USDC.",
         "pool_amount": "{pool}",
         "pool_text": "en el fondo de la Beta Season, repartido en tres ciclos.",
@@ -113,11 +113,12 @@
       },
       "how": {
         "title": "Construye para ganar",
-        "subtitle": "Tres pasos desde tu primera creación hasta tu primer pago.",
-        "build_title": "Construye",
-        "build_text": "Descarga Creator Hub y crea tu experiencia.",
+        "subtitle": "Tres pasos hasta tu primer pago.",
         "opt_in_title": "Inscríbete",
-        "opt_in_text": "Inscríbete en el Fondo desde Creator Hub y firma los Términos del Programa.",
+        "opt_in_link": "Descarga Creator Hub",
+        "opt_in_text": " e inscríbete en el Creator Fund.",
+        "build_title": "Construye",
+        "build_text": "Crea y publica tu experiencia.",
         "paid_title": "Cobra",
         "paid_text": "Recibe una parte de {amount} {currency} cada ciclo, según cómo interactúen los jugadores."
       },

@@ -1,5 +1,4 @@
-import { Box, dclColors, keyframes, styled } from 'decentraland-ui2'
-import patternImage from '../../images/creator-fund/pattern.jpg'
+import { Box, dclColors, styled } from 'decentraland-ui2'
 
 // Palette of the Creator Fund design, on the same DCL tokens decentraland.org uses:
 // white headings, gray5 body copy, primary-red CTAs that darken on hover.
@@ -38,47 +37,16 @@ const labelStyles = {
   textTransform: 'uppercase'
 } as const
 
-// useScrollParallax writes each purple band's scroll offset to this custom property;
-// the band's pattern layer reads it to move at a quarter of the page's pace.
-const PARALLAX_OFFSET_PROPERTY = '--parallax-offset'
-const PARALLAX_SPEED = 0.25
-
-const patternDrift = keyframes({
-  from: { backgroundPosition: `0 var(${PARALLAX_OFFSET_PROPERTY}, 0px)` },
-  to: { backgroundPosition: `640px calc(var(${PARALLAX_OFFSET_PROPERTY}, 0px) - 640px)` }
-})
-
 const rubyGradient = `linear-gradient(135deg, ${creatorFundColors.primary}, ${creatorFundColors.orange})`
 const purpleGradient = `linear-gradient(135deg, ${creatorFundColors.purpleDeep}, ${creatorFundColors.purpleBright})`
 
-// Purple band with the slowly drifting Decentraland pattern behind its content.
-// `patternImage` is a bundled asset URL, never user input.
+// Purple band. Its background is decentraland.org's own <AnimatedBackground variant="absolute" />
+// (the WebGL purple glow with the drifting Decentraland logo pattern used on the homepage), which
+// each band renders as its first child. The canvas sits at z-index -1, so the band isolates it.
 const purpleBandStyles = {
   position: 'relative',
   isolation: 'isolate',
-  overflow: 'hidden',
-  backgroundImage: purpleGradient,
-  ['&::before']: {
-    content: '""',
-    position: 'absolute',
-    inset: '-75%',
-    zIndex: -1,
-    transform: 'rotate(25deg)',
-    pointerEvents: 'none',
-    backgroundImage: `url("${patternImage}")`,
-    backgroundRepeat: 'repeat',
-    backgroundSize: '640px 640px',
-    backgroundPosition: `0 var(${PARALLAX_OFFSET_PROPERTY}, 0px)`,
-    mixBlendMode: 'screen',
-    opacity: 0.14,
-    animation: `${patternDrift} 80s linear infinite`
-  },
-  ['@media (prefers-reduced-motion: reduce)']: {
-    ['&::before']: {
-      animation: 'none',
-      backgroundPosition: 'center'
-    }
-  }
+  overflow: 'hidden'
 } as const
 
 type SectionSpacing = 'both' | 'top' | 'bottom'
@@ -279,8 +247,6 @@ export {
   NAVBAR_DESKTOP_QUERY,
   NAVBAR_HEIGHT,
   NavButtonLink,
-  PARALLAX_OFFSET_PROPERTY,
-  PARALLAX_SPEED,
   PrimaryButtonLink,
   RubyTile,
   SECTION_SCROLL_MARGIN,

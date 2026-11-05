@@ -94,9 +94,9 @@
         "join": "Creator Hub에서 참여"
       },
       "hero": {
-        "eyebrow": "Creator Fund · 베타 11월 15일 시작",
-        "title": "플레이할수록",
-        "title_highlight": "수익이 됩니다.",
+        "eyebrow": "베타 11월 15일 시작",
+        "title": "Creator Fund",
+        "title_highlight": "플레이할수록 수익이 됩니다.",
         "subtitle": "플레이어를 끌어들이고, 계속 플레이하게 하고, USDC로 보상받으세요.",
         "pool_amount": "{pool}",
         "pool_text": "규모의 베타 시즌 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
@@ -113,11 +113,12 @@
       },
       "how": {
         "title": "만들고, 벌다",
-        "subtitle": "첫 제작부터 첫 지급까지, 단 세 단계.",
-        "build_title": "제작",
-        "build_text": "Creator Hub를 다운로드하고 경험을 만드세요.",
+        "subtitle": "첫 지급까지, 단 세 단계.",
         "opt_in_title": "옵트인",
-        "opt_in_text": "Creator Hub에서 펀드에 옵트인하고 프로그램 약관에 서명하세요.",
+        "opt_in_link": "Creator Hub를 다운로드",
+        "opt_in_text": "하고 Creator Fund에 옵트인하세요.",
+        "build_title": "제작",
+        "build_text": "경험을 만들고 게시하세요.",
         "paid_title": "보상 받기",
         "paid_text": "플레이어 참여도에 따라 매 사이클 {amount} {currency}를 나눠 받습니다."
       },

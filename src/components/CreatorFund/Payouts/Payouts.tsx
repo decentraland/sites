@@ -1,7 +1,7 @@
 import { memo } from 'react'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useScrollParallax } from '../../../hooks/useScrollParallax'
-import { CreatorFundSection, DisplayTitle, PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, SectionInner } from '../CreatorFund.styled'
+import { CreatorFundSection, DisplayTitle, SectionInner } from '../CreatorFund.styled'
 import { betaProgram } from '../data'
 import { PayoutLabel, PayoutRow, PayoutTerms, PayoutValue } from './Payouts.styled'
 
@@ -12,7 +12,6 @@ const PAYOUT_ROWS = ['when', 'currency', 'where', 'leaderboard'].map(id => ({
 
 const Payouts = memo(() => {
   const l = useFormatMessage()
-  const bandRef = useScrollParallax<HTMLElement>(PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED)
   const values = {
     days: betaProgram.paymentWindowDays,
     currency: betaProgram.currency,
@@ -21,7 +20,8 @@ const Payouts = memo(() => {
   }
 
   return (
-    <CreatorFundSection id="payouts" band ref={bandRef}>
+    <CreatorFundSection id="payouts" band>
+      <AnimatedBackground variant="absolute" />
       <SectionInner>
         <DisplayTitle>{l('page.creator_fund.rewards.title')}</DisplayTitle>
         <PayoutTerms>

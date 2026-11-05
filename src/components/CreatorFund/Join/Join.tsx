@@ -1,17 +1,17 @@
 import { memo } from 'react'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useScrollParallax } from '../../../hooks/useScrollParallax'
 import avatarsImage from '../../../images/creator-fund/avatars.webp'
-import { PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, PrimaryButtonLink } from '../CreatorFund.styled'
+import { PrimaryButtonLink } from '../CreatorFund.styled'
 import { CREATOR_FUND_TERMS_URL } from '../data'
 import { AvatarsImage, JoinActions, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink } from './Join.styled'
 
 const Join = memo(() => {
   const l = useFormatMessage()
-  const bandRef = useScrollParallax<HTMLElement>(PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED)
 
   return (
-    <JoinSection id="join" band spacing="top" ref={bandRef}>
+    <JoinSection id="join" band spacing="top">
+      <AnimatedBackground variant="absolute" />
       <JoinInner>
         <JoinTitle>{l('page.creator_fund.join.title')}</JoinTitle>
         <JoinSubtitle>

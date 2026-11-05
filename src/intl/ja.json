@@ -94,9 +94,9 @@
         "join": "Creator Hub から参加"
       },
       "hero": {
-        "eyebrow": "Creator Fund · ベータは11月15日スタート",
-        "title": "遊ばれるほど、",
-        "title_highlight": "収益になる。",
+        "eyebrow": "ベータは11月15日スタート",
+        "title": "Creator Fund",
+        "title_highlight": "遊ばれるほど、収益になる。",
         "subtitle": "プレイヤーを呼び込み、遊び続けてもらい、USDCで報酬を受け取ろう。",
         "pool_amount": "{pool}",
         "pool_text": "のベータシーズンプールを、3つのサイクルで分配します。",
@@ -113,11 +113,12 @@
       },
       "how": {
         "title": "つくって稼ぐ",
-        "subtitle": "最初の制作から最初の支払いまで、3つのステップ。",
-        "build_title": "制作",
-        "build_text": "Creator Hubをダウンロードして、体験をつくります。",
+        "subtitle": "最初の支払いまで、3つのステップ。",
         "opt_in_title": "オプトイン",
-        "opt_in_text": "Creator Hubからファンドにオプトインし、プログラム規約に署名します。",
+        "opt_in_link": "Creator Hubをダウンロード",
+        "opt_in_text": "して、Creator Fundにオプトインします。",
+        "build_title": "制作",
+        "build_text": "体験をつくって公開します。",
         "paid_title": "報酬を受け取る",
         "paid_text": "プレイヤーのエンゲージメントに応じて、毎サイクル {amount} {currency} の分配を受け取れます。"
       },

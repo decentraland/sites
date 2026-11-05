@@ -94,9 +94,9 @@
         "join": "在 Creator Hub 中加入"
       },
       "hero": {
-        "eyebrow": "Creator Fund · 测试版 11 月 15 日开始",
-        "title": "玩家在玩，",
-        "title_highlight": "你就有收益。",
+        "eyebrow": "测试版 11 月 15 日开始",
+        "title": "Creator Fund",
+        "title_highlight": "玩家在玩，你就有收益。",
         "subtitle": "吸引玩家、留住玩家，用 USDC 赚取收益。",
         "pool_amount": "{pool}",
         "pool_text": "测试赛季奖池，将在三个周期内分配。",
@@ -113,11 +113,12 @@
       },
       "how": {
         "title": "创作即赚取",
-        "subtitle": "从第一次创作到第一笔收益，只需三步。",
-        "build_title": "创作",
-        "build_text": "下载 Creator Hub，打造你的体验。",
+        "subtitle": "三步拿到你的第一笔收益。",
         "opt_in_title": "选择加入",
-        "opt_in_text": "在 Creator Hub 中选择加入基金，并签署计划条款。",
+        "opt_in_link": "下载 Creator Hub",
+        "opt_in_text": "，并选择加入 Creator Fund。",
+        "build_title": "创作",
+        "build_text": "打造并发布你的体验。",
         "paid_title": "获得收益",
         "paid_text": "每个周期按玩家参与度，分得 {amount} {currency} 中的一份。"
       },
