@@ -1,26 +1,27 @@
 import { render, screen } from '@testing-library/react'
-import { useMediaQuery } from 'decentraland-ui2'
-import { heroData } from '../../components/Create/data'
+import { Env } from '@dcl/ui-env'
+import { getCurrentEnv } from '../../config/env'
 import { CreatorFundPage } from './CreatorFundPage'
 
 jest.mock('decentraland-ui2', () => {
   const { styled, Box, dclColors } = jest.requireActual('../../__test-utils__/styledMock')
-  const Typography = ({ children, ...rest }: { children?: React.ReactNode }) => <h1 {...rest}>{children}</h1>
-  return {
-    styled,
-    Box,
-    Typography,
-    dclColors,
-    useMediaQuery: jest.fn()
-  }
+  return { styled, Box, dclColors }
 })
 
-jest.mock('../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (id: string) => id
+jest.mock('@dcl/ui-env', () => ({
+  Env: { DEVELOPMENT: 'dev', STAGING: 'stg', PRODUCTION: 'prod' }
 }))
 
-jest.mock('../../components/Video', () => ({
-  Video: ({ source, poster }: { source: string; poster: string }) => <video data-testid="video" src={source} poster={poster} />
+jest.mock('../../config/env', () => ({
+  getCurrentEnv: jest.fn()
+}))
+
+jest.mock('../../components/CreatorFund/ComingSoon', () => ({
+  CreatorFundComingSoon: () => <div data-testid="coming-soon" />
+}))
+
+jest.mock('../../components/CreatorFund/CreatorFundLanding', () => ({
+  CreatorFundLanding: () => <div data-testid="landing" />
 }))
 
 describe('CreatorFundPage', () => {
@@ -28,39 +29,34 @@ describe('CreatorFundPage', () => {
     jest.resetAllMocks()
   })
 
-  describe('when rendered on desktop', () => {
+  describe('when served from decentraland.org', () => {
     beforeEach(() => {
-      ;(useMediaQuery as jest.Mock).mockReturnValue(false)
+      ;(getCurrentEnv as jest.Mock).mockReturnValue(Env.PRODUCTION)
       render(<CreatorFundPage />)
     })
 
-    it('should show only the Creator Fund title and the coming-soon line', () => {
-      const heading = screen.getByRole('heading')
-
-      expect(heading).toHaveTextContent('page.creator_fund.title')
-      expect(heading).toHaveTextContent('page.creator_fund.coming_soon')
+    it('should show the coming-soon placeholder', () => {
+      expect(screen.getByTestId('coming-soon')).toBeInTheDocument()
     })
 
-    it('should not render any call to action', () => {
-      expect(screen.queryByRole('link')).not.toBeInTheDocument()
-      expect(screen.queryByRole('button')).not.toBeInTheDocument()
-    })
-
-    it('should play the landscape hero video', () => {
-      expect(screen.getByTestId('video')).toHaveAttribute('src', heroData.videoLandscape.url)
-      expect(screen.getByTestId('video')).toHaveAttribute('poster', heroData.imageLandscape.url)
+    it('should not load the full page', () => {
+      expect(screen.queryByTestId('landing')).not.toBeInTheDocument()
     })
   })
 
-  describe('when rendered on mobile', () => {
+  describe.each([Env.DEVELOPMENT, Env.STAGING])('when served from the %s environment', env => {
     beforeEach(() => {
-      ;(useMediaQuery as jest.Mock).mockReturnValue(true)
+      ;(getCurrentEnv as jest.Mock).mockReturnValue(env)
       render(<CreatorFundPage />)
     })
 
-    it('should play the portrait hero video', () => {
-      expect(screen.getByTestId('video')).toHaveAttribute('src', heroData.videoPortrait.url)
-      expect(screen.getByTestId('video')).toHaveAttribute('poster', heroData.imagePortrait.url)
+    it('should show the full Creator Fund page', async () => {
+      expect(await screen.findByTestId('landing')).toBeInTheDocument()
+    })
+
+    it('should not show the coming-soon placeholder', async () => {
+      await screen.findByTestId('landing')
+      expect(screen.queryByTestId('coming-soon')).not.toBeInTheDocument()
     })
   })
 })
