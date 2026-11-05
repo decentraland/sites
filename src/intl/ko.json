@@ -153,7 +153,7 @@
         "currency_label": "통화",
         "currency": "{network}의 {currency}({standard}).",
         "where_label": "수령 지갑",
-        "where": "NAME 또는 World를 소유한 지갑 또는 별도로 지정한 지급용 지갑.",
+        "where": "NAME 또는 World를 소유한 지갑 또는 직접 설정한 지급용 지갑.",
         "leaderboard_label": "리더보드",
         "leaderboard": "상위 경험과 보상 금액은 공개 리더보드에 표시됩니다."
       },

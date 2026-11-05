@@ -153,7 +153,7 @@
         "currency_label": "Devise",
         "currency": "{currency} ({standard}) sur {network}.",
         "where_label": "Où",
-        "where": "Sur le wallet qui possède votre NAME ou Monde, ou sur un wallet de paiement personnalisé.",
+        "where": "Sur le wallet qui possède votre NAME ou Monde, ou sur un wallet de paiement personnalisé que vous définissez.",
         "leaderboard_label": "Classement",
         "leaderboard": "Les meilleures expériences et leur récompense apparaissent dans le classement public."
       },

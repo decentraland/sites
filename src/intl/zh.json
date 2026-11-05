@@ -153,7 +153,7 @@
         "currency_label": "币种",
         "currency": "{network} 上的 {currency}（{standard}）。",
         "where_label": "接收方式",
-        "where": "拥有你的 NAME 或 World 的钱包，或自定义的收款钱包。",
+        "where": "拥有你的 NAME 或 World 的钱包，或你自行设置的自定义收款钱包。",
         "leaderboard_label": "排行榜",
         "leaderboard": "表现最佳的体验及其奖励将显示在公开排行榜上。"
       },

@@ -162,7 +162,7 @@
         "currency_label": "Currency",
         "currency": "{currency} ({standard}) on {network}.",
         "where_label": "Where",
-        "where": "The wallet that owns your NAME or World, or a custom payout wallet.",
+        "where": "The wallet that owns your NAME or World, or a custom payout wallet you set.",
         "leaderboard_label": "Leaderboard",
         "leaderboard": "Top experiences and their reward show up in the public leaderboard."
       },

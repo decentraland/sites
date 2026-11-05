@@ -153,7 +153,7 @@
         "currency_label": "通貨",
         "currency": "{network}上の{currency}（{standard}）。",
         "where_label": "受取先",
-        "where": "NAMEまたはWorldを所有するウォレット、または指定の支払い用ウォレット。",
+        "where": "NAMEまたはWorldを所有するウォレット、またはご自身で設定した支払い用ウォレット。",
         "leaderboard_label": "リーダーボード",
         "leaderboard": "上位の体験と報酬額は、公開リーダーボードに掲載されます。"
       },

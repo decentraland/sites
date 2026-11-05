@@ -153,7 +153,7 @@
         "currency_label": "Moneda",
         "currency": "{currency} ({standard}) en {network}.",
         "where_label": "Dónde",
-        "where": "En la wallet propietaria de tu NAME o Mundo, o en una wallet de pago personalizada.",
+        "where": "En la wallet propietaria de tu NAME o Mundo, o en una wallet de pago personalizada que tú configures.",
         "leaderboard_label": "Clasificación",
         "leaderboard": "Las mejores experiencias y su recompensa aparecen en la clasificación pública."
       },
