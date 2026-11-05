@@ -237,7 +237,7 @@ const App = () => {
               {/* route-manifest: sitemap */}
               <Route path="/create" element={<CreatePage />} />
               {/* route-manifest: sitemap */}
-              <Route path="/creatorfund" element={<CreatorFundPage />} />
+              <Route path="/creator-fund" element={<CreatorFundPage />} />
               {/* route-manifest: sitemap */}
               <Route path="/download/creator-hub" element={<CreatorHubDownloadPage />} />
               <Route path="/download/creator-hub-success" element={<CreatorHubDownloadSuccessPage />} />
