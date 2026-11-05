@@ -103,16 +103,15 @@
         "join": "Join from Creator Hub"
       },
       "hero": {
-        "eyebrow": "Beta starts Nov 15",
-        "title": "Creator Fund:",
-        "title_highlight": "Earn in Decentraland.",
-        "subtitle": "Rewards for experiences that bring and retain real players.",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "pool shared across three cycles.",
-        "fact_pool": "In Beta Season rewards",
-        "fact_cycle": "Shared each cycle",
-        "fact_start_value": "Nov 15",
-        "fact_start": "Beta Season starts"
+        "eyebrow": "Creator Fund · Beta starts Nov 15",
+        "title": "Get paid",
+        "title_highlight": "when people play.",
+        "subtitle": "Bring players in, keep them playing, get paid in USDC.",
+        "pool_amount": "{pool}",
+        "pool_text": "Beta Season pool, shared across three cycles.",
+        "fact_pool": "Beta Season pool",
+        "fact_cycle": "Per cycle",
+        "fact_season": "Beta Season"
       },
       "why": {
         "title": "Decentraland",
@@ -122,26 +121,26 @@
         "scene_alt": "{name} scene in Decentraland"
       },
       "how": {
-        "title": "Build to Earn",
-        "subtitle": "The Creator Fund rewards experiences that attract and keep real players.",
-        "join_title": "Join",
-        "join_text": "Download Creator Hub and Opt In to the program.",
+        "title": "Build to earn",
+        "subtitle": "Three steps from your first build to your first payout.",
         "build_title": "Build",
-        "build_text": "Create experiences that attract and retain real players.",
-        "earn_title": "Earn",
-        "earn_text": "{amount} {currency} split every cycle across experiences based on performance."
+        "build_text": "Download Creator Hub and create your experience.",
+        "opt_in_title": "Opt in",
+        "opt_in_text": "Opt in to the Fund from Creator Hub and sign the Program Terms.",
+        "paid_title": "Get paid",
+        "paid_text": "Get a share of {amount} {currency} every cycle, based on how players engage."
       },
       "measure": {
-        "title": "What Payouts Reward",
-        "subtitle": "Each cycle we reward experiences based on their proportional contribution to the platform:",
-        "new_players": "New Decentraland players",
-        "playtime": "Active playtime",
-        "retention": "Player Retention"
+        "title": "What we reward",
+        "subtitle": "Each cycle, the pool is split by how much each experience contributes:",
+        "new_players": "Players you bring to Decentraland",
+        "playtime": "Time players spend in your experience",
+        "retention": "Players who come back"
       },
       "real": {
         "title": "Real players. Real play.",
-        "bots": "Experiences are reviewed for bots and artificial activity. Botting and manipulation may lead to disregarded activity, withheld rewards or program exclusion.",
-        "apps": "Only players on Decentraland’s official desktop or mobile apps count. Players must follow Terms of Service and be 18+ to be counted."
+        "bots": "We review every experience for bots and fake activity. Botting can mean lost activity, withheld payouts or removal from the Fund.",
+        "apps": "Only players 18+ on Decentraland’s official desktop and mobile apps count, and they must follow the Terms of Use."
       },
       "eligibility": {
         "title": "Eligibility",
@@ -150,7 +149,7 @@
         "you_owner": "Own the NAME or World where your experience is deployed.",
         "you_sign": "Sign the Program Terms with the owning wallet.",
         "you_terms": "Meet the Program Terms’ eligibility requirements.",
-        "scene_title": "Your Scene or World",
+        "scene_title": "Your scene or World",
         "scene_policy": "Follows Decentraland Terms of Use and Content Policy throughout the cycle.",
         "scene_content": "Has no gambling or other 18+ restricted content.",
         "scene_removed": "Stops counting if it is removed, made private or transferred."
@@ -158,33 +157,35 @@
       "rewards": {
         "title": "Payouts",
         "when_label": "When",
-        "when": "Within {days} days after each Cycle ends.",
+        "when": "Within {days} days after each cycle ends. Each cycle’s payment date is in the schedule below.",
         "currency_label": "Currency",
         "currency": "{currency} ({standard}) on {network}.",
         "where_label": "Where",
         "where": "The wallet that owns your NAME or World, or a custom payout wallet you set.",
         "leaderboard_label": "Leaderboard",
-        "leaderboard": "Top experiences and their reward show up in the public leaderboard."
+        "leaderboard": "The top experiences and their payouts appear on a public leaderboard."
       },
       "builders": {
         "title": "Meet Decentraland builders",
         "subtitle": "Artists, studios and game makers already building in Decentraland.",
-        "role": "Decentraland Builder",
+        "role": "Decentraland builder",
         "previous": "Previous",
         "next": "Next",
         "go_to_slide": "Go to slide {number}",
-        "earn_more_title": "Earn More.",
-        "earn_more_text": "Sell Wearables and Emotes, keep 97.5% of each sale.",
-        "earn_more_soon": "Scene purchases coming soon."
+        "more_title": "More ways to earn",
+        "more_wearables": "Sell Wearables and Emotes and keep 97.5% of each sale",
+        "more_funding": "Apply for Creator Success funding and grants",
+        "more_contests": "Win prizes in Buildathons, Game Jams and seasonal contests",
+        "more_purchases": "In-game creator purchases arriving Q1 2027"
       },
       "dates": {
-        "title": "Beta Schedule",
+        "title": "Beta schedule",
         "cycle_name": "Cycle {number}",
-        "launch": "Program launch. Opt-in opens in Creator Hub",
-        "cycle_row": "{name} · USD {amount} · Payment by {date}"
+        "launch": "Fund launch. Opt-in opens in Creator Hub.",
+        "cycle_row": "{name} · {amount} USDC · Payment by {date}"
       },
       "join": {
-        "title": "Creator Fund Starts November 15",
+        "title": "Creator Fund starts November 15",
         "subtitle": "Start building from day one.",
         "see_terms": "See Terms",
         "avatars_alt": "Decentraland community avatars"
@@ -193,20 +194,20 @@
         "title": "FAQ",
         "join_question": "How do I join?",
         "join_answer": "Opt-in opens in Creator Hub on November 11. You must be at least 18 and own the NAME or World where your experience is deployed. Sign the Program Terms with the owning wallet; one opt-in covers one NAME or World.",
-        "rewards_question": "How are rewards decided?",
-        "rewards_answer": "Each cycle's allocation is shared among qualifying experiences based on active playtime, player retention and new Decentraland players. Creator Hub metrics are informational; final rewards are calculated after review and further filtering, so the figures used may differ from your dashboard.",
+        "rewards_question": "How are payouts calculated?",
+        "rewards_answer": "Each cycle’s pool is split among eligible experiences based on time played, returning players and new players. Creator Hub numbers are a preview: final payouts are calculated after review, so they may differ from your dashboard.",
         "worlds_question": "Do Worlds count?",
         "worlds_answer": "Yes. Scenes in Genesis City and public Worlds both count.",
         "wallet_question": "Can I use a custom payout wallet?",
-        "wallet_answer": "Yes. Rewards can be paid to the wallet that owns your NAME or World, or a custom payout wallet.",
+        "wallet_answer": "Yes. Payouts can go to the wallet that owns your NAME or World, or a custom payout wallet you set.",
         "transfer_question": "What if I transfer my NAME or World during a cycle?",
-        "transfer_answer": "An experience stops counting from the moment it is transferred. The Program Terms govern eligibility and rewards; a transfer does not automatically pass a reward to the new owner.",
+        "transfer_answer": "An experience stops counting from the moment it is transferred. The Program Terms govern eligibility and payouts, and a transfer doesn’t pass a payout to the new owner.",
         "runs_question": "Who runs the Creator Fund?",
         "runs_answer": "It's a joint venture between Regenesis Labs and the Decentraland Foundation.",
         "after_question": "What happens after the Beta Season?",
         "after_answer": "Season 1 is planned for January–March 2027. Dates and updates will be confirmed December 28.",
         "grant_question": "Is this a grant?",
-        "grant_answer": "No. Grants support projects before they launch. The Creator Fund rewards scenes that are already live and growing on Decentraland.",
+        "grant_answer": "No. Grants support projects before they launch. The Creator Fund pays experiences that are already live and growing on Decentraland.",
         "contact_prompt": "Questions or need support? Email us at"
       }
     },

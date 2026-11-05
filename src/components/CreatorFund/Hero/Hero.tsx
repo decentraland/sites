@@ -3,9 +3,10 @@ import { memo } from 'react'
 import CheckIcon from '@mui/icons-material/Check'
 import { useMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useLocale } from '../../../intl/LocaleContext'
 import { heroData } from '../../Create/data'
 import { Video } from '../../Video'
-import { formatUsd } from '../CreatorFund.helpers'
+import { formatDateRange, formatUsd } from '../CreatorFund.helpers'
 import { PrimaryButtonLink, RubyTile } from '../CreatorFund.styled'
 import { betaProgram } from '../data'
 import {
@@ -28,6 +29,7 @@ import {
 
 const Hero = memo(() => {
   const l = useFormatMessage()
+  const { locale } = useLocale()
   // Same footage as the /create hero, so the two creator pages read as one.
   const isMobile = useMediaQuery('(max-width: 767px)')
   const video = isMobile ? heroData.videoPortrait : heroData.videoLandscape
@@ -36,7 +38,10 @@ const Hero = memo(() => {
   const facts = [
     { value: formatUsd(betaProgram.seasonPoolUsd), label: l('page.creator_fund.hero.fact_pool') },
     { value: formatUsd(betaProgram.cycles[0].allocationUsd), label: l('page.creator_fund.hero.fact_cycle') },
-    { value: l('page.creator_fund.hero.fact_start_value'), label: l('page.creator_fund.hero.fact_start') }
+    {
+      value: formatDateRange(locale, betaProgram.cycles[0].start, betaProgram.cycles[betaProgram.cycles.length - 1].end),
+      label: l('page.creator_fund.hero.fact_season')
+    }
   ]
 
   return (
@@ -56,9 +61,7 @@ const Hero = memo(() => {
         <HeroSubtitle>
           <SubtitleLine>{l('page.creator_fund.hero.subtitle')}</SubtitleLine>
           <SubtitleLine>
-            <strong>
-              {l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd), currency: betaProgram.currency })}
-            </strong>{' '}
+            <strong>{l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd) })}</strong>{' '}
             {l('page.creator_fund.hero.pool_text')}
           </SubtitleLine>
         </HeroSubtitle>

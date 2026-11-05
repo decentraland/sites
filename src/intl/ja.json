@@ -94,16 +94,15 @@
         "join": "Creator Hub から参加"
       },
       "hero": {
-        "eyebrow": "ベータは11月15日スタート",
-        "title": "Creator Fund：",
-        "title_highlight": "Decentralandで稼ごう。",
-        "subtitle": "本物のプレイヤーを呼び込み、定着させる体験に報酬を。",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "のプールを3つのサイクルで分配します。",
-        "fact_pool": "ベータシーズンの報酬総額",
-        "fact_cycle": "各サイクルの分配額",
-        "fact_start_value": "11月15日",
-        "fact_start": "ベータシーズン開始"
+        "eyebrow": "Creator Fund · ベータは11月15日スタート",
+        "title": "遊ばれるほど、",
+        "title_highlight": "収益になる。",
+        "subtitle": "プレイヤーを呼び込み、遊び続けてもらい、USDCで報酬を受け取ろう。",
+        "pool_amount": "{pool}",
+        "pool_text": "のベータシーズンプールを、3つのサイクルで分配します。",
+        "fact_pool": "ベータシーズンのプール",
+        "fact_cycle": "サイクルごと",
+        "fact_season": "ベータシーズン"
       },
       "why": {
         "title": "Decentraland",
@@ -114,25 +113,25 @@
       },
       "how": {
         "title": "つくって稼ぐ",
-        "subtitle": "Creator Fund は、本物のプレイヤーを引きつけ、定着させる体験に報酬を贈ります。",
-        "join_title": "参加",
-        "join_text": "Creator Hub をダウンロードして、プログラムにオプトインします。",
+        "subtitle": "最初の制作から最初の支払いまで、3つのステップ。",
         "build_title": "制作",
-        "build_text": "本物のプレイヤーを引きつけ、定着させる体験をつくります。",
-        "earn_title": "獲得",
-        "earn_text": "毎サイクル {amount} {currency} を、パフォーマンスに応じて各体験に分配します。"
+        "build_text": "Creator Hubをダウンロードして、体験をつくります。",
+        "opt_in_title": "オプトイン",
+        "opt_in_text": "Creator Hubからファンドにオプトインし、プログラム規約に署名します。",
+        "paid_title": "報酬を受け取る",
+        "paid_text": "プレイヤーのエンゲージメントに応じて、毎サイクル {amount} {currency} の分配を受け取れます。"
       },
       "measure": {
         "title": "報酬の評価対象",
-        "subtitle": "各サイクルでは、プラットフォームへの貢献度に応じて体験に報酬を分配します。",
-        "new_players": "Decentralandの新規プレイヤー",
-        "playtime": "アクティブなプレイ時間",
-        "retention": "プレイヤーの定着率"
+        "subtitle": "各サイクルのプールは、各体験の貢献度に応じて分配されます。",
+        "new_players": "Decentralandに呼び込んだプレイヤー",
+        "playtime": "体験で過ごされたプレイ時間",
+        "retention": "再訪してくれるプレイヤー"
       },
       "real": {
         "title": "本物のプレイヤー。本物のプレイ。",
-        "bots": "体験はボットや不自然なアクティビティがないか審査されます。ボット利用や不正操作は、アクティビティの無効化、報酬の保留、プログラムからの除外につながる場合があります。",
-        "apps": "Decentralandの公式デスクトップ版またはモバイル版アプリのプレイヤーのみが対象です。利用規約を遵守し、18歳以上のプレイヤーのみカウントされます。"
+        "bots": "すべての体験をボットや不正なアクティビティがないか審査します。ボット利用は、アクティビティの無効化、支払いの保留、ファンドからの除外につながる場合があります。",
+        "apps": "Decentralandの公式デスクトップ版・モバイル版アプリで遊ぶ18歳以上のプレイヤーのみが対象で、利用規約の遵守が必要です。"
       },
       "eligibility": {
         "title": "参加資格",
@@ -149,13 +148,13 @@
       "rewards": {
         "title": "支払い",
         "when_label": "時期",
-        "when": "各サイクル終了後{days}日以内。",
+        "when": "各サイクル終了後{days}日以内。各サイクルの支払い日は下のスケジュールをご覧ください。",
         "currency_label": "通貨",
         "currency": "{network}上の{currency}（{standard}）。",
         "where_label": "受取先",
         "where": "NAMEまたはWorldを所有するウォレット、またはご自身で設定した支払い用ウォレット。",
         "leaderboard_label": "リーダーボード",
-        "leaderboard": "上位の体験と報酬額は、公開リーダーボードに掲載されます。"
+        "leaderboard": "上位の体験と支払い額は、公開リーダーボードに掲載されます。"
       },
       "builders": {
         "title": "Decentralandのビルダーに会おう",
@@ -164,15 +163,17 @@
         "previous": "前へ",
         "next": "次へ",
         "go_to_slide": "スライド{number}へ移動",
-        "earn_more_title": "もっと稼ぐ。",
-        "earn_more_text": "WearablesとEmotesを販売して、売上の97.5%を受け取れます。",
-        "earn_more_soon": "シーンの販売は近日公開予定。"
+        "more_title": "もっと稼ぐ方法",
+        "more_wearables": "WearablesとEmotesを販売して、売上の97.5%を受け取れる",
+        "more_funding": "Creator Successの資金援助や助成金に応募できる",
+        "more_contests": "Buildathons、Game Jams、シーズンコンテストで賞品を獲得できる",
+        "more_purchases": "ゲーム内でのクリエイター向け購入機能をQ1 2027に提供予定"
       },
       "dates": {
         "title": "ベータスケジュール",
         "cycle_name": "サイクル{number}",
-        "launch": "プログラム開始。Creator Hubでオプトイン受付開始",
-        "cycle_row": "{name} · USD {amount} · 支払い期限 {date}"
+        "launch": "ファンド開始。Creator Hubでオプトイン受付開始。",
+        "cycle_row": "{name} · {amount} USDC · 支払い期限 {date}"
       },
       "join": {
         "title": "Creator Fund は11月15日スタート",
@@ -184,20 +185,20 @@
         "title": "FAQ",
         "join_question": "参加方法は？",
         "join_answer": "オプトインは11月11日にCreator Hubで開始します。18歳以上で、体験をデプロイしているNAMEまたはWorldを所有している必要があります。所有ウォレットでプログラム規約に署名してください。1回のオプトインで対象となるのは1つのNAMEまたはWorldです。",
-        "rewards_question": "報酬はどのように決まりますか？",
-        "rewards_answer": "各サイクルの配分額は、アクティブなプレイ時間、プレイヤーの定着率、Decentralandの新規プレイヤー数に基づいて、対象となる体験で分け合います。Creator Hubの指標は参考情報です。最終的な報酬は審査とさらなるフィルタリングの後に算出されるため、使用される数値がダッシュボードと異なる場合があります。",
+        "rewards_question": "支払いはどのように計算されますか？",
+        "rewards_answer": "各サイクルのプールは、プレイ時間、再訪プレイヤー、新規プレイヤーに基づいて、対象となる体験で分配されます。Creator Hubの数値はプレビューです。最終的な支払い額は審査後に算出されるため、ダッシュボードと異なる場合があります。",
         "worlds_question": "Worldsも対象ですか？",
         "worlds_answer": "はい。Genesis Cityのシーンも公開Worldsも対象です。",
         "wallet_question": "支払い用ウォレットを指定できますか？",
-        "wallet_answer": "はい。報酬は、NAMEまたはWorldを所有するウォレット、または指定の支払い用ウォレットに支払われます。",
+        "wallet_answer": "はい。支払いは、NAMEまたはWorldを所有するウォレット、またはご自身で設定した支払い用ウォレットに送れます。",
         "transfer_question": "サイクル中にNAMEまたはWorldを譲渡した場合は？",
-        "transfer_answer": "体験は譲渡された時点から対象外となります。参加資格と報酬はプログラム規約に従い、譲渡によって報酬が自動的に新しい所有者へ移ることはありません。",
+        "transfer_answer": "体験は、譲渡された時点から対象外となります。参加資格と支払いはプログラム規約に従い、譲渡によって支払いが新しい所有者へ移ることはありません。",
         "runs_question": "Creator Fundは誰が運営していますか？",
         "runs_answer": "Regenesis LabsとDecentraland Foundationの共同事業です。",
         "after_question": "ベータシーズンの後は？",
         "after_answer": "シーズン1は2027年1月から3月を予定しています。日程と最新情報は12月28日に確定します。",
         "grant_question": "これは助成金ですか？",
-        "grant_answer": "いいえ。助成金はローンチ前のプロジェクトを支援するものです。Creator Fundは、Decentralandですでに公開され、成長しているシーンに報酬を贈ります。",
+        "grant_answer": "いいえ。助成金はローンチ前のプロジェクトを支援するものです。Creator Fundが支払うのは、Decentralandですでに公開され、成長している体験です。",
         "contact_prompt": "ご質問やサポートについては、こちらまでご連絡ください："
       }
     },

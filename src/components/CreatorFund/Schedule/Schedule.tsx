@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useLocale } from '../../../intl/LocaleContext'
-import { daysBetween, formatAmount, formatDateRange, formatShortDate } from '../CreatorFund.helpers'
+import { daysBetween, formatDateRange, formatShortDate, formatUsd } from '../CreatorFund.helpers'
 import { CreatorFundSection, SectionInner } from '../CreatorFund.styled'
 import { betaProgram } from '../data'
 import {
@@ -39,7 +39,7 @@ const Schedule = memo(() => {
       date: formatDateRange(locale, cycle.start, cycle.end),
       text: l('page.creator_fund.dates.cycle_row', {
         name: cycleName(cycle.number),
-        amount: formatAmount(cycle.allocationUsd),
+        amount: formatUsd(cycle.allocationUsd),
         // Payments that land in the next year say so.
         date: formatShortDate(locale, cycle.paymentBy, new Date(cycle.paymentBy).getUTCFullYear() !== timelineYear)
       }),

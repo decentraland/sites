@@ -10,7 +10,7 @@ const Eligibility = memo(() => {
   const l = useFormatMessage()
 
   return (
-    <CreatorFundSection id="eligibility" spacing="bottom">
+    <CreatorFundSection id="eligibility" spacing="top">
       <SectionInner>
         <EligibilityTitle>{l('page.creator_fund.eligibility.title')}</EligibilityTitle>
         <EligibilityGrid>

@@ -1,5 +1,7 @@
 import { memo, useCallback, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
@@ -10,6 +12,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useScrollParallax } from '../../../hooks/useScrollParallax'
 import { type ConnectCardData, connectCards } from '../../Create/data'
 import { CreatorFundSection, DisplayTitle, PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, RubyTile, SectionInner } from '../CreatorFund.styled'
+import { moreWaysToEarnKeys } from '../data'
 import {
   ArrowButton,
   AuthorAvatar,
@@ -24,9 +27,11 @@ import {
   DesktopArrows,
   Dot,
   Dots,
-  EarnMoreBand,
-  EarnMoreSoon,
-  EarnMoreText,
+  MoreWaysBand,
+  MoreWaysHeader,
+  MoreWaysItem,
+  MoreWaysList,
+  MoreWaysTitle,
   Quote,
   QuoteAuthor,
   QuoteCard
@@ -116,15 +121,22 @@ const Builders = memo(() => {
             <ChevronRightIcon />
           </ArrowButton>
         </CarouselControls>
-        <EarnMoreBand ref={bandRef}>
-          <RubyTile>
-            <TollOutlinedIcon aria-hidden="true" />
-          </RubyTile>
-          <EarnMoreText>
-            <strong>{l('page.creator_fund.builders.earn_more_title')}</strong> {l('page.creator_fund.builders.earn_more_text')}{' '}
-            <EarnMoreSoon>{l('page.creator_fund.builders.earn_more_soon')}</EarnMoreSoon>
-          </EarnMoreText>
-        </EarnMoreBand>
+        <MoreWaysBand ref={bandRef}>
+          <MoreWaysHeader>
+            <RubyTile>
+              <TollOutlinedIcon aria-hidden="true" />
+            </RubyTile>
+            <MoreWaysTitle>{l('page.creator_fund.builders.more_title')}</MoreWaysTitle>
+          </MoreWaysHeader>
+          <MoreWaysList>
+            {moreWaysToEarnKeys.map(key => (
+              <MoreWaysItem key={key}>
+                <ArrowForwardIcon aria-hidden="true" />
+                {l(key)}
+              </MoreWaysItem>
+            ))}
+          </MoreWaysList>
+        </MoreWaysBand>
       </SectionInner>
     </CreatorFundSection>
   )

@@ -94,16 +94,15 @@
         "join": "Creator Hub에서 참여"
       },
       "hero": {
-        "eyebrow": "베타 11월 15일 시작",
-        "title": "Creator Fund:",
-        "title_highlight": "Decentraland에서 수익을 만드세요.",
-        "subtitle": "진짜 플레이어를 끌어들이고 머물게 하는 경험에 보상합니다.",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "규모의 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
-        "fact_pool": "베타 시즌 보상 총액",
-        "fact_cycle": "사이클당 지급액",
-        "fact_start_value": "11월 15일",
-        "fact_start": "베타 시즌 시작"
+        "eyebrow": "Creator Fund · 베타 11월 15일 시작",
+        "title": "플레이할수록",
+        "title_highlight": "수익이 됩니다.",
+        "subtitle": "플레이어를 끌어들이고, 계속 플레이하게 하고, USDC로 보상받으세요.",
+        "pool_amount": "{pool}",
+        "pool_text": "규모의 베타 시즌 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
+        "fact_pool": "베타 시즌 풀",
+        "fact_cycle": "사이클당",
+        "fact_season": "베타 시즌"
       },
       "why": {
         "title": "Decentraland",
@@ -114,25 +113,25 @@
       },
       "how": {
         "title": "만들고, 벌다",
-        "subtitle": "Creator Fund는 진짜 플레이어를 끌어들이고 머물게 하는 경험에 보상합니다.",
-        "join_title": "참여",
-        "join_text": "Creator Hub를 다운로드하고 프로그램에 옵트인하세요.",
+        "subtitle": "첫 제작부터 첫 지급까지, 단 세 단계.",
         "build_title": "제작",
-        "build_text": "진짜 플레이어를 끌어들이고 유지하는 경험을 만드세요.",
-        "earn_title": "수익",
-        "earn_text": "매 사이클 {amount} {currency}를 성과에 따라 각 경험에 나눠 지급합니다."
+        "build_text": "Creator Hub를 다운로드하고 경험을 만드세요.",
+        "opt_in_title": "옵트인",
+        "opt_in_text": "Creator Hub에서 펀드에 옵트인하고 프로그램 약관에 서명하세요.",
+        "paid_title": "보상 받기",
+        "paid_text": "플레이어 참여도에 따라 매 사이클 {amount} {currency}를 나눠 받습니다."
       },
       "measure": {
         "title": "보상 평가 기준",
-        "subtitle": "매 사이클마다 플랫폼에 대한 기여도에 비례해 경험에 보상합니다.",
-        "new_players": "Decentraland 신규 플레이어",
-        "playtime": "활성 플레이 시간",
-        "retention": "플레이어 리텐션"
+        "subtitle": "매 사이클마다 각 경험의 기여도에 따라 풀을 나눕니다.",
+        "new_players": "Decentraland로 데려온 플레이어",
+        "playtime": "플레이어가 내 경험에서 보낸 시간",
+        "retention": "다시 찾아오는 플레이어"
       },
       "real": {
         "title": "진짜 플레이어. 진짜 플레이.",
-        "bots": "경험은 봇과 인위적인 활동 여부를 검토받습니다. 봇 사용 및 조작은 활동 무효 처리, 보상 보류 또는 프로그램 제외로 이어질 수 있습니다.",
-        "apps": "Decentraland 공식 데스크톱 또는 모바일 앱의 플레이어만 집계됩니다. 이용약관을 준수하는 만 18세 이상 플레이어만 집계됩니다."
+        "bots": "모든 경험은 봇과 가짜 활동 여부를 검토받습니다. 봇 사용은 활동 무효 처리, 지급 보류 또는 펀드 제외로 이어질 수 있습니다.",
+        "apps": "Decentraland 공식 데스크톱 및 모바일 앱의 만 18세 이상 플레이어만 집계되며, 이용약관을 준수해야 합니다."
       },
       "eligibility": {
         "title": "참여 자격",
@@ -149,13 +148,13 @@
       "rewards": {
         "title": "지급",
         "when_label": "시기",
-        "when": "각 사이클 종료 후 {days}일 이내.",
+        "when": "각 사이클 종료 후 {days}일 이내. 사이클별 지급일은 아래 일정에서 확인하세요.",
         "currency_label": "통화",
         "currency": "{network}의 {currency}({standard}).",
         "where_label": "수령 지갑",
         "where": "NAME 또는 World를 소유한 지갑 또는 직접 설정한 지급용 지갑.",
         "leaderboard_label": "리더보드",
-        "leaderboard": "상위 경험과 보상 금액은 공개 리더보드에 표시됩니다."
+        "leaderboard": "상위 경험과 지급 금액은 공개 리더보드에 표시됩니다."
       },
       "builders": {
         "title": "Decentraland 빌더를 만나보세요",
@@ -164,15 +163,17 @@
         "previous": "이전",
         "next": "다음",
         "go_to_slide": "슬라이드 {number}(으)로 이동",
-        "earn_more_title": "더 많이 벌어보세요.",
-        "earn_more_text": "Wearables와 Emotes를 판매하고 판매액의 97.5%를 가져가세요.",
-        "earn_more_soon": "씬 판매는 곧 제공됩니다."
+        "more_title": "더 벌 수 있는 방법",
+        "more_wearables": "Wearables와 Emotes를 판매하고 판매액의 97.5%를 가져가세요",
+        "more_funding": "Creator Success 지원금과 그랜트에 신청하세요",
+        "more_contests": "Buildathons, Game Jams, 시즌 콘테스트에서 상품을 받으세요",
+        "more_purchases": "게임 내 크리에이터 구매 기능이 Q1 2027에 출시됩니다"
       },
       "dates": {
         "title": "베타 일정",
         "cycle_name": "사이클 {number}",
-        "launch": "프로그램 시작. Creator Hub에서 옵트인 오픈",
-        "cycle_row": "{name} · USD {amount} · 지급 기한 {date}"
+        "launch": "펀드 시작. Creator Hub에서 옵트인 오픈.",
+        "cycle_row": "{name} · {amount} USDC · 지급 기한 {date}"
       },
       "join": {
         "title": "Creator Fund 11월 15일 시작",
@@ -184,20 +185,20 @@
         "title": "FAQ",
         "join_question": "어떻게 참여하나요?",
         "join_answer": "옵트인은 11월 11일 Creator Hub에서 열립니다. 만 18세 이상이며 경험이 배포된 NAME 또는 World를 소유해야 합니다. 소유 지갑으로 프로그램 약관에 서명하세요. 한 번의 옵트인은 하나의 NAME 또는 World에 적용됩니다.",
-        "rewards_question": "보상은 어떻게 결정되나요?",
-        "rewards_answer": "각 사이클의 배정액은 활성 플레이 시간, 플레이어 리텐션, Decentraland 신규 플레이어 수를 기준으로 자격을 갖춘 경험들에 나눠 지급됩니다. Creator Hub 지표는 참고용이며, 최종 보상은 검토와 추가 필터링을 거쳐 계산되므로 사용되는 수치가 대시보드와 다를 수 있습니다.",
+        "rewards_question": "지급액은 어떻게 계산되나요?",
+        "rewards_answer": "각 사이클의 풀은 플레이 시간, 재방문 플레이어, 신규 플레이어를 기준으로 자격을 갖춘 경험들에 나눠 지급됩니다. Creator Hub 수치는 미리보기이며, 최종 지급액은 검토 후 계산되므로 대시보드와 다를 수 있습니다.",
         "worlds_question": "Worlds도 포함되나요?",
         "worlds_answer": "네. Genesis City의 씬과 공개 Worlds 모두 포함됩니다.",
         "wallet_question": "별도의 지급용 지갑을 사용할 수 있나요?",
-        "wallet_answer": "네. 보상은 NAME 또는 World를 소유한 지갑이나 별도로 지정한 지급용 지갑으로 지급할 수 있습니다.",
+        "wallet_answer": "네. 지급은 NAME 또는 World를 소유한 지갑이나 직접 설정한 지급용 지갑으로 받을 수 있습니다.",
         "transfer_question": "사이클 도중 NAME 또는 World를 이전하면 어떻게 되나요?",
-        "transfer_answer": "경험은 이전된 시점부터 집계에서 제외됩니다. 참여 자격과 보상은 프로그램 약관에 따르며, 이전한다고 해서 보상이 새 소유자에게 자동으로 넘어가지는 않습니다.",
+        "transfer_answer": "경험은 이전된 시점부터 집계에서 제외됩니다. 참여 자격과 지급은 프로그램 약관에 따르며, 이전한다고 해서 지급 권리가 새 소유자에게 넘어가지는 않습니다.",
         "runs_question": "Creator Fund는 누가 운영하나요?",
         "runs_answer": "Regenesis Labs와 Decentraland Foundation의 합작 사업입니다.",
         "after_question": "베타 시즌 이후에는 어떻게 되나요?",
         "after_answer": "시즌 1은 2027년 1월부터 3월까지 진행될 예정입니다. 일정과 소식은 12월 28일에 확정됩니다.",
         "grant_question": "지원금(그랜트)인가요?",
-        "grant_answer": "아니요. 그랜트는 출시 전 프로젝트를 지원합니다. Creator Fund는 이미 Decentraland에서 운영 중이며 성장하는 씬에 보상합니다.",
+        "grant_answer": "아니요. 그랜트는 출시 전 프로젝트를 지원합니다. Creator Fund는 이미 Decentraland에서 운영 중이며 성장하는 경험에 보상합니다.",
         "contact_prompt": "문의 사항이나 지원이 필요하시면 다음 주소로 연락해 주세요:"
       }
     },

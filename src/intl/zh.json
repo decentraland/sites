@@ -94,16 +94,15 @@
         "join": "在 Creator Hub 中加入"
       },
       "hero": {
-        "eyebrow": "测试版 11 月 15 日开始",
-        "title": "Creator Fund：",
-        "title_highlight": "在 Decentraland 赚取收益。",
-        "subtitle": "奖励那些能吸引并留住真实玩家的体验。",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "奖池将在三个周期内分配。",
-        "fact_pool": "测试赛季奖励总额",
-        "fact_cycle": "每个周期分配",
-        "fact_start_value": "11 月 15 日",
-        "fact_start": "测试赛季开始"
+        "eyebrow": "Creator Fund · 测试版 11 月 15 日开始",
+        "title": "玩家在玩，",
+        "title_highlight": "你就有收益。",
+        "subtitle": "吸引玩家、留住玩家，用 USDC 赚取收益。",
+        "pool_amount": "{pool}",
+        "pool_text": "测试赛季奖池，将在三个周期内分配。",
+        "fact_pool": "测试赛季奖池",
+        "fact_cycle": "每个周期",
+        "fact_season": "测试赛季"
       },
       "why": {
         "title": "Decentraland",
@@ -114,25 +113,25 @@
       },
       "how": {
         "title": "创作即赚取",
-        "subtitle": "Creator Fund 奖励那些能吸引并留住真实玩家的体验。",
-        "join_title": "加入",
-        "join_text": "下载 Creator Hub 并选择加入该计划。",
+        "subtitle": "从第一次创作到第一笔收益，只需三步。",
         "build_title": "创作",
-        "build_text": "打造能吸引并留住真实玩家的体验。",
-        "earn_title": "赚取",
-        "earn_text": "每个周期的 {amount} {currency} 将根据表现分配给各个体验。"
+        "build_text": "下载 Creator Hub，打造你的体验。",
+        "opt_in_title": "选择加入",
+        "opt_in_text": "在 Creator Hub 中选择加入基金，并签署计划条款。",
+        "paid_title": "获得收益",
+        "paid_text": "每个周期按玩家参与度，分得 {amount} {currency} 中的一份。"
       },
       "measure": {
-        "title": "奖励评估依据",
-        "subtitle": "每个周期，我们会根据各体验对平台的贡献比例发放奖励：",
-        "new_players": "Decentraland 新玩家",
-        "playtime": "活跃游玩时长",
-        "retention": "玩家留存"
+        "title": "我们奖励什么",
+        "subtitle": "每个周期，奖池将按各体验的贡献比例分配：",
+        "new_players": "你带入 Decentraland 的玩家",
+        "playtime": "玩家在你的体验中花费的时间",
+        "retention": "回访的玩家"
       },
       "real": {
         "title": "真实玩家，真实游玩。",
-        "bots": "我们会审查体验中是否存在机器人和人为刷量行为。使用机器人或操纵数据可能导致相关活动被忽略、奖励被扣留或被移出计划。",
-        "apps": "仅统计使用 Decentraland 官方桌面端或移动端应用的玩家。玩家须遵守服务条款并年满 18 岁方可计入。"
+        "bots": "我们会审查每个体验是否存在机器人和虚假活动。使用机器人可能导致活动被忽略、发放被扣留或被移出基金。",
+        "apps": "仅统计使用 Decentraland 官方桌面端和移动端应用、年满 18 岁的玩家，且须遵守服务条款。"
       },
       "eligibility": {
         "title": "参与资格",
@@ -149,13 +148,13 @@
       "rewards": {
         "title": "发放",
         "when_label": "时间",
-        "when": "每个周期结束后 {days} 天内。",
+        "when": "每个周期结束后 {days} 天内。各周期的发放日期见下方日程。",
         "currency_label": "币种",
         "currency": "{network} 上的 {currency}（{standard}）。",
         "where_label": "接收方式",
         "where": "拥有你的 NAME 或 World 的钱包，或你自行设置的自定义收款钱包。",
         "leaderboard_label": "排行榜",
-        "leaderboard": "表现最佳的体验及其奖励将显示在公开排行榜上。"
+        "leaderboard": "表现最佳的体验及其发放金额将显示在公开排行榜上。"
       },
       "builders": {
         "title": "认识 Decentraland 创作者",
@@ -164,15 +163,17 @@
         "previous": "上一个",
         "next": "下一个",
         "go_to_slide": "前往第 {number} 张幻灯片",
-        "earn_more_title": "赚得更多。",
-        "earn_more_text": "出售 Wearables 和 Emotes，每笔销售额你可保留 97.5%。",
-        "earn_more_soon": "场景购买即将推出。"
+        "more_title": "更多赚取方式",
+        "more_wearables": "出售 Wearables 和 Emotes，每笔销售额保留 97.5%",
+        "more_funding": "申请 Creator Success 资金和资助",
+        "more_contests": "在 Buildathons、Game Jams 和赛季比赛中赢取奖品",
+        "more_purchases": "游戏内创作者购买功能将于 Q1 2027 推出"
       },
       "dates": {
         "title": "测试版日程",
         "cycle_name": "第 {number} 周期",
-        "launch": "计划启动。Creator Hub 开放加入",
-        "cycle_row": "{name} · USD {amount} · 付款截止 {date}"
+        "launch": "基金启动。Creator Hub 开放加入。",
+        "cycle_row": "{name} · {amount} USDC · 发放截止 {date}"
       },
       "join": {
         "title": "Creator Fund 11 月 15 日启动",
@@ -184,20 +185,20 @@
         "title": "常见问题",
         "join_question": "如何加入？",
         "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 NAME 或 World。请使用所有者钱包签署计划条款；一次加入对应一个 NAME 或 World。",
-        "rewards_question": "奖励如何确定？",
-        "rewards_answer": "每个周期的分配额将根据活跃游玩时长、玩家留存和 Decentraland 新玩家数量，在符合条件的体验之间分配。Creator Hub 的指标仅供参考；最终奖励在审核和进一步筛选后计算，因此所用数据可能与你的仪表盘不同。",
+        "rewards_question": "发放金额如何计算？",
+        "rewards_answer": "每个周期的奖池将根据游玩时长、回访玩家和新玩家，在符合条件的体验之间分配。Creator Hub 的数据仅为预览：最终发放金额在审核后计算，因此可能与你的仪表盘不同。",
         "worlds_question": "Worlds 也计入吗？",
         "worlds_answer": "是的。Genesis City 中的场景和公开的 Worlds 均计入。",
         "wallet_question": "可以使用自定义收款钱包吗？",
-        "wallet_answer": "可以。奖励可发放至拥有你的 NAME 或 World 的钱包，或自定义的收款钱包。",
+        "wallet_answer": "可以。发放可汇入拥有你的 NAME 或 World 的钱包，或你自行设置的自定义收款钱包。",
         "transfer_question": "如果我在周期内转让 NAME 或 World 会怎样？",
-        "transfer_answer": "体验自转让之时起不再计入。参与资格和奖励以计划条款为准；转让不会自动将奖励转给新所有者。",
+        "transfer_answer": "体验自转让之时起不再计入。参与资格和发放以计划条款为准，转让不会将发放权益转给新所有者。",
         "runs_question": "Creator Fund 由谁运营？",
         "runs_answer": "它是 Regenesis Labs 与 Decentraland Foundation 的合资项目。",
         "after_question": "测试赛季之后会怎样？",
         "after_answer": "第 1 赛季计划于 2027 年 1 月至 3 月进行。日期及更新将于 12 月 28 日确认。",
         "grant_question": "这是资助吗？",
-        "grant_answer": "不是。资助用于支持项目上线之前的阶段。Creator Fund 奖励的是已在 Decentraland 上线并持续增长的场景。",
+        "grant_answer": "不是。资助用于支持项目上线之前的阶段。Creator Fund 奖励的是已在 Decentraland 上线并持续增长的体验。",
         "contact_prompt": "如有疑问或需要支持，请发送邮件至"
       }
     },

@@ -1,5 +1,5 @@
 import { Box, styled } from 'decentraland-ui2'
-import { MutedText, creatorFundColors, purpleBandStyles } from '../CreatorFund.styled'
+import { CardTitle, MutedText, creatorFundColors, purpleBandStyles } from '../CreatorFund.styled'
 
 const BuildersHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -153,11 +153,8 @@ const Dot = styled('button', {
   }
 }))
 
-const EarnMoreBand = styled(Box)(({ theme }) => ({
+const MoreWaysBand = styled(Box)(({ theme }) => ({
   ...purpleBandStyles,
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(2),
   marginTop: theme.spacing(6),
   padding: theme.spacing(3),
   borderRadius: 16,
@@ -166,16 +163,40 @@ const EarnMoreBand = styled(Box)(({ theme }) => ({
   }
 }))
 
-const EarnMoreText = styled('p')({
-  margin: 0,
-  fontSize: 18,
-  lineHeight: 1.55,
-  color: creatorFundColors.text
-})
+const MoreWaysHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2)
+}))
 
-const EarnMoreSoon = styled('span')({
-  color: creatorFundColors.mutedText
-})
+const MoreWaysTitle = styled(CardTitle)({})
+
+const MoreWaysList = styled('ul')(({ theme }) => ({
+  display: 'grid',
+  gap: theme.spacing(1.5),
+  margin: `${theme.spacing(3)} 0 0`,
+  padding: 0,
+  listStyle: 'none',
+  [theme.breakpoints.up('md')]: {
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    columnGap: theme.spacing(4)
+  }
+}))
+
+const MoreWaysItem = styled('li')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1.5),
+  fontSize: 16,
+  lineHeight: 1.5,
+  color: creatorFundColors.text,
+  ['& > svg']: {
+    flexShrink: 0,
+    marginTop: 2,
+    fontSize: 20,
+    color: creatorFundColors.white
+  }
+}))
 
 export {
   ArrowButton,
@@ -191,9 +212,11 @@ export {
   DesktopArrows,
   Dot,
   Dots,
-  EarnMoreBand,
-  EarnMoreSoon,
-  EarnMoreText,
+  MoreWaysBand,
+  MoreWaysHeader,
+  MoreWaysItem,
+  MoreWaysList,
+  MoreWaysTitle,
   Quote,
   QuoteAuthor,
   QuoteCard

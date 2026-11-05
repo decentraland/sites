@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import { connectCards } from '../../Create/data'
-import { CREATOR_FUND_CONTACT_EMAIL, CREATOR_FUND_TERMS_URL, faqEntries, sectionLinks } from '../data'
+import { CREATOR_FUND_CONTACT_EMAIL, CREATOR_FUND_TERMS_URL, faqEntries, moreWaysToEarnKeys, sectionLinks } from '../data'
 import { CreatorFundLanding } from './CreatorFundLanding'
 
 jest.mock('decentraland-ui2', () => {
@@ -52,7 +52,7 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should show the season pool in the hero', () => {
-    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000","currency":"USDC"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000"}')).toBeInTheDocument()
   })
 
   it('should render a target section for every section link', () => {
@@ -79,8 +79,22 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'Mac' })).toHaveAttribute('href', getDownloadUrl('apple'))
   })
 
-  it('should interpolate the cycle allocation into the earn step', () => {
-    expect(screen.getByText('page.creator_fund.how.earn_text {"amount":"$10,000","currency":"USDC"}')).toBeInTheDocument()
+  it('should show the Beta Season dates in the hero', () => {
+    expect(screen.getByText(/^Nov 15\s*–\s*Dec 31$/)).toBeInTheDocument()
+  })
+
+  it('should list the steps in flyer order: build, opt in, get paid', () => {
+    const steps = within(document.getElementById('how') as HTMLElement).getAllByRole('heading', { level: 3 })
+
+    expect(steps.map(step => step.textContent)).toEqual([
+      'page.creator_fund.how.build_title',
+      'page.creator_fund.how.opt_in_title',
+      'page.creator_fund.how.paid_title'
+    ])
+  })
+
+  it('should interpolate the cycle allocation into the get-paid step', () => {
+    expect(screen.getByText('page.creator_fund.how.paid_text {"amount":"$10,000","currency":"USDC"}')).toBeInTheDocument()
   })
 
   it('should list the payout terms with the program values', () => {
@@ -96,9 +110,20 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByText(/^Nov 15\s*–\s*30$/)).toBeInTheDocument()
     expect(
       screen.getByText(
-        'page.creator_fund.dates.cycle_row {"name":"page.creator_fund.dates.cycle_name {\\"number\\":3}","amount":"10,000","date":"Jan 10, 2027"}'
+        'page.creator_fund.dates.cycle_row {"name":"page.creator_fund.dates.cycle_name {\\"number\\":3}","amount":"$10,000","date":"Jan 10, 2027"}'
       )
     ).toBeInTheDocument()
+  })
+
+  it('should place Payouts before Eligibility', () => {
+    const payouts = document.getElementById('payouts') as HTMLElement
+    const eligibility = document.getElementById('eligibility') as HTMLElement
+
+    expect(payouts.compareDocumentPosition(eligibility) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('should list the other ways to earn', () => {
+    moreWaysToEarnKeys.forEach(key => expect(screen.getByText(key)).toBeInTheDocument())
   })
 
   it('should show a quote for every builder', () => {

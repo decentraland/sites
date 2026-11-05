@@ -37,8 +37,8 @@ const betaProgram: CreatorFundProgram = {
 
 const sectionLinks: SectionLink[] = [
   { id: 'how', labelKey: 'page.creator_fund.nav.how' },
-  { id: 'eligibility', labelKey: 'page.creator_fund.nav.eligibility' },
   { id: 'payouts', labelKey: 'page.creator_fund.nav.payouts' },
+  { id: 'eligibility', labelKey: 'page.creator_fund.nav.eligibility' },
   { id: 'dates', labelKey: 'page.creator_fund.nav.dates' },
   { id: 'faq', labelKey: 'page.creator_fund.nav.faq' }
 ]
@@ -56,16 +56,25 @@ const scenes = [
   { name: 'Cozy Farm', image: sceneCozyFarm }
 ]
 
+// Same order as the flyer: Build → Opt in → Get paid.
 const buildToEarnSteps: Required<IconCopy>[] = [
-  { icon: PowerOutlinedIcon, titleKey: 'page.creator_fund.how.join_title', textKey: 'page.creator_fund.how.join_text' },
   { icon: BuildOutlinedIcon, titleKey: 'page.creator_fund.how.build_title', textKey: 'page.creator_fund.how.build_text' },
-  { icon: EmojiEventsOutlinedIcon, titleKey: 'page.creator_fund.how.earn_title', textKey: 'page.creator_fund.how.earn_text' }
+  { icon: PowerOutlinedIcon, titleKey: 'page.creator_fund.how.opt_in_title', textKey: 'page.creator_fund.how.opt_in_text' },
+  { icon: EmojiEventsOutlinedIcon, titleKey: 'page.creator_fund.how.paid_title', textKey: 'page.creator_fund.how.paid_text' }
 ]
 
+// Same order as the flyer: playtime, returning players, new players.
 const payoutSignals: IconCopy[] = [
-  { icon: PersonAddAltOutlinedIcon, titleKey: 'page.creator_fund.measure.new_players' },
   { icon: ShowChartIcon, titleKey: 'page.creator_fund.measure.playtime' },
-  { icon: RepeatIcon, titleKey: 'page.creator_fund.measure.retention' }
+  { icon: RepeatIcon, titleKey: 'page.creator_fund.measure.retention' },
+  { icon: PersonAddAltOutlinedIcon, titleKey: 'page.creator_fund.measure.new_players' }
+]
+
+const moreWaysToEarnKeys = [
+  'page.creator_fund.builders.more_wearables',
+  'page.creator_fund.builders.more_funding',
+  'page.creator_fund.builders.more_contests',
+  'page.creator_fund.builders.more_purchases'
 ]
 
 const eligibilityCards = [
@@ -108,6 +117,7 @@ export {
   buildToEarnSteps,
   eligibilityCards,
   faqEntries,
+  moreWaysToEarnKeys,
   payoutSignals,
   platformLinks,
   scenes,
