@@ -1,5 +1,6 @@
 import type { SvgIconComponent } from '@mui/icons-material'
 import type { DownloadOS } from '../../modules/downloadConstants'
+import type { DownloadTarget } from '../../modules/segment'
 
 type ProgramCycle = {
   number: number
@@ -25,12 +26,16 @@ type CreatorFundProgram = {
 type SectionLink = {
   id: string
   labelKey: string
+  // English name sent as `button` on the Click event (stable across locales).
+  trackingName: string
 }
 
 type PlatformLink = {
   name: string
   os: DownloadOS
   icon: SvgIconComponent
+  // Store exits carry the warehouse's download_target; links to the /download page don't.
+  downloadTarget?: DownloadTarget
 }
 
 type IconCopy = {
@@ -47,6 +52,7 @@ type BuildStep = Required<IconCopy> & {
 type FaqEntry = {
   questionKey: string
   answerKey: string
+  trackingName: string
 }
 
 export type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, ProgramCycle, SectionLink }

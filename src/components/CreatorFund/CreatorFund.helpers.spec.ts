@@ -1,4 +1,5 @@
-import { daysBetween, formatAmount, formatDateRange, formatShortDate, formatUsd } from './CreatorFund.helpers'
+import { DownloadTarget } from '../../modules/segment'
+import { clickTrackingAttributes, daysBetween, formatAmount, formatDateRange, formatShortDate, formatUsd } from './CreatorFund.helpers'
 
 describe('CreatorFund helpers', () => {
   describe('when formatting amounts', () => {
@@ -39,6 +40,24 @@ describe('CreatorFund helpers', () => {
   describe('when formatting a date range', () => {
     it('should collapse the shared month', () => {
       expect(formatDateRange('en', '2026-11-15', '2026-11-30')).toMatch(/^Nov 15\s*–\s*30$/)
+    })
+  })
+
+  describe('when building click tracking attributes', () => {
+    it('should tag the control with the Creator Fund place, the section and the button name', () => {
+      expect(clickTrackingAttributes('hero-banner', 'Join From Creator Hub')).toEqual({
+        'data-place': 'Creator Fund',
+        'data-event': 'Click',
+        'data-section': 'hero-banner',
+        'data-button': 'Join From Creator Hub'
+      })
+    })
+
+    it('should add the download target for download links', () => {
+      expect(clickTrackingAttributes('how-it-works', 'Download Creator Hub', DownloadTarget.CREATOR_HUB)).toHaveProperty(
+        'data-download-target',
+        'creator_hub'
+      )
     })
   })
 })

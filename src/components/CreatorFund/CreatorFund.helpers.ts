@@ -1,3 +1,5 @@
+import { type DownloadTarget, SectionViewedTrack, SegmentEvent } from '../../modules/segment'
+
 const DAY_MS = 86_400_000
 
 // The program is priced in USD everywhere, so amounts keep the en-US grouping in every locale.
@@ -21,4 +23,17 @@ type RangeFormat = Intl.DateTimeFormat & { formatRange: (start: Date, end: Date)
 const formatDateRange = (locale: string, start: string, end: string): string =>
   (shortDateFormat(locale, false) as RangeFormat).formatRange(new Date(start), new Date(end))
 
-export { daysBetween, formatAmount, formatDateRange, formatShortDate, formatUsd }
+/**
+ * `data-*` attributes for a tracked control on this page. The click adapters turn them into the
+ * `Click` payload: `place: 'Creator Fund'`, `section` (where on the page), `button` (stable English
+ * name) and, for downloads, `download_target`.
+ */
+const clickTrackingAttributes = (section: string, button: string, downloadTarget?: DownloadTarget): Record<string, string> => ({
+  ['data-place']: SectionViewedTrack.CREATOR_FUND,
+  ['data-event']: SegmentEvent.CLICK,
+  ['data-section']: section,
+  ['data-button']: button,
+  ...(downloadTarget ? { ['data-download-target']: downloadTarget } : {})
+})
+
+export { clickTrackingAttributes, daysBetween, formatAmount, formatDateRange, formatShortDate, formatUsd }

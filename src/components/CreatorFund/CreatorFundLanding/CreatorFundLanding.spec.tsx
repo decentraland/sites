@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import {
@@ -29,6 +29,12 @@ jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string, values?: Record<string, unknown>) => (values ? `${id} ${JSON.stringify(values)}` : id)
 }))
 
+const mockTrackClick = jest.fn()
+
+jest.mock('../../../hooks/useUnloadSafeTrackClick', () => ({
+  useUnloadSafeTrackClick: () => mockTrackClick
+}))
+
 jest.mock('../../../intl/LocaleContext', () => ({
   useLocale: () => ({ locale: 'en', setLocale: jest.fn() })
 }))
@@ -50,6 +56,76 @@ describe('CreatorFundLanding', () => {
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  describe('when checking click tracking', () => {
+    // React clears `currentTarget` once the handler returns, so record it at call time.
+    const trackedTargets: Element[] = []
+
+    beforeEach(() => {
+      trackedTargets.length = 0
+      mockTrackClick.mockImplementation((event: { currentTarget: Element }) => {
+        trackedTargets.push(event.currentTarget)
+      })
+    })
+
+    it('should tag every link, button and FAQ question with place, section and button', () => {
+      const controls = Array.from(document.querySelectorAll('a, button, summary'))
+
+      expect(controls.length).toBeGreaterThan(20)
+      controls.forEach(control => {
+        expect(control).toHaveAttribute('data-place', 'Creator Fund')
+        expect(control).toHaveAttribute('data-event', 'Click')
+        expect(control.getAttribute('data-section')).toBeTruthy()
+        expect(control.getAttribute('data-button')).toBeTruthy()
+      })
+    })
+
+    it('should track the hero call to action as hero-banner', () => {
+      const hero = document.getElementById('overview') as HTMLElement
+      const cta = within(hero).getByRole('link', { name: 'page.creator_fund.cta.join' })
+
+      fireEvent.click(cta)
+
+      expect(cta).toHaveAttribute('data-section', 'hero-banner')
+      expect(cta).toHaveAttribute('data-button', 'Join From Creator Hub')
+      expect(trackedTargets).toEqual([cta])
+    })
+
+    it('should track the join section call to action as final-cta', () => {
+      const join = document.getElementById('join') as HTMLElement
+      const cta = within(join).getByRole('link', { name: 'page.creator_fund.cta.join' })
+
+      fireEvent.click(cta)
+
+      expect(cta).toHaveAttribute('data-section', 'final-cta')
+      expect(cta).toHaveAttribute('data-button', 'Join From Creator Hub')
+      expect(trackedTargets).toEqual([cta])
+    })
+
+    it('should mark the store downloads with their download target', () => {
+      expect(screen.getByRole('link', { name: 'Android' })).toHaveAttribute('data-download-target', 'google_play')
+      expect(screen.getByRole('link', { name: 'iOS' })).toHaveAttribute('data-download-target', 'app_store')
+      expect(screen.getByRole('link', { name: 'page.creator_fund.how.opt_in_link' })).toHaveAttribute('data-download-target', 'creator_hub')
+    })
+
+    it('should track opening a FAQ question', () => {
+      const question = screen.getByText(faqEntries[0].questionKey)
+
+      fireEvent.click(question)
+
+      expect(question).toHaveAttribute('data-section', 'faq')
+      expect(trackedTargets).toEqual([question])
+    })
+
+    it('should not track closing a FAQ question', () => {
+      const question = screen.getByText(faqEntries[0].questionKey)
+      ;(question.parentElement as HTMLDetailsElement).open = true
+
+      fireEvent.click(question)
+
+      expect(mockTrackClick).not.toHaveBeenCalled()
+    })
   })
 
   it('should render the hero as the page heading', () => {

@@ -3,12 +3,13 @@ import { memo } from 'react'
 import CheckIcon from '@mui/icons-material/Check'
 import { useMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
 import { useLocale } from '../../../intl/LocaleContext'
 import { heroData } from '../../Create/data'
 import { Video } from '../../Video'
-import { formatDateRange, formatUsd } from '../CreatorFund.helpers'
+import { clickTrackingAttributes, formatDateRange, formatUsd } from '../CreatorFund.helpers'
 import { PrimaryButtonLink, RubyTile } from '../CreatorFund.styled'
-import { betaProgram } from '../data'
+import { CLICK_SECTIONS, betaProgram } from '../data'
 import {
   EyebrowDot,
   FactCard,
@@ -30,6 +31,7 @@ import {
 const Hero = memo(() => {
   const l = useFormatMessage()
   const { locale } = useLocale()
+  const trackClick = useUnloadSafeTrackClick()
   // Same footage as the /create hero, so the two creator pages read as one.
   const isMobile = useMediaQuery('(max-width: 767px)')
   const video = isMobile ? heroData.videoPortrait : heroData.videoLandscape
@@ -68,7 +70,9 @@ const Hero = memo(() => {
           </SubtitleLine>
         </HeroSubtitle>
         <HeroActions>
-          <PrimaryButtonLink href="#join">{l('page.creator_fund.cta.join')}</PrimaryButtonLink>
+          <PrimaryButtonLink href="#join" {...clickTrackingAttributes(CLICK_SECTIONS.hero, 'Join From Creator Hub')} onClick={trackClick}>
+            {l('page.creator_fund.cta.join')}
+          </PrimaryButtonLink>
         </HeroActions>
         <FactsGrid>
           {facts.map(fact => (

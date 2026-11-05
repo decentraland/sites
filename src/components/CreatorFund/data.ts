@@ -12,6 +12,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
 import sceneCryocene from '../../images/creator-fund/scene-cryocene.jpg'
 import sceneGenesisPlaza from '../../images/creator-fund/scene-genesis-plaza.jpg'
+import { DownloadTarget } from '../../modules/segment'
 import type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
 
 // Beta Season facts from the Creator Fund Program Rules. Amounts are USD.
@@ -36,16 +37,16 @@ const betaProgram: CreatorFundProgram = {
 }
 
 const sectionLinks: SectionLink[] = [
-  { id: 'how', labelKey: 'page.creator_fund.nav.how' },
-  { id: 'payouts', labelKey: 'page.creator_fund.nav.payouts' },
-  { id: 'eligibility', labelKey: 'page.creator_fund.nav.eligibility' },
-  { id: 'dates', labelKey: 'page.creator_fund.nav.dates' },
-  { id: 'faq', labelKey: 'page.creator_fund.nav.faq' }
+  { id: 'how', labelKey: 'page.creator_fund.nav.how', trackingName: 'How It Works' },
+  { id: 'payouts', labelKey: 'page.creator_fund.nav.payouts', trackingName: 'Payouts' },
+  { id: 'eligibility', labelKey: 'page.creator_fund.nav.eligibility', trackingName: 'Eligibility' },
+  { id: 'dates', labelKey: 'page.creator_fund.nav.dates', trackingName: 'Dates' },
+  { id: 'faq', labelKey: 'page.creator_fund.nav.faq', trackingName: 'FAQ' }
 ]
 
 const platformLinks: PlatformLink[] = [
-  { name: 'Android', os: 'android', icon: AndroidIcon },
-  { name: 'iOS', os: 'ios', icon: AppleIcon },
+  { name: 'Android', os: 'android', icon: AndroidIcon, downloadTarget: DownloadTarget.GOOGLE_PLAY },
+  { name: 'iOS', os: 'ios', icon: AppleIcon, downloadTarget: DownloadTarget.APP_STORE },
   { name: 'Windows', os: 'windows', icon: MicrosoftIcon },
   { name: 'Mac', os: 'apple', icon: AppleIcon }
 ]
@@ -101,10 +102,31 @@ const eligibilityCards = [
   }
 ]
 
-const faqEntries: FaqEntry[] = ['join', 'rewards', 'worlds', 'wallet', 'transfer', 'runs', 'after', 'grant'].map(id => ({
+const faqEntries: FaqEntry[] = [
+  { id: 'join', trackingName: 'How Do I Join' },
+  { id: 'rewards', trackingName: 'How Are Payouts Calculated' },
+  { id: 'worlds', trackingName: 'Do Worlds Count' },
+  { id: 'wallet', trackingName: 'Custom Payout Wallet' },
+  { id: 'transfer', trackingName: 'Transfer During A Cycle' },
+  { id: 'runs', trackingName: 'Who Runs The Creator Fund' },
+  { id: 'after', trackingName: 'After The Beta Season' },
+  { id: 'grant', trackingName: 'Is This A Grant' }
+].map(({ id, trackingName }) => ({
   questionKey: `page.creator_fund.faq.${id}_question`,
-  answerKey: `page.creator_fund.faq.${id}_answer`
+  answerKey: `page.creator_fund.faq.${id}_answer`,
+  trackingName
 }))
+
+// `section` values on this page's Click events.
+const CLICK_SECTIONS = {
+  navbar: 'navbar',
+  navbarMenu: 'navbar-menu',
+  hero: 'hero-banner',
+  intro: 'decentraland-intro',
+  howItWorks: 'how-it-works',
+  faq: 'faq',
+  finalCta: 'final-cta'
+} as const
 
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
@@ -116,6 +138,7 @@ const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fu
 const CREATOR_FUND_TERMS_URL = 'https://docs.decentraland.org/creator/creator-fund/program-terms'
 
 export {
+  CLICK_SECTIONS,
   CREATOR_FUND_CONTACT_EMAIL,
   CREATOR_FUND_RULES_URL,
   CREATOR_FUND_TERMS_URL,

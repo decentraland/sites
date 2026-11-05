@@ -14,13 +14,29 @@ jest.mock('decentraland-ui2', () => {
   }
 })
 
+const mockTrackClick = jest.fn()
+// The menu button's name changes on re-render, so record it at call time.
+const trackedButtons: Array<string | null> = []
+
+jest.mock('../../../hooks/useUnloadSafeTrackClick', () => ({
+  useUnloadSafeTrackClick: () => mockTrackClick
+}))
+
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id: string) => id
 }))
 
 describe('SectionNav', () => {
   beforeEach(() => {
+    trackedButtons.length = 0
+    mockTrackClick.mockImplementation((event: { currentTarget: Element }) => {
+      trackedButtons.push(event.currentTarget.getAttribute('data-button'))
+    })
     render(<SectionNav />)
+  })
+
+  afterEach(() => {
+    mockTrackClick.mockReset()
   })
 
   describe('when the menu is closed', () => {
@@ -45,6 +61,15 @@ describe('SectionNav', () => {
       fireEvent.click(screen.getByRole('button', { name: 'page.creator_fund.nav.open_menu' }))
     })
 
+    it('should track the menu opening', () => {
+      expect(mockTrackClick).toHaveBeenCalledTimes(1)
+      expect(trackedButtons).toEqual(['Open Menu'])
+    })
+
+    it('should tag the panel links with the navbar-menu section', () => {
+      expect(screen.getAllByRole('link', { name: sectionLinks[0].labelKey })[1]).toHaveAttribute('data-section', 'navbar-menu')
+    })
+
     it('should show the section links in the mobile panel', () => {
       expect(screen.getByRole('button', { name: 'page.creator_fund.nav.close_menu' })).toHaveAttribute('aria-expanded', 'true')
       expect(screen.getAllByRole('link', { name: sectionLinks[0].labelKey })).toHaveLength(2)
@@ -55,7 +80,8 @@ describe('SectionNav', () => {
         fireEvent.click(screen.getAllByRole('link', { name: sectionLinks[0].labelKey })[1])
       })
 
-      it('should close the panel', () => {
+      it('should track the click and close the panel', () => {
+        expect(mockTrackClick).toHaveBeenCalledTimes(2)
         expect(screen.getByRole('button', { name: 'page.creator_fund.nav.open_menu' })).toBeInTheDocument()
         expect(screen.getAllByRole('link', { name: sectionLinks[0].labelKey })).toHaveLength(1)
       })
