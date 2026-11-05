@@ -91,7 +91,7 @@
         "by": "by Decentraland",
         "how": "How it works",
         "eligibility": "Eligibility",
-        "rewards": "Rewards",
+        "payouts": "Payouts",
         "dates": "Dates",
         "faq": "FAQ",
         "rules": "Rules",
@@ -100,8 +100,7 @@
         "close_menu": "Close menu"
       },
       "cta": {
-        "join": "Join from Creator Hub",
-        "get_creator_hub": "Get Creator Hub"
+        "join": "Join from Creator Hub"
       },
       "hero": {
         "eyebrow": "Beta starts Nov 15",
@@ -179,7 +178,7 @@
         "earn_more_soon": "Scene purchases coming soon."
       },
       "dates": {
-        "title": "Creator Fund: Beta Schedule",
+        "title": "Beta Schedule",
         "cycle_name": "Cycle {number}",
         "launch": "Program launch. Opt-in opens in Creator Hub",
         "cycle_row": "{name} · USD {amount} · Payment by {date}"

@@ -38,7 +38,7 @@ const betaProgram: CreatorFundProgram = {
 const sectionLinks: SectionLink[] = [
   { id: 'how', labelKey: 'page.creator_fund.nav.how' },
   { id: 'eligibility', labelKey: 'page.creator_fund.nav.eligibility' },
-  { id: 'rewards', labelKey: 'page.creator_fund.nav.rewards' },
+  { id: 'payouts', labelKey: 'page.creator_fund.nav.payouts' },
   { id: 'dates', labelKey: 'page.creator_fund.nav.dates' },
   { id: 'faq', labelKey: 'page.creator_fund.nav.faq' }
 ]

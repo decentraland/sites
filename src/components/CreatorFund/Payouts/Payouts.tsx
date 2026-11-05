@@ -21,7 +21,7 @@ const Payouts = memo(() => {
   }
 
   return (
-    <CreatorFundSection id="rewards" band ref={bandRef}>
+    <CreatorFundSection id="payouts" band ref={bandRef}>
       <SectionInner>
         <DisplayTitle>{l('page.creator_fund.rewards.title')}</DisplayTitle>
         <PayoutTerms>

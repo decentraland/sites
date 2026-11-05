@@ -82,7 +82,7 @@
         "by": "de Decentraland",
         "how": "Cómo funciona",
         "eligibility": "Requisitos",
-        "rewards": "Recompensas",
+        "payouts": "Pagos",
         "dates": "Fechas",
         "faq": "Preguntas frecuentes",
         "rules": "Reglas",
@@ -91,8 +91,7 @@
         "close_menu": "Cerrar menú"
       },
       "cta": {
-        "join": "Únete desde Creator Hub",
-        "get_creator_hub": "Descarga Creator Hub"
+        "join": "Únete desde Creator Hub"
       },
       "hero": {
         "eyebrow": "La Beta empieza el 15 nov",
@@ -170,7 +169,7 @@
         "earn_more_soon": "Las compras de Escenas llegarán pronto."
       },
       "dates": {
-        "title": "Creator Fund: calendario de la Beta",
+        "title": "Calendario de la Beta",
         "cycle_name": "Ciclo {number}",
         "launch": "Lanzamiento del programa. La inscripción abre en Creator Hub",
         "cycle_row": "{name} · USD {amount} · Pago antes del {date}"

@@ -82,7 +82,7 @@
         "by": "by Decentraland",
         "how": "しくみ",
         "eligibility": "参加資格",
-        "rewards": "報酬",
+        "payouts": "支払い",
         "dates": "日程",
         "faq": "FAQ",
         "rules": "ルール",
@@ -91,8 +91,7 @@
         "close_menu": "メニューを閉じる"
       },
       "cta": {
-        "join": "Creator Hub から参加",
-        "get_creator_hub": "Creator Hub を入手"
+        "join": "Creator Hub から参加"
       },
       "hero": {
         "eyebrow": "ベータは11月15日スタート",
@@ -170,7 +169,7 @@
         "earn_more_soon": "シーンの販売は近日公開予定。"
       },
       "dates": {
-        "title": "Creator Fund：ベータスケジュール",
+        "title": "ベータスケジュール",
         "cycle_name": "サイクル{number}",
         "launch": "プログラム開始。Creator Hubでオプトイン受付開始",
         "cycle_row": "{name} · USD {amount} · 支払い期限 {date}"

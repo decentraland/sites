@@ -82,7 +82,7 @@
         "by": "by Decentraland",
         "how": "진행 방식",
         "eligibility": "참여 자격",
-        "rewards": "보상",
+        "payouts": "지급",
         "dates": "일정",
         "faq": "FAQ",
         "rules": "규칙",
@@ -91,8 +91,7 @@
         "close_menu": "메뉴 닫기"
       },
       "cta": {
-        "join": "Creator Hub에서 참여",
-        "get_creator_hub": "Creator Hub 받기"
+        "join": "Creator Hub에서 참여"
       },
       "hero": {
         "eyebrow": "베타 11월 15일 시작",
@@ -170,7 +169,7 @@
         "earn_more_soon": "씬 판매는 곧 제공됩니다."
       },
       "dates": {
-        "title": "Creator Fund: 베타 일정",
+        "title": "베타 일정",
         "cycle_name": "사이클 {number}",
         "launch": "프로그램 시작. Creator Hub에서 옵트인 오픈",
         "cycle_row": "{name} · USD {amount} · 지급 기한 {date}"

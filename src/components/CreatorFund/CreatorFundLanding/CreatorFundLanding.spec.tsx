@@ -64,12 +64,12 @@ describe('CreatorFundLanding', () => {
     })
   })
 
-  it('should point every join call to action at the join section', () => {
-    const joinLinks = screen.getAllByRole('link', { name: 'page.creator_fund.cta.join' })
+  it('should point the join calls to action above the join section at it', () => {
+    const join = document.getElementById('join') as HTMLElement
+    const earlierLinks = screen.getAllByRole('link', { name: 'page.creator_fund.cta.join' }).filter(link => !join.contains(link))
 
-    expect(joinLinks.length).toBeGreaterThan(0)
-    joinLinks.forEach(link => expect(link).toHaveAttribute('href', '#join'))
-    expect(document.getElementById('join')).toBeInTheDocument()
+    expect(earlierLinks.length).toBeGreaterThan(0)
+    earlierLinks.forEach(link => expect(link).toHaveAttribute('href', '#join'))
   })
 
   it('should link each platform to its download', () => {
@@ -109,8 +109,10 @@ describe('CreatorFundLanding', () => {
     faqEntries.forEach(entry => expect(screen.getByText(entry.questionKey)).toBeInTheDocument())
   })
 
-  it('should send creators to Creator Hub from the join section', () => {
-    expect(screen.getByRole('link', { name: 'page.creator_fund.cta.get_creator_hub' })).toHaveAttribute('href', '/create')
+  it('should send creators to Creator Hub from the join section CTA', () => {
+    const join = document.getElementById('join') as HTMLElement
+
+    expect(within(join).getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', '/create')
   })
 
   it('should offer the support address under the FAQ', () => {

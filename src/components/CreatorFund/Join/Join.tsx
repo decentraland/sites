@@ -21,7 +21,7 @@ const Join = memo(() => {
           </TermsLink>
         </JoinSubtitle>
         <JoinActions>
-          <PrimaryButtonLink href="/create">{l('page.creator_fund.cta.get_creator_hub')}</PrimaryButtonLink>
+          <PrimaryButtonLink href="/create">{l('page.creator_fund.cta.join')}</PrimaryButtonLink>
         </JoinActions>
       </JoinInner>
       <AvatarsImage src={avatarsImage} alt={l('page.creator_fund.join.avatars_alt')} width={1920} height={620} loading="lazy" />
