@@ -124,9 +124,9 @@
       "measure": {
         "title": "Qué recompensamos",
         "subtitle": "En cada ciclo, el fondo se reparte según lo que aporta cada experiencia:",
-        "new_players": "Jugadores que traes a Decentraland",
-        "playtime": "Tiempo que los jugadores pasan en tu experiencia",
-        "retention": "Jugadores que vuelven"
+        "new_players": "Nuevos jugadores de Decentraland",
+        "playtime": "Tiempo de juego activo",
+        "retention": "Retención de jugadores"
       },
       "real": {
         "title": "Jugadores reales. Juego real.",
@@ -186,7 +186,7 @@
         "join_question": "¿Cómo me uno?",
         "join_answer": "La inscripción abre en Creator Hub el 11 de noviembre. Debes tener al menos 18 años y ser dueño del NAME o Mundo donde está desplegada tu experiencia. Firma los Términos del Programa con la wallet propietaria; una inscripción cubre un NAME o Mundo.",
         "rewards_question": "¿Cómo se calculan los pagos?",
-        "rewards_answer": "El fondo de cada ciclo se reparte entre las experiencias elegibles según el tiempo jugado, los jugadores que regresan y los nuevos jugadores. Las cifras de Creator Hub son una vista previa: los pagos finales se calculan tras la revisión, por lo que pueden diferir de tu panel.",
+        "rewards_answer": "El fondo de cada ciclo se reparte entre las experiencias elegibles según el tiempo de juego activo, la retención de jugadores y los nuevos jugadores de Decentraland. Las cifras de Creator Hub son una vista previa: los pagos finales se calculan tras la revisión, por lo que pueden diferir de tu panel.",
         "worlds_question": "¿Cuentan los Mundos?",
         "worlds_answer": "Sí. Cuentan tanto las Escenas en Genesis City como los Mundos públicos.",
         "wallet_question": "¿Puedo usar una wallet de pago personalizada?",

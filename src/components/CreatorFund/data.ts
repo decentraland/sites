@@ -63,11 +63,10 @@ const buildToEarnSteps: Required<IconCopy>[] = [
   { icon: EmojiEventsOutlinedIcon, titleKey: 'page.creator_fund.how.paid_title', textKey: 'page.creator_fund.how.paid_text' }
 ]
 
-// Same order as the flyer: playtime, returning players, new players.
 const payoutSignals: IconCopy[] = [
+  { icon: PersonAddAltOutlinedIcon, titleKey: 'page.creator_fund.measure.new_players' },
   { icon: ShowChartIcon, titleKey: 'page.creator_fund.measure.playtime' },
-  { icon: RepeatIcon, titleKey: 'page.creator_fund.measure.retention' },
-  { icon: PersonAddAltOutlinedIcon, titleKey: 'page.creator_fund.measure.new_players' }
+  { icon: RepeatIcon, titleKey: 'page.creator_fund.measure.retention' }
 ]
 
 const moreWaysToEarnKeys = [

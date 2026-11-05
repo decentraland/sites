@@ -126,6 +126,14 @@ describe('CreatorFundLanding', () => {
     moreWaysToEarnKeys.forEach(key => expect(screen.getByText(key)).toBeInTheDocument())
   })
 
+  it('should show the other ways to earn right after the schedule', () => {
+    const schedule = document.getElementById('dates') as HTMLElement
+    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.builders.more_title' })
+
+    expect(schedule.compareDocumentPosition(moreWays) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(schedule.contains(moreWays)).toBe(false)
+  })
+
   it('should show a quote for every builder', () => {
     connectCards.forEach(builder => expect(screen.getByRole('img', { name: builder.name })).toBeInTheDocument())
   })

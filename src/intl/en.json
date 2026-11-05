@@ -133,9 +133,9 @@
       "measure": {
         "title": "What we reward",
         "subtitle": "Each cycle, the pool is split by how much each experience contributes:",
-        "new_players": "Players you bring to Decentraland",
-        "playtime": "Time players spend in your experience",
-        "retention": "Players who come back"
+        "new_players": "New Decentraland players",
+        "playtime": "Active playtime",
+        "retention": "Player retention"
       },
       "real": {
         "title": "Real players. Real play.",
@@ -195,7 +195,7 @@
         "join_question": "How do I join?",
         "join_answer": "Opt-in opens in Creator Hub on November 11. You must be at least 18 and own the NAME or World where your experience is deployed. Sign the Program Terms with the owning wallet; one opt-in covers one NAME or World.",
         "rewards_question": "How are payouts calculated?",
-        "rewards_answer": "Each cycle’s pool is split among eligible experiences based on time played, returning players and new players. Creator Hub numbers are a preview: final payouts are calculated after review, so they may differ from your dashboard.",
+        "rewards_answer": "Each cycle’s pool is split among eligible experiences based on active playtime, player retention and new Decentraland players. Creator Hub numbers are a preview: final payouts are calculated after review, so they may differ from your dashboard.",
         "worlds_question": "Do Worlds count?",
         "worlds_answer": "Yes. Scenes in Genesis City and public Worlds both count.",
         "wallet_question": "Can I use a custom payout wallet?",

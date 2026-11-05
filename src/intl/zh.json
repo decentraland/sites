@@ -124,9 +124,9 @@
       "measure": {
         "title": "我们奖励什么",
         "subtitle": "每个周期，奖池将按各体验的贡献比例分配：",
-        "new_players": "你带入 Decentraland 的玩家",
-        "playtime": "玩家在你的体验中花费的时间",
-        "retention": "回访的玩家"
+        "new_players": "Decentraland 新玩家",
+        "playtime": "活跃游玩时长",
+        "retention": "玩家留存"
       },
       "real": {
         "title": "真实玩家，真实游玩。",
@@ -186,7 +186,7 @@
         "join_question": "如何加入？",
         "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 NAME 或 World。请使用所有者钱包签署计划条款；一次加入对应一个 NAME 或 World。",
         "rewards_question": "发放金额如何计算？",
-        "rewards_answer": "每个周期的奖池将根据游玩时长、回访玩家和新玩家，在符合条件的体验之间分配。Creator Hub 的数据仅为预览：最终发放金额在审核后计算，因此可能与你的仪表盘不同。",
+        "rewards_answer": "每个周期的奖池将根据活跃游玩时长、玩家留存和 Decentraland 新玩家数量，在符合条件的体验之间分配。Creator Hub 的数据仅为预览：最终发放金额在审核后计算，因此可能与你的仪表盘不同。",
         "worlds_question": "Worlds 也计入吗？",
         "worlds_answer": "是的。Genesis City 中的场景和公开的 Worlds 均计入。",
         "wallet_question": "可以使用自定义收款钱包吗？",

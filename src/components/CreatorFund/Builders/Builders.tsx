@@ -1,18 +1,12 @@
 import { memo, useCallback, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import TollOutlinedIcon from '@mui/icons-material/TollOutlined'
 import { useMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useScrollParallax } from '../../../hooks/useScrollParallax'
 import { type ConnectCardData, connectCards } from '../../Create/data'
-import { CreatorFundSection, DisplayTitle, PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, RubyTile, SectionInner } from '../CreatorFund.styled'
-import { moreWaysToEarnKeys } from '../data'
+import { CreatorFundSection, DisplayTitle, SectionInner } from '../CreatorFund.styled'
 import {
   ArrowButton,
   AuthorAvatar,
@@ -27,11 +21,6 @@ import {
   DesktopArrows,
   Dot,
   Dots,
-  MoreWaysBand,
-  MoreWaysHeader,
-  MoreWaysItem,
-  MoreWaysList,
-  MoreWaysTitle,
   Quote,
   QuoteAuthor,
   QuoteCard
@@ -62,7 +51,6 @@ BuilderSlide.displayName = 'BuilderSlide'
 
 const Builders = memo(() => {
   const l = useFormatMessage()
-  const bandRef = useScrollParallax<HTMLDivElement>(PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED)
   const isMobile = useMediaQuery('(max-width: 767px)')
   const perPage = isMobile ? 1 : 3
   // One "page" per possible first visible card, so the last page is never half empty.
@@ -121,22 +109,6 @@ const Builders = memo(() => {
             <ChevronRightIcon />
           </ArrowButton>
         </CarouselControls>
-        <MoreWaysBand ref={bandRef}>
-          <MoreWaysHeader>
-            <RubyTile>
-              <TollOutlinedIcon aria-hidden="true" />
-            </RubyTile>
-            <MoreWaysTitle>{l('page.creator_fund.builders.more_title')}</MoreWaysTitle>
-          </MoreWaysHeader>
-          <MoreWaysList>
-            {moreWaysToEarnKeys.map(key => (
-              <MoreWaysItem key={key}>
-                <ArrowForwardIcon aria-hidden="true" />
-                {l(key)}
-              </MoreWaysItem>
-            ))}
-          </MoreWaysList>
-        </MoreWaysBand>
       </SectionInner>
     </CreatorFundSection>
   )

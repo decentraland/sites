@@ -124,9 +124,9 @@
       "measure": {
         "title": "報酬の評価対象",
         "subtitle": "各サイクルのプールは、各体験の貢献度に応じて分配されます。",
-        "new_players": "Decentralandに呼び込んだプレイヤー",
-        "playtime": "体験で過ごされたプレイ時間",
-        "retention": "再訪してくれるプレイヤー"
+        "new_players": "Decentralandの新規プレイヤー",
+        "playtime": "アクティブなプレイ時間",
+        "retention": "プレイヤーの定着率"
       },
       "real": {
         "title": "本物のプレイヤー。本物のプレイ。",
@@ -186,7 +186,7 @@
         "join_question": "参加方法は？",
         "join_answer": "オプトインは11月11日にCreator Hubで開始します。18歳以上で、体験をデプロイしているNAMEまたはWorldを所有している必要があります。所有ウォレットでプログラム規約に署名してください。1回のオプトインで対象となるのは1つのNAMEまたはWorldです。",
         "rewards_question": "支払いはどのように計算されますか？",
-        "rewards_answer": "各サイクルのプールは、プレイ時間、再訪プレイヤー、新規プレイヤーに基づいて、対象となる体験で分配されます。Creator Hubの数値はプレビューです。最終的な支払い額は審査後に算出されるため、ダッシュボードと異なる場合があります。",
+        "rewards_answer": "各サイクルのプールは、アクティブなプレイ時間、プレイヤーの定着率、Decentralandの新規プレイヤー数に基づいて、対象となる体験で分配されます。Creator Hubの数値はプレビューです。最終的な支払い額は審査後に算出されるため、ダッシュボードと異なる場合があります。",
         "worlds_question": "Worldsも対象ですか？",
         "worlds_answer": "はい。Genesis Cityのシーンも公開Worldsも対象です。",
         "wallet_question": "支払い用ウォレットを指定できますか？",

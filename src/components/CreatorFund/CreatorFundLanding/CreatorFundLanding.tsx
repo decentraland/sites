@@ -5,6 +5,7 @@ import { Eligibility } from '../Eligibility'
 import { Faq } from '../Faq'
 import { Hero } from '../Hero'
 import { Join } from '../Join'
+import { MoreWaysToEarn } from '../MoreWaysToEarn'
 import { Payouts } from '../Payouts'
 import { PayoutSignals } from '../PayoutSignals'
 import { Schedule } from '../Schedule'
@@ -25,6 +26,7 @@ const CreatorFundLanding = memo(() => (
     <Eligibility />
     <Builders />
     <Schedule />
+    <MoreWaysToEarn />
     <Join />
     <Faq />
   </LandingRoot>

@@ -124,9 +124,9 @@
       "measure": {
         "title": "보상 평가 기준",
         "subtitle": "매 사이클마다 각 경험의 기여도에 따라 풀을 나눕니다.",
-        "new_players": "Decentraland로 데려온 플레이어",
-        "playtime": "플레이어가 내 경험에서 보낸 시간",
-        "retention": "다시 찾아오는 플레이어"
+        "new_players": "Decentraland 신규 플레이어",
+        "playtime": "활성 플레이 시간",
+        "retention": "플레이어 리텐션"
       },
       "real": {
         "title": "진짜 플레이어. 진짜 플레이.",
@@ -186,7 +186,7 @@
         "join_question": "어떻게 참여하나요?",
         "join_answer": "옵트인은 11월 11일 Creator Hub에서 열립니다. 만 18세 이상이며 경험이 배포된 NAME 또는 World를 소유해야 합니다. 소유 지갑으로 프로그램 약관에 서명하세요. 한 번의 옵트인은 하나의 NAME 또는 World에 적용됩니다.",
         "rewards_question": "지급액은 어떻게 계산되나요?",
-        "rewards_answer": "각 사이클의 풀은 플레이 시간, 재방문 플레이어, 신규 플레이어를 기준으로 자격을 갖춘 경험들에 나눠 지급됩니다. Creator Hub 수치는 미리보기이며, 최종 지급액은 검토 후 계산되므로 대시보드와 다를 수 있습니다.",
+        "rewards_answer": "각 사이클의 풀은 활성 플레이 시간, 플레이어 리텐션, Decentraland 신규 플레이어 수를 기준으로 자격을 갖춘 경험들에 나눠 지급됩니다. Creator Hub 수치는 미리보기이며, 최종 지급액은 검토 후 계산되므로 대시보드와 다를 수 있습니다.",
         "worlds_question": "Worlds도 포함되나요?",
         "worlds_answer": "네. Genesis City의 씬과 공개 Worlds 모두 포함됩니다.",
         "wallet_question": "별도의 지급용 지갑을 사용할 수 있나요?",
