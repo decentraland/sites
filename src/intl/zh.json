@@ -74,12 +74,8 @@
       }
     },
     "creator_fund": {
-      "badge": "即将推出 · 测试版 11 月 15 日开始",
-      "title": "Creator Fund：",
-      "title_highlight": "在 Decentraland 赚取收益。",
-      "description": "奖励能吸引并留住真实玩家的体验。",
-      "pool": "30,000 USDC 奖金池，分三个周期发放。",
-      "cta": "获取 Creator Hub"
+      "title": "Creator Fund",
+      "coming_soon": "即将推出"
     },
     "home": {
       "hang_out_now": "立即加入",

@@ -143,7 +143,6 @@ enum SectionViewedTrack {
   CREATORS_FAQS = 'Creators Faqs',
   CREATORS_LIVE_SCENES = 'Creators Live Scenes',
   CREATORS_BLOG = 'Creators Blog',
-  CREATOR_FUND_HERO = 'Creator Fund Hero',
   LANDING_HERO = 'Landing Hero',
   LANDING_EVENTS_PLACES_FEED = 'Landing Events Places Feed',
   LANDING_BLOG_FEED = 'Landing Blog Feed',

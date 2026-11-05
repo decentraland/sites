@@ -74,12 +74,8 @@
       }
     },
     "creator_fund": {
-      "badge": "출시 예정 · 베타 11월 15일 시작",
-      "title": "Creator Fund:",
-      "title_highlight": "Decentraland에서 수익을 올리세요.",
-      "description": "실제 플레이어를 모으고 유지하는 경험에 보상을 드립니다.",
-      "pool": "30,000 USDC 풀을 세 번의 사이클에 걸쳐 나눕니다.",
-      "cta": "Creator Hub 받기"
+      "title": "Creator Fund",
+      "coming_soon": "출시 예정"
     },
     "home": {
       "hang_out_now": "지금 어울리기",
