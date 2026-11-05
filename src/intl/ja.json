@@ -113,7 +113,6 @@
       },
       "how": {
         "title": "つくって稼ぐ",
-        "subtitle": "最初の支払いまで、3つのステップ。",
         "opt_in_title": "オプトイン",
         "opt_in_link": "Creator Hubをダウンロード",
         "opt_in_text": "して、Creator Fundにオプトインします。",
@@ -157,18 +156,12 @@
         "leaderboard_label": "リーダーボード",
         "leaderboard": "上位の体験と支払い額は、公開リーダーボードに掲載されます。"
       },
-      "builders": {
-        "title": "Decentralandのビルダーに会おう",
-        "subtitle": "アーティスト、スタジオ、ゲームクリエイターがすでにDecentralandで制作しています。",
-        "role": "Decentralandビルダー",
-        "previous": "前へ",
-        "next": "次へ",
-        "go_to_slide": "スライド{number}へ移動",
-        "more_title": "もっと稼ぐ方法",
-        "more_wearables": "WearablesとEmotesを販売して、売上の97.5%を受け取れる",
-        "more_funding": "Creator Successの資金援助や助成金に応募できる",
-        "more_contests": "Buildathons、Game Jams、シーズンコンテストで賞品を獲得できる",
-        "more_purchases": "ゲーム内でのクリエイター向け購入機能をQ1 2027に提供予定"
+      "more_ways": {
+        "title": "もっと稼ぐ方法",
+        "wearables": "WearablesとEmotesを販売して、売上の97.5%を受け取れる",
+        "funding": "Creator Successの資金援助や助成金に応募できる",
+        "contests": "Buildathons、Game Jams、シーズンコンテストで賞品を獲得できる",
+        "purchases": "ゲーム内でのクリエイター向け購入機能をQ1 2027に提供予定"
       },
       "dates": {
         "title": "ベータスケジュール",

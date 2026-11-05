@@ -22,7 +22,7 @@ const MoreWaysToEarn = memo(() => {
             <RubyTile>
               <TollOutlinedIcon aria-hidden="true" />
             </RubyTile>
-            <MoreWaysTitle>{l('page.creator_fund.builders.more_title')}</MoreWaysTitle>
+            <MoreWaysTitle>{l('page.creator_fund.more_ways.title')}</MoreWaysTitle>
           </MoreWaysHeader>
           <MoreWaysList>
             {moreWaysToEarnKeys.map(key => (

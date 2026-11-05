@@ -2,7 +2,6 @@ import React from 'react'
 import { render, screen, within } from '@testing-library/react'
 import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
-import { connectCards } from '../../Create/data'
 import {
   CREATOR_FUND_CONTACT_EMAIL,
   CREATOR_FUND_TERMS_URL,
@@ -147,21 +146,14 @@ describe('CreatorFundLanding', () => {
 
   it('should show the other ways to earn right after the schedule', () => {
     const schedule = document.getElementById('dates') as HTMLElement
-    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.builders.more_title' })
+    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' })
 
     expect(schedule.compareDocumentPosition(moreWays) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(schedule.contains(moreWays)).toBe(false)
   })
 
-  it('should show the builders after the FAQ', () => {
-    const faq = document.getElementById('faq') as HTMLElement
-    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' })
-
-    expect(faq.compareDocumentPosition(builders) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  })
-
-  it('should show a quote for every builder', () => {
-    connectCards.forEach(builder => expect(screen.getByRole('img', { name: builder.name })).toBeInTheDocument())
+  it('should not render the builders section', () => {
+    expect(screen.queryByText('page.creator_fund.builders.title')).not.toBeInTheDocument()
   })
 
   it('should render every FAQ entry', () => {

@@ -75,10 +75,10 @@ const payoutSignals: IconCopy[] = [
 ]
 
 const moreWaysToEarnKeys = [
-  'page.creator_fund.builders.more_wearables',
-  'page.creator_fund.builders.more_funding',
-  'page.creator_fund.builders.more_contests',
-  'page.creator_fund.builders.more_purchases'
+  'page.creator_fund.more_ways.wearables',
+  'page.creator_fund.more_ways.funding',
+  'page.creator_fund.more_ways.contests',
+  'page.creator_fund.more_ways.purchases'
 ]
 
 const eligibilityCards = [

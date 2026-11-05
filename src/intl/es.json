@@ -113,7 +113,6 @@
       },
       "how": {
         "title": "Construye para ganar",
-        "subtitle": "Tres pasos hasta tu primer pago.",
         "opt_in_title": "Inscríbete",
         "opt_in_link": "Descarga Creator Hub",
         "opt_in_text": " e inscríbete en el Creator Fund.",
@@ -157,18 +156,12 @@
         "leaderboard_label": "Clasificación",
         "leaderboard": "Las mejores experiencias y sus pagos aparecen en una clasificación pública."
       },
-      "builders": {
-        "title": "Conoce a los creadores de Decentraland",
-        "subtitle": "Artistas, estudios y creadores de juegos que ya construyen en Decentraland.",
-        "role": "Creador de Decentraland",
-        "previous": "Anterior",
-        "next": "Siguiente",
-        "go_to_slide": "Ir a la diapositiva {number}",
-        "more_title": "Más formas de ganar",
-        "more_wearables": "Vende Wearables y Emotes y quédate con el 97,5% de cada venta",
-        "more_funding": "Solicita financiación y subvenciones de Creator Success",
-        "more_contests": "Gana premios en Buildathons, Game Jams y concursos de temporada",
-        "more_purchases": "Compras de creadores dentro del juego, a partir del Q1 2027"
+      "more_ways": {
+        "title": "Más formas de ganar",
+        "wearables": "Vende Wearables y Emotes y quédate con el 97,5% de cada venta",
+        "funding": "Solicita financiación y subvenciones de Creator Success",
+        "contests": "Gana premios en Buildathons, Game Jams y concursos de temporada",
+        "purchases": "Compras de creadores dentro del juego, a partir del Q1 2027"
       },
       "dates": {
         "title": "Calendario de la Beta",

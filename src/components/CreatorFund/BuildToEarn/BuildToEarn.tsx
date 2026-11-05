@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { formatUsd } from '../CreatorFund.helpers'
-import { CreatorFundSection, DisplayTitle, LeadText, RubyTile, SectionInner } from '../CreatorFund.styled'
+import { CreatorFundSection, DisplayTitle, RubyTile, SectionInner } from '../CreatorFund.styled'
 import { CREATOR_HUB_DOWNLOAD_PATH, betaProgram, buildToEarnSteps } from '../data'
 import { StepCard, StepLink, StepNumber, StepText, StepTitle, StepsGrid } from './BuildToEarn.styled'
 
@@ -15,7 +15,6 @@ const BuildToEarn = memo(() => {
       <AnimatedBackground variant="absolute" />
       <SectionInner>
         <DisplayTitle>{l('page.creator_fund.how.title')}</DisplayTitle>
-        <LeadText>{l('page.creator_fund.how.subtitle')}</LeadText>
         <StepsGrid>
           {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
           {buildToEarnSteps.map(({ icon: Icon, titleKey, textKey, linkKey }, index) => (

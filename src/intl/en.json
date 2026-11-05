@@ -122,7 +122,6 @@
       },
       "how": {
         "title": "Build to earn",
-        "subtitle": "Three steps to your first payout.",
         "opt_in_title": "Opt in",
         "opt_in_link": "Download Creator Hub",
         "opt_in_text": " and opt in to the Creator Fund.",
@@ -166,21 +165,15 @@
         "leaderboard_label": "Leaderboard",
         "leaderboard": "The top experiences and their payouts appear on a public leaderboard."
       },
-      "builders": {
-        "title": "Meet Decentraland builders",
-        "subtitle": "Artists, studios and game makers already building in Decentraland.",
-        "role": "Decentraland builder",
-        "previous": "Previous",
-        "next": "Next",
-        "go_to_slide": "Go to slide {number}",
-        "more_title": "More ways to earn",
-        "more_wearables": "Sell Wearables and Emotes and keep 97.5% of each sale",
-        "more_funding": "Apply for Creator Success funding and grants",
-        "more_contests": "Win prizes in Buildathons, Game Jams and seasonal contests",
-        "more_purchases": "In-game creator purchases arriving Q1 2027"
+      "more_ways": {
+        "title": "More ways to earn",
+        "wearables": "Sell Wearables and Emotes and keep 97.5% of each sale",
+        "funding": "Apply for Creator Success funding and grants",
+        "contests": "Win prizes in Buildathons, Game Jams and seasonal contests",
+        "purchases": "In-game creator purchases arriving Q1 2027"
       },
       "dates": {
-        "title": "Beta schedule",
+        "title": "Beta Schedule",
         "cycle_name": "Cycle {number}",
         "launch": "Fund launch. Opt-in opens in Creator Hub.",
         "cycle_row": "{name} · {amount} USDC · Payment by {date}"

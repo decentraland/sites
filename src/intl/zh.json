@@ -113,7 +113,6 @@
       },
       "how": {
         "title": "创作即赚取",
-        "subtitle": "三步拿到你的第一笔收益。",
         "opt_in_title": "选择加入",
         "opt_in_link": "下载 Creator Hub",
         "opt_in_text": "，并选择加入 Creator Fund。",
@@ -157,18 +156,12 @@
         "leaderboard_label": "排行榜",
         "leaderboard": "表现最佳的体验及其发放金额将显示在公开排行榜上。"
       },
-      "builders": {
-        "title": "认识 Decentraland 创作者",
-        "subtitle": "艺术家、工作室和游戏开发者已经在 Decentraland 中创作。",
-        "role": "Decentraland 创作者",
-        "previous": "上一个",
-        "next": "下一个",
-        "go_to_slide": "前往第 {number} 张幻灯片",
-        "more_title": "更多赚取方式",
-        "more_wearables": "出售 Wearables 和 Emotes，每笔销售额保留 97.5%",
-        "more_funding": "申请 Creator Success 资金和资助",
-        "more_contests": "在 Buildathons、Game Jams 和赛季比赛中赢取奖品",
-        "more_purchases": "游戏内创作者购买功能将于 Q1 2027 推出"
+      "more_ways": {
+        "title": "更多赚取方式",
+        "wearables": "出售 Wearables 和 Emotes，每笔销售额保留 97.5%",
+        "funding": "申请 Creator Success 资金和资助",
+        "contests": "在 Buildathons、Game Jams 和赛季比赛中赢取奖品",
+        "purchases": "游戏内创作者购买功能将于 Q1 2027 推出"
       },
       "dates": {
         "title": "测试版日程",

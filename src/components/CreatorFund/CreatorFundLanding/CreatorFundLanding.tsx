@@ -1,5 +1,4 @@
 import { memo } from 'react'
-import { Builders } from '../Builders'
 import { BuildToEarn } from '../BuildToEarn'
 import { Eligibility } from '../Eligibility'
 import { Faq } from '../Faq'
@@ -28,7 +27,6 @@ const CreatorFundLanding = memo(() => (
     <MoreWaysToEarn />
     <Join />
     <Faq />
-    <Builders />
   </LandingRoot>
 ))
 
