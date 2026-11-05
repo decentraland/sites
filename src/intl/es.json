@@ -73,6 +73,10 @@
         }
       }
     },
+    "creator_fund": {
+      "title": "Creator Fund",
+      "coming_soon": "Próximamente"
+    },
     "home": {
       "hang_out_now": "SUMATE AHORA",
       "hero": {

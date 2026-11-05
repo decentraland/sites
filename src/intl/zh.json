@@ -73,6 +73,10 @@
         }
       }
     },
+    "creator_fund": {
+      "title": "Creator Fund",
+      "coming_soon": "即将推出"
+    },
     "home": {
       "hang_out_now": "立即加入",
       "hero": {

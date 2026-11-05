@@ -82,6 +82,10 @@
         }
       }
     },
+    "creator_fund": {
+      "title": "Creator Fund",
+      "coming_soon": "Coming Soon"
+    },
     "creator-hub": {
       "title": "Download Decentraland Creator Hub",
       "description": "Download the Creator Hub to start building immersive scenes and interactive experiences in Decentraland.",

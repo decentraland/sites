@@ -73,6 +73,10 @@
         }
       }
     },
+    "creator_fund": {
+      "title": "Creator Fund",
+      "coming_soon": "Bientôt disponible"
+    },
     "home": {
       "hang_out_now": "TRAÎNEZ MAINTENANT",
       "hero": {
