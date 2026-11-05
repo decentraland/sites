@@ -60,22 +60,6 @@ const WhySubtitle = styled(MutedText)(({ theme }) => ({
   }
 }))
 
-const AwardedLine = styled('p')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1.5),
-  margin: `${theme.spacing(2)} 0 0`,
-  fontSize: 18,
-  color: creatorFundColors.text,
-  ['& svg']: {
-    fontSize: 28,
-    flexShrink: 0
-  },
-  [theme.breakpoints.up('sm')]: {
-    fontSize: 20
-  }
-}))
-
 const PlatformGrid = styled('ul')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, 1fr)',
@@ -90,33 +74,36 @@ const PlatformGrid = styled('ul')(({ theme }) => ({
   }
 }))
 
+// Same shape as the homepage's secondary (Epic Games) button: white, 16px radius,
+// uppercase 600, white focus/hover ring.
 const PlatformLink = styled('a')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: theme.spacing(1.25),
-  height: 56,
+  boxSizing: 'border-box',
+  height: 64,
   padding: `0 ${theme.spacing(2)}`,
   borderRadius: 16,
   backgroundColor: creatorFundColors.white,
-  color: creatorFundColors.background,
-  fontSize: 13,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
+  color: creatorFundColors.card,
+  fontSize: 15,
+  fontWeight: 600,
+  letterSpacing: '0.46px',
   textTransform: 'uppercase',
   textDecoration: 'none',
-  outline: '2px solid transparent',
+  outline: '3px solid transparent',
   outlineOffset: 4,
-  transition: 'outline-color 0.2s, background-color 0.2s',
+  transition: 'outline-color 0.15s ease, transform 0.1s ease',
   ['& svg']: {
-    fontSize: 20,
+    fontSize: 22,
     flexShrink: 0
   },
   ['&:hover, &:focus-visible']: {
     outlineColor: creatorFundColors.white
   },
   ['&:active']: {
-    backgroundColor: creatorFundColors.text
+    transform: 'scale(0.98)'
   }
 }))
 
@@ -171,4 +158,4 @@ const SceneImage = styled('img')({
   borderRadius: 12
 })
 
-export { AwardedLine, HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }
+export { HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }

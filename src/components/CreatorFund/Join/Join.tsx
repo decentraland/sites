@@ -3,6 +3,7 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useScrollParallax } from '../../../hooks/useScrollParallax'
 import avatarsImage from '../../../images/creator-fund/avatars.webp'
 import { PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, PrimaryButtonLink } from '../CreatorFund.styled'
+import { CREATOR_FUND_TERMS_URL } from '../data'
 import { AvatarsImage, JoinActions, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink } from './Join.styled'
 
 const Join = memo(() => {
@@ -14,7 +15,10 @@ const Join = memo(() => {
       <JoinInner>
         <JoinTitle>{l('page.creator_fund.join.title')}</JoinTitle>
         <JoinSubtitle>
-          {l('page.creator_fund.join.subtitle')} <TermsLink href="#terms">{l('page.creator_fund.join.see_terms')}</TermsLink>
+          {l('page.creator_fund.join.subtitle')}{' '}
+          <TermsLink href={CREATOR_FUND_TERMS_URL} target="_blank" rel="noopener noreferrer">
+            {l('page.creator_fund.join.see_terms')}
+          </TermsLink>
         </JoinSubtitle>
         <JoinActions>
           <PrimaryButtonLink href="/create">{l('page.creator_fund.cta.get_creator_hub')}</PrimaryButtonLink>

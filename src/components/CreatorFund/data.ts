@@ -40,8 +40,7 @@ const sectionLinks: SectionLink[] = [
   { id: 'eligibility', labelKey: 'page.creator_fund.nav.eligibility' },
   { id: 'rewards', labelKey: 'page.creator_fund.nav.rewards' },
   { id: 'dates', labelKey: 'page.creator_fund.nav.dates' },
-  { id: 'faq', labelKey: 'page.creator_fund.nav.faq' },
-  { id: 'terms', labelKey: 'page.creator_fund.nav.terms' }
+  { id: 'faq', labelKey: 'page.creator_fund.nav.faq' }
 ]
 
 const platformLinks: PlatformLink[] = [
@@ -96,8 +95,15 @@ const faqEntries: FaqEntry[] = ['join', 'rewards', 'worlds', 'wallet', 'transfer
 
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
+// Program Rules and Program Terms are two separate pages on the docs site
+// (decentraland/docs: creator/creator-fund/program-rules.md and program-terms.md).
+const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
+const CREATOR_FUND_TERMS_URL = 'https://docs.decentraland.org/creator/creator-fund/program-terms'
+
 export {
   CREATOR_FUND_CONTACT_EMAIL,
+  CREATOR_FUND_RULES_URL,
+  CREATOR_FUND_TERMS_URL,
   betaProgram,
   buildToEarnSteps,
   eligibilityCards,

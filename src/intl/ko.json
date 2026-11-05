@@ -85,6 +85,7 @@
         "rewards": "보상",
         "dates": "일정",
         "faq": "FAQ",
+        "rules": "규칙",
         "terms": "약관",
         "open_menu": "메뉴 열기",
         "close_menu": "메뉴 닫기"
@@ -109,7 +110,6 @@
         "title": "Decentraland",
         "visit": "Decentraland 방문하기",
         "subtitle": "커뮤니티가 만들고 소유하는 소셜 게이밍 세계.",
-        "awarded": "2026년에 크리에이터에게 [$X] 지급.",
         "platforms_label": "Decentraland 다운로드",
         "scene_alt": "Decentraland의 {name} 씬"
       },
@@ -198,14 +198,8 @@
         "after_question": "베타 시즌 이후에는 어떻게 되나요?",
         "after_answer": "시즌 1은 2027년 1월부터 3월까지 진행될 예정입니다. 일정과 소식은 12월 28일에 확정됩니다.",
         "grant_question": "지원금(그랜트)인가요?",
-        "grant_answer": "아니요. 그랜트는 출시 전 프로젝트를 지원합니다. Creator Fund는 이미 Decentraland에서 운영 중이며 성장하는 씬에 보상합니다."
-      },
-      "terms": {
-        "title": "Creator Fund",
-        "rules": "프로그램 규칙",
-        "program_terms": "프로그램 약관",
-        "pending": "최종 링크 준비 중",
-        "contact": "문의"
+        "grant_answer": "아니요. 그랜트는 출시 전 프로젝트를 지원합니다. Creator Fund는 이미 Decentraland에서 운영 중이며 성장하는 씬에 보상합니다.",
+        "contact_prompt": "문의 사항이나 지원이 필요하시면 다음 주소로 연락해 주세요:"
       }
     },
     "home": {

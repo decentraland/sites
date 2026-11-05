@@ -1,5 +1,5 @@
 import { styled } from 'decentraland-ui2'
-import { DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
+import { CardTitle, DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
 
 const EligibilityTitle = styled(DisplayTitle)({
   maxWidth: 768
@@ -19,13 +19,6 @@ const EligibilityCard = styled(SolidCard)(({ theme }) => ({
     padding: theme.spacing(4)
   }
 }))
-
-const CardTitle = styled('h3')({
-  margin: 0,
-  fontSize: 20,
-  fontWeight: 700,
-  color: creatorFundColors.text
-})
 
 const RequirementList = styled('ul')(({ theme }) => ({
   display: 'flex',

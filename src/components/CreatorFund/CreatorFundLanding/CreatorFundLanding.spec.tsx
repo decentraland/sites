@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import { connectCards } from '../../Create/data'
-import { faqEntries, sectionLinks } from '../data'
+import { CREATOR_FUND_CONTACT_EMAIL, CREATOR_FUND_TERMS_URL, faqEntries, sectionLinks } from '../data'
 import { CreatorFundLanding } from './CreatorFundLanding'
 
 jest.mock('decentraland-ui2', () => {
@@ -113,11 +113,22 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'page.creator_fund.cta.get_creator_hub' })).toHaveAttribute('href', '/create')
   })
 
-  it('should offer the program contact address', () => {
-    expect(screen.getByRole('link', { name: 'page.creator_fund.terms.contact' })).toHaveAttribute(
+  it('should offer the support address under the FAQ', () => {
+    const faq = document.getElementById('faq') as HTMLElement
+
+    expect(within(faq).getByText(/page\.creator_fund\.faq\.contact_prompt/)).toBeInTheDocument()
+    expect(within(faq).getByRole('link', { name: CREATOR_FUND_CONTACT_EMAIL })).toHaveAttribute(
       'href',
-      'mailto:creatorfund@decentraland.org'
+      `mailto:${CREATOR_FUND_CONTACT_EMAIL}`
     )
+  })
+
+  it('should link See Terms to the Program Terms page', () => {
+    expect(screen.getByRole('link', { name: 'page.creator_fund.join.see_terms' })).toHaveAttribute('href', CREATOR_FUND_TERMS_URL)
+  })
+
+  it('should not render a Creator Fund footer of its own', () => {
+    expect(document.getElementById('terms')).not.toBeInTheDocument()
   })
 
   it('should play the landscape hero video on desktop', () => {

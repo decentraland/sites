@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import MenuIcon from '@mui/icons-material/Menu'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { sectionLinks } from '../data'
+import { CREATOR_FUND_RULES_URL, CREATOR_FUND_TERMS_URL, sectionLinks } from '../data'
 import {
   BrandBy,
   BrandLink,
@@ -47,6 +47,12 @@ const SectionNav = memo(() => {
               {l(link.labelKey)}
             </DesktopLink>
           ))}
+          <DesktopLink href={CREATOR_FUND_RULES_URL} target="_blank" rel="noopener noreferrer">
+            {l('page.creator_fund.nav.rules')}
+          </DesktopLink>
+          <DesktopLink href={CREATOR_FUND_TERMS_URL} target="_blank" rel="noopener noreferrer">
+            {l('page.creator_fund.nav.terms')}
+          </DesktopLink>
         </DesktopLinks>
         <DesktopCta href="#join">{l('page.creator_fund.cta.join')}</DesktopCta>
         <MenuButton
@@ -67,6 +73,12 @@ const SectionNav = memo(() => {
                 {l(link.labelKey)}
               </MobileLink>
             ))}
+            <MobileLink href={CREATOR_FUND_RULES_URL} target="_blank" rel="noopener noreferrer" onClick={close}>
+              {l('page.creator_fund.nav.rules')}
+            </MobileLink>
+            <MobileLink href={CREATOR_FUND_TERMS_URL} target="_blank" rel="noopener noreferrer" onClick={close}>
+              {l('page.creator_fund.nav.terms')}
+            </MobileLink>
             <MobileCta href="#join" onClick={close}>
               {l('page.creator_fund.cta.join')}
             </MobileCta>

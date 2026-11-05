@@ -111,7 +111,7 @@ const AuthorAvatar = styled('img')({
 
 const AuthorName = styled('span')({
   display: 'block',
-  fontWeight: 700
+  fontWeight: 600
 })
 
 const AuthorRole = styled('span')({

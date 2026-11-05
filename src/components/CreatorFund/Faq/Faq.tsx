@@ -3,15 +3,15 @@ import { memo } from 'react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { CreatorFundSection, DisplayTitle } from '../CreatorFund.styled'
-import { faqEntries } from '../data'
-import { FaqAnswer, FaqInner, FaqItem, FaqList, FaqQuestion } from './Faq.styled'
+import { CREATOR_FUND_CONTACT_EMAIL, faqEntries } from '../data'
+import { FaqAnswer, FaqContact, FaqContactLink, FaqInner, FaqItem, FaqList, FaqQuestion } from './Faq.styled'
 
 // Native <details>: keyboard and screen reader support come with the element.
 const Faq = memo(() => {
   const l = useFormatMessage()
 
   return (
-    <CreatorFundSection id="faq" spacing="top">
+    <CreatorFundSection id="faq">
       <FaqInner>
         <DisplayTitle>{l('page.creator_fund.faq.title')}</DisplayTitle>
         <FaqList>
@@ -25,6 +25,10 @@ const Faq = memo(() => {
             </FaqItem>
           ))}
         </FaqList>
+        <FaqContact>
+          {l('page.creator_fund.faq.contact_prompt')}{' '}
+          <FaqContactLink href={`mailto:${CREATOR_FUND_CONTACT_EMAIL}`}>{CREATOR_FUND_CONTACT_EMAIL}</FaqContactLink>
+        </FaqContact>
       </FaqInner>
     </CreatorFundSection>
   )

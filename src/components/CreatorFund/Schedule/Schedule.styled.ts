@@ -1,5 +1,5 @@
 import { Box, styled } from 'decentraland-ui2'
-import { DisplayTitle, Eyebrow, creatorFundColors, monoFontFamily, purpleGradient, rubyGradient } from '../CreatorFund.styled'
+import { DisplayTitle, Eyebrow, creatorFundColors, labelStyles, purpleGradient, rubyGradient } from '../CreatorFund.styled'
 
 const ScheduleTitle = styled(DisplayTitle)({
   maxWidth: 768
@@ -29,7 +29,7 @@ const CycleSegment = styled('span', {
   background: alternate ? purpleGradient : rubyGradient,
   color: creatorFundColors.white,
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 600,
   whiteSpace: 'nowrap',
   [theme.breakpoints.up('sm')]: {
     fontSize: 12
@@ -89,11 +89,8 @@ const Milestone = styled('li')(({ theme }) => ({
 const MilestoneDate = styled('span', {
   shouldForwardProp: prop => prop !== 'highlight'
 })<{ highlight: boolean }>(({ theme, highlight }) => ({
-  fontFamily: monoFontFamily,
+  ...labelStyles,
   fontSize: 14,
-  fontWeight: 500,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
   color: highlight ? creatorFundColors.primary : creatorFundColors.mutedText,
   [theme.breakpoints.up('sm')]: {
     fontSize: 16
@@ -103,7 +100,7 @@ const MilestoneDate = styled('span', {
 const MilestoneText = styled('span', {
   shouldForwardProp: prop => prop !== 'highlight'
 })<{ highlight: boolean }>(({ highlight }) => ({
-  fontWeight: highlight ? 700 : 400,
+  fontWeight: highlight ? 600 : 400,
   color: creatorFundColors.text
 }))
 

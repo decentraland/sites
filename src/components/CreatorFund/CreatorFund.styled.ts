@@ -1,15 +1,20 @@
 import { Box, dclColors, keyframes, styled } from 'decentraland-ui2'
 import patternImage from '../../images/creator-fund/pattern.jpg'
 
-// Palette of the Creator Fund design, mapped onto the DCL tokens it was drawn from.
+// Palette of the Creator Fund design, on the same DCL tokens decentraland.org uses:
+// white headings, gray5 body copy, primary-red CTAs that darken on hover.
 const creatorFundColors = {
   background: dclColors.neutral.softBlack1,
   card: dclColors.neutral.softBlack2,
+  heading: dclColors.neutral.white,
   text: dclColors.neutral.gray5,
   mutedText: dclColors.neutral.gray4,
   border: dclColors.neutral.gray0,
   primary: dclColors.base.primary,
-  primaryHover: dclColors.base.primaryLight1,
+  primaryHover: dclColors.base.primaryDark1,
+  primaryActive: dclColors.base.primaryDark2,
+  linkHover: dclColors.base.primaryLight1,
+  buttonText: dclColors.neutral.softWhite,
   orange: dclColors.brand.melon,
   purpleDeep: dclColors.brand.purple,
   purpleBright: dclColors.brand.violet,
@@ -19,10 +24,19 @@ const creatorFundColors = {
   glassBorder: 'rgba(255, 255, 255, 0.15)'
 }
 
-const monoFontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+// The Creator Fund navbar replaces the site one, so it uses the site navbar's
+// breakpoint and heights (LandingNavbar: 64px below 992px, 92px from it).
+const NAVBAR_DESKTOP_QUERY = '@media (min-width: 992px)'
+const NAVBAR_HEIGHT = { mobile: 64, desktop: 92 }
+// Navbar height + 8px of air above an anchored section's title.
+const SECTION_SCROLL_MARGIN = { mobile: NAVBAR_HEIGHT.mobile + 8, desktop: NAVBAR_HEIGHT.desktop + 8 }
 
-// Global navbar (64px mobile / 92px desktop) + the 64px section nav under it + 8px air.
-const SECTION_SCROLL_MARGIN = { mobile: 136, desktop: 164 }
+// decentraland.org labels are uppercase Inter at 600; the site uses no monospace face.
+const labelStyles = {
+  fontWeight: 600,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase'
+} as const
 
 // useScrollParallax writes each purple band's scroll offset to this custom property;
 // the band's pattern layer reads it to move at a quarter of the page's pace.
@@ -69,18 +83,19 @@ const purpleBandStyles = {
 
 type SectionSpacing = 'both' | 'top' | 'bottom'
 
+// Vertical rhythm of the homepage sections: 48px on phones, 80px from `sm` up.
 const CreatorFundSection = styled('section', {
   shouldForwardProp: prop => prop !== 'spacing' && prop !== 'band'
 })<{ spacing?: SectionSpacing; band?: boolean }>(({ theme, spacing = 'both', band = false }) => ({
   ...(band ? purpleBandStyles : {}),
-  paddingTop: spacing === 'bottom' ? 0 : theme.spacing(10),
-  paddingBottom: spacing === 'top' ? 0 : theme.spacing(10),
+  paddingTop: spacing === 'bottom' ? 0 : theme.spacing(6),
+  paddingBottom: spacing === 'top' ? 0 : theme.spacing(6),
   scrollMarginTop: SECTION_SCROLL_MARGIN.mobile,
   [theme.breakpoints.up('sm')]: {
-    paddingTop: spacing === 'bottom' ? 0 : theme.spacing(14),
-    paddingBottom: spacing === 'top' ? 0 : theme.spacing(14)
+    paddingTop: spacing === 'bottom' ? 0 : theme.spacing(10),
+    paddingBottom: spacing === 'top' ? 0 : theme.spacing(10)
   },
-  [theme.breakpoints.up('md')]: {
+  [NAVBAR_DESKTOP_QUERY]: {
     scrollMarginTop: SECTION_SCROLL_MARGIN.desktop
   }
 }))
@@ -98,16 +113,29 @@ const SectionInner = styled(Box)(({ theme }) => ({
   }
 }))
 
+// Section titles as on the homepage: 48px / 600 / -0.5px, 32px on phones.
 const DisplayTitle = styled('h2')(({ theme }) => ({
   margin: 0,
-  fontSize: 30,
-  fontWeight: 800,
-  letterSpacing: '-0.03em',
-  lineHeight: 1.05,
-  color: creatorFundColors.text,
+  fontSize: 32,
+  fontWeight: 600,
+  letterSpacing: '-0.5px',
+  lineHeight: 1.2,
+  color: creatorFundColors.heading,
   textWrap: 'balance',
   [theme.breakpoints.up('sm')]: {
     fontSize: 48
+  }
+}))
+
+// Card titles as on /create: 24px / 600, 20px on phones.
+const CardTitle = styled('h3')(({ theme }) => ({
+  margin: 0,
+  fontSize: 20,
+  fontWeight: 600,
+  lineHeight: 1.3,
+  color: creatorFundColors.heading,
+  [theme.breakpoints.up('sm')]: {
+    fontSize: 24
   }
 }))
 
@@ -115,23 +143,21 @@ const LeadText = styled('p')(({ theme }) => ({
   margin: `${theme.spacing(2)} 0 0`,
   maxWidth: 672,
   fontSize: 18,
-  lineHeight: 1.55,
+  lineHeight: 1.5,
   color: creatorFundColors.text,
   textWrap: 'pretty'
 }))
 
 const MutedText = styled('p')({
   margin: 0,
-  lineHeight: 1.6,
+  fontSize: 16,
+  lineHeight: 1.5,
   color: creatorFundColors.mutedText
 })
 
 const Eyebrow = styled('span')({
-  fontFamily: monoFontFamily,
-  fontWeight: 500,
-  fontSize: 12,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase'
+  ...labelStyles,
+  fontSize: 12
 })
 
 type TileSize = 'small' | 'medium' | 'large'
@@ -174,41 +200,85 @@ const SolidCard = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3)
 }))
 
+// Main page CTA, same shape as the homepage hero's Download button:
+// 64px tall, 16px radius, uppercase 600, white focus/hover ring.
 const PrimaryButtonLink = styled('a')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: theme.spacing(1),
-  borderRadius: 9999,
-  padding: '13px 24px',
-  fontSize: 13,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  whiteSpace: 'nowrap',
-  textDecoration: 'none',
+  gap: theme.spacing(2),
+  boxSizing: 'border-box',
+  minWidth: 304,
+  height: 64,
+  padding: `0 ${theme.spacing(4)}`,
+  borderRadius: 16,
   backgroundColor: creatorFundColors.primary,
-  color: creatorFundColors.white,
-  transition: 'background-color 0.2s, transform 0.2s',
-  ['&:hover']: {
-    backgroundColor: creatorFundColors.primaryHover
-  },
-  ['&:focus-visible']: {
-    outline: `2px solid ${creatorFundColors.white}`,
-    outlineOffset: 3
+  color: creatorFundColors.buttonText,
+  fontSize: '19.89px',
+  fontWeight: 600,
+  letterSpacing: '0.61px',
+  textTransform: 'uppercase',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
+  outline: '3px solid transparent',
+  outlineOffset: 4,
+  transition: 'outline-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease',
+  ['&:hover, &:focus-visible']: {
+    outlineColor: creatorFundColors.white
   },
   ['&:active']: {
+    backgroundColor: creatorFundColors.primaryActive,
     transform: 'scale(0.98)'
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    minWidth: 0
   }
 }))
 
+// Compact CTA, same as the site navbar's Download button: 40px tall, 12px radius.
+const NavButtonLink = styled('a')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxSizing: 'border-box',
+  height: 40,
+  padding: '0 16px',
+  borderRadius: 12,
+  backgroundColor: creatorFundColors.primary,
+  color: creatorFundColors.white,
+  fontSize: 15,
+  fontWeight: 600,
+  letterSpacing: '0.46px',
+  textTransform: 'uppercase',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+  transition: 'background-color 0.15s ease, transform 0.1s ease',
+  ['&:hover']: {
+    backgroundColor: creatorFundColors.primaryHover
+  },
+  ['&:active']: {
+    backgroundColor: creatorFundColors.primaryActive,
+    transform: 'scale(0.98)'
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${creatorFundColors.white}`,
+    outlineOffset: 2
+  }
+})
+
 export {
+  CardTitle,
   CreatorFundSection,
   DisplayTitle,
   Eyebrow,
   GlassCard,
   LeadText,
   MutedText,
+  NAVBAR_DESKTOP_QUERY,
+  NAVBAR_HEIGHT,
+  NavButtonLink,
   PARALLAX_OFFSET_PROPERTY,
   PARALLAX_SPEED,
   PrimaryButtonLink,
@@ -217,7 +287,7 @@ export {
   SectionInner,
   SolidCard,
   creatorFundColors,
-  monoFontFamily,
+  labelStyles,
   purpleBandStyles,
   purpleGradient,
   rubyGradient

@@ -1,12 +1,9 @@
 import { memo } from 'react'
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import TollOutlinedIcon from '@mui/icons-material/TollOutlined'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import { CreatorFundSection } from '../CreatorFund.styled'
 import { platformLinks, scenes } from '../data'
 import {
-  AwardedLine,
   HomeLink,
   PlatformGrid,
   PlatformLink,
@@ -31,10 +28,6 @@ const Why = memo(() => {
             <WhyTitle>{l('page.creator_fund.why.title')}</WhyTitle>
           </HomeLink>
           <WhySubtitle>{l('page.creator_fund.why.subtitle')}</WhySubtitle>
-          <AwardedLine>
-            <TollOutlinedIcon aria-hidden="true" />
-            <span>{l('page.creator_fund.why.awarded')}</span>
-          </AwardedLine>
           <PlatformGrid aria-label={l('page.creator_fund.why.platforms_label')}>
             {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
             {platformLinks.map(({ name, os, icon: Icon }) => (

@@ -85,6 +85,7 @@
         "rewards": "Recompensas",
         "dates": "Fechas",
         "faq": "Preguntas frecuentes",
+        "rules": "Reglas",
         "terms": "Términos",
         "open_menu": "Abrir menú",
         "close_menu": "Cerrar menú"
@@ -109,7 +110,6 @@
         "title": "Decentraland",
         "visit": "Visita Decentraland",
         "subtitle": "Un mundo de juegos sociales creado y gestionado por su comunidad.",
-        "awarded": "[$X] otorgados a creadores en 2026.",
         "platforms_label": "Descarga Decentraland",
         "scene_alt": "Escena {name} en Decentraland"
       },
@@ -198,14 +198,8 @@
         "after_question": "¿Qué pasa después de la Beta Season?",
         "after_answer": "La Season 1 está prevista de enero a marzo de 2027. Las fechas y novedades se confirmarán el 28 de diciembre.",
         "grant_question": "¿Es una subvención?",
-        "grant_answer": "No. Las subvenciones apoyan proyectos antes de su lanzamiento. El Creator Fund recompensa las escenas que ya están activas y creciendo en Decentraland."
-      },
-      "terms": {
-        "title": "Creator Fund",
-        "rules": "Reglas del programa",
-        "program_terms": "Términos del Programa",
-        "pending": "Enlace final pendiente",
-        "contact": "Contacto"
+        "grant_answer": "No. Las subvenciones apoyan proyectos antes de su lanzamiento. El Creator Fund recompensa las escenas que ya están activas y creciendo en Decentraland.",
+        "contact_prompt": "¿Tienes preguntas o necesitas ayuda? Escríbenos a"
       }
     },
     "home": {

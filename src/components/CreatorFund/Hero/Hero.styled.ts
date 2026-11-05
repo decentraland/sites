@@ -62,16 +62,14 @@ const HeroTitle = styled('h1')(({ theme }) => ({
   margin: `${theme.spacing(3)} 0 0`,
   maxWidth: 768,
   fontSize: 36,
-  fontWeight: 800,
-  letterSpacing: '-0.03em',
-  lineHeight: 1.05,
-  color: creatorFundColors.text,
+  fontWeight: 600,
+  letterSpacing: '-0.5px',
+  lineHeight: 1.2,
+  color: creatorFundColors.heading,
   textWrap: 'balance',
+  // Same scale as the homepage hero title: 60px, 36px on phones.
   [theme.breakpoints.up('sm')]: {
     fontSize: 60
-  },
-  [theme.breakpoints.up('lg')]: {
-    fontSize: 72
   }
 }))
 
@@ -124,7 +122,7 @@ const FactCard = styled(GlassCard)(({ theme }) => ({
 const FactValue = styled('span')({
   display: 'block',
   fontSize: 24,
-  fontWeight: 800,
+  fontWeight: 600,
   letterSpacing: '-0.025em'
 })
 

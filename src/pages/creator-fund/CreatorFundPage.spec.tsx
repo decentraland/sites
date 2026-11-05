@@ -16,6 +16,14 @@ jest.mock('../../config/env', () => ({
   getCurrentEnv: jest.fn()
 }))
 
+jest.mock('../../components/Layout', () => ({
+  Layout: ({ children, withNavbar = true }: { children?: React.ReactNode; withNavbar?: boolean }) => (
+    <div data-testid="layout" data-site-navbar={String(withNavbar)}>
+      {children}
+    </div>
+  )
+}))
+
 jest.mock('../../components/CreatorFund/ComingSoon', () => ({
   CreatorFundComingSoon: () => <div data-testid="coming-soon" />
 }))
@@ -39,6 +47,10 @@ describe('CreatorFundPage', () => {
       expect(screen.getByTestId('coming-soon')).toBeInTheDocument()
     })
 
+    it('should keep the site navbar', () => {
+      expect(screen.getByTestId('layout')).toHaveAttribute('data-site-navbar', 'true')
+    })
+
     it('should not load the full page', () => {
       expect(screen.queryByTestId('landing')).not.toBeInTheDocument()
     })
@@ -52,6 +64,11 @@ describe('CreatorFundPage', () => {
 
     it('should show the full Creator Fund page', async () => {
       expect(await screen.findByTestId('landing')).toBeInTheDocument()
+    })
+
+    it('should replace the site navbar with the Creator Fund one', async () => {
+      await screen.findByTestId('landing')
+      expect(screen.getByTestId('layout')).toHaveAttribute('data-site-navbar', 'false')
     })
 
     it('should not show the coming-soon placeholder', async () => {

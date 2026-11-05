@@ -1,11 +1,11 @@
 import { Box, styled } from 'decentraland-ui2'
-import { CreatorFundSection, DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
+import { CardTitle, CreatorFundSection, DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
 
 // Sits tighter than the other sections on the "Real players" card below it.
 const SignalsSection = styled(CreatorFundSection)(({ theme }) => ({
-  paddingBottom: theme.spacing(5),
+  paddingBottom: theme.spacing(3),
   [theme.breakpoints.up('sm')]: {
-    paddingBottom: theme.spacing(7)
+    paddingBottom: theme.spacing(5)
   }
 }))
 
@@ -28,11 +28,8 @@ const SignalCard = styled(SolidCard)({
   }
 })
 
-const SignalTitle = styled('p')(({ theme }) => ({
-  margin: `${theme.spacing(3)} 0 0`,
-  fontSize: 20,
-  fontWeight: 700,
-  color: creatorFundColors.text
+const SignalTitle = styled(CardTitle)(({ theme }) => ({
+  marginTop: theme.spacing(3)
 }))
 
 const RealCard = styled(SolidCard)(({ theme }) => ({

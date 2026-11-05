@@ -85,6 +85,7 @@
         "rewards": "報酬",
         "dates": "日程",
         "faq": "FAQ",
+        "rules": "ルール",
         "terms": "規約",
         "open_menu": "メニューを開く",
         "close_menu": "メニューを閉じる"
@@ -109,7 +110,6 @@
         "title": "Decentraland",
         "visit": "Decentralandを見る",
         "subtitle": "コミュニティが築き、コミュニティが所有するソーシャルゲームの世界。",
-        "awarded": "2026年にクリエイターへ [$X] を授与。",
         "platforms_label": "Decentralandをダウンロード",
         "scene_alt": "Decentralandの{name}シーン"
       },
@@ -198,14 +198,8 @@
         "after_question": "ベータシーズンの後は？",
         "after_answer": "シーズン1は2027年1月から3月を予定しています。日程と最新情報は12月28日に確定します。",
         "grant_question": "これは助成金ですか？",
-        "grant_answer": "いいえ。助成金はローンチ前のプロジェクトを支援するものです。Creator Fundは、Decentralandですでに公開され、成長しているシーンに報酬を贈ります。"
-      },
-      "terms": {
-        "title": "Creator Fund",
-        "rules": "プログラムルール",
-        "program_terms": "プログラム規約",
-        "pending": "最終リンクは準備中",
-        "contact": "お問い合わせ"
+        "grant_answer": "いいえ。助成金はローンチ前のプロジェクトを支援するものです。Creator Fundは、Decentralandですでに公開され、成長しているシーンに報酬を贈ります。",
+        "contact_prompt": "ご質問やサポートについては、こちらまでご連絡ください："
       }
     },
     "home": {

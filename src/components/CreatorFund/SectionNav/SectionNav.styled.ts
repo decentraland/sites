@@ -1,43 +1,48 @@
 import { Logo, styled } from 'decentraland-ui2'
-import { PrimaryButtonLink, SectionInner, creatorFundColors } from '../CreatorFund.styled'
+import { NAVBAR_DESKTOP_QUERY, NAVBAR_HEIGHT, NavButtonLink, creatorFundColors } from '../CreatorFund.styled'
 
-// Sticks under the fixed global navbar (64px mobile / 92px desktop).
-const NavHeader = styled('header')(({ theme }) => ({
+// Stands in for the site navbar on this page, so it borrows its surface:
+// translucent softBlack1 with a saturated blur, the same shadow and the same heights.
+const NavHeader = styled('header')({
   position: 'sticky',
-  top: 64,
-  zIndex: 10,
-  borderBottom: `1px solid ${creatorFundColors.border}`,
-  backgroundColor: 'rgba(22, 21, 24, 0.8)',
-  backdropFilter: 'blur(12px)',
-  [theme.breakpoints.up('md')]: {
-    top: 92
-  }
-}))
+  top: 0,
+  zIndex: 1100,
+  backgroundColor: 'rgba(22, 21, 24, 0.75)',
+  backdropFilter: 'saturate(1.8) blur(20px)',
+  ['WebkitBackdropFilter' as string]: 'saturate(1.8) blur(20px)',
+  boxShadow: '0px 1.333px 24px rgba(0,0,0,0.12), 0px 8px 13.333px rgba(0,0,0,0.14), 0px 4px 6.667px rgba(0,0,0,0.2)'
+})
 
-const NavBar = styled(SectionInner)(({ theme }) => ({
+const NavBar = styled('div')({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: theme.spacing(2),
-  height: 64
-}))
+  gap: 16,
+  boxSizing: 'border-box',
+  height: NAVBAR_HEIGHT.mobile,
+  padding: '12px 16px',
+  [NAVBAR_DESKTOP_QUERY]: {
+    height: NAVBAR_HEIGHT.desktop,
+    padding: '16px 54px'
+  }
+})
 
-const BrandLink = styled('a')(({ theme }) => ({
+const BrandLink = styled('a')({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  color: creatorFundColors.text,
+  gap: 12,
+  color: creatorFundColors.heading,
   textDecoration: 'none',
   ['&:focus-visible']: {
     outline: `2px solid ${creatorFundColors.white}`,
     outlineOffset: 4,
     borderRadius: 4
   }
-}))
+})
 
 const BrandLogo = styled(Logo)({
-  width: 32,
-  height: 32,
+  width: 40,
+  height: 40,
   flexShrink: 0
 })
 
@@ -48,41 +53,45 @@ const BrandText = styled('span')({
 })
 
 const BrandName = styled('span')({
-  fontSize: 14,
-  fontWeight: 700
+  fontSize: 16,
+  fontWeight: 600
 })
 
 const BrandBy = styled('span')({
-  fontSize: 11,
+  fontSize: 12,
   color: creatorFundColors.mutedText
 })
 
 const DesktopLinks = styled('nav')(({ theme }) => ({
   display: 'none',
   alignItems: 'center',
-  gap: theme.spacing(3),
+  gap: 4,
   [theme.breakpoints.up('lg')]: {
     display: 'flex'
   }
 }))
 
+// Same type and hover as the site navbar tabs: 16px / 400 gray5, white on a glass chip.
 const DesktopLink = styled('a')({
-  fontSize: 14,
-  fontWeight: 500,
-  color: creatorFundColors.mutedText,
+  padding: '8px 16px',
+  borderRadius: 8,
+  fontSize: 16,
+  fontWeight: 400,
+  color: creatorFundColors.text,
   textDecoration: 'none',
-  transition: 'color 0.2s',
-  ['&:hover, &:focus-visible']: {
-    color: creatorFundColors.text
+  whiteSpace: 'nowrap',
+  transition: 'background-color 0.15s ease, color 0.15s ease',
+  ['&:hover']: {
+    color: creatorFundColors.white,
+    backgroundColor: 'rgba(38, 38, 38, 0.8)'
   },
   ['&:focus-visible']: {
-    outline: `2px solid ${creatorFundColors.white}`,
-    outlineOffset: 4,
-    borderRadius: 4
+    outline: `2px solid ${creatorFundColors.primary}`,
+    outlineOffset: 2
   }
 })
 
-const DesktopCta = styled(PrimaryButtonLink)(({ theme }) => ({
+const DesktopCta = styled(NavButtonLink)(({ theme }) => ({
   display: 'none',
   [theme.breakpoints.up('lg')]: {
     display: 'inline-flex'
@@ -93,14 +102,14 @@ const MenuButton = styled('button')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: theme.spacing(1),
+  padding: 8,
   border: 'none',
   borderRadius: 8,
   background: 'none',
-  color: creatorFundColors.text,
+  color: creatorFundColors.heading,
   cursor: 'pointer',
   ['&:hover']: {
-    backgroundColor: creatorFundColors.glass
+    backgroundColor: 'rgba(38, 38, 38, 0.8)'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${creatorFundColors.white}`,
@@ -119,27 +128,30 @@ const MobilePanel = styled('nav')(({ theme }) => ({
   }
 }))
 
-const MobileLinks = styled(SectionInner)(({ theme }) => ({
+const MobileLinks = styled('div')({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(0.5),
-  paddingTop: theme.spacing(2),
-  paddingBottom: theme.spacing(2)
-}))
+  gap: 4,
+  padding: '16px',
+  [NAVBAR_DESKTOP_QUERY]: {
+    padding: '16px 54px'
+  }
+})
 
-const MobileLink = styled('a')(({ theme }) => ({
-  padding: `${theme.spacing(1)} 0`,
-  fontWeight: 500,
+const MobileLink = styled('a')({
+  padding: '8px 0',
+  fontSize: 16,
+  fontWeight: 400,
   color: creatorFundColors.text,
   textDecoration: 'none',
   ['&:hover, &:focus-visible']: {
-    color: creatorFundColors.primaryHover
+    color: creatorFundColors.white
   }
-}))
+})
 
-const MobileCta = styled(PrimaryButtonLink)(({ theme }) => ({
-  marginTop: theme.spacing(1)
-}))
+const MobileCta = styled(NavButtonLink)({
+  marginTop: 8
+})
 
 export {
   BrandBy,

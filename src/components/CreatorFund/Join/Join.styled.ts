@@ -32,7 +32,7 @@ const TermsLink = styled('a')({
   textDecoration: 'underline',
   textUnderlineOffset: 4,
   ['&:hover, &:focus-visible']: {
-    color: creatorFundColors.primaryHover
+    color: creatorFundColors.linkHover
   }
 })
 

@@ -1,5 +1,5 @@
 import { styled } from 'decentraland-ui2'
-import { GlassCard, creatorFundColors } from '../CreatorFund.styled'
+import { CardTitle, GlassCard, creatorFundColors } from '../CreatorFund.styled'
 
 const StepsGrid = styled('ol')(({ theme }) => ({
   display: 'grid',
@@ -24,22 +24,20 @@ const StepNumber = styled('span')(({ theme }) => ({
   top: theme.spacing(2),
   right: theme.spacing(2.5),
   fontSize: 48,
-  fontWeight: 800,
+  fontWeight: 600,
   letterSpacing: '-0.025em',
   lineHeight: 1,
   color: 'rgba(236, 235, 237, 0.2)'
 }))
 
-const StepTitle = styled('h3')(({ theme }) => ({
-  margin: `${theme.spacing(3)} 0 0`,
-  fontSize: 20,
-  fontWeight: 700,
-  color: creatorFundColors.text
+const StepTitle = styled(CardTitle)(({ theme }) => ({
+  marginTop: theme.spacing(3)
 }))
 
 const StepText = styled('p')(({ theme }) => ({
   margin: `${theme.spacing(1)} 0 0`,
-  lineHeight: 1.6,
+  fontSize: 16,
+  lineHeight: 1.5,
   color: creatorFundColors.text
 }))
 

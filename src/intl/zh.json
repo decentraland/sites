@@ -85,6 +85,7 @@
         "rewards": "奖励",
         "dates": "日期",
         "faq": "常见问题",
+        "rules": "规则",
         "terms": "条款",
         "open_menu": "打开菜单",
         "close_menu": "关闭菜单"
@@ -109,7 +110,6 @@
         "title": "Decentraland",
         "visit": "访问 Decentraland",
         "subtitle": "一个由社区共建、社区共有的社交游戏世界。",
-        "awarded": "2026 年已向创作者发放 [$X]。",
         "platforms_label": "下载 Decentraland",
         "scene_alt": "Decentraland 中的 {name} 场景"
       },
@@ -198,14 +198,8 @@
         "after_question": "测试赛季之后会怎样？",
         "after_answer": "第 1 赛季计划于 2027 年 1 月至 3 月进行。日期及更新将于 12 月 28 日确认。",
         "grant_question": "这是资助吗？",
-        "grant_answer": "不是。资助用于支持项目上线之前的阶段。Creator Fund 奖励的是已在 Decentraland 上线并持续增长的场景。"
-      },
-      "terms": {
-        "title": "Creator Fund",
-        "rules": "计划规则",
-        "program_terms": "计划条款",
-        "pending": "最终链接待定",
-        "contact": "联系我们"
+        "grant_answer": "不是。资助用于支持项目上线之前的阶段。Creator Fund 奖励的是已在 Decentraland 上线并持续增长的场景。",
+        "contact_prompt": "如有疑问或需要支持，请发送邮件至"
       }
     },
     "home": {
