@@ -2,9 +2,9 @@ import { memo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { CreatorFundSection, DisplayTitle, LeadText, MutedText, RubyTile, SectionInner } from '../CreatorFund.styled'
+import { CreatorFundSection, DisplayTitle, MutedText, RubyTile, SectionInner } from '../CreatorFund.styled'
 import { payoutSignals } from '../data'
-import { RealBody, RealCard, RealTitle, SignalCard, SignalTitle, SignalsGrid, SignalsSection } from './PayoutSignals.styled'
+import { RealBody, RealCard, RealTitle, SignalCard, SignalTitle, SignalsGrid, SignalsLead, SignalsSection } from './PayoutSignals.styled'
 
 // "What Payouts Reward" plus the anti-botting card that qualifies it.
 const PayoutSignals = memo(() => {
@@ -15,7 +15,7 @@ const PayoutSignals = memo(() => {
       <SignalsSection spacing="both">
         <SectionInner>
           <DisplayTitle>{l('page.creator_fund.measure.title')}</DisplayTitle>
-          <LeadText>{l('page.creator_fund.measure.subtitle')}</LeadText>
+          <SignalsLead>{l('page.creator_fund.measure.subtitle')}</SignalsLead>
           <SignalsGrid>
             {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
             {payoutSignals.map(({ icon: Icon, titleKey }) => (

@@ -1,5 +1,5 @@
 import { Box, styled } from 'decentraland-ui2'
-import { CardTitle, CreatorFundSection, DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
+import { CardTitle, CreatorFundSection, DisplayTitle, LeadText, SolidCard, creatorFundColors } from '../CreatorFund.styled'
 
 // Sits tighter than the other sections on the "Real players" card below it.
 const SignalsSection = styled(CreatorFundSection)(({ theme }) => ({
@@ -8,6 +8,11 @@ const SignalsSection = styled(CreatorFundSection)(({ theme }) => ({
     paddingBottom: theme.spacing(5)
   }
 }))
+
+// One sentence that introduces the three cards: keep it on a single line on desktop.
+const SignalsLead = styled(LeadText)({
+  maxWidth: 'none'
+})
 
 const SignalsGrid = styled('ul')(({ theme }) => ({
   display: 'grid',
@@ -56,4 +61,4 @@ const RealBody = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2.5)
 }))
 
-export { RealBody, RealCard, RealTitle, SignalCard, SignalTitle, SignalsGrid, SignalsSection }
+export { RealBody, RealCard, RealTitle, SignalCard, SignalTitle, SignalsGrid, SignalsLead, SignalsSection }
