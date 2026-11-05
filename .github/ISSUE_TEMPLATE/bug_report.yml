@@ -63,6 +63,7 @@ body:
       options:
         - Homepage (/)
         - Create / Creators (/create)
+        - Creator Fund (/creatorfund)
         - Download — Main (/download)
         - Download — Success (/download_success)
         - Download — Creator Hub (/download/creator-hub)

@@ -73,6 +73,14 @@
         }
       }
     },
+    "creator_fund": {
+      "badge": "近日公開 · ベータ版は11月15日開始",
+      "title": "Creator Fund:",
+      "title_highlight": "Decentralandで稼ごう。",
+      "description": "本物のプレイヤーを呼び込み、定着させる体験に報酬を。",
+      "pool": "30,000 USDCの報酬プールを3つのサイクルで分配。",
+      "cta": "Creator Hubを入手"
+    },
     "home": {
       "hang_out_now": "今すぐ参加",
       "hero": {

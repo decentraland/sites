@@ -82,6 +82,14 @@
         }
       }
     },
+    "creator_fund": {
+      "badge": "Coming soon · Beta starts Nov 15",
+      "title": "Creator Fund:",
+      "title_highlight": "Earn in Decentraland.",
+      "description": "Rewards for experiences that bring and retain real players.",
+      "pool": "$30,000 USDC pool shared across three cycles.",
+      "cta": "Get Creator Hub"
+    },
     "creator-hub": {
       "title": "Download Decentraland Creator Hub",
       "description": "Download the Creator Hub to start building immersive scenes and interactive experiences in Decentraland.",

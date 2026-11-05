@@ -73,6 +73,14 @@
         }
       }
     },
+    "creator_fund": {
+      "badge": "Bientôt disponible · La bêta commence le 15 nov.",
+      "title": "Creator Fund :",
+      "title_highlight": "Gagnez dans Decentraland.",
+      "description": "Des récompenses pour les expériences qui attirent et fidélisent de vrais joueurs.",
+      "pool": "Une cagnotte de 30 000 USDC répartie sur trois cycles.",
+      "cta": "Obtenir Creator Hub"
+    },
     "home": {
       "hang_out_now": "TRAÎNEZ MAINTENANT",
       "hero": {
