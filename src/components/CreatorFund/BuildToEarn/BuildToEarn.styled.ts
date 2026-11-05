@@ -1,9 +1,19 @@
 import { styled } from 'decentraland-ui2'
-import { CardTitle, GlassCard, creatorFundColors } from '../CreatorFund.styled'
+import { CardTitle, CreatorFundSection, GlassCard, creatorFundColors } from '../CreatorFund.styled'
+
+// The page's headline band: more room than the other sections (64px / 112px).
+const BuildSection = styled(CreatorFundSection)(({ theme }) => ({
+  paddingTop: theme.spacing(8),
+  paddingBottom: theme.spacing(8),
+  [theme.breakpoints.up('sm')]: {
+    paddingTop: theme.spacing(14),
+    paddingBottom: theme.spacing(14)
+  }
+}))
 
 const StepsGrid = styled('ol')(({ theme }) => ({
   display: 'grid',
-  gap: theme.spacing(2.5),
+  gap: theme.spacing(3),
   margin: `${theme.spacing(6)} 0 0`,
   padding: 0,
   listStyle: 'none',
@@ -15,15 +25,21 @@ const StepsGrid = styled('ol')(({ theme }) => ({
   }
 }))
 
-const StepCard = styled(GlassCard)({
-  height: '100%'
-})
+const StepCard = styled(GlassCard)(({ theme }) => ({
+  height: '100%',
+  boxSizing: 'border-box',
+  padding: theme.spacing(4),
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(5),
+    minHeight: 300
+  }
+}))
 
 const StepNumber = styled('span')(({ theme }) => ({
   position: 'absolute',
-  top: theme.spacing(2),
-  right: theme.spacing(2.5),
-  fontSize: 48,
+  top: theme.spacing(3),
+  right: theme.spacing(4),
+  fontSize: 56,
   fontWeight: 600,
   letterSpacing: '-0.025em',
   lineHeight: 1,
@@ -35,10 +51,13 @@ const StepTitle = styled(CardTitle)(({ theme }) => ({
 }))
 
 const StepText = styled('p')(({ theme }) => ({
-  margin: `${theme.spacing(1)} 0 0`,
+  margin: `${theme.spacing(1.5)} 0 0`,
   fontSize: 16,
   lineHeight: 1.5,
-  color: creatorFundColors.text
+  color: creatorFundColors.text,
+  [theme.breakpoints.up('sm')]: {
+    fontSize: 18
+  }
 }))
 
 const StepLink = styled('a')({
@@ -56,4 +75,4 @@ const StepLink = styled('a')({
   }
 })
 
-export { StepCard, StepLink, StepNumber, StepText, StepTitle, StepsGrid }
+export { BuildSection, StepCard, StepLink, StepNumber, StepText, StepTitle, StepsGrid }

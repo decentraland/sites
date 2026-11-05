@@ -14,6 +14,8 @@ const creatorFundColors = {
   primaryActive: dclColors.base.primaryDark2,
   linkHover: dclColors.base.primaryLight1,
   buttonText: dclColors.neutral.softWhite,
+  // DCL soft white, for copy that sits on the purple bands.
+  onBand: dclColors.neutral.softWhite,
   orange: dclColors.brand.melon,
   purpleDeep: dclColors.brand.purple,
   purpleBright: dclColors.brand.violet,

@@ -20,17 +20,18 @@ const PayoutRow = styled('div')(({ theme }) => ({
 const PayoutLabel = styled('dt')(({ theme }) => ({
   ...labelStyles,
   fontSize: 14,
-  color: creatorFundColors.heading,
+  color: creatorFundColors.onBand,
   [theme.breakpoints.up('sm')]: {
     fontSize: 16
   }
 }))
 
+// Soft white, not gray5: the gray read too faint on the purple band.
 const PayoutValue = styled('dd')({
   margin: 0,
   fontSize: 18,
   lineHeight: 1.5,
-  color: creatorFundColors.text
+  color: creatorFundColors.onBand
 })
 
 export { PayoutLabel, PayoutRow, PayoutTerms, PayoutValue }

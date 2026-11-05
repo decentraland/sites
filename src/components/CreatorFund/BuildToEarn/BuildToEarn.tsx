@@ -2,16 +2,16 @@ import { memo } from 'react'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { formatUsd } from '../CreatorFund.helpers'
-import { CreatorFundSection, DisplayTitle, RubyTile, SectionInner } from '../CreatorFund.styled'
+import { DisplayTitle, RubyTile, SectionInner } from '../CreatorFund.styled'
 import { CREATOR_HUB_DOWNLOAD_PATH, betaProgram, buildToEarnSteps } from '../data'
-import { StepCard, StepLink, StepNumber, StepText, StepTitle, StepsGrid } from './BuildToEarn.styled'
+import { BuildSection, StepCard, StepLink, StepNumber, StepText, StepTitle, StepsGrid } from './BuildToEarn.styled'
 
 const BuildToEarn = memo(() => {
   const l = useFormatMessage()
   const values = { amount: formatUsd(betaProgram.cycles[0].allocationUsd), currency: betaProgram.currency }
 
   return (
-    <CreatorFundSection id="how" band>
+    <BuildSection id="how" band>
       <AnimatedBackground variant="absolute" />
       <SectionInner>
         <DisplayTitle>{l('page.creator_fund.how.title')}</DisplayTitle>
@@ -21,7 +21,8 @@ const BuildToEarn = memo(() => {
             <li key={titleKey}>
               <StepCard>
                 <StepNumber aria-hidden="true">0{index + 1}</StepNumber>
-                <RubyTile>
+                {/* Same 56px tile as the "What we reward" cards. */}
+                <RubyTile size="large">
                   <Icon aria-hidden="true" />
                 </RubyTile>
                 <StepTitle>{l(titleKey)}</StepTitle>
@@ -35,7 +36,7 @@ const BuildToEarn = memo(() => {
           ))}
         </StepsGrid>
       </SectionInner>
-    </CreatorFundSection>
+    </BuildSection>
   )
 })
 
