@@ -1,29 +1,40 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useAccount, useConnect, useSwitchChain } from 'wagmi'
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
 import { useIsThirdwebAccount } from '../../../hooks/useIsThirdwebAccount'
 import { getMagicAddress } from '../../../lib/magic'
 
-type MagicSignerState = 'ready' | 'checking' | 'connecting' | 'failed'
+type MagicSignerState = 'ready' | 'checking' | 'connecting' | 'failed' | 'mismatch'
 
 interface MagicSigner {
   state: MagicSignerState
   retry: () => void
+  disconnect: () => void
 }
+
+// A Magic iframe blocked by a privacy extension can leave the session check pending forever.
+const MAGIC_LOOKUP_TIMEOUT_MS = 5000
+
+const lookUpMagicAddress = (): Promise<string | null> =>
+  Promise.race([getMagicAddress(), new Promise<null>(resolve => setTimeout(() => resolve(null), MAGIC_LOOKUP_TIMEOUT_MS))])
 
 /**
  * When the signed-in account is the Magic account, connects the Magic connector on `targetChainId` so
  * wallet actions sign with it rather than an external wallet (e.g. a leftover WalletConnect session).
+ * A connected wallet that isn't the signed-in account is reported as `mismatch` and never signs.
  */
 function useMagicSigner(sessionAddress: string | undefined, targetChainId: number): MagicSigner {
   const isThirdweb = useIsThirdwebAccount()
-  const { address: connectedAddress, chainId, connector, status } = useAccount()
+  const { address: connectedAddress, chainId, connector, isConnected, status } = useAccount()
   const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
   const { switchChain, isPending: isSwitching } = useSwitchChain()
-  // undefined until looked up; null when there is no Magic session.
-  const [magicAddress, setMagicAddress] = useState<string | null | undefined>(undefined)
-  const [hasFailed, setHasFailed] = useState(false)
+  // Keyed by session so a lookup or failure for a previous account is never reused.
+  const [lookup, setLookup] = useState<{ session: string; address: string | null } | undefined>(undefined)
+  const [failedSession, setFailedSession] = useState<string | undefined>(undefined)
 
   const session = sessionAddress?.toLowerCase()
+  const magicAddress = session && lookup?.session === session ? lookup.address : undefined
+  const hasFailed = Boolean(session) && failedSession === session
   const isOnSessionAccount = Boolean(session) && connectedAddress?.toLowerCase() === session
   // wagmi's own reconnect may still be attaching a wallet; connecting on top of it fails as "already connected".
   const isSettling = status === 'connecting' || status === 'reconnecting'
@@ -35,21 +46,21 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
   const isMagicOffChain = isOnSessionAccount && connector?.id === 'magic' && chainId !== targetChainId
 
   useEffect(() => {
-    if (!needsLookup || magicAddress !== undefined) return
+    if (!session || !needsLookup || magicAddress !== undefined) return
     let cancelled = false
-    getMagicAddress().then(address => {
-      if (!cancelled) setMagicAddress(address?.toLowerCase() ?? null)
+    lookUpMagicAddress().then(address => {
+      if (!cancelled) setLookup({ session, address: address?.toLowerCase() ?? null })
     })
     return () => {
       cancelled = true
     }
-  }, [needsLookup, magicAddress])
+  }, [session, needsLookup, magicAddress])
 
   useEffect(() => {
-    if (!isMagic || isOnSessionAccount || isSettling || hasFailed) return
+    if (!session || !isMagic || isOnSessionAccount || isSettling || hasFailed) return
     const magic = connectors.find(candidate => candidate.id === 'magic')
     if (!magic) {
-      setHasFailed(true)
+      setFailedSession(session)
       return
     }
     connect(
@@ -57,32 +68,34 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
       {
         onError: error => {
           console.error('[useMagicSigner] Magic connect failed:', error)
-          setHasFailed(true)
+          setFailedSession(session)
         }
       }
     )
-  }, [isMagic, isOnSessionAccount, isSettling, hasFailed, connectors, connect, targetChainId])
+  }, [session, isMagic, isOnSessionAccount, isSettling, hasFailed, connectors, connect, targetChainId])
 
   useEffect(() => {
-    if (!isMagicOffChain || isSettling || isSwitching || hasFailed) return
+    if (!session || !isMagicOffChain || isSettling || isSwitching || hasFailed) return
     switchChain(
       { chainId: targetChainId },
       {
         onError: error => {
           console.error('[useMagicSigner] Magic network switch failed:', error)
-          setHasFailed(true)
+          setFailedSession(session)
         }
       }
     )
-  }, [isMagicOffChain, isSettling, isSwitching, hasFailed, switchChain, targetChainId])
+  }, [session, isMagicOffChain, isSettling, isSwitching, hasFailed, switchChain, targetChainId])
 
-  const retry = useCallback(() => setHasFailed(false), [])
+  const retry = useCallback(() => setFailedSession(undefined), [])
+  const signer = (state: MagicSignerState): MagicSigner => ({ state, retry, disconnect })
 
-  if (isMagicOffChain) return { state: hasFailed ? 'failed' : 'connecting', retry }
-  if (!session || isThirdweb || isOnSessionAccount) return { state: 'ready', retry }
-  if (isSettling || magicAddress === undefined) return { state: 'checking', retry }
-  if (!isMagic) return { state: 'ready', retry }
-  return { state: hasFailed ? 'failed' : 'connecting', retry }
+  if (isMagicOffChain) return signer(hasFailed ? 'failed' : 'connecting')
+  if (!session || isOnSessionAccount) return signer('ready')
+  // Checked before `isSettling`: wagmi reports our own Magic connect as "connecting" too.
+  if (isMagic) return signer(hasFailed ? 'failed' : 'connecting')
+  if (isSettling || (!isThirdweb && magicAddress === undefined)) return signer('checking')
+  return signer(isConnected ? 'mismatch' : 'ready')
 }
 
 export { useMagicSigner }

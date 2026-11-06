@@ -96,7 +96,7 @@ const WithdrawManaContent = ({ balance, address: trackingAddress, onClose, onSuc
     )
   }
 
-  if (magicSigner.state !== 'ready') return <MagicSignerNotice state={magicSigner.state} onRetry={magicSigner.retry} />
+  if (magicSigner.state !== 'ready') return <MagicSignerNotice signer={magicSigner} />
 
   if (!isConnected) {
     return (

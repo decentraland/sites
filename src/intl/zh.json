@@ -1552,7 +1552,9 @@
         "checking": "加载中…",
         "connecting": "正在连接您的 Decentraland 账户…",
         "failed": "无法连接您的 Decentraland 账户。请退出登录，重新登录后再试。",
-        "retry": "重试"
+        "retry": "重试",
+        "mismatch": "已连接的钱包不是您登录时使用的账户。请在钱包中切换账户，或断开连接后选择其他钱包。",
+        "disconnect": "断开钱包连接"
       }
     },
     "notifications": {

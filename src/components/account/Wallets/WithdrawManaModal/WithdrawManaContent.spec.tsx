@@ -64,6 +64,7 @@ jest.mock('../SendManaModal/SendManaModal.styled', () => ({
 }))
 
 const mockRetry = jest.fn()
+const mockDisconnect = jest.fn()
 let mockMagicSigner: MagicSigner
 
 jest.mock('../useMagicSigner', () => ({
@@ -72,7 +73,7 @@ jest.mock('../useMagicSigner', () => ({
 
 describe('WithdrawManaContent', () => {
   beforeEach(() => {
-    mockMagicSigner = { state: 'ready', retry: mockRetry }
+    mockMagicSigner = { state: 'ready', retry: mockRetry, disconnect: mockDisconnect }
     mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
     mockAccountReturn = { address: '0xUSER', chainId: 137 }
     mockWriteContractAsync.mockResolvedValue('0xburnhash')
@@ -167,7 +168,7 @@ describe('WithdrawManaContent', () => {
     })
 
     it('should wait for the Magic wallet instead of offering other wallets', () => {
-      mockMagicSigner = { state: 'connecting', retry: mockRetry }
+      mockMagicSigner = { state: 'connecting', retry: mockRetry, disconnect: mockDisconnect }
       render(<WithdrawManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
@@ -175,7 +176,7 @@ describe('WithdrawManaContent', () => {
     })
 
     it('should explain the failure when the Magic wallet cannot connect', () => {
-      mockMagicSigner = { state: 'failed', retry: mockRetry }
+      mockMagicSigner = { state: 'failed', retry: mockRetry, disconnect: mockDisconnect }
       render(<WithdrawManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()

@@ -97,6 +97,7 @@ jest.mock('./SendManaModal.styled', () => ({
 const VALID_ADDRESS = `0x${'1'.repeat(40)}`
 
 const mockRetry = jest.fn()
+const mockDisconnect = jest.fn()
 let mockMagicSigner: MagicSigner
 
 jest.mock('../useMagicSigner', () => ({
@@ -105,7 +106,7 @@ jest.mock('../useMagicSigner', () => ({
 
 describe('SendManaContent', () => {
   beforeEach(() => {
-    mockMagicSigner = { state: 'ready', retry: mockRetry }
+    mockMagicSigner = { state: 'ready', retry: mockRetry, disconnect: mockDisconnect }
     mockWalletReturn = { isConnected: false, connect: mockConnect, connectors: [] }
     mockAccountReturn = { chainId: undefined }
     mockSwitchReturn = { switchChain: mockSwitchChain, isPending: false }
@@ -319,7 +320,7 @@ describe('SendManaContent', () => {
     })
 
     it('should wait for the Magic wallet instead of offering other wallets', () => {
-      mockMagicSigner = { state: 'connecting', retry: mockRetry }
+      mockMagicSigner = { state: 'connecting', retry: mockRetry, disconnect: mockDisconnect }
       render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
@@ -327,7 +328,7 @@ describe('SendManaContent', () => {
     })
 
     it('should explain the failure when the Magic wallet cannot connect', () => {
-      mockMagicSigner = { state: 'failed', retry: mockRetry }
+      mockMagicSigner = { state: 'failed', retry: mockRetry, disconnect: mockDisconnect }
       render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()
@@ -335,7 +336,7 @@ describe('SendManaContent', () => {
     })
 
     it('should let the user retry connecting the Magic wallet', () => {
-      mockMagicSigner = { state: 'failed', retry: mockRetry }
+      mockMagicSigner = { state: 'failed', retry: mockRetry, disconnect: mockDisconnect }
       render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
 
       fireEvent.click(screen.getByText('account.wallets.magic_signer.retry'))
@@ -344,7 +345,7 @@ describe('SendManaContent', () => {
     })
 
     it('should show a neutral loading state while it checks which wallet to use', () => {
-      mockMagicSigner = { state: 'checking', retry: mockRetry }
+      mockMagicSigner = { state: 'checking', retry: mockRetry, disconnect: mockDisconnect }
       render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.checking')).toBeInTheDocument()
@@ -371,6 +372,18 @@ describe('SendManaContent', () => {
 
       expect(screen.getByText('account.wallets.send.sending')).toBeInTheDocument()
       expect(screen.queryByText('account.wallets.send.confirm_in_wallet')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when the connected wallet is not the signed-in account', () => {
+    it('should block the transfer and let the user disconnect that wallet', () => {
+      mockMagicSigner = { state: 'mismatch', retry: mockRetry, disconnect: mockDisconnect }
+      render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.mismatch')).toBeInTheDocument()
+      expect(screen.queryByText('account.wallets.send.send_button')).not.toBeInTheDocument()
+      fireEvent.click(screen.getByText('account.wallets.magic_signer.disconnect'))
+      expect(mockDisconnect).toHaveBeenCalled()
     })
   })
 })

@@ -94,7 +94,7 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
     )
   }
 
-  if (magicSigner.state !== 'ready') return <MagicSignerNotice state={magicSigner.state} onRetry={magicSigner.retry} />
+  if (magicSigner.state !== 'ready') return <MagicSignerNotice signer={magicSigner} />
 
   if (!isConnected) {
     return (

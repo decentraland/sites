@@ -1547,7 +1547,9 @@
         "checking": "Chargement…",
         "connecting": "Connexion à votre compte Decentraland…",
         "failed": "Impossible de connecter votre compte Decentraland. Déconnectez-vous, reconnectez-vous et réessayez.",
-        "retry": "Réessayer"
+        "retry": "Réessayer",
+        "mismatch": "Le portefeuille connecté n’est pas le compte avec lequel vous êtes connecté. Changez de compte dans votre portefeuille ou déconnectez-le pour en choisir un autre.",
+        "disconnect": "Déconnecter le portefeuille"
       }
     },
     "notifications": {

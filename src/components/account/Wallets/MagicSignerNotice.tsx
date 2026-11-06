@@ -1,22 +1,29 @@
 import { Button } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { Body, Description, StateText } from './SendManaModal/SendManaModal.styled'
-import type { MagicSignerState } from './useMagicSigner'
+import type { MagicSigner } from './useMagicSigner'
 
 interface MagicSignerNoticeProps {
-  state: Exclude<MagicSignerState, 'ready'>
-  onRetry: () => void
+  signer: MagicSigner
 }
 
-const MagicSignerNotice = ({ state, onRetry }: MagicSignerNoticeProps) => {
+const MagicSignerNotice = ({ signer }: MagicSignerNoticeProps) => {
   const t = useFormatMessage()
+  const { state } = signer
 
-  if (state === 'failed') {
+  if (state === 'failed' || state === 'mismatch') {
+    const isFailed = state === 'failed'
     return (
-      <Body data-role="magic-signer-failed">
-        <StateText $error>{t('account.wallets.magic_signer.failed')}</StateText>
-        <Button variant="outlined" color="primary" fullWidth onClick={onRetry} data-role="magic-signer-retry">
-          {t('account.wallets.magic_signer.retry')}
+      <Body data-role={`magic-signer-${state}`}>
+        <StateText $error>{t(`account.wallets.magic_signer.${state}`)}</StateText>
+        <Button
+          variant="outlined"
+          color="primary"
+          fullWidth
+          onClick={isFailed ? signer.retry : signer.disconnect}
+          data-role={isFailed ? 'magic-signer-retry' : 'magic-signer-disconnect'}
+        >
+          {t(isFailed ? 'account.wallets.magic_signer.retry' : 'account.wallets.magic_signer.disconnect')}
         </Button>
       </Body>
     )
