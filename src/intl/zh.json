@@ -1547,6 +1547,10 @@
           "transak": "Transak"
         },
         "loading": "正在打开…"
+      },
+      "magic_signer": {
+        "connecting": "正在连接您的 Decentraland 账户…",
+        "failed": "无法连接您的 Decentraland 账户。请退出登录，重新登录后再试。"
       }
     },
     "notifications": {

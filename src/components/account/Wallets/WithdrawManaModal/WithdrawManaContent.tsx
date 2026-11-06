@@ -6,8 +6,10 @@ import { Button, TextField } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useWalletTransactions } from '../../../../hooks/useWalletTransactions'
 import { MANA_CHILD_WITHDRAW_ABI } from '../bridgeContract'
+import { MagicSignerNotice } from '../MagicSignerNotice'
 import { getManaAddress, getNetworkChainId } from '../manaContract'
 import { Body, Centered, ConnectList, Description, StateText } from '../SendManaModal/SendManaModal.styled'
+import { useMagicSigner } from '../useMagicSigner'
 
 interface WithdrawManaContentProps {
   // MANA balance on Polygon (L2) — the amount available to withdraw to Ethereum.
@@ -25,6 +27,7 @@ type Phase = 'idle' | 'withdrawing' | 'success'
 const WithdrawManaContent = ({ balance, address: trackingAddress, onClose, onSuccess }: WithdrawManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
+  const magicSigner = useMagicSigner()
   const { address, chainId } = useAccount()
   const { addTransaction } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
@@ -92,6 +95,8 @@ const WithdrawManaContent = ({ balance, address: trackingAddress, onClose, onSuc
       </Centered>
     )
   }
+
+  if (magicSigner !== 'ready') return <MagicSignerNotice state={magicSigner} />
 
   if (!isConnected) {
     return (

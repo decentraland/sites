@@ -5,7 +5,9 @@ import { useWallet } from '@dcl/core-web3'
 import { Button, TextField } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../../hooks/adapters/useFormatMessage'
 import { useWalletTransactions } from '../../../../hooks/useWalletTransactions'
+import { MagicSignerNotice } from '../MagicSignerNotice'
 import { ERC20_TRANSFER_ABI, type WalletNetwork, getManaAddress, getNetworkChainId } from '../manaContract'
+import { useMagicSigner } from '../useMagicSigner'
 import { Body, Centered, ConnectList, Description, StateText } from './SendManaModal.styled'
 
 interface SendManaContentProps {
@@ -23,6 +25,7 @@ const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
 const SendManaContent = ({ network, address, balance, onClose, onSuccess }: SendManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
+  const magicSigner = useMagicSigner()
   const { chainId } = useAccount()
   const { switchChain, isPending: isSwitching } = useSwitchChain()
   const { writeContract, data: hash, isPending: isSending, error: writeError } = useWriteContract()
@@ -90,6 +93,8 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
       </Centered>
     )
   }
+
+  if (magicSigner !== 'ready') return <MagicSignerNotice state={magicSigner} />
 
   if (!isConnected) {
     return (

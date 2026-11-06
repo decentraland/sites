@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import type { MagicSignerState } from '../useMagicSigner'
 import { SendManaContent } from './SendManaContent'
 
 const mockConnect = jest.fn()
@@ -95,8 +96,15 @@ jest.mock('./SendManaModal.styled', () => ({
 
 const VALID_ADDRESS = `0x${'1'.repeat(40)}`
 
+let mockMagicSigner: MagicSignerState
+
+jest.mock('../useMagicSigner', () => ({
+  useMagicSigner: () => mockMagicSigner
+}))
+
 describe('SendManaContent', () => {
   beforeEach(() => {
+    mockMagicSigner = 'ready'
     mockWalletReturn = { isConnected: false, connect: mockConnect, connectors: [] }
     mockAccountReturn = { chainId: undefined }
     mockSwitchReturn = { switchChain: mockSwitchChain, isPending: false }
@@ -301,6 +309,28 @@ describe('SendManaContent', () => {
 
       expect(mockUpdateTransactionStatus).toHaveBeenCalledTimes(1)
       expect(onSuccess).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when the user signed in with Magic', () => {
+    beforeEach(() => {
+      mockWalletReturn = { isConnected: false, connect: mockConnect, connectors: [{ uid: 'c1', name: 'WalletConnect' }] }
+    })
+
+    it('should wait for the Magic wallet instead of offering other wallets', () => {
+      mockMagicSigner = 'connecting'
+      render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
+    })
+
+    it('should explain the failure when the Magic wallet cannot connect', () => {
+      mockMagicSigner = 'failed'
+      render(<SendManaContent network="ethereum" address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
     })
   })
 })

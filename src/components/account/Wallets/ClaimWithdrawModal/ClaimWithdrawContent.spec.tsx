@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
+import type { MagicSignerState } from '../useMagicSigner'
 import { ClaimWithdrawContent } from './ClaimWithdrawContent'
 
 const mockConnect = jest.fn()
@@ -71,8 +72,15 @@ const withdrawal: WalletTransaction = {
   status: 'checkpoint'
 }
 
+let mockMagicSigner: MagicSignerState
+
+jest.mock('../useMagicSigner', () => ({
+  useMagicSigner: () => mockMagicSigner
+}))
+
 describe('ClaimWithdrawContent', () => {
   beforeEach(() => {
+    mockMagicSigner = 'ready'
     mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
     mockAccountReturn = { address: '0xUSER', chainId: 1 }
     mockFetchExitPayload.mockResolvedValue('0xpayload')
@@ -167,6 +175,28 @@ describe('ClaimWithdrawContent', () => {
       fireEvent.click(screen.getByText('account.wallets.claim.submit'))
 
       await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1))
+    })
+  })
+
+  describe('when the user signed in with Magic', () => {
+    beforeEach(() => {
+      mockWalletReturn = { isConnected: false, connect: mockConnect, connectors: [{ uid: 'c1', name: 'WalletConnect' }] }
+    })
+
+    it('should wait for the Magic wallet instead of offering other wallets', () => {
+      mockMagicSigner = 'connecting'
+      render(<ClaimWithdrawContent withdrawal={withdrawal} address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
+    })
+
+    it('should explain the failure when the Magic wallet cannot connect', () => {
+      mockMagicSigner = 'failed'
+      render(<ClaimWithdrawContent withdrawal={withdrawal} address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
     })
   })
 })

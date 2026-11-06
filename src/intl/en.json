@@ -1969,6 +1969,10 @@
           "transak": "Transak"
         },
         "loading": "Opening…"
+      },
+      "magic_signer": {
+        "connecting": "Connecting your Decentraland account…",
+        "failed": "We couldn’t connect your Decentraland account. Sign out, sign in again and retry."
       }
     },
     "notifications": {

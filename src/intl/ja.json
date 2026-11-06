@@ -1547,6 +1547,10 @@
           "transak": "Transak"
         },
         "loading": "開いています…"
+      },
+      "magic_signer": {
+        "connecting": "Decentralandアカウントに接続しています…",
+        "failed": "Decentralandアカウントに接続できませんでした。サインアウトしてから再度サインインし、もう一度お試しください。"
       }
     },
     "notifications": {

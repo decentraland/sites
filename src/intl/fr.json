@@ -1542,6 +1542,10 @@
           "transak": "Transak"
         },
         "loading": "Ouverture…"
+      },
+      "magic_signer": {
+        "connecting": "Connexion à votre compte Decentraland…",
+        "failed": "Impossible de connecter votre compte Decentraland. Déconnectez-vous, reconnectez-vous et réessayez."
       }
     },
     "notifications": {

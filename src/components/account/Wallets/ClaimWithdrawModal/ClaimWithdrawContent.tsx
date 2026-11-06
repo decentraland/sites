@@ -7,7 +7,9 @@ import { useWalletTransactions } from '../../../../hooks/useWalletTransactions'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
 import { ROOT_CHAIN_MANAGER_ABI, getL1ChainId, getRootChainManagerAddress } from '../bridgeContract'
 import { fetchExitPayload } from '../bridgeProof'
+import { MagicSignerNotice } from '../MagicSignerNotice'
 import { Body, Centered, ConnectList, Description, StateText } from '../SendManaModal/SendManaModal.styled'
+import { useMagicSigner } from '../useMagicSigner'
 import { formatMana } from '../wallets.helpers'
 
 interface ClaimWithdrawContentProps {
@@ -25,6 +27,7 @@ type Phase = 'idle' | 'claiming' | 'success'
 const ClaimWithdrawContent = ({ withdrawal, address: trackingAddress, onClose, onSuccess }: ClaimWithdrawContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
+  const magicSigner = useMagicSigner()
   const { address, chainId } = useAccount()
   const { updateTransaction } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
@@ -89,6 +92,8 @@ const ClaimWithdrawContent = ({ withdrawal, address: trackingAddress, onClose, o
       </Centered>
     )
   }
+
+  if (magicSigner !== 'ready') return <MagicSignerNotice state={magicSigner} />
 
   if (!isConnected) {
     return (
