@@ -10,7 +10,7 @@ const mockAddTransaction = jest.fn()
 const mockUpdateTransactionStatus = jest.fn()
 
 let mockWalletReturn: { isConnected: boolean; connect: jest.Mock; connectors: Array<{ uid: string; name: string }> }
-let mockAccountReturn: { chainId: number | undefined }
+let mockAccountReturn: { chainId: number | undefined; connector?: { id: string } }
 let mockSwitchReturn: { switchChain: jest.Mock; isPending: boolean }
 let mockWriteReturn: { writeContract: jest.Mock; data: string | undefined; isPending: boolean; error: Error | null }
 let mockReceiptReturn: { isLoading: boolean; isSuccess: boolean }
@@ -349,6 +349,28 @@ describe('SendManaContent', () => {
 
       expect(screen.getByText('account.wallets.magic_signer.checking')).toBeInTheDocument()
       expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('while the transfer waits for a signature', () => {
+    beforeEach(() => {
+      mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
+      mockWriteReturn = { writeContract: mockWriteContract, data: undefined, isPending: true, error: null }
+    })
+
+    it('should ask wallet users to confirm in their wallet', () => {
+      mockAccountReturn = { chainId: 137, connector: { id: 'injected' } }
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.send.confirm_in_wallet')).toBeInTheDocument()
+    })
+
+    it('should show sending for Magic users, who have no wallet to confirm in', () => {
+      mockAccountReturn = { chainId: 137, connector: { id: 'magic' } }
+      render(<SendManaContent network="polygon" address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.send.sending')).toBeInTheDocument()
+      expect(screen.queryByText('account.wallets.send.confirm_in_wallet')).not.toBeInTheDocument()
     })
   })
 })

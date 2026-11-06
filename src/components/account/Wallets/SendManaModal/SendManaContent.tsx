@@ -25,11 +25,11 @@ const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
 const SendManaContent = ({ network, address, balance, onClose, onSuccess }: SendManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
-  const magicSigner = useMagicSigner(address)
-  const { chainId } = useAccount()
+  const magicSigner = useMagicSigner(address, getNetworkChainId(network))
+  const { chainId, connector } = useAccount()
   const { switchChain, isPending: isSwitching } = useSwitchChain()
   const { writeContract, data: hash, isPending: isSending, error: writeError } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash, chainId: getNetworkChainId(network) })
   const { addTransaction, updateTransactionStatus } = useWalletTransactions(address)
 
   const [to, setTo] = useState('')
@@ -161,9 +161,9 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
         onClick={handleSend}
         data-role="send-submit"
       >
-        {isSending
+        {isSending && connector?.id !== 'magic'
           ? t('account.wallets.send.confirm_in_wallet')
-          : isConfirming
+          : isSending || isConfirming
             ? t('account.wallets.send.sending')
             : t('account.wallets.send.send_button')}
       </Button>

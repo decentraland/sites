@@ -27,7 +27,7 @@ type Phase = 'idle' | 'claiming' | 'success'
 const ClaimWithdrawContent = ({ withdrawal, address: trackingAddress, onClose, onSuccess }: ClaimWithdrawContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
-  const magicSigner = useMagicSigner(trackingAddress)
+  const magicSigner = useMagicSigner(trackingAddress, getL1ChainId())
   const { address, chainId } = useAccount()
   const { updateTransaction } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
