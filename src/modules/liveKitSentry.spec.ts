@@ -4,6 +4,7 @@ jest.mock('./captureHandledError', () => ({
   captureHandledError: (...args: unknown[]) => captureHandledErrorMock(...args)
 }))
 
+import { ConnectionError, ConnectionErrorReason } from 'livekit-client'
 import { captureLiveKitConnectError } from './liveKitSentry'
 
 const error = new Error('could not establish signal connection')
@@ -73,6 +74,33 @@ describe('when the visitor declined the camera or microphone', () => {
 })
 
 // The gatekeeper's envelope carries the access token as a query param.
+describe('when the page aborted the connection attempt itself', () => {
+  it('should not report the cancellation', async () => {
+    await captureLiveKitConnectError(ConnectionError.cancelled('Abort handler called'), { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+
+  // What reaches onError: livekit-client wraps the cancellation as "could not establish
+  // signal connection: Abort handler called" and keeps its Cancelled reason.
+  it('should not report it once wrapped as a signal connection error', async () => {
+    const wrapped = ConnectionError.serverUnreachable('could not establish signal connection: Abort handler called')
+    wrapped.reason = ConnectionErrorReason.Cancelled
+
+    await captureLiveKitConnectError(wrapped, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+
+  it('should still report a signal connection the server never answered', async () => {
+    const unreachable = ConnectionError.serverUnreachable('could not establish signal connection')
+
+    await captureLiveKitConnectError(unreachable, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('when the server url carries a query string', () => {
   it('should report the host without it', async () => {
     await captureLiveKitConnectError(error, { surface: 'scene_watcher', serverUrl: 'wss://livekit.example:8443?access_token=secret' })
