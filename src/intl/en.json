@@ -1969,6 +1969,14 @@
           "transak": "Transak"
         },
         "loading": "Opening…"
+      },
+      "magic_signer": {
+        "checking": "Loading…",
+        "connecting": "Connecting your Decentraland account…",
+        "failed": "We couldn’t connect your Decentraland account. Sign out, sign in again and retry.",
+        "retry": "Try again",
+        "mismatch": "The connected wallet isn’t the account you’re signed in with. Switch accounts in your wallet, or disconnect it to choose another.",
+        "disconnect": "Disconnect wallet"
       }
     },
     "notifications": {

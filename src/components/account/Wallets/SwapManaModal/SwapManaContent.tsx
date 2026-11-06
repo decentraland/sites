@@ -12,8 +12,10 @@ import {
   getL1ChainId,
   getRootChainManagerAddress
 } from '../bridgeContract'
+import { MagicSignerNotice } from '../MagicSignerNotice'
 import { getManaAddress } from '../manaContract'
 import { Body, Centered, ConnectList, Description, StateText } from '../SendManaModal/SendManaModal.styled'
+import { useMagicSigner } from '../useMagicSigner'
 
 interface SwapManaContentProps {
   // MANA balance on Ethereum (L1) — the amount available to deposit to Polygon.
@@ -31,6 +33,7 @@ type Phase = 'idle' | 'approving' | 'depositing' | 'success'
 const SwapManaContent = ({ balance, address: trackingAddress, onClose, onSuccess }: SwapManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
+  const magicSigner = useMagicSigner(trackingAddress, getL1ChainId())
   const { address, chainId } = useAccount()
   const { addTransaction, updateTransactionStatus } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
@@ -146,6 +149,8 @@ const SwapManaContent = ({ balance, address: trackingAddress, onClose, onSuccess
       </Centered>
     )
   }
+
+  if (magicSigner.state !== 'ready') return <MagicSignerNotice signer={magicSigner} />
 
   if (!isConnected) {
     return (

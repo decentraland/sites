@@ -53,6 +53,20 @@ async function isMagicLoggedIn(): Promise<boolean> {
 }
 
 /**
+ * Address of the active Magic session's account, or `null` when there is no session or the SDK is
+ * unavailable. The session outlives a Decentraland sign-out, so compare it with the signed-in address.
+ */
+async function getMagicAddress(): Promise<string | null> {
+  try {
+    const magic = await loadMagicInstance()
+    if (!(await magic.user.isLoggedIn())) return null
+    return (await magic.user.getInfo()).publicAddress
+  } catch {
+    return null
+  }
+}
+
+/**
  * Mints a fresh Magic DID token for the currently logged-in user. It is sent to the auth-server in
  * the signed-fetch metadata of `DELETE /accounts`, where it is validated (signature, freshness,
  * audience) and its issuer is cross-checked against the signed-fetch signer before deletion.
@@ -68,4 +82,4 @@ async function getMagicDidToken(): Promise<string> {
   return magic.user.getIdToken()
 }
 
-export { getMagicDidToken, isMagicLoggedIn }
+export { getMagicAddress, getMagicDidToken, isMagicLoggedIn }

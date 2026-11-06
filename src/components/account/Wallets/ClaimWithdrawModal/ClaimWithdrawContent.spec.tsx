@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
+import type { MagicSigner } from '../useMagicSigner'
 import { ClaimWithdrawContent } from './ClaimWithdrawContent'
 
 const mockConnect = jest.fn()
@@ -71,8 +72,17 @@ const withdrawal: WalletTransaction = {
   status: 'checkpoint'
 }
 
+const mockRetry = jest.fn()
+const mockDisconnect = jest.fn()
+let mockMagicSigner: MagicSigner
+
+jest.mock('../useMagicSigner', () => ({
+  useMagicSigner: () => mockMagicSigner
+}))
+
 describe('ClaimWithdrawContent', () => {
   beforeEach(() => {
+    mockMagicSigner = { state: 'ready', retry: mockRetry, disconnect: mockDisconnect }
     mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
     mockAccountReturn = { address: '0xUSER', chainId: 1 }
     mockFetchExitPayload.mockResolvedValue('0xpayload')
@@ -167,6 +177,28 @@ describe('ClaimWithdrawContent', () => {
       fireEvent.click(screen.getByText('account.wallets.claim.submit'))
 
       await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1))
+    })
+  })
+
+  describe('when the user signed in with Magic', () => {
+    beforeEach(() => {
+      mockWalletReturn = { isConnected: false, connect: mockConnect, connectors: [{ uid: 'c1', name: 'WalletConnect' }] }
+    })
+
+    it('should wait for the Magic wallet instead of offering other wallets', () => {
+      mockMagicSigner = { state: 'connecting', retry: mockRetry, disconnect: mockDisconnect }
+      render(<ClaimWithdrawContent withdrawal={withdrawal} address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
+    })
+
+    it('should explain the failure when the Magic wallet cannot connect', () => {
+      mockMagicSigner = { state: 'failed', retry: mockRetry, disconnect: mockDisconnect }
+      render(<ClaimWithdrawContent withdrawal={withdrawal} address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
     })
   })
 })

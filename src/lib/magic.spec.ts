@@ -1,10 +1,11 @@
 const mockIsLoggedIn = jest.fn()
 const mockGetIdToken = jest.fn()
+const mockGetInfo = jest.fn()
 const mockGetEnv = jest.fn()
 
 jest.mock('magic-sdk', () => ({
   Magic: jest.fn().mockImplementation(() => ({
-    user: { isLoggedIn: mockIsLoggedIn, getIdToken: mockGetIdToken }
+    user: { isLoggedIn: mockIsLoggedIn, getIdToken: mockGetIdToken, getInfo: mockGetInfo }
   }))
 }))
 
@@ -92,6 +93,39 @@ describe('isMagicLoggedIn', () => {
     const { isMagicLoggedIn } = await importFreshMagic()
 
     await expect(isMagicLoggedIn()).resolves.toBe(false)
+  })
+})
+
+describe('getMagicAddress', () => {
+  beforeEach(() => {
+    mockGetEnv.mockReturnValue('pk_live_test')
+    mockIsLoggedIn.mockResolvedValue(true)
+    mockGetInfo.mockResolvedValue({ publicAddress: '0xMagicUser' })
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should resolve the session account address when there is an active Magic session', async () => {
+    const { getMagicAddress } = await importFreshMagic()
+
+    await expect(getMagicAddress()).resolves.toBe('0xMagicUser')
+  })
+
+  it('should resolve null without reading the account when there is no active Magic session', async () => {
+    mockIsLoggedIn.mockResolvedValue(false)
+    const { getMagicAddress } = await importFreshMagic()
+
+    await expect(getMagicAddress()).resolves.toBeNull()
+    expect(mockGetInfo).not.toHaveBeenCalled()
+  })
+
+  it('should resolve null when the Magic SDK fails', async () => {
+    mockGetInfo.mockRejectedValue(new Error('iframe unreachable'))
+    const { getMagicAddress } = await importFreshMagic()
+
+    await expect(getMagicAddress()).resolves.toBeNull()
   })
 })
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { MagicSigner } from '../useMagicSigner'
 import { SwapManaContent } from './SwapManaContent'
 
 const mockConnect = jest.fn()
@@ -67,8 +68,17 @@ jest.mock('../SendManaModal/SendManaModal.styled', () => ({
   StateText: ({ children }: { children?: ReactNode }) => <span>{children}</span>
 }))
 
+const mockRetry = jest.fn()
+const mockDisconnect = jest.fn()
+let mockMagicSigner: MagicSigner
+
+jest.mock('../useMagicSigner', () => ({
+  useMagicSigner: () => mockMagicSigner
+}))
+
 describe('SwapManaContent', () => {
   beforeEach(() => {
+    mockMagicSigner = { state: 'ready', retry: mockRetry, disconnect: mockDisconnect }
     mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
     mockAccountReturn = { address: '0xUSER', chainId: 11155111 }
     mockWriteContractAsync.mockResolvedValue('0xtxhash')
@@ -191,6 +201,28 @@ describe('SwapManaContent', () => {
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } })
 
       expect(screen.getByText('account.wallets.swap.submit')).toBeDisabled()
+    })
+  })
+
+  describe('when the user signed in with Magic', () => {
+    beforeEach(() => {
+      mockWalletReturn = { isConnected: false, connect: mockConnect, connectors: [{ uid: 'c1', name: 'WalletConnect' }] }
+    })
+
+    it('should wait for the Magic wallet instead of offering other wallets', () => {
+      mockMagicSigner = { state: 'connecting', retry: mockRetry, disconnect: mockDisconnect }
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
+    })
+
+    it('should explain the failure when the Magic wallet cannot connect', () => {
+      mockMagicSigner = { state: 'failed', retry: mockRetry, disconnect: mockDisconnect }
+      render(<SwapManaContent balance={100} address="0xUSER" onClose={jest.fn()} />)
+
+      expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()
+      expect(screen.queryByText('WalletConnect')).not.toBeInTheDocument()
     })
   })
 })

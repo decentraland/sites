@@ -1547,6 +1547,14 @@
           "transak": "Transak"
         },
         "loading": "Abriendo…"
+      },
+      "magic_signer": {
+        "checking": "Cargando…",
+        "connecting": "Conectando tu cuenta de Decentraland…",
+        "failed": "No pudimos conectar tu cuenta de Decentraland. Cerrá sesión, volvé a iniciar sesión e intentá de nuevo.",
+        "retry": "Intentar de nuevo",
+        "mismatch": "La billetera conectada no es la cuenta con la que iniciaste sesión. Cambiá de cuenta en tu billetera o desconectala para elegir otra.",
+        "disconnect": "Desconectar billetera"
       }
     },
     "notifications": {
