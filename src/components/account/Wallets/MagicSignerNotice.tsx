@@ -20,7 +20,7 @@ const MagicSignerNotice = ({ signer }: MagicSignerNoticeProps) => {
           variant="outlined"
           color="primary"
           fullWidth
-          onClick={isFailed ? signer.retry : signer.disconnect}
+          onClick={() => (isFailed ? signer.retry() : signer.disconnect())}
           data-role={isFailed ? 'magic-signer-retry' : 'magic-signer-disconnect'}
         >
           {t(isFailed ? 'account.wallets.magic_signer.retry' : 'account.wallets.magic_signer.disconnect')}
