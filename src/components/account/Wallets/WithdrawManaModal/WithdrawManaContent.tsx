@@ -27,7 +27,7 @@ type Phase = 'idle' | 'withdrawing' | 'success'
 const WithdrawManaContent = ({ balance, address: trackingAddress, onClose, onSuccess }: WithdrawManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
-  const magicSigner = useMagicSigner()
+  const magicSigner = useMagicSigner(trackingAddress)
   const { address, chainId } = useAccount()
   const { addTransaction } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
@@ -96,7 +96,7 @@ const WithdrawManaContent = ({ balance, address: trackingAddress, onClose, onSuc
     )
   }
 
-  if (magicSigner !== 'ready') return <MagicSignerNotice state={magicSigner} />
+  if (magicSigner.state !== 'ready') return <MagicSignerNotice state={magicSigner.state} onRetry={magicSigner.retry} />
 
   if (!isConnected) {
     return (

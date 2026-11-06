@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { WalletTransaction } from '../../../../hooks/useWalletTransactions.types'
-import type { MagicSignerState } from '../useMagicSigner'
+import type { MagicSigner } from '../useMagicSigner'
 import { ClaimWithdrawContent } from './ClaimWithdrawContent'
 
 const mockConnect = jest.fn()
@@ -72,7 +72,8 @@ const withdrawal: WalletTransaction = {
   status: 'checkpoint'
 }
 
-let mockMagicSigner: MagicSignerState
+const mockRetry = jest.fn()
+let mockMagicSigner: MagicSigner
 
 jest.mock('../useMagicSigner', () => ({
   useMagicSigner: () => mockMagicSigner
@@ -80,7 +81,7 @@ jest.mock('../useMagicSigner', () => ({
 
 describe('ClaimWithdrawContent', () => {
   beforeEach(() => {
-    mockMagicSigner = 'ready'
+    mockMagicSigner = { state: 'ready', retry: mockRetry }
     mockWalletReturn = { isConnected: true, connect: mockConnect, connectors: [] }
     mockAccountReturn = { address: '0xUSER', chainId: 1 }
     mockFetchExitPayload.mockResolvedValue('0xpayload')
@@ -184,7 +185,7 @@ describe('ClaimWithdrawContent', () => {
     })
 
     it('should wait for the Magic wallet instead of offering other wallets', () => {
-      mockMagicSigner = 'connecting'
+      mockMagicSigner = { state: 'connecting', retry: mockRetry }
       render(<ClaimWithdrawContent withdrawal={withdrawal} address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.connecting')).toBeInTheDocument()
@@ -192,7 +193,7 @@ describe('ClaimWithdrawContent', () => {
     })
 
     it('should explain the failure when the Magic wallet cannot connect', () => {
-      mockMagicSigner = 'failed'
+      mockMagicSigner = { state: 'failed', retry: mockRetry }
       render(<ClaimWithdrawContent withdrawal={withdrawal} address="0xUSER" onClose={jest.fn()} />)
 
       expect(screen.getByText('account.wallets.magic_signer.failed')).toBeInTheDocument()

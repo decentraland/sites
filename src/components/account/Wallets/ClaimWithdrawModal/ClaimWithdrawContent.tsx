@@ -27,7 +27,7 @@ type Phase = 'idle' | 'claiming' | 'success'
 const ClaimWithdrawContent = ({ withdrawal, address: trackingAddress, onClose, onSuccess }: ClaimWithdrawContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
-  const magicSigner = useMagicSigner()
+  const magicSigner = useMagicSigner(trackingAddress)
   const { address, chainId } = useAccount()
   const { updateTransaction } = useWalletTransactions(trackingAddress)
   const { switchChain, isPending: isSwitching } = useSwitchChain()
@@ -93,7 +93,7 @@ const ClaimWithdrawContent = ({ withdrawal, address: trackingAddress, onClose, o
     )
   }
 
-  if (magicSigner !== 'ready') return <MagicSignerNotice state={magicSigner} />
+  if (magicSigner.state !== 'ready') return <MagicSignerNotice state={magicSigner.state} onRetry={magicSigner.retry} />
 
   if (!isConnected) {
     return (

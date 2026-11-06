@@ -1549,8 +1549,10 @@
         "loading": "開いています…"
       },
       "magic_signer": {
+        "checking": "読み込み中…",
         "connecting": "Decentralandアカウントに接続しています…",
-        "failed": "Decentralandアカウントに接続できませんでした。サインアウトしてから再度サインインし、もう一度お試しください。"
+        "failed": "Decentralandアカウントに接続できませんでした。サインアウトしてから再度サインインし、もう一度お試しください。",
+        "retry": "再試行"
       }
     },
     "notifications": {

@@ -25,7 +25,7 @@ const ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
 const SendManaContent = ({ network, address, balance, onClose, onSuccess }: SendManaContentProps) => {
   const t = useFormatMessage()
   const { isConnected, connect, connectors } = useWallet()
-  const magicSigner = useMagicSigner()
+  const magicSigner = useMagicSigner(address)
   const { chainId } = useAccount()
   const { switchChain, isPending: isSwitching } = useSwitchChain()
   const { writeContract, data: hash, isPending: isSending, error: writeError } = useWriteContract()
@@ -94,7 +94,7 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
     )
   }
 
-  if (magicSigner !== 'ready') return <MagicSignerNotice state={magicSigner} />
+  if (magicSigner.state !== 'ready') return <MagicSignerNotice state={magicSigner.state} onRetry={magicSigner.retry} />
 
   if (!isConnected) {
     return (

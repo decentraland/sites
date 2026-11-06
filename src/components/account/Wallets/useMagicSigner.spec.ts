@@ -1,15 +1,16 @@
-import { renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { useIsThirdwebAccount } from '../../../hooks/useIsThirdwebAccount'
-import { useMagicAccountStatus } from '../../../hooks/useMagicAccountStatus'
+import { getMagicAddress } from '../../../lib/magic'
 import { useMagicSigner } from './useMagicSigner'
 
 jest.mock('../../../hooks/useIsThirdwebAccount', () => ({ useIsThirdwebAccount: jest.fn() }))
-jest.mock('../../../hooks/useMagicAccountStatus', () => ({ useMagicAccountStatus: jest.fn() }))
+jest.mock('../../../lib/magic', () => ({ getMagicAddress: jest.fn() }))
 
 const mockConnect = jest.fn()
 const magicConnector = { id: 'magic', name: 'Magic' }
 const walletConnectConnector = { id: 'walletConnect', name: 'WalletConnect' }
-let mockAccount: { connector: { id: string } | undefined; status: string }
+const metaMaskConnector = { id: 'injected', name: 'MetaMask' }
+let mockAccount: { address: string | undefined; connector: { id: string } | undefined; status: string }
 let mockConnectors: Array<{ id: string; name: string }>
 
 jest.mock('wagmi', () => ({
@@ -18,43 +19,42 @@ jest.mock('wagmi', () => ({
 }))
 
 const mockUseIsThirdwebAccount = useIsThirdwebAccount as jest.MockedFunction<typeof useIsThirdwebAccount>
-const mockUseMagicAccountStatus = useMagicAccountStatus as jest.MockedFunction<typeof useMagicAccountStatus>
+const mockGetMagicAddress = getMagicAddress as jest.MockedFunction<typeof getMagicAddress>
+
+const SIGNED_IN = '0xD2DD000000000000000000000000000000000001'
+const OTHER = '0x91E2000000000000000000000000000000000002'
 
 describe('useMagicSigner', () => {
   beforeEach(() => {
     mockUseIsThirdwebAccount.mockReturnValue(false)
-    mockUseMagicAccountStatus.mockReturnValue({ isMagic: false, isLoading: false })
-    mockAccount = { connector: undefined, status: 'disconnected' }
-    mockConnectors = [walletConnectConnector, magicConnector]
+    mockGetMagicAddress.mockResolvedValue(null)
+    mockAccount = { address: undefined, connector: undefined, status: 'disconnected' }
+    mockConnectors = [walletConnectConnector, metaMaskConnector, magicConnector]
   })
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
-  describe('while the Magic session check is resolving', () => {
+  describe('when the wallet already connected is the signed-in account', () => {
     beforeEach(() => {
-      mockUseMagicAccountStatus.mockReturnValue({ isMagic: false, isLoading: true })
+      mockAccount = { address: SIGNED_IN.toLowerCase(), connector: metaMaskConnector, status: 'connected' }
     })
 
-    it('should report connecting without connecting anything', () => {
-      const { result } = renderHook(() => useMagicSigner())
+    it('should be ready without looking up Magic', () => {
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
 
-      expect(result.current).toBe('connecting')
-      expect(mockConnect).not.toHaveBeenCalled()
+      expect(result.current.state).toBe('ready')
+      expect(mockGetMagicAddress).not.toHaveBeenCalled()
     })
   })
 
-  describe('when the user did not sign in with Magic', () => {
-    beforeEach(() => {
-      mockAccount = { connector: walletConnectConnector, status: 'connected' }
-    })
+  describe('when there is no signed-in account', () => {
+    it('should be ready without looking up Magic', () => {
+      const { result } = renderHook(() => useMagicSigner(undefined))
 
-    it('should be ready and leave the connected wallet alone', () => {
-      const { result } = renderHook(() => useMagicSigner())
-
-      expect(result.current).toBe('ready')
-      expect(mockConnect).not.toHaveBeenCalled()
+      expect(result.current.state).toBe('ready')
+      expect(mockGetMagicAddress).not.toHaveBeenCalled()
     })
   })
 
@@ -63,62 +63,65 @@ describe('useMagicSigner', () => {
       mockUseIsThirdwebAccount.mockReturnValue(true)
     })
 
-    it('should skip the Magic session check', () => {
-      renderHook(() => useMagicSigner())
+    it('should be ready without looking up Magic', () => {
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
 
-      expect(mockUseMagicAccountStatus).toHaveBeenCalledWith({ skip: true })
+      expect(result.current.state).toBe('ready')
+      expect(mockGetMagicAddress).not.toHaveBeenCalled()
     })
   })
 
-  describe('when the user signed in with Magic', () => {
+  describe('while wagmi is still reconnecting', () => {
     beforeEach(() => {
-      mockUseMagicAccountStatus.mockReturnValue({ isMagic: true, isLoading: false })
+      mockAccount = { address: undefined, connector: undefined, status: 'reconnecting' }
     })
 
-    describe('and Magic is already the connected wallet', () => {
-      beforeEach(() => {
-        mockAccount = { connector: magicConnector, status: 'connected' }
-      })
+    it('should report checking and wait before looking up Magic', () => {
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
 
-      it('should be ready', () => {
-        const { result } = renderHook(() => useMagicSigner())
+      expect(result.current.state).toBe('checking')
+      expect(mockGetMagicAddress).not.toHaveBeenCalled()
+    })
+  })
 
-        expect(result.current).toBe('ready')
-        expect(mockConnect).not.toHaveBeenCalled()
-      })
+  describe('when a Magic session exists for a different account than the signed-in one', () => {
+    beforeEach(() => {
+      mockGetMagicAddress.mockResolvedValue(OTHER)
+      mockAccount = { address: undefined, connector: undefined, status: 'disconnected' }
     })
 
-    describe('and an external wallet is connected instead', () => {
+    it('should leave the wallet choice to the user and never connect Magic', async () => {
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
+
+      expect(result.current.state).toBe('checking')
+      await waitFor(() => expect(result.current.state).toBe('ready'))
+      expect(mockConnect).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the signed-in account is the Magic account', () => {
+    beforeEach(() => {
+      mockGetMagicAddress.mockResolvedValue(SIGNED_IN.toLowerCase())
+    })
+
+    describe('and an external wallet with another account is connected', () => {
       beforeEach(() => {
-        mockAccount = { connector: walletConnectConnector, status: 'connected' }
+        mockAccount = { address: OTHER, connector: walletConnectConnector, status: 'connected' }
       })
 
-      it('should connect Magic and report connecting meanwhile', () => {
-        const { result } = renderHook(() => useMagicSigner())
+      it('should connect Magic and report connecting meanwhile', async () => {
+        const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
 
-        expect(result.current).toBe('connecting')
-        expect(mockConnect).toHaveBeenCalledWith({ connector: magicConnector }, expect.any(Object))
+        await waitFor(() => expect(mockConnect).toHaveBeenCalledWith({ connector: magicConnector }, expect.any(Object)))
+        expect(result.current.state).toBe('connecting')
       })
     })
 
     describe('and no wallet is connected', () => {
-      it('should connect Magic', () => {
-        renderHook(() => useMagicSigner())
+      it('should connect Magic', async () => {
+        renderHook(() => useMagicSigner(SIGNED_IN))
 
-        expect(mockConnect).toHaveBeenCalledWith({ connector: magicConnector }, expect.any(Object))
-      })
-    })
-
-    describe('and wagmi is still reconnecting', () => {
-      beforeEach(() => {
-        mockAccount = { connector: undefined, status: 'reconnecting' }
-      })
-
-      it('should wait for the reconnect instead of connecting', () => {
-        const { result } = renderHook(() => useMagicSigner())
-
-        expect(result.current).toBe('connecting')
-        expect(mockConnect).not.toHaveBeenCalled()
+        await waitFor(() => expect(mockConnect).toHaveBeenCalledWith({ connector: magicConnector }, expect.any(Object)))
       })
     })
 
@@ -130,11 +133,20 @@ describe('useMagicSigner', () => {
         )
       })
 
-      it('should report failed and not retry', () => {
-        const { result } = renderHook(() => useMagicSigner())
+      it('should report failed without retrying on its own', async () => {
+        const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
 
-        expect(result.current).toBe('failed')
+        await waitFor(() => expect(result.current.state).toBe('failed'))
         expect(mockConnect).toHaveBeenCalledTimes(1)
+      })
+
+      it('should connect Magic again when the user retries', async () => {
+        const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
+        await waitFor(() => expect(result.current.state).toBe('failed'))
+
+        act(() => result.current.retry())
+
+        await waitFor(() => expect(mockConnect).toHaveBeenCalledTimes(2))
       })
     })
 
@@ -143,10 +155,10 @@ describe('useMagicSigner', () => {
         mockConnectors = [walletConnectConnector]
       })
 
-      it('should report failed', () => {
-        const { result } = renderHook(() => useMagicSigner())
+      it('should report failed', async () => {
+        const { result } = renderHook(() => useMagicSigner(SIGNED_IN))
 
-        expect(result.current).toBe('failed')
+        await waitFor(() => expect(result.current.state).toBe('failed'))
       })
     })
   })

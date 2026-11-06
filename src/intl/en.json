@@ -1971,8 +1971,10 @@
         "loading": "Opening…"
       },
       "magic_signer": {
+        "checking": "Loading…",
         "connecting": "Connecting your Decentraland account…",
-        "failed": "We couldn’t connect your Decentraland account. Sign out, sign in again and retry."
+        "failed": "We couldn’t connect your Decentraland account. Sign out, sign in again and retry.",
+        "retry": "Try again"
       }
     },
     "notifications": {

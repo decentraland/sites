@@ -1544,8 +1544,10 @@
         "loading": "Ouverture…"
       },
       "magic_signer": {
+        "checking": "Chargement…",
         "connecting": "Connexion à votre compte Decentraland…",
-        "failed": "Impossible de connecter votre compte Decentraland. Déconnectez-vous, reconnectez-vous et réessayez."
+        "failed": "Impossible de connecter votre compte Decentraland. Déconnectez-vous, reconnectez-vous et réessayez.",
+        "retry": "Réessayer"
       }
     },
     "notifications": {
