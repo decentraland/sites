@@ -1,6 +1,18 @@
 import { act, renderHook } from '@testing-library/react'
 import { useGetHotScenesQuery } from './scenes.discovery'
 
+const mockUnsubscribe = jest.fn()
+let capturedVisibilityListener: ((visible: boolean) => void) | null = null
+let visibility = true
+
+jest.mock('../../utils/documentVisibility', () => ({
+  isDocumentVisible: () => visibility,
+  subscribeVisibility: (listener: (visible: boolean) => void) => {
+    capturedVisibilityListener = listener
+    return mockUnsubscribe
+  }
+}))
+
 const envMock = jest.fn<string | undefined, [string]>()
 jest.mock('../../config/env', () => ({
   getEnv: (key: string) => envMock(key)
@@ -37,6 +49,9 @@ describe('scenes.discovery', () => {
   let fetchMock: jest.Mock<Promise<Response>, [RequestInfo | URL, RequestInit?]>
 
   beforeEach(() => {
+    visibility = true
+    capturedVisibilityListener = null
+    mockUnsubscribe.mockReset()
     envMock.mockReset().mockImplementation((key: string) => (key === 'HOT_SCENES_URL' ? 'https://realm.test/hot-scenes' : undefined))
     fetchMock = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
     fetchMock.mockResolvedValue(okResponse(scenesPayload))
@@ -47,11 +62,26 @@ describe('scenes.discovery', () => {
     jest.resetAllMocks()
   })
 
-  describe('when the feed responds with scenes', () => {
-    it('should expose them and stop loading', async () => {
+  describe('when the first ever fetch fails', () => {
+    beforeEach(() => {
+      fetchMock.mockRejectedValue(new Error('network down'))
+    })
+
+    it('should settle on an empty list instead of staying in loading', async () => {
       const { result, unmount } = renderHook(() => useGetHotScenesQuery())
 
       expect(result.current.isLoading).toBe(true)
+
+      await flushAll()
+
+      expect(result.current).toEqual({ data: [], isLoading: false })
+      unmount()
+    })
+  })
+
+  describe('when the feed responds with scenes', () => {
+    it('should expose them and stop loading', async () => {
+      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
 
       await flushAll()
 
@@ -107,48 +137,171 @@ describe('scenes.discovery', () => {
     })
   })
 
-  describe('when the request fails', () => {
-    beforeEach(() => {
-      fetchMock.mockRejectedValue(new Error('network down'))
+  describe('when a poll tick fails', () => {
+    afterEach(() => {
+      jest.useRealTimers()
     })
 
-    it('should resolve to an empty list', async () => {
-      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
-
+    async function primeWithScenes() {
+      jest.useFakeTimers()
+      const hook = renderHook(() => useGetHotScenesQuery())
       await flushAll()
+      expect(hook.result.current.data).toEqual(scenesPayload)
+      return hook
+    }
 
-      expect(result.current).toEqual({ data: [], isLoading: false })
-      unmount()
+    async function tick() {
+      const callsBefore = fetchMock.mock.calls.length
+      act(() => {
+        jest.advanceTimersByTime(60_001)
+      })
+      await flushAll()
+      expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+    }
+
+    describe('and the request rejects', () => {
+      it('should keep the last good snapshot', async () => {
+        const hook = await primeWithScenes()
+
+        fetchMock.mockRejectedValue(new Error('network down'))
+        await tick()
+
+        expect(hook.result.current).toEqual({ data: scenesPayload, isLoading: false })
+        hook.unmount()
+      })
+    })
+
+    describe('and the response is not ok', () => {
+      it('should keep the last good snapshot', async () => {
+        const hook = await primeWithScenes()
+
+        fetchMock.mockResolvedValue({ ok: false, status: 500, json: () => Promise.resolve(null) } as unknown as Response)
+        await tick()
+
+        expect(hook.result.current).toEqual({ data: scenesPayload, isLoading: false })
+        hook.unmount()
+      })
+    })
+
+    describe('and the response is not an array', () => {
+      it('should keep the last good snapshot', async () => {
+        const hook = await primeWithScenes()
+
+        fetchMock.mockResolvedValue(okResponse({ error: 'shape' }))
+        await tick()
+
+        expect(hook.result.current).toEqual({ data: scenesPayload, isLoading: false })
+        hook.unmount()
+      })
     })
   })
 
-  describe('when the response is not ok', () => {
-    beforeEach(() => {
-      fetchMock.mockResolvedValue({ ok: false, status: 500, json: () => Promise.resolve(null) } as unknown as Response)
+  describe('revalidation', () => {
+    afterEach(() => {
+      jest.useRealTimers()
     })
 
-    it('should resolve to an empty list', async () => {
-      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
+    describe('when the first consumer mounts', () => {
+      it('should register a visibility listener and release it on the last unmount', () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
 
-      await flushAll()
+        expect(capturedVisibilityListener).not.toBeNull()
+        expect(mockUnsubscribe).not.toHaveBeenCalled()
 
-      expect(result.current).toEqual({ data: [], isLoading: false })
-      unmount()
-    })
-  })
-
-  describe('when the response is not an array', () => {
-    beforeEach(() => {
-      fetchMock.mockResolvedValue(okResponse({ error: 'shape' }))
+        unmount()
+        expect(mockUnsubscribe).toHaveBeenCalledTimes(1)
+      })
     })
 
-    it('should resolve to an empty list', async () => {
-      const { result, unmount } = renderHook(() => useGetHotScenesQuery())
+    describe('when the polling interval ticks', () => {
+      it('should re-run the fetch', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const callsBefore = fetchMock.mock.calls.length
 
-      await flushAll()
+        act(() => {
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
 
-      expect(result.current).toEqual({ data: [], isLoading: false })
-      unmount()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+        unmount()
+      })
+    })
+
+    describe('when the tab starts hidden', () => {
+      beforeEach(() => {
+        visibility = false
+      })
+
+      it('should not poll until visibility returns', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const callsBefore = fetchMock.mock.calls.length
+
+        act(() => {
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore)
+
+        visibility = true
+        act(() => {
+          capturedVisibilityListener?.(true)
+        })
+        await flushAll()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore + 1)
+
+        act(() => {
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+        expect(fetchMock.mock.calls.length).toBe(callsBefore + 2)
+        unmount()
+      })
+    })
+
+    describe('when visibility flips to hidden after subscribers exist', () => {
+      it('should stop polling until visibility returns', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const callsBefore = fetchMock.mock.calls.length
+
+        visibility = false
+        act(() => {
+          capturedVisibilityListener?.(false)
+        })
+        act(() => {
+          jest.advanceTimersByTime(120_001)
+        })
+        await flushAll()
+
+        expect(fetchMock.mock.calls.length).toBe(callsBefore)
+        unmount()
+      })
+    })
+
+    describe('when there are no subscribers', () => {
+      it('should ignore visibility changes', async () => {
+        jest.useFakeTimers()
+        const { unmount } = renderHook(() => useGetHotScenesQuery())
+        await flushAll()
+        const listener = capturedVisibilityListener
+        unmount()
+        const callsBefore = fetchMock.mock.calls.length
+
+        act(() => {
+          listener?.(true)
+          jest.advanceTimersByTime(60_001)
+        })
+        await flushAll()
+
+        expect(fetchMock.mock.calls.length).toBe(callsBefore)
+      })
     })
   })
 })
