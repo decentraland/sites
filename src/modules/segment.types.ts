@@ -155,6 +155,7 @@ enum SectionViewedTrack {
   LANDING_FOOTER = 'Landing Footer',
   DOWNLOAD = 'Download',
   CREATOR_HUB_SUCCESS_FOOTER = 'Creator Hub Success Footer',
+  CREATOR_FUND = 'Creator Fund',
   INVITE_FIRST_HERO = 'Referrer Invite First Hero',
   INVITE_SECOND_HERO = 'Referrer Invite Second Hero',
   INVITE_THIRD_HERO = 'Referrer Invite Third Hero',

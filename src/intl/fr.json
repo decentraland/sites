@@ -75,7 +75,126 @@
     },
     "creator_fund": {
       "title": "Creator Fund",
-      "coming_soon": "Bientôt disponible"
+      "coming_soon": "Bientôt disponible",
+      "nav": {
+        "aria_label": "Sections de Creator Fund",
+        "brand": "Creator Fund",
+        "by": "par Decentraland",
+        "how": "Comment ça marche",
+        "eligibility": "Éligibilité",
+        "payouts": "Paiements",
+        "dates": "Dates",
+        "faq": "FAQ",
+        "rules": "Règlement",
+        "terms": "Conditions",
+        "open_menu": "Ouvrir le menu",
+        "close_menu": "Fermer le menu"
+      },
+      "cta": {
+        "join": "Rejoindre depuis Creator Hub"
+      },
+      "hero": {
+        "eyebrow": "La bêta démarre le 15 nov.",
+        "title": "Creator Fund",
+        "title_highlight": "Soyez payé quand les joueurs jouent.",
+        "subtitle": "Attirez des joueurs, fidélisez-les et soyez payé en USDC.",
+        "pool_amount": "{pool}",
+        "pool_text": "de cagnotte pour la Beta Season, répartie sur trois cycles.",
+        "fact_pool": "Cagnotte de la Beta Season",
+        "fact_cycle": "Par cycle",
+        "fact_season": "Beta Season"
+      },
+      "why": {
+        "title": "Decentraland",
+        "visit": "Découvrir Decentraland",
+        "subtitle": "Un monde de jeu social créé et détenu par sa communauté.",
+        "platforms_label": "Télécharger Decentraland",
+        "scene_alt": "Scène {name} sur Decentraland"
+      },
+      "how": {
+        "title": "Créez pour gagner",
+        "opt_in_title": "Inscrivez-vous",
+        "opt_in_link": "Téléchargez Creator Hub",
+        "opt_in_text": " et inscrivez-vous au Creator Fund.",
+        "build_title": "Créez",
+        "build_text": "Créez et publiez votre expérience.",
+        "paid_title": "Soyez payé",
+        "paid_text": "Recevez une part de {amount} {currency} à chaque cycle, selon l'engagement des joueurs."
+      },
+      "measure": {
+        "title": "Ce que nous récompensons",
+        "subtitle": "À chaque cycle, la cagnotte est répartie selon la contribution de chaque expérience :",
+        "new_players": "Nouveaux joueurs Decentraland",
+        "playtime": "Temps de jeu actif",
+        "retention": "Fidélisation des joueurs"
+      },
+      "real": {
+        "title": "De vrais joueurs. Du vrai jeu.",
+        "bots": "Nous examinons chaque expérience pour détecter les bots et l'activité factice. L'utilisation de bots peut entraîner la perte d'activité, la retenue des paiements ou l'exclusion du Fonds.",
+        "apps": "Seuls les joueurs de 18 ans et plus sur les applications officielles de Decentraland, sur ordinateur et mobile, sont comptabilisés, et ils doivent respecter les Conditions d'utilisation."
+      },
+      "eligibility": {
+        "title": "Éligibilité",
+        "you_title": "Vous",
+        "you_age": "Avez au moins {age} ans.",
+        "you_owner": "Possédez le NAME ou le Monde où votre expérience est déployée.",
+        "you_sign": "Signez les Conditions du Programme avec le wallet propriétaire.",
+        "you_terms": "Remplissez les conditions d'éligibilité des Conditions du Programme.",
+        "scene_title": "Votre scène ou Monde",
+        "scene_policy": "Respecte les Conditions d'utilisation et la Politique de contenu de Decentraland pendant tout le cycle.",
+        "scene_content": "Ne contient ni jeux d'argent ni autre contenu réservé aux plus de 18 ans.",
+        "scene_removed": "Cesse d'être comptabilisé s'il est supprimé, rendu privé ou transféré."
+      },
+      "rewards": {
+        "title": "Paiements",
+        "when_label": "Quand",
+        "when": "Dans les {days} jours suivant la fin de chaque cycle. La date de paiement de chaque cycle figure dans le calendrier ci-dessous.",
+        "currency_label": "Devise",
+        "currency": "{currency} ({standard}) sur {network}.",
+        "where_label": "Où",
+        "where": "Sur le wallet qui possède votre NAME ou Monde, ou sur un wallet de paiement personnalisé que vous définissez.",
+        "leaderboard_label": "Classement",
+        "leaderboard": "Les meilleures expériences et leurs paiements apparaissent dans un classement public."
+      },
+      "more_ways": {
+        "title": "D'autres façons de gagner",
+        "wearables": "Vendez des Wearables et des Emotes et gardez 97,5 % de chaque vente",
+        "funding": "Demandez un financement et des subventions Creator Success",
+        "contests": "Remportez des prix lors des Buildathons, des Game Jams et des concours saisonniers",
+        "purchases": "Achats créateurs en jeu à partir du Q1 2027"
+      },
+      "dates": {
+        "title": "Calendrier de la bêta",
+        "cycle_name": "Cycle {number}",
+        "launch": "Lancement du Fonds. L'inscription ouvre dans Creator Hub.",
+        "cycle_row": "{name} · {amount} USDC · Paiement avant le {date}"
+      },
+      "join": {
+        "title": "Creator Fund démarre le 15 novembre",
+        "subtitle": "Commencez à créer dès le premier jour.",
+        "see_terms": "Voir les conditions",
+        "avatars_alt": "Avatars de la communauté Decentraland"
+      },
+      "faq": {
+        "title": "FAQ",
+        "join_question": "Comment participer ?",
+        "join_answer": "L'inscription ouvre dans Creator Hub le 11 novembre. Vous devez avoir au moins 18 ans et posséder le NAME ou le Monde où votre expérience est déployée. Signez les Conditions du Programme avec le wallet propriétaire ; une inscription couvre un seul NAME ou Monde.",
+        "rewards_question": "Comment les paiements sont-ils calculés ?",
+        "rewards_answer": "La cagnotte de chaque cycle est répartie entre les expériences éligibles selon le temps de jeu actif, la fidélisation des joueurs et les nouveaux joueurs Decentraland. Les chiffres de Creator Hub sont un aperçu : les paiements finaux sont calculés après examen et peuvent donc différer de votre tableau de bord.",
+        "worlds_question": "Les Mondes comptent-ils ?",
+        "worlds_answer": "Oui. Les Scènes de Genesis City et les Mondes publics comptent tous.",
+        "wallet_question": "Puis-je utiliser un wallet de paiement personnalisé ?",
+        "wallet_answer": "Oui. Les paiements peuvent être versés au wallet qui possède votre NAME ou Monde, ou à un wallet de paiement personnalisé que vous définissez.",
+        "transfer_question": "Que se passe-t-il si je transfère mon NAME ou Monde pendant un cycle ?",
+        "transfer_answer": "Une expérience cesse d'être comptabilisée dès son transfert. Les Conditions du Programme régissent l'éligibilité et les paiements, et un transfert ne transmet pas le paiement au nouveau propriétaire.",
+        "runs_question": "Qui gère le Creator Fund ?",
+        "runs_answer": "C'est une coentreprise entre Regenesis Labs et la Decentraland Foundation.",
+        "after_question": "Que se passe-t-il après la Beta Season ?",
+        "after_answer": "La Season 1 est prévue de janvier à mars 2027. Les dates et les nouveautés seront confirmées le 28 décembre.",
+        "grant_question": "S'agit-il d'une subvention ?",
+        "grant_answer": "Non. Les subventions soutiennent des projets avant leur lancement. Creator Fund paie les expériences déjà en ligne et en croissance sur Decentraland.",
+        "contact_prompt": "Des questions ou besoin d’aide ? Écrivez-nous à"
+      }
     },
     "home": {
       "hang_out_now": "TRAÎNEZ MAINTENANT",
