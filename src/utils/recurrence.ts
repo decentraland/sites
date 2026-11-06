@@ -1,3 +1,5 @@
+import type { OccurrenceTimes } from '../types/recurrence.types'
+
 // Recurrence helpers shared by the create-event form, the event detail modal,
 // the live-now mapper, and the Google Calendar URL builder. Lives in `utils/`
 // (not `hooks/useCreateEventForm.helpers.ts`) because consumers outside the form
@@ -56,10 +58,37 @@ function localizedWeekdayLong(dayIndex: number, locale?: string): string {
   return getWeekdayFormatter(locale, 'long').format(new Date(SUNDAY_EPOCH_MS + dayIndex * ONE_DAY_MS))
 }
 
+// End of the occurrence that starts at `start_at`. For a recurrent event the API's `finish_at` is the
+// end of the LAST occurrence, so pairing it with `start_at` spans the whole series. The length of one
+// occurrence comes from the `next_*` pair (not `duration`, whose unit differs between the events API
+// and mapped community events).
+function getOccurrenceFinishAt(event: OccurrenceTimes): string {
+  const occurrenceMs = Date.parse(event.next_finish_at) - Date.parse(event.next_start_at)
+  const startMs = Date.parse(event.start_at)
+  if (!Number.isFinite(occurrenceMs) || !Number.isFinite(startMs) || occurrenceMs < 0) return event.finish_at
+  return new Date(startMs + occurrenceMs).toISOString()
+}
+
+// The occurrence a card displays. A raw recurrent row keeps the series start, often months in the past,
+// so a calendar entry without an RRULE has to book the upcoming occurrence instead. A row already resolved
+// to one occurrence (`bucketEventsByDay`, `toUpcomingOccurrence`) has `start_at` at or after
+// `next_start_at` and is returned as is, so each day's card keeps its own occurrence.
+function getNextOccurrence(event: OccurrenceTimes): { startAt: string; finishAt: string } {
+  const startMs = Date.parse(event.start_at)
+  const nextStartMs = Date.parse(event.next_start_at)
+  const hasNextPair = Number.isFinite(nextStartMs) && Number.isFinite(Date.parse(event.next_finish_at))
+  if (!hasNextPair || (Number.isFinite(startMs) && startMs >= nextStartMs)) {
+    return { startAt: event.start_at, finishAt: getOccurrenceFinishAt(event) }
+  }
+  return { startAt: event.next_start_at, finishAt: event.next_finish_at }
+}
+
 export {
   ALL_WEEKDAYS,
   WEEKDAY_INDICES,
   dayIndicesToWeekdayMask,
+  getNextOccurrence,
+  getOccurrenceFinishAt,
   localizedWeekdayLong,
   localizedWeekdayShort,
   normalizeDayIndices,

@@ -40,7 +40,8 @@ jest.mock('../../../features/events', () => {
   return {
     useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
     bucketEventsByDay: helpers.bucketEventsByDay,
-    isPubliclyVisibleEvent: helpers.isPubliclyVisibleEvent
+    isPubliclyVisibleEvent: helpers.isPubliclyVisibleEvent,
+    toUpcomingOccurrence: helpers.toUpcomingOccurrence
   }
 })
 
