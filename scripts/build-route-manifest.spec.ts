@@ -508,6 +508,7 @@ describe('when extracting the manifest from this repo router', () => {
       '/brand',
       '/content',
       '/create',
+      '/creator-fund',
       '/credits-terms',
       '/download',
       '/download/creator-hub',
