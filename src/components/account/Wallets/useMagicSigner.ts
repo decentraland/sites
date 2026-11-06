@@ -85,7 +85,7 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
   const retry = useCallback(() => setFailedSession(undefined), [])
   const disconnectOtherWallets = useCallback(() => {
     connections
-      .filter(connection => !connection.accounts.some(account => account.toLowerCase() === session))
+      .filter(connection => connection.accounts[0]?.toLowerCase() !== session)
       .forEach(connection => disconnect({ connector: connection.connector }))
   }, [connections, disconnect, session])
   const signer = (state: MagicSignerState): MagicSigner => ({ state, retry, disconnect: disconnectOtherWallets })

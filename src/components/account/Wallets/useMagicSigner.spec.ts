@@ -128,7 +128,7 @@ describe('useMagicSigner', () => {
       mockAccount = { address: OTHER, connector: walletConnectConnector, status: 'connected' }
       mockConnections = [
         { accounts: [OTHER], connector: walletConnectConnector },
-        { accounts: ['0x3333000000000000000000000000000000000003'], connector: metaMaskConnector },
+        { accounts: ['0x3333000000000000000000000000000000000003', SIGNED_IN.toLowerCase()], connector: metaMaskConnector },
         { accounts: [SIGNED_IN.toLowerCase()], connector: magicConnector }
       ]
     })
@@ -170,6 +170,21 @@ describe('useMagicSigner', () => {
       await waitFor(() => expect(mockSwitchChainAsync).toHaveBeenCalledWith({ connector: magicConnector, chainId: TARGET_CHAIN }))
       expect(mockConnectAsync).toHaveBeenCalledWith({ connector: magicConnector, chainId: TARGET_CHAIN })
       expect(result.current.state).toBe('connecting')
+    })
+
+    it('should be ready once wagmi reports Magic on the signed-in account and target network', async () => {
+      mockSwitchChainAsync.mockImplementation(async () => {
+        mockAccount = { address: SIGNED_IN.toLowerCase(), chainId: TARGET_CHAIN, connector: magicConnector, status: 'connected' }
+        return {}
+      })
+      const { result, rerender } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+      await waitFor(() => expect(mockSwitchChainAsync).toHaveBeenCalled())
+
+      rerender()
+
+      await waitFor(() => expect(result.current.state).toBe('ready'))
+      expect(mockConnectAsync).toHaveBeenCalledTimes(1)
+      expect(mockSwitchChainAsync).toHaveBeenCalledTimes(1)
     })
 
     it('should keep reporting connecting while wagmi reports its own connect in progress', async () => {
