@@ -60,14 +60,16 @@ const StepText = styled('p')(({ theme }) => ({
   }
 }))
 
-// Same weight and color as the sentence around it; only the underline marks it as a link.
+// Reads as plain text in the sentence: no highlight, no underline. Hover and keyboard focus
+// still show it is a link.
 const StepLink = styled('a')({
   fontWeight: 'inherit',
   color: 'inherit',
-  textDecoration: 'underline',
+  textDecoration: 'none',
   textUnderlineOffset: 4,
   ['&:hover']: {
-    color: creatorFundColors.linkHover
+    color: creatorFundColors.linkHover,
+    textDecoration: 'underline'
   },
   ['&:focus-visible']: {
     outline: `2px solid ${creatorFundColors.white}`,
