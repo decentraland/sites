@@ -151,7 +151,7 @@
         "currency_label": "币种",
         "currency": "{network} 上的 {currency}（{standard}）。",
         "where_label": "接收方式",
-        "where": "拥有你的 NAME 或 World 的钱包，或你自行设置的自定义收款钱包。",
+        "where": "你在 Creator Hub 中设置的收款钱包。如果在周期结束 7 天后仍未设置，该笔奖励发放将作废。",
         "leaderboard_label": "排行榜",
         "leaderboard": "表现最佳的体验及其奖励金额将显示在公开排行榜上。"
       },
@@ -183,7 +183,7 @@
         "worlds_question": "Worlds 也计入吗？",
         "worlds_answer": "是的。Genesis City 中的场景和公开的 Worlds 均计入。",
         "wallet_question": "可以使用自定义收款钱包吗？",
-        "wallet_answer": "可以。发放可汇入拥有你的 NAME 或 World 的钱包，或你自行设置的自定义收款钱包。",
+        "wallet_answer": "可以。奖励将发放到你在 Creator Hub 中设置的收款钱包，可以是你控制的任何钱包或交易所账户。如果在周期结束 7 天后仍未设置，该笔奖励发放将作废。",
         "transfer_question": "如果我在周期内转让 NAME 或 World 会怎样？",
         "transfer_answer": "体验自转让之时起不再计入。参与资格和发放以计划条款为准，转让不会将发放权益转给新所有者。",
         "runs_question": "Creator Fund 由谁运营？",

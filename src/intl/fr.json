@@ -151,7 +151,7 @@
         "currency_label": "Devise",
         "currency": "{currency} ({standard}) sur {network}.",
         "where_label": "Où",
-        "where": "Sur le wallet qui possède votre NAME ou Monde, ou sur un wallet de paiement personnalisé que vous définissez.",
+        "where": "Le wallet de paiement que vous définissez dans Creator Hub. Si vous n’en avez pas défini 7 jours après la fin d’un cycle, le paiement de la récompense est perdu.",
         "leaderboard_label": "Classement",
         "leaderboard": "Les meilleures expériences et leurs récompenses apparaissent dans un classement public."
       },
@@ -183,7 +183,7 @@
         "worlds_question": "Les Mondes comptent-ils ?",
         "worlds_answer": "Oui. Les Scènes de Genesis City et les Mondes publics comptent tous.",
         "wallet_question": "Puis-je utiliser un wallet de paiement personnalisé ?",
-        "wallet_answer": "Oui. Les paiements peuvent être versés au wallet qui possède votre NAME ou Monde, ou à un wallet de paiement personnalisé que vous définissez.",
+        "wallet_answer": "Oui. Les récompenses sont versées sur le wallet de paiement que vous définissez dans Creator Hub, qui peut être n’importe quel wallet ou compte d’exchange que vous contrôlez. Si vous n’en avez pas défini 7 jours après la fin d’un cycle, le paiement de la récompense est perdu.",
         "transfer_question": "Que se passe-t-il si je transfère mon NAME ou Monde pendant un cycle ?",
         "transfer_answer": "Une expérience cesse d'être comptabilisée dès son transfert. Les Conditions du Programme régissent l'éligibilité et les paiements, et un transfert ne transmet pas le paiement au nouveau propriétaire.",
         "runs_question": "Qui gère le Creator Fund ?",

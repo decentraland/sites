@@ -160,7 +160,7 @@
         "currency_label": "Currency",
         "currency": "{currency} ({standard}) on {network}.",
         "where_label": "Where",
-        "where": "The wallet that owns your NAME or World, or a custom payout wallet you set.",
+        "where": "The Payout Wallet you set in Creator Hub. If you haven’t set one 7 days after a Cycle ends, the reward payout is lost.",
         "leaderboard_label": "Leaderboard",
         "leaderboard": "The top experiences and their rewards appear on a public leaderboard."
       },
@@ -192,7 +192,7 @@
         "worlds_question": "Do Worlds count?",
         "worlds_answer": "Yes. Scenes in Genesis City and public Worlds both count.",
         "wallet_question": "Can I use a custom payout wallet?",
-        "wallet_answer": "Yes. Payouts can go to the wallet that owns your NAME or World, or a custom payout wallet you set.",
+        "wallet_answer": "Yes. Rewards are paid to the Payout Wallet you set in Creator Hub, which can be any wallet or exchange account you control. If you haven’t set one 7 days after a Cycle ends, the reward payout is lost.",
         "transfer_question": "What if I transfer my NAME or World during a cycle?",
         "transfer_answer": "An experience stops counting from the moment it is transferred. The Program Terms govern eligibility and payouts, and a transfer doesn’t pass a payout to the new owner.",
         "runs_question": "Who runs the Creator Fund?",

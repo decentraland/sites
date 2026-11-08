@@ -151,7 +151,7 @@
         "currency_label": "통화",
         "currency": "{network}의 {currency}({standard}).",
         "where_label": "수령 지갑",
-        "where": "NAME 또는 World를 소유한 지갑 또는 직접 설정한 지급용 지갑.",
+        "where": "Creator Hub에서 설정한 지급용 지갑. 사이클 종료 후 7일이 지나도 설정하지 않으면 보상 지급이 소멸됩니다.",
         "leaderboard_label": "리더보드",
         "leaderboard": "상위 경험과 보상 금액은 공개 리더보드에 표시됩니다."
       },
@@ -183,7 +183,7 @@
         "worlds_question": "Worlds도 포함되나요?",
         "worlds_answer": "네. Genesis City의 씬과 공개 Worlds 모두 포함됩니다.",
         "wallet_question": "별도의 지급용 지갑을 사용할 수 있나요?",
-        "wallet_answer": "네. 지급은 NAME 또는 World를 소유한 지갑이나 직접 설정한 지급용 지갑으로 받을 수 있습니다.",
+        "wallet_answer": "네. 보상은 Creator Hub에서 설정한 지급용 지갑으로 지급되며, 직접 관리하는 어떤 지갑이나 거래소 계정이든 설정할 수 있습니다. 사이클 종료 후 7일이 지나도 설정하지 않으면 보상 지급이 소멸됩니다.",
         "transfer_question": "사이클 도중 NAME 또는 World를 이전하면 어떻게 되나요?",
         "transfer_answer": "경험은 이전된 시점부터 집계에서 제외됩니다. 참여 자격과 지급은 프로그램 약관에 따르며, 이전한다고 해서 지급 권리가 새 소유자에게 넘어가지는 않습니다.",
         "runs_question": "Creator Fund는 누가 운영하나요?",
