@@ -131,7 +131,6 @@ describe('when the signal connection failed', () => {
 })
 
 // The gatekeeper's envelope carries the access token as a query param.
-
 describe('when the server url carries a query string', () => {
   it('should report the host without it', async () => {
     await captureLiveKitConnectError(error, { surface: 'scene_watcher', serverUrl: 'wss://livekit.example:8443?access_token=secret' })

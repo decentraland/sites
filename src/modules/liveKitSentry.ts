@@ -45,7 +45,9 @@ function isDeniedPermission(error: unknown): boolean {
 //   (SITES-2SS: the breadcrumbs read "Abort connection attempt due to user initiated
 //   disconnect" right before each event);
 // - `Room.connect()` wraps the inner error as "Signal connection aborted: …" when the
-//   room's own abort signal fired.
+//   room's own abort signal fired. In 2.19.1 `disconnect()` rejects the pending connect
+//   first, so this one is defensive: it keeps a library bump that reorders the two from
+//   reporting cancellations again.
 //
 // The reason alone is not enough. A signal websocket that never answers within
 // `websocketTimeout` also ends up with reason `Cancelled` (its timer goes through the
