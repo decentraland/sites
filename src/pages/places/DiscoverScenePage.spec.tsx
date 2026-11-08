@@ -244,7 +244,7 @@ describe('DiscoverScenePage', () => {
       expect(watcher).toHaveAttribute('data-status', 'ready')
       expect(watcher).toHaveAttribute('data-count', '7')
       expect(watcher).toHaveAttribute('data-place', '10,20')
-      expect(watcher.getAttribute('data-streaming')).toContain('https://decentraland.zone/bevy-web/?position=10%2C20')
+      expect(watcher.getAttribute('data-streaming')).toContain('https://decentraland.zone/play/?position=10%2C20')
     })
 
     it('should render the chat dock next to the viewer with the scene title', () => {

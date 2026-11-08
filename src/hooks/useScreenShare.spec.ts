@@ -45,7 +45,8 @@ let mediaStreamTrack: ReturnType<typeof makeMediaStreamTrack>
 
 const makeParticipant = (overrides = {}) => ({
   setScreenShareEnabled: jest.fn().mockResolvedValue(undefined),
-  unpublishTrack: jest.fn().mockResolvedValue(undefined),
+  setMicrophoneEnabled: jest.fn().mockResolvedValue(undefined),
+  setCameraEnabled: jest.fn().mockResolvedValue(undefined),
   getTrackPublication: jest.fn().mockReturnValue({ track: { mediaStreamTrack } }),
   ...overrides
 })
@@ -298,32 +299,20 @@ describe('useScreenShare', () => {
   })
 
   describe('when the user stops sharing intentionally', () => {
-    it('should not show a toast on the resulting transition', async () => {
+    it('should disable screen share without touching the camera or microphone', async () => {
       mockUseLocalVideoTracks.mockReturnValue({ hasLocalScreenShare: true })
       const { result, rerender } = renderHook(() => useScreenShare())
       await act(async () => {
         await result.current.stopScreenShare()
       })
-      expect(participant.unpublishTrack).toHaveBeenCalled()
+      expect(participant.setScreenShareEnabled).toHaveBeenCalledWith(false)
+      expect(participant.setMicrophoneEnabled).not.toHaveBeenCalled()
+      expect(participant.setCameraEnabled).not.toHaveBeenCalled()
 
       mockUseLocalVideoTracks.mockReturnValue({ hasLocalScreenShare: false })
       rerender()
       await flush()
       expect(showMock).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('when stopping with no active publication', () => {
-    beforeEach(() => {
-      participant.getTrackPublication.mockReturnValue(undefined)
-    })
-
-    it('should fall back to setScreenShareEnabled(false)', async () => {
-      const { result } = renderHook(() => useScreenShare())
-      await act(async () => {
-        await result.current.stopScreenShare()
-      })
-      expect(participant.setScreenShareEnabled).toHaveBeenCalledWith(false)
     })
   })
 
@@ -337,13 +326,13 @@ describe('useScreenShare', () => {
       await act(async () => {
         await result.current.stopScreenShare()
       })
-      expect(participant.unpublishTrack).not.toHaveBeenCalled()
+      expect(participant.setScreenShareEnabled).not.toHaveBeenCalled()
     })
   })
 
-  describe('when unpublishing the track throws', () => {
+  describe('when disabling the screen share throws', () => {
     beforeEach(() => {
-      participant.unpublishTrack.mockRejectedValue(new Error('unpublish failed'))
+      participant.setScreenShareEnabled.mockRejectedValue(new Error('disable failed'))
     })
 
     it('should swallow the error without throwing', async () => {

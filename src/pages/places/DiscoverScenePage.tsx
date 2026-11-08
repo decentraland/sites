@@ -68,7 +68,7 @@ function synthWorldPlace(worldName: string): DiscoverPlace {
   }
 }
 
-// bevy-web iframe URL for the scene viewer. `systemScene=tortilla.dcl.eth
+// bevy web client iframe URL for the scene viewer. `systemScene=tortilla.dcl.eth
 // &portables=none` strips the launcher and portables UI so only the scene
 // renders inside the watcher card. `guest=1` auto-logs-in as a guest (no bevy
 // sign-in screen) and `hud=0` hides bevy's entire React HUD (sidebar, chat,
@@ -77,7 +77,7 @@ function synthWorldPlace(worldName: string): DiscoverPlace {
 // dev/stg point at .zone, prd at .org — .org's `frame-ancestors` CSP rejects a
 // non-.org parent (e.g. localhost), so dev must frame the .zone build.
 function buildBevyHref(location: string): string {
-  const base = getEnv('BEVY_WEB_URL') || 'https://decentraland.zone/bevy-web/'
+  const base = getEnv('BEVY_WEB_URL') || 'https://decentraland.zone/play/'
   const param = location.endsWith('.eth') ? `?realm=${encodeURIComponent(location)}` : `?position=${encodeURIComponent(location)}`
   return `${base}${param}&systemScene=tortilla.dcl.eth&portables=none&guest=1&hud=0`
 }
@@ -265,7 +265,7 @@ function DiscoverScenePage({ kind }: DiscoverScenePageProps) {
   }
 
   // Scene → JUMP IN modal instead of the watcher when EITHER the scene is empty
-  // (a live watcher would render an empty world) OR we're on mobile (bevy-web
+  // (a live watcher would render an empty world) OR we're on mobile (the bevy web client
   // can't run on touch devices). On mobile the modal shows the LIVE + presence
   // badges when the scene has players; on desktop-empty `livePlayers` is 0 so
   // no badges render. Gated on presence being known so we never flash the modal

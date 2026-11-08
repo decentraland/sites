@@ -96,12 +96,7 @@ const useScreenShare = (): UseScreenShareResult => {
     if (!localParticipant) return
     intentionalStopRef.current = true
     try {
-      const publication = localParticipant.getTrackPublication(Track.Source.ScreenShare)
-      if (publication?.track) {
-        await localParticipant.unpublishTrack(publication.track)
-      } else {
-        await localParticipant.setScreenShareEnabled(false)
-      }
+      await localParticipant.setScreenShareEnabled(false)
     } catch (error) {
       console.error('[useScreenShare] Error stopping screen share:', error)
     }

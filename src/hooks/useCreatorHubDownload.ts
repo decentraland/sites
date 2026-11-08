@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAdvancedUserAgentData } from '@dcl/hooks'
 import appleLogo from '../images/apple-logo.svg'
 import microsoftLogo from '../images/microsoft-logo.svg'
+import { resolveInstaller } from '../modules/downloadLinks'
 import { createDownloadTracker, toAuthState } from '../modules/downloadTracking'
 import { triggerFileDownload } from '../modules/file'
 import { DownloadPlace, DownloadTarget } from '../modules/segment'
@@ -54,25 +55,19 @@ function useCreatorHubDownload(place: DownloadPlace = DownloadPlace.CREATOR_HUB_
   const primaryOption: DownloadOption | null = useMemo(() => {
     if (!links || !userAgentData) return null
 
-    if (userAgentData.os.name === OperativeSystem.MACOS) {
-      return {
-        text: OperativeSystem.MACOS,
-        image: imageByOs[OperativeSystem.MACOS],
-        link: links[OperativeSystem.MACOS]?.arm64 || links[OperativeSystem.MACOS]?.amd64,
-        arch: userAgentData.cpu.architecture as Architecture
-      }
-    }
+    // NOTE: the tracked `arch` is now the architecture of the artifact served, not the one the
+    // browser reported (an Intel Mac used to report amd64 while downloading the arm64 dmg). Events
+    // segmented by `arch` shift accordingly. An OS with no usable link now yields no primary option
+    // instead of an option without a link.
+    const installer = resolveInstaller(userAgentData.os.name, userAgentData.cpu.architecture, links[userAgentData.os.name])
+    if (!installer) return null
 
-    if (links[userAgentData.os.name]) {
-      return {
-        text: userAgentData.os.name,
-        image: imageByOs[userAgentData.os.name],
-        link: links[userAgentData.os.name]?.[userAgentData.cpu.architecture],
-        arch: userAgentData.cpu.architecture as Architecture
-      }
+    return {
+      text: userAgentData.os.name,
+      image: imageByOs[userAgentData.os.name],
+      link: installer.link,
+      arch: installer.arch
     }
-
-    return null
   }, [userAgentData, links])
 
   const secondaryOptions: DownloadOption[] = useMemo(() => {

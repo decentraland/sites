@@ -6,7 +6,7 @@ import { useAnonUserId } from './useAnonUserId'
 /**
  * Returns a memoized `(os, place) => href` builder for `/download_success`
  * links, baking in the current anon_user_id and any partner UTM params on the
- * page URL. Shared by the landing/play download CTAs — it centralizes their
+ * page URL. Shared by the landing download CTAs — it centralizes their
  * os/place call sites. (`DownloadOptions` composes the same options inline via
  * `buildDownloadSuccessHref` because it also passes `arch`.)
  */

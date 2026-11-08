@@ -238,6 +238,103 @@ describe('when checking the dual-shell import boundary', () => {
     })
   })
 
+  describe('and the homepage detail modal loader reaches its own shell', () => {
+    const LOADER = 'components/Home/HomeDetailModal/HomeDetailModalLoader.tsx'
+
+    beforeEach(() => {
+      write('shells/HomeDetailModalShell.tsx', 'export default () => null\n')
+      write('shells/OtherShell.tsx', 'export default () => null\n')
+      write(
+        'pages/index.tsx',
+        "import { Loader } from '../components/Home/HomeDetailModal/HomeDetailModalLoader'\nexport const Home = () => Loader\n"
+      )
+    })
+
+    describe('and it does so through a dynamic import', () => {
+      beforeEach(() => {
+        write(LOADER, "export const Loader = lazy(() => import('../../../shells/HomeDetailModalShell'))\n")
+      })
+
+      it('should exit 0 because that single edge is authorized', () => {
+        expect(runCheck(dir).status).toBe(0)
+      })
+    })
+
+    describe('and it does so through a static import', () => {
+      beforeEach(() => {
+        write(LOADER, "import Shell from '../../../shells/HomeDetailModalShell'\nexport const Loader = Shell\n")
+      })
+
+      it('should exit 1 because a static import lands in the homepage bundle', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('HomeDetailModalLoader.tsx')
+        expect(result.stdout).toContain('shells/HomeDetailModalShell.tsx')
+      })
+    })
+
+    describe('and it re-exports the shell', () => {
+      beforeEach(() => {
+        write(LOADER, "export { default as Loader } from '../../../shells/HomeDetailModalShell'\n")
+      })
+
+      it('should exit 1 because a re-export is a static dependency', () => {
+        expect(runCheck(dir).status).toBe(1)
+      })
+    })
+
+    describe('and it lazy-imports a different shell file', () => {
+      beforeEach(() => {
+        write(LOADER, "export const Loader = lazy(() => import('../../../shells/OtherShell'))\n")
+      })
+
+      it('should exit 1 because only its own shell file is authorized', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('shells/OtherShell.tsx')
+      })
+    })
+
+    describe('and it lazy-imports the detail modal itself instead of its shell', () => {
+      beforeEach(() => {
+        write('shells/HomeDetailModal.tsx', 'export const HomeDetailModal = () => null\n')
+        write(LOADER, "export const Loader = lazy(() => import('../../../shells/HomeDetailModal'))\n")
+      })
+
+      it('should exit 1 because only the Provider wrapper is authorized', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('shells/HomeDetailModal.tsx')
+      })
+    })
+
+    describe('and it statically imports the detail modal itself', () => {
+      beforeEach(() => {
+        write('shells/HomeDetailModal.tsx', 'export const HomeDetailModal = () => null\n')
+        write(LOADER, "import { HomeDetailModal } from '../../../shells/HomeDetailModal'\nexport const Loader = HomeDetailModal\n")
+      })
+
+      it('should exit 1 because it would put the modal and its store hooks in the homepage bundle', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('shells/HomeDetailModal.tsx')
+      })
+    })
+
+    describe('and another file lazy-imports the detail modal shell', () => {
+      beforeEach(() => {
+        write(LOADER, 'export const Loader = null\n')
+        write('pages/index.tsx', "export const Home = () => import('../shells/HomeDetailModalShell')\n")
+      })
+
+      it('should exit 1 because the edge is tied to the loader file', () => {
+        const result = runCheck(dir)
+        expect(result.status).toBe(1)
+        expect(result.stdout).toContain('pages/index.tsx')
+      })
+    })
+  })
+
   describe('and a heavy route group is verified against the folders on disk', () => {
     const runVerify = () => {
       const result = spawnSync(process.execPath, [SCRIPT, '--dir', dir, '--verify-heavy-dirs'], { encoding: 'utf8' })

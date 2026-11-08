@@ -102,4 +102,4 @@ async function downloadFileWithProgress(
   return { gatewayRequestId }
 }
 
-export { downloadFileWithProgress, triggerFileDownload }
+export { downloadFileWithProgress, triggerBlobDownload, triggerFileDownload }

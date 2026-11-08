@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, CardMedia, LinearProgress, Typography, dclColors, keyframes, styled } from 'decentraland-ui2'
+import { Box, Card, CardContent, CardMedia, LinearProgress, Typography, dclColors, styled } from 'decentraland-ui2'
 
 const DownloadSuccessPageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -83,28 +83,6 @@ const DownloadSuccessCardMedia = styled(CardMedia)(({ theme }) => ({
   backgroundColor: '#5122545e',
   [theme.breakpoints.down('md')]: {
     minHeight: '200px'
-  }
-}))
-
-const highlightFadeIn = keyframes`
-  0% { box-shadow: 0 0 0 0 ${dclColors.brand.lavender}; }
-  50% { box-shadow: 0 0 25px 18.5px ${dclColors.brand.lavender}; }
-  100% { box-shadow: 0 0 0 0 ${dclColors.brand.lavender}; }
-`
-
-const HighlightAnimation = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: '272px',
-  right: '86px',
-  width: '25.6px',
-  height: '25.6px',
-  borderRadius: '50%',
-  pointerEvents: 'none',
-  zIndex: 1,
-  backgroundColor: 'transparent',
-  animation: `${highlightFadeIn} 1s ease-in-out infinite`,
-  [theme.breakpoints.down('lg')]: {
-    display: 'none'
   }
 }))
 
@@ -221,6 +199,5 @@ export {
   DownloadSuccessOsIcon,
   DownloadSuccessPageContainer,
   DownloadSuccessSubtitle,
-  DownloadSuccessTitle,
-  HighlightAnimation
+  DownloadSuccessTitle
 }

@@ -1,4 +1,5 @@
-import { DOWNLOAD_URLS, detectDownloadOS, getDownloadUrl } from './downloadConstants'
+import { OperativeSystem } from '../types/download.types'
+import { DOWNLOAD_URLS, detectDesktopInstallerOs, detectDownloadOS, getDownloadUrl } from './downloadConstants'
 import type { DownloadOS } from './downloadConstants'
 
 describe('downloadConstants', () => {
@@ -47,6 +48,34 @@ describe('downloadConstants', () => {
         // Non-utm routing params never leak into the referrer payload.
         expect(referrer.get('id')).toBeNull()
       })
+    })
+  })
+
+  describe('detectDesktopInstallerOs', () => {
+    const stubNavigator = (userAgent: string, maxTouchPoints = 0) => {
+      Object.defineProperty(window.navigator, 'userAgent', { configurable: true, value: userAgent })
+      Object.defineProperty(window.navigator, 'maxTouchPoints', { configurable: true, value: maxTouchPoints })
+    }
+
+    afterEach(() => {
+      delete (window.navigator as unknown as Record<string, unknown>).userAgent
+      delete (window.navigator as unknown as Record<string, unknown>).maxTouchPoints
+    })
+
+    it.each([
+      ['Windows', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 0, OperativeSystem.WINDOWS],
+      ['a Mac', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 0, OperativeSystem.MACOS],
+      ['an iPad reporting a Mac user agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 5, null],
+      ['Linux', 'Mozilla/5.0 (X11; Linux x86_64)', 0, null],
+      ['ChromeOS', 'Mozilla/5.0 (X11; CrOS x86_64 14541.0.0)', 0, null],
+      ['Android', 'Mozilla/5.0 (Linux; Android 13)', 5, null],
+      ['an iPhone', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)', 5, null],
+      ['an Xbox', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Xbox; Xbox One) AppleWebKit/537.36 Edge/44.18363', 0, null],
+      ['Windows Phone', 'Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Microsoft; Lumia 950) AppleWebKit/537.36', 0, null]
+    ])('when the browser runs on %s it should return %s', (_label, userAgent, maxTouchPoints, expected) => {
+      stubNavigator(userAgent, maxTouchPoints)
+
+      expect(detectDesktopInstallerOs()).toBe(expected)
     })
   })
 

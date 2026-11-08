@@ -259,4 +259,85 @@ describe('useCreatorHubDownload', () => {
       expect(result.current.secondaryOptions.map(option => option.text)).toContain('macOS')
     })
   })
+
+  describe('when the architecture is still Unknown', () => {
+    beforeEach(() => {
+      mockUserAgent = [false, { os: { name: 'Windows' }, cpu: { architecture: 'Unknown' } }]
+    })
+
+    it('should offer the amd64 installer and track amd64', () => {
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toMatchObject({ link: WIN_LINK, arch: 'amd64' })
+    })
+  })
+
+  describe('when the visitor is on Windows ARM and no arm64 build is published', () => {
+    beforeEach(() => {
+      mockUserAgent = [false, { os: { name: 'Windows' }, cpu: { architecture: 'arm64' } }]
+    })
+
+    it('should offer the amd64 installer and track amd64', () => {
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toMatchObject({ link: WIN_LINK, arch: 'amd64' })
+    })
+  })
+
+  describe('when the visitor is on Windows ARM and an arm64 build is published', () => {
+    beforeEach(() => {
+      mockUserAgent = [false, { os: { name: 'Windows' }, cpu: { architecture: 'arm64' } }]
+      mockLinks = { Windows: { amd64: WIN_LINK, arm64: 'https://cdn.example.com/Creator-Hub-Setup-arm64.exe' } }
+    })
+
+    it('should offer the matching arm64 installer', () => {
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toMatchObject({
+        link: 'https://cdn.example.com/Creator-Hub-Setup-arm64.exe',
+        arch: 'arm64'
+      })
+    })
+  })
+
+  describe('when the visitor is on an Intel Mac that reports amd64', () => {
+    beforeEach(() => {
+      mockUserAgent = [false, { os: { name: 'macOS' }, cpu: { architecture: 'amd64' } }]
+    })
+
+    it('should track the arm64 artifact it serves', () => {
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toMatchObject({ link: MAC_LINK, arch: 'arm64' })
+    })
+  })
+
+  describe('when the OS links are absent or empty', () => {
+    it('should expose no primary option when the release has no links', () => {
+      mockLinks = undefined
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toBeNull()
+    })
+
+    it('should expose no primary option when the OS link map is empty', () => {
+      mockLinks = { macOS: {}, Windows: {} }
+      mockUserAgent = [false, { os: { name: 'Windows' }, cpu: { architecture: 'amd64' } }]
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toBeNull()
+    })
+  })
+
+  describe('when the visitor is on a 32-bit Windows machine', () => {
+    beforeEach(() => {
+      mockUserAgent = [false, { os: { name: 'Windows' }, cpu: { architecture: 'ia32' } }]
+    })
+
+    it('should expose no primary option instead of serving the amd64 installer', () => {
+      const { result } = renderHook(() => useCreatorHubDownload())
+
+      expect(result.current.primaryOption).toBeNull()
+    })
+  })
 })

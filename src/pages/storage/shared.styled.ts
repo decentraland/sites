@@ -1,4 +1,4 @@
-import { Box, styled } from 'decentraland-ui2'
+import { Alert, Box, styled } from 'decentraland-ui2'
 
 const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -9,4 +9,15 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2)
 }))
 
-export { SectionHeader }
+const SectionActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1)
+}))
+
+const ExportAlert = styled(Alert)(({ theme }) => ({
+  marginBottom: theme.spacing(2)
+}))
+
+export { ExportAlert, SectionActions, SectionHeader }

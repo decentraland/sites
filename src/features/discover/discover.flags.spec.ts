@@ -1,11 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import {
-  DEFAULT_LIVE_MIN_USERS,
-  resetDiscoverFlagsForTests,
-  useHideFeaturedPlaces,
-  useLiveMinUsers,
-  useRepeatAcrossSections
-} from './discover.flags'
+import { DEFAULT_LIVE_MIN_USERS, resetDiscoverFlagsForTests, useLiveMinUsers, useRepeatAcrossSections } from './discover.flags'
 
 type Variant = { name: string; payload: { type: string; value: string }; enabled: boolean }
 
@@ -49,7 +43,7 @@ describe('when resolving the repeat-across-sections flag', () => {
   })
 
   it('should stay off rather than inherit another flag when the entry is missing', async () => {
-    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-hide-featured-section': true }))
+    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-live-min-user': true }))
 
     const { result } = renderHook(() => useRepeatAcrossSections())
     await waitFor(() => expect(fetchMock).toHaveBeenCalled())
@@ -163,42 +157,5 @@ describe('when resolving the LIVE minimum from its flag variant', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalled())
 
     expect(result.current).toBe(DEFAULT_LIVE_MIN_USERS)
-  })
-})
-
-describe('when resolving the hide-Featured flag', () => {
-  it('should turn on once the remote flag loads', async () => {
-    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-hide-featured-section': true }))
-
-    const { result } = renderHook(() => useHideFeaturedPlaces())
-
-    expect(result.current).toBe(false)
-    await waitFor(() => expect(result.current).toBe(true))
-  })
-
-  it('should stay off when the flag is absent, so the section survives', async () => {
-    fetchMock.mockReturnValue(flagsResponse({ 'dapps-places-repeat-cross-sections': true }))
-
-    const { result } = renderHook(() => useHideFeaturedPlaces())
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-
-    expect(result.current).toBe(false)
-  })
-
-  it('should read independently of the other two flags', async () => {
-    fetchMock.mockReturnValue(
-      flagsResponse(
-        { 'dapps-places-hide-featured-section': true, 'dapps-places-repeat-cross-sections': false, 'dapps-places-live-min-user': true },
-        { 'dapps-places-live-min-user': minUsersVariant('3') }
-      )
-    )
-
-    const hide = renderHook(() => useHideFeaturedPlaces())
-    const repeat = renderHook(() => useRepeatAcrossSections())
-    const min = renderHook(() => useLiveMinUsers())
-
-    await waitFor(() => expect(hide.result.current).toBe(true))
-    expect(repeat.result.current).toBe(false)
-    expect(min.result.current).toBe(3)
   })
 })

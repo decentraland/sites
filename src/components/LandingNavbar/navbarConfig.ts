@@ -14,7 +14,7 @@ type MenuConfig = {
   discover: MenuSection
   shop: MenuSection
   create: MenuSection
-  learn: MenuSection
+  learn: MenuSection & { url: string }
 }
 
 const MENU_CONFIG: MenuConfig = {
@@ -50,7 +50,7 @@ const MENU_CONFIG: MenuConfig = {
     labelKey: 'component.landing.navbar.create',
     items: [
       { labelKey: 'component.landing.navbar.create_in_decentraland', url: 'https://decentraland.org/create/' },
-      { labelKey: 'component.landing.navbar.publish_wearables_emotes', url: 'https://decentraland.org/builder/collections' },
+      { labelKey: 'component.landing.navbar.publish_wearables_emotes', url: 'https://decentraland.org/create/collections' },
       { labelKey: 'component.landing.navbar.publish_land', url: 'https://decentraland.org/builder/land' },
       {
         labelKey: 'component.landing.navbar.creator_documentation',

@@ -11,6 +11,7 @@ import { launchMobileApp } from '../../../utils/mobileAppLaunch'
 import { DiscoverJumpInProvider, useDiscoverJumpIn } from './DiscoverJumpInProvider'
 
 const mockTrack = jest.fn()
+jest.mock('../../../hooks/useDownloadClick', () => ({ useDownloadClick: () => jest.fn() }))
 jest.mock('../../../hooks/useDeferredTrack', () => ({ useDeferredTrack: () => mockTrack }))
 jest.mock('../../../hooks/useTotalDownloads', () => ({ useTotalDownloads: () => '+400K' }))
 jest.mock('../../../hooks/useAnonUserId', () => ({ useAnonUserId: jest.fn() }))
@@ -30,6 +31,7 @@ jest.mock('decentraland-ui2', () => ({
     ) : null
 }))
 jest.mock('../../../modules/downloadConstants', () => ({
+  detectDesktopInstallerOs: () => null,
   DOWNLOAD_URLS: {
     apple: 'https://dl.test/apple',
     windows: 'https://dl.test/windows',
@@ -44,15 +46,21 @@ jest.mock('../../../modules/downloadConstants', () => ({
 jest.mock('../../../features/discover', () => jest.requireActual('../../../features/discover/discover.helpers'))
 // url.ts + downloadTrackingParams pull ESM-only ui2 config; stub with the same
 // shape useLaunchExplorer.spec uses so the download URL still reflects params.
-jest.mock('../../../modules/url', () => ({
-  buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
+jest.mock('../../../modules/url', () => {
+  const buildTrackedDownloadUrl = (base: string, params: Record<string, string | undefined | null>) => {
     const url = new URL(base, 'https://sites.test')
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) url.searchParams.append(key, value)
     })
     return url.toString()
   }
-}))
+  // The modal CTA builder routes through the same stub; its installer routing is covered in url.test.ts.
+  return {
+    buildTrackedDownloadUrl,
+    buildModalDownloadUrl: (_os: unknown, base: string, params: Record<string, string | undefined | null>) =>
+      buildTrackedDownloadUrl(base, params)
+  }
+})
 jest.mock('../../../modules/downloadTrackingParams', () => ({
   buildDownloadTrackingParams: (anonUserId: string | undefined, deepLinkParams: Record<string, string | undefined> = {}) => ({
     ...deepLinkParams,

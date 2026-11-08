@@ -21,12 +21,14 @@ interface UploadPresentationArgs {
   file: File
   livekitToken: string
   livekitUrl: string
+  presenterIdentity?: string
 }
 
 interface UploadPresentationFromUrlArgs {
   url: string
   livekitToken: string
   livekitUrl: string
+  presenterIdentity?: string
 }
 
 const cast2Endpoints = cast2Client.injectEndpoints({
@@ -61,11 +63,12 @@ const cast2Endpoints = cast2Client.injectEndpoints({
       })
     }),
     uploadPresentation: build.mutation<PresentationInfo, UploadPresentationArgs>({
-      query: ({ file, livekitToken, livekitUrl }) => {
+      query: ({ file, livekitToken, livekitUrl, presenterIdentity }) => {
         const formData = new FormData()
         formData.append('file', file)
         formData.append('livekitToken', livekitToken)
         formData.append('livekitUrl', livekitUrl)
+        if (presenterIdentity) formData.append('presenterIdentity', presenterIdentity)
         return {
           url: `${getPresenterServerUrl()}/presentations`,
           method: 'POST',
@@ -75,10 +78,10 @@ const cast2Endpoints = cast2Client.injectEndpoints({
       }
     }),
     uploadPresentationFromUrl: build.mutation<PresentationInfo, UploadPresentationFromUrlArgs>({
-      query: ({ url, livekitToken, livekitUrl }) => ({
+      query: ({ url, livekitToken, livekitUrl, presenterIdentity }) => ({
         url: `${getPresenterServerUrl()}/presentations`,
         method: 'POST',
-        body: { url, livekitToken, livekitUrl }
+        body: { url, livekitToken, livekitUrl, presenterIdentity }
       })
     })
   }),

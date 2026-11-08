@@ -1,3 +1,5 @@
+import type { OverlayLayout } from '../../../features/cast2/cast2.types'
+
 interface StreamingControlsProps {
   onToggleChat?: () => void
   onTogglePeople?: () => void
@@ -8,4 +10,12 @@ interface StreamingControlsProps {
   onToggleTabMute?: () => void
 }
 
-export type { StreamingControlsProps }
+interface CameraMenuDropdownProps {
+  devices: MediaDeviceInfo[]
+  selectedDeviceId: string
+  overlay: OverlayLayout | null
+  onSelectDevice: (deviceId: string) => void
+  onSelectOverlay: (patch: Partial<OverlayLayout>) => void
+}
+
+export type { CameraMenuDropdownProps, StreamingControlsProps }

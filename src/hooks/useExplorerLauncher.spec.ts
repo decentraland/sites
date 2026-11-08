@@ -21,6 +21,7 @@ jest.mock('../features/places/places.helpers', () => ({
   buildMobileDeepLink: jest.fn()
 }))
 jest.mock('../modules/downloadConstants', () => ({
+  detectDesktopInstallerOs: () => null,
   DOWNLOAD_URLS: { googlePlay: 'https://gplay', appStore: 'https://appstore' },
   detectDownloadOS: jest.fn(() => 'apple')
 }))

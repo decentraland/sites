@@ -1,4 +1,4 @@
-import { readStorageItem, removeStorageItems } from './safeStorage'
+import { readStorageItem, removeStorageItems, writeStorageItem } from './safeStorage'
 
 const withLocalStorage = (value: unknown): void => {
   Object.defineProperty(window, 'localStorage', { value, configurable: true, writable: true })
@@ -100,5 +100,38 @@ describe('when a single removal throws', () => {
     })
 
     expect(() => removeStorageItems(key => key.startsWith('wagmi'))).not.toThrow()
+  })
+})
+
+describe('when writing safe storage', () => {
+  it('should persist a value and report success', () => {
+    expect(writeStorageItem('anon', 'id')).toBe(true)
+    expect(readStorageItem('anon')).toBe('id')
+  })
+
+  describe('and the storage property throws', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get: () => {
+          throw new Error('denied')
+        }
+      })
+    })
+    it('should report failure without throwing', () => expect(writeStorageItem('anon', 'id')).toBe(false))
+  })
+
+  describe.each([null, undefined])('and storage is unavailable: %s', value => {
+    beforeEach(() => withLocalStorage(value))
+    it('should report failure without throwing', () => expect(writeStorageItem('anon', 'id')).toBe(false))
+  })
+
+  describe('and the write throws', () => {
+    beforeEach(() => {
+      jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('quota')
+      })
+    })
+    it('should report failure without throwing', () => expect(writeStorageItem('anon', 'id')).toBe(false))
   })
 })

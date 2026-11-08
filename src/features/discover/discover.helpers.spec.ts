@@ -1,11 +1,14 @@
 import {
+  DISCOVER_CATEGORY_OPTIONS,
   buildJumpLandingHref,
-  countGridTracks,
+  categoryQueryArgs,
   discoverDeepLinkOptions,
   discoverPlacePayload,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
   isJunkContactName,
   isMapPlaceholderImage,
+  parseCategoryParam,
   parsePositionParam,
   placeCoordsLabel,
   placeCoverImage,
@@ -430,26 +433,6 @@ describe('when deciding whether a contact name is junk', () => {
   })
 })
 
-describe('when counting the tracks of a resolved grid-template-columns', () => {
-  it('should count each track a four-up grid resolved to', () => {
-    expect(countGridTracks('326px 326px 326px 326px')).toBe(4)
-  })
-
-  it('should count a single-column grid', () => {
-    expect(countGridTracks('430px')).toBe(1)
-  })
-
-  it('should return 0 when there is no layout to measure', () => {
-    // jsdom reports an empty string, and so does a node that has not been laid
-    // out yet; callers keep their own fallback for this.
-    expect(countGridTracks('')).toBe(0)
-  })
-
-  it('should ignore the padding browsers add between tracks', () => {
-    expect(countGridTracks('  326px   326px  ')).toBe(2)
-  })
-})
-
 describe('when resolving the address a place is credited to', () => {
   const CREATOR = '0x2222222222222222222222222222222222222222'
   const OWNER = '0x1111111111111111111111111111111111111111'
@@ -487,5 +470,56 @@ describe('when resolving the address a place is credited to', () => {
 
   it('should return nothing when there is no place yet', () => {
     expect(placeCreatorAddress(undefined)).toBe(undefined)
+  })
+})
+
+describe('when parsing the category query param', () => {
+  it.each([null, '', '   ', 'unknown', 'all'])('should fall back to all for %p', raw => {
+    expect(parseCategoryParam(raw)).toBe('all')
+  })
+
+  it.each([
+    ['featured', 'featured'],
+    [' FEATURED ', 'featured'],
+    ['game', 'game'],
+    ['Social', 'social']
+  ])('should accept %p as %p', (raw, expected) => {
+    expect(parseCategoryParam(raw)).toBe(expected)
+  })
+})
+
+describe('when building the destinations query args for a category', () => {
+  it('should send no filter for all', () => {
+    expect(categoryQueryArgs('all')).toEqual({})
+  })
+
+  it('should send only the highlight flag for featured', () => {
+    expect(categoryQueryArgs('featured')).toEqual({ only_highlighted: true })
+  })
+
+  it('should send the category for a regular one', () => {
+    expect(categoryQueryArgs('game')).toEqual({ categories: ['game'] })
+  })
+})
+
+describe('when listing the category options', () => {
+  it('should put featured right after all', () => {
+    expect(DISCOVER_CATEGORY_OPTIONS.slice(0, 3)).toEqual(['all', 'featured', 'social'])
+  })
+})
+
+describe('when isHiddenFeaturedPlace is called', () => {
+  const junk = { title: 'interactive-text demo', image: REAL_IMAGE }
+
+  it('should keep a highlighted row that the junk filter rejects', () => {
+    expect(isHiddenFeaturedPlace(makePlace({ ...junk, highlighted: true }))).toBe(false)
+  })
+
+  it('should hide a junk row that is not highlighted', () => {
+    expect(isHiddenFeaturedPlace(makePlace(junk))).toBe(true)
+  })
+
+  it('should keep a regular row', () => {
+    expect(isHiddenFeaturedPlace(makePlace({ title: 'Gallery', image: REAL_IMAGE, owner: '0xowner' }))).toBe(false)
   })
 })

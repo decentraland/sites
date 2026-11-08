@@ -1,4 +1,5 @@
 import type { SegmentEvent } from './segment'
+import { ensureSegmentAnonymousId } from './segmentAnonymousId'
 import { getSegmentTrackUrl, getSegmentWriteKey } from './segmentConfig'
 import { resolveSegmentUserId } from './segmentUserId'
 
@@ -142,18 +143,23 @@ const buildSegmentBeaconPayload = (input: SegmentBeaconInput): SegmentBeaconPayl
  * `ajs_user_id` key so every beacon event carries the same wallet the SDK-sent
  * `page`/`track` events do — the beacon bypasses analytics-next, which would
  * otherwise attach it automatically. See `resolveSegmentUserId`.
+ *
+ * Without an `anonymousId`, it creates or reads the stored one only once the
+ * write key is known, so a build without a key writes no id at all.
  */
-function postSegmentEvent(event: SegmentEvent, properties: Record<string, unknown>, anonymousId: string): void {
-  // NOTE: bypasses the analytics-exempt-path gate on purpose. Every caller of
-  // this transport fires an explicit conversion event (download CTA click,
-  // funnel exit, download_started/_success/_failed) — the gate exists to
-  // suppress the automatic analytics boot on pure-text pages, and /download
-  // (exempt for Lighthouse) hosts download CTAs whose clicks must still land.
+function postSegmentEvent(event: SegmentEvent, properties: Record<string, unknown>, anonymousId?: string): void {
+  // NOTE: bypasses the analytics-exempt-path gate on purpose. /download is
+  // exempt for Lighthouse yet hosts download CTAs whose clicks, funnel exits
+  // and download_started/_success/_failed events must still land. Callers
+  // whose events are not conversions apply `isAnalyticsOffForVisitor`
+  // (exempt session or bot) before calling, as `postDeferredClick` does.
   const writeKey = getSegmentWriteKey({ bypassExemptPathGate: true })
   if (!writeKey) return
 
   const userId = resolveSegmentUserId()
-  const body = JSON.stringify(buildSegmentBeaconPayload({ writeKey, event, properties, anonymousId, userId }))
+  const body = JSON.stringify(
+    buildSegmentBeaconPayload({ writeKey, event, properties, anonymousId: anonymousId ?? ensureSegmentAnonymousId(), userId })
+  )
   const trackUrl = getSegmentTrackUrl()
 
   if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {

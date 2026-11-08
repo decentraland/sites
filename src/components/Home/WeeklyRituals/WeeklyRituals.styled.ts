@@ -31,6 +31,29 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   }
 }))
 
+// The card is a button so it is keyboard-activatable; reset the native chrome and keep the focus ring.
+const CardButton = styled('button')(({ theme }) => ({
+  display: 'block',
+  width: '100%',
+  height: '100%',
+  padding: 0,
+  border: 0,
+  background: 'none',
+  cursor: 'pointer',
+  /* eslint-disable @typescript-eslint/naming-convention */
+  '&:hover': {
+    opacity: 0.95
+  },
+  '&:active': {
+    opacity: 0.85
+  },
+  '&:focus-visible': {
+    outline: `3px solid ${dclColors.neutral.white}`,
+    outlineOffset: theme.spacing(-0.5)
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+}))
+
 const CardImage = styled('img')({
   width: '100%',
   height: '100%',
@@ -47,4 +70,4 @@ const MobileCardImage = styled('img')({
   objectFit: 'cover'
 })
 
-export { CardImage, MobileCardImage, SectionTitle, WeeklyRitualsContainer, WeeklyRitualsOuter }
+export { CardButton, CardImage, MobileCardImage, SectionTitle, WeeklyRitualsContainer, WeeklyRitualsOuter }

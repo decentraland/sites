@@ -15,21 +15,23 @@ import { CardGrid, Empty, ErrorBox, ErrorText, PageContent, RetryButton } from '
 import { LiveHeadingGlyph } from '../../components/places/_shared/CardIcons'
 import { DiscoverSignInPrompt } from '../../components/places/_shared/DiscoverSignInPrompt'
 import { BrowseGlyph, FavoriteGlyph, MyPlacesGlyph, SearchGlyph } from '../../components/places/_shared/ToolbarIcons'
-import { FeaturedCard } from '../../components/places/FeaturedCard'
 import { LiveEventCard } from '../../components/places/LiveEventCard'
 import { PlaceCard } from '../../components/places/PlaceCard'
 import { SceneJumpInModal } from '../../components/places/SceneJumpInModal'
 import {
-  DISCOVER_CATEGORIES,
+  DISCOVER_CATEGORY_OPTIONS,
+  FEATURED_CATEGORY,
   buildDetailPath,
-  countGridTracks,
+  categoryQueryArgs,
+  isHiddenFeaturedPlace,
   isHiddenPlace,
+  parseCategoryParam,
   placePlayers,
   useGetDiscoverDestinationsQuery,
   useGetDiscoverFavoritesQuery
 } from '../../features/discover'
-import type { DiscoverCategory, DiscoverPlace, ExploreSection } from '../../features/discover'
-import { useHideFeaturedPlaces, useLiveMinUsers, useRepeatAcrossSections } from '../../features/discover/discover.flags'
+import type { DiscoverCategoryFilter, DiscoverPlace, ExploreSection } from '../../features/discover'
+import { useLiveMinUsers, useRepeatAcrossSections } from '../../features/discover/discover.flags'
 import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
 import { useAuthIdentity } from '../../hooks/useAuthIdentity'
 import { useDeferredTrack } from '../../hooks/useDeferredTrack'
@@ -53,8 +55,6 @@ import {
   ExploreBand,
   ExploreBandContent,
   ExploreToolbar,
-  FeaturedGrid,
-  FeaturedToggle,
   FilterButton,
   FilterChip,
   FilterChipsRow,
@@ -67,7 +67,6 @@ import {
   LiveRailLayer,
   LoadMoreSentinel,
   SearchSlot,
-  SectionTitle,
   TabPill,
   TabsRow,
   ToolbarSearchField
@@ -75,14 +74,12 @@ import {
 
 // Unified /discover landing, matching the "Places - Desktop" Figma:
 //   1. LIVE NOW      — glowing rounded rail with the 4 busiest scenes.
-//   2. FEATURED      — places-api curated `highlighted` places.
-//   3. TOOLBAR       — Explore all / Favourites / My places tabs + search +
-//                      the category dropdown.
-//   4. EXPLORE ALL   — the main grid: the /destinations feed as-is, deduped
-//                      against the two rails above.
-// The curated rails (1+2) only render on the default view — searching or
-// filtering collapses the page to the grid. Favourites is a signed places-api
-// read; My places lists the signed-in wallet's own places + worlds.
+//   2. TOOLBAR       — Explore all / Favourites / My places tabs + search +
+//                      the category dropdown (All, Featured, then the categories).
+//   3. EXPLORE ALL   — the main grid: the /destinations feed as-is, deduped
+//                      against the Live Now rail above.
+// Searching collapses Live Now to the grid; a category leaves it in place. Favourites is a signed
+// places-api read; My places lists the signed-in wallet's own places + worlds.
 //
 // NOTE: no periodic polling — the LIVE feed loads once per mount and only
 // re-fetches when the tab regains focus or the connection returns, so the
@@ -103,14 +100,6 @@ const LIVE_NOW_LIMIT = 4
 // row first (22 today), so this must comfortably exceed that count or the busiest non-featured
 // scene could fall off the end.
 const LIVE_FEED_LIMIT = 40
-
-// The Featured rail shows EVERY highlighted place (the curated set is small —
-// a handful of rows); this only bounds the request, it is not a display cap.
-const FEATURED_FETCH_LIMIT = 100
-
-// Collapsed Featured rail height (Figma): two grid rows; anything beyond
-// hides behind the VIEW ALL FEATURED PLACES toggle.
-const FEATURED_COLLAPSED_ROWS = 2
 
 // `?tab=favourites` / `?tab=my`, the param the signed-out prompts round-trip
 // through SSO. Anything else opens the default tab.
@@ -134,13 +123,13 @@ function DiscoverHomePage() {
   // entry per filter set. Filter handlers reset it synchronously.
   const [browseOffset, setBrowseOffset] = useState(0)
   const search = useDeferredValue(searchInput.trim())
-  const [activeCategory, setActiveCategory] = useState<DiscoverCategory | 'all'>('all')
+  const [activeCategory, setActiveCategory] = useState<DiscoverCategoryFilter>(() => parseCategoryParam(searchParams.get('category')))
   // Track filter changes for the DISCOVER analytics funnel. Single handlers so
   // every surface that changes them (desktop dropdowns, mobile drawer, chips)
   // emits the same event shape.
   const track = useDeferredTrack()
   const changeCategory = useCallback(
-    (next: DiscoverCategory | 'all') => {
+    (next: DiscoverCategoryFilter) => {
       track(SegmentEvent.DISCOVER_FILTER_CATEGORY, { category: next })
       setActiveCategory(next)
       // Reset pagination in the SAME commit — the effect below would lag one
@@ -157,6 +146,8 @@ function DiscoverHomePage() {
   // back to the tab they were on. Read-only on purpose: the search box and the
   // category filter are component state too, and mirroring the tab into the URL
   // on every click would put three entries in the history for one glance.
+  // `?category=` follows the same rule: it seeds the filter on mount only, so a client-side navigation
+  // to /places?category=featured on an already-mounted page does not change it.
   const [section, setSection] = useState<ExploreSection>(() => readSectionParam(searchParams.get('tab')))
   // Switching tabs swaps the big Explore grid for the (often much shorter)
   // Favourites / My Places content, collapsing the page height — the browser
@@ -184,16 +175,6 @@ function DiscoverHomePage() {
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
     band.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
   }, [section])
-  // Featured rail collapse — capped at FEATURED_COLLAPSED_ROWS × the grid's
-  // column count, counted off the rendered grid. FeaturedGrid derives its
-  // tracks from an auto-fill formula with a 300px floor (the shared card's
-  // minimum), so mirroring it with breakpoints here drifts: at 1280px that
-  // said 4 while the CSS laid out 3, and the collapsed rail spilled an orphan
-  // row. auto-fill keeps empty tracks, so the count is right even while
-  // collapsed. Falls back to one column where there is no layout to measure.
-  const [featuredExpanded, setFeaturedExpanded] = useState(false)
-  const featuredGridRef = useRef<HTMLDivElement>(null)
-  const [featuredColumns, setFeaturedColumns] = useState(1)
   // Mobile-only filter drawer (Category). Desktop shows it inline.
   const [filtersOpen, setFiltersOpen] = useState(false)
   const { address, hasValidIdentity } = useAuthIdentity()
@@ -228,14 +209,13 @@ function DiscoverHomePage() {
   // repeat", where it used to mean "repeat", so the grid stops re-listing the rails on merge.
   const repeatAcrossSections = useRepeatAcrossSections()
   const liveMinUsers = useLiveMinUsers()
-  const hideFeatured = useHideFeaturedPlaces()
 
   // ── BROWSE queries ────────────────────────────────────────────────────
   // Server-side search/category against the destinations endpoint.
   // Different args from the LIVE feed → separate RTK Query cache entry.
   // `/destinations` serves places + worlds in one page. The grid asks for
   // `most_active` so scenes with people in them lead it, with curation as the
-  // tie-breaker; the Featured rail and My Places keep the curated order.
+  // tie-breaker; My Places keeps the curated order.
   // Safety net for the DEFERRED search value landing after the synchronous
   // handler reset (changeSearch/changeCategory reset in the same commit).
   useEffect(() => {
@@ -247,7 +227,7 @@ function DiscoverHomePage() {
       offset: browseOffset,
       order_by: 'most_active' as const,
       search: search || undefined,
-      categories: activeCategory === 'all' ? undefined : [activeCategory],
+      ...categoryQueryArgs(activeCategory),
       // Real-time user counts on every row (the grid's presence pills) and `live` (an event running
       // there, from the events API) for the red badge and its tooltip.
       with_realms_detail: true,
@@ -286,43 +266,21 @@ function DiscoverHomePage() {
   )
   const isLoadingSection = (section === 'favourites' && favoritesQuery.isLoading) || (section === 'my' && myQuery.isLoading)
 
-  // Live Now + Featured stay visible on every tab — only searching or
-  // filtering the Explore view collapses the page to a single results grid
-  // (search/category apply to the browse query, not the signed-in tabs).
-  const showHighlights = section !== 'all' || (!search && activeCategory === 'all')
-  // With the rail off, `featuredCards` stays empty, which is also what stops
-  // the Explore grid from subtracting it — so the curated picks lead the grid
-  // instead of disappearing. See useHideFeaturedPlaces for the flag matrix.
-  const showFeaturedRail = showHighlights && !hideFeatured
+  // NOTE: 2026-10-13 (Braian) a category no longer collapses Live Now. Live Now is global (the same top
+  // four as All) and the category narrows the Explore grid only. Search still collapses it. Revisit if a
+  // category-scoped Live Now is ever wanted.
+  const showLiveRail = section !== 'all' || !search
 
   // Mobile filter chip reflects a non-default category so the user can
   // see and clear active filters without reopening the drawer.
   const showCategoryChip = section === 'all' && activeCategory !== 'all'
-
-  // ── FEATURED query ────────────────────────────────────────────────────
-  // Featured = the destinations feed's curated `highlighted` set — the one
-  // endpoint that spans places AND worlds (`/worlds` ignores
-  // `only_highlighted`). Skipped entirely while filtering since the Featured
-  // rail is hidden then.
-  const featuredQuery = useGetDiscoverDestinationsQuery(
-    showFeaturedRail
-      ? {
-          limit: FEATURED_FETCH_LIMIT,
-          only_highlighted: true,
-          with_realms_detail: true,
-          with_live_events: true
-        }
-      : skipToken,
-    // Featured carries presence, so it refreshes on focus/reconnect like the live rail does.
-    LIVE_REFRESH_OPTIONS
-  )
 
   // The LIVE section's own read of the destinations feed. It is deliberately NOT the paginated grid
   // query: that cache entry drops `offset` from its key and `merge`s pages, so a focus/reconnect
   // refetch there would refresh only the last-loaded page — never page 0, where the top four live. A
   // small separate page (different `limit`, so a different cache key) keeps the refresh contract.
   const liveFeedQuery = useGetDiscoverDestinationsQuery(
-    showHighlights ? { limit: LIVE_FEED_LIMIT, order_by: 'most_active', with_realms_detail: true, with_live_events: true } : skipToken,
+    showLiveRail ? { limit: LIVE_FEED_LIMIT, order_by: 'most_active', with_realms_detail: true, with_live_events: true } : skipToken,
     LIVE_REFRESH_OPTIONS
   )
 
@@ -334,12 +292,12 @@ function DiscoverHomePage() {
   // re-sorting by head count here is what turns that into "top four by people". `filter` already
   // returns a fresh array, so sorting it in place leaves the cache alone.
   const liveRail = useMemo(() => {
-    if (!showHighlights) return []
+    if (!showLiveRail) return []
     return (liveFeedQuery.data?.data ?? [])
       .filter(p => !isHiddenPlace(p) && placePlayers(p) >= liveMinUsers)
       .sort((a, b) => placePlayers(b) - placePlayers(a))
       .slice(0, LIVE_NOW_LIMIT)
-  }, [showHighlights, liveMinUsers, liveFeedQuery.data])
+  }, [showLiveRail, liveMinUsers, liveFeedQuery.data])
 
   // Live Now carousel. Mobile snaps one card at a time and the dots below track
   // the swipe. Desktop lays the four cards in a row that outgrows any viewport
@@ -390,55 +348,33 @@ function DiscoverHomePage() {
     [liveRailRef]
   )
 
-  // The curated rail shows every highlighted destination, live or not (the API only marks a
-  // handful). Rows carry the API's own presence (`with_realms_detail`), so live ones lead the rail
-  // and a live featured card navigates to the scene preview instead of opening the empty-scene
-  // modal. Unless the repeat flag is on, the four cards the LIVE rail actually rendered are removed
-  // here: a featured place with people that missed the top four still belongs in Featured.
-  const featuredCards = useMemo(() => {
-    if (!showFeaturedRail) return []
-    const shownInLiveRail = new Set(repeatAcrossSections ? [] : liveRail.map(c => c.id))
-    return (featuredQuery.data?.data ?? [])
-      .filter(p => !isHiddenPlace(p))
-      .filter(p => !shownInLiveRail.has(p.id))
-      .sort((a, b) => (b.user_count ?? 0) - (a.user_count ?? 0))
-  }, [showFeaturedRail, featuredQuery.data, liveRail, repeatAcrossSections])
-
-  // Count the grid's real tracks. Declared here because it depends on the
-  // rail being rendered at all.
-  useEffect(() => {
-    const grid = featuredGridRef.current
-    if (!grid) return
-    const readColumns = () => {
-      const tracks = countGridTracks(getComputedStyle(grid).gridTemplateColumns)
-      if (tracks > 0) setFeaturedColumns(tracks)
-    }
-    readColumns()
-    const observer = new ResizeObserver(readColumns)
-    observer.observe(grid)
-    return () => observer.disconnect()
-  }, [showFeaturedRail, featuredCards.length])
-
   // Explore All IS the /destinations feed: one page in the API's order, junk filtered. Rows keep
   // the feed's real-time `user_count` (with_realms_detail).
   //
-  // Whatever the rails rendered is subtracted unless the repeat flag is on. `/destinations` returns
-  // `highlighted DESC` first, so with repetition the head of this grid IS the Featured rail verbatim
-  // and the user scrolls past the same cards twice. Search and category filtering empty both rails,
-  // so results are never hidden from a query.
+  // Whatever Live Now rendered is subtracted unless the repeat flag is on. Under a category nothing is
+  // subtracted, so the grid is the complete filtered result.
+  //
+  // NOTE: 2026-10-28 (Braian) the curated rail above the grid was removed on purpose; the curated set is
+  // browsed through the Featured category, and only Live Now takes part in rail deduplication. Bringing a
+  // rail back means restoring it from history.
+  const visibleBrowse = useMemo(() => {
+    // Curation overrides the junk heuristic under Featured, as places-api does server-side.
+    const isHidden = activeCategory === FEATURED_CATEGORY ? isHiddenFeaturedPlace : isHiddenPlace
+    return browseDestinations.filter(p => !isHidden(p))
+  }, [browseDestinations, activeCategory])
   const exploreCards = useMemo<DiscoverPlace[]>(() => {
-    const kept = browseDestinations.filter(p => !isHiddenPlace(p))
-    if (repeatAcrossSections) return kept
-    const shownAbove = new Set([...liveRail.map(c => c.id), ...featuredCards.map(c => c.id)])
-    return kept.filter(p => !shownAbove.has(p.id))
-  }, [browseDestinations, repeatAcrossSections, liveRail, featuredCards])
+    // Under a category the grid is the whole filtered result, so Live Now never takes rows out of it.
+    if (repeatAcrossSections || activeCategory !== 'all') return visibleBrowse
+    const shownAbove = new Set(liveRail.map(c => c.id))
+    return visibleBrowse.filter(p => !shownAbove.has(p.id))
+  }, [visibleBrowse, activeCategory, repeatAcrossSections, liveRail])
 
-  // Wait for everything on first paint so the rails and the grid appear together. Polling / search
+  // Wait for everything on first paint so Live Now and the grid appear together. Polling / search
   // refetches use `isFetching`, not `isLoading`, so they don't re-trigger this gate.
-  const isLoadingFeatured = showFeaturedRail && featuredQuery.isLoading
-  const isLoadingLiveFeed = showHighlights && liveFeedQuery.isLoading
-  const isInitialLoading = isLoadingBrowse || isLoadingFeatured || isLoadingLiveFeed
-  const isEmpty = !isInitialLoading && section === 'all' && featuredCards.length === 0 && exploreCards.length === 0
+  const isLoadingLiveFeed = showLiveRail && liveFeedQuery.isLoading
+  const isInitialLoading = isLoadingBrowse || isLoadingLiveFeed
+  // Judged before the Live Now dedupe: a first page fully held by Live Now is not an empty result.
+  const isEmpty = !isInitialLoading && section === 'all' && visibleBrowse.length === 0
 
   // Cold load: render the spinner straight inside `CenteredBox` so the
   // page-level loader anchors at the exact viewport Y as the DappsShell
@@ -463,7 +399,7 @@ function DiscoverHomePage() {
       </Helmet>
 
       {/* LIVE NOW rail — glowing rounded container with the 4 busiest scenes. */}
-      {showHighlights && liveRail.length > 0 && (
+      {showLiveRail && liveRail.length > 0 && (
         <LiveNowSection>
           <LiveHeading>
             <LiveHeadingGlyph size="clamp(20px, 1.377vw, 26.4px)" />
@@ -517,24 +453,6 @@ function DiscoverHomePage() {
             </CarouselDots>
           )}
         </LiveNowSection>
-      )}
-
-      {/* Featured rail — curated POIs. The toolbar lives BELOW it (the
-          featured picks are curated, not filtered). */}
-      {showFeaturedRail && featuredCards.length > 0 && (
-        <>
-          <SectionTitle>{t('discover.explore.section.featured')}</SectionTitle>
-          <FeaturedGrid ref={featuredGridRef}>
-            {(featuredExpanded ? featuredCards : featuredCards.slice(0, featuredColumns * FEATURED_COLLAPSED_ROWS)).map(place => (
-              <FeaturedCard key={place.id} place={place} onEmptyClick={handleCardEmptyClick} />
-            ))}
-          </FeaturedGrid>
-          {featuredCards.length > featuredColumns * FEATURED_COLLAPSED_ROWS && (
-            <FeaturedToggle type="button" onClick={() => setFeaturedExpanded(v => !v)}>
-              {t(featuredExpanded ? 'discover.featured.view_less' : 'discover.featured.view_all')}
-            </FeaturedToggle>
-          )}
-        </>
       )}
 
       {/* Toolbar — Explore all / Favourites / My places tabs, then search +
@@ -596,11 +514,10 @@ function DiscoverHomePage() {
                 {section === 'all' && (
                   <FilterSelect
                     value={activeCategory}
-                    onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategory | 'all')}
+                    onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategoryFilter)}
                     aria-label={t('discover.explore.category.all')}
                   >
-                    <MenuItem value="all">{t('discover.explore.category.all')}</MenuItem>
-                    {DISCOVER_CATEGORIES.map(c => (
+                    {DISCOVER_CATEGORY_OPTIONS.map(c => (
                       <MenuItem key={c} value={c}>
                         {t(`discover.explore.category.${c}`)}
                       </MenuItem>
@@ -719,11 +636,10 @@ function DiscoverHomePage() {
             <DrawerSectionLabel>{t('discover.explore.category.label')}</DrawerSectionLabel>
             <DrawerSelect
               value={activeCategory}
-              onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategory | 'all')}
+              onChange={(e: SelectChangeEvent<unknown>) => changeCategory(e.target.value as DiscoverCategoryFilter)}
               aria-label={t('discover.explore.category.all')}
             >
-              <MenuItem value="all">{t('discover.explore.category.all')}</MenuItem>
-              {DISCOVER_CATEGORIES.map(c => (
+              {DISCOVER_CATEGORY_OPTIONS.map(c => (
                 <MenuItem key={c} value={c}>
                   {t(`discover.explore.category.${c}`)}
                 </MenuItem>

@@ -31,56 +31,51 @@
       "success": {
         "title": "即将完成！",
         "subtitle": "打开刚下载的文件完成 Decentraland 安装并开始{action}",
-        "subtitle_action_exploring": "探索",
         "step": "步骤",
-        "footer": "下载遇到问题？再试一次：{link}",
-        "footer_link_label": "重新下载",
+        "started": {
+          "title": "下载已开始！",
+          "subtitle": "按照以下 3 个步骤安装 Decentraland，马上进入。"
+        },
+        "footer_retry": "下载没有开始？{link}",
+        "footer_retry_link": "重试",
+        "footer_help": "需要帮助？请访问 {link}",
+        "footer_help_link": "decentraland.org/help",
         "event": "下载完成后，返回 {event} 活动页面即可进入。{seconds} 秒后自动跳转。",
         "steps": {
           "windows": {
             "step1": {
-              "title": "打开",
-              "text": "从下载文件夹打开 <span>Decentraland</span> 文件以启动安装向导。"
+              "title": "找到文件",
+              "text": "点击浏览器工具栏中的下载图标，然后打开 Decentraland 安装程序（.exe）。"
             },
             "step2": {
               "title": "安装",
-              "text": "按照安装向导的说明操作。点击 <span>完成</span> 后将开始安装。"
+              "text": "按照安装向导操作，点击“下一步”直至完成。如果 Windows 请求权限，请点击“是”。"
             },
             "step3": {
-              "title": "准备开始探索！",
-              "text": "安装完成后，Decentraland 应用将出现在任务栏中并自动启动。"
+              "title": "进入世界！",
+              "text": "安装完成后，Decentraland 会自动打开。我们在世界里见！"
             }
           },
           "macOS": {
             "step1": {
-              "title": "打开",
-              "text": "从浏览器的\"最近下载\"或\"下载\"文件夹中点击 <span>Decentraland</span> 文件打开。"
+              "title": "找到文件",
+              "text": "点击浏览器工具栏中的下载图标，然后打开 Decentraland-Installer.dmg。"
             },
             "step2": {
               "title": "安装",
-              "text": "此窗口将会出现——双击 <span>Decentraland</span> 按钮开始安装。"
+              "text": "在打开的窗口中双击 Decentraland 图标。出现 macOS 安全提示时，点击“打开”。"
             },
             "step3": {
-              "title": "准备开始探索！",
-              "text": "安装完成后，Decentraland 应用将出现在 Dock 中并自动启动。"
-            }
-          },
-          "macos": {
-            "step1": {
-              "title": "打开",
-              "text": "从浏览器的\"最近下载\"或\"下载\"文件夹中点击 <span>Decentraland</span> 文件打开。"
-            },
-            "step2": {
-              "title": "安装",
-              "text": "此窗口将会出现——双击 <span>Decentraland</span> 按钮开始安装。"
-            },
-            "step3": {
-              "title": "准备开始探索！",
-              "text": "安装完成后，Decentraland 应用将出现在 Dock 中并自动启动。"
+              "title": "进入世界！",
+              "text": "安装完成后，Decentraland 会自动打开。我们在世界里见！"
             }
           }
         }
       }
+    },
+    "creator_fund": {
+      "title": "Creator Fund",
+      "coming_soon": "即将推出"
     },
     "home": {
       "hang_out_now": "立即加入",
@@ -165,6 +160,16 @@
         "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息"
       },
       "streaming_controls": {
+        "camera_overlay": {
+          "title": "摄像头气泡",
+          "size_small": "小",
+          "size_large": "大",
+          "top_left": "左上",
+          "top_right": "右上",
+          "bottom_left": "左下",
+          "bottom_right": "右下",
+          "drag_hint": "拖动以移动摄像头"
+        },
         "mute_mic": "静音麦克风",
         "unmute_mic": "取消静音",
         "stop_cam": "停止摄像头",
@@ -182,6 +187,7 @@
         "connected": "已连接",
         "mute_cast": "在世界中时静音此Cast音频",
         "unmute_cast": "取消静音Cast音频",
+        "click_to_unmute": "点击取消静音",
         "share_presentation": "共享演示文稿",
         "stop_presentation": "停止演示",
         "uploading_presentation": "正在上传演示文稿...",
@@ -374,15 +380,6 @@
       "invalid_source_description": "确认来源无效。请检查邮件中的链接。",
       "missing_address_title": "缺少地址",
       "missing_address_description": "URL 中需要地址参数。请检查邮件中的链接。"
-    },
-    "play": {
-      "title": "网页版已不再提供。",
-      "subtitle": "在桌面或移动应用上继续游玩。",
-      "also_available_on": "同时支持",
-      "already_downloaded": "已经下载了？",
-      "jump_in": "立即进入！",
-      "experimental": "想继续在网页上游玩？点击{here}体验实验版",
-      "here": "这里"
     },
     "not_found": {
       "title_oops": "哎呀！",
@@ -713,11 +710,30 @@
         "delete": "删除",
         "close": "关闭",
         "loading": "加载中",
-        "actions": "操作",
         "key": "键",
         "add": "添加",
         "owner": "所有者",
-        "collaborator": "协作者"
+        "collaborator": "协作者",
+        "download_all": "全部下载",
+        "download_selected": "下载所选项 ({count})",
+        "delete_selected": "删除所选项 ({count})",
+        "delete_all": "全部删除",
+        "delete_selected_dialog": {
+          "title": "删除所选项？",
+          "message": "{count, plural, other {这将永久删除 # 个所选项。}}"
+        },
+        "select_all": "全选",
+        "select_row": "选择 {name}",
+        "format_json": "JSON",
+        "format_csv": "CSV",
+        "exporting": "正在准备下载…",
+        "keep_page_open": "请保持此页面打开，直到下载开始。"
+      },
+      "leave_dialog": {
+        "title": "导出仍在进行，确定要离开吗？",
+        "message": "离开将停止下载。稍后重新开始，文件会立即就绪。",
+        "stay": "留下",
+        "leave": "离开"
       },
       "role": {
         "owner": "所有者",
@@ -774,7 +790,6 @@
       "env_page": {
         "title": "环境变量",
         "add": "添加",
-        "clear_all": "全部清除",
         "no_keys": "未找到环境变量",
         "add_dialog": {
           "title": "添加环境变量",
@@ -799,7 +814,6 @@
       "scene_page": {
         "title": "场景存储",
         "add": "添加",
-        "clear_all": "全部清除",
         "no_keys": "未找到场景值",
         "add_dialog": {
           "title": "添加场景值",
@@ -823,7 +837,6 @@
       "player_page": {
         "title": "玩家存储",
         "add": "添加",
-        "clear_all_players": "清除所有玩家",
         "description": "浏览有存储数据的玩家,或按名称或地址搜索。",
         "search_players": "按名称或地址搜索…",
         "no_players": "未找到玩家",
@@ -836,7 +849,6 @@
         "address_placeholder": "0x…",
         "load_keys": "加载键",
         "keys_for": "{address} 的键",
-        "clear_this_player": "清除此玩家",
         "no_keys": "未找到此玩家的键",
         "loading_keys": "正在加载玩家的键",
         "add_dialog": {
@@ -879,7 +891,9 @@
         "payload_too_large": "值对该存储空间来说过大。",
         "rate_limited": "请求过多。请稍候后再试。",
         "server": "存储服务返回了错误。请几分钟后再试。",
-        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。"
+        "world_scene_unresolved": "无法解析此世界的场景位置。它可能尚未部署任何场景。",
+        "export_failed": "导出失败。请重试。",
+        "bulk_delete_failed": "部分项目无法删除。请重试。"
       }
     },
     "report": {
@@ -1301,6 +1315,7 @@
       "category": {
         "label": "类别",
         "all": "所有类别",
+        "featured": "精选",
         "social": "社交",
         "music": "音乐",
         "art": "艺术",
@@ -1310,9 +1325,6 @@
         "shop": "购物",
         "sports": "运动",
         "business": "商业"
-      },
-      "section": {
-        "featured": "精选地点"
       },
       "tab": {
         "explore_all": "浏览全部",
@@ -1364,10 +1376,6 @@
       "explore_scene": "探索场景",
       "jump_to_location": "进入 {location}（在新标签页中打开）",
       "copied": "已复制！"
-    },
-    "featured": {
-      "view_all": "查看全部精选地点",
-      "view_less": "收起"
     }
   },
   "account": {
@@ -1539,6 +1547,14 @@
           "transak": "Transak"
         },
         "loading": "正在打开…"
+      },
+      "magic_signer": {
+        "checking": "加载中…",
+        "connecting": "正在连接您的 Decentraland 账户…",
+        "failed": "无法连接您的 Decentraland 账户。请退出登录，重新登录后再试。",
+        "retry": "重试",
+        "mismatch": "已连接的钱包不是您登录时使用的账户。请在钱包中切换账户，或断开连接后选择其他钱包。",
+        "disconnect": "断开钱包连接"
       }
     },
     "notifications": {

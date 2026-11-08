@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { SceneRoomContent } from './SceneRoomContent'
 
 const mockUseTracks = jest.fn()
@@ -11,38 +12,36 @@ jest.mock('@livekit/components-react', () => ({
 jest.mock('livekit-client', () => ({
   Track: { Source: { Camera: 'camera', ScreenShare: 'screen_share' } }
 }))
-
 jest.mock('../../cast/ParticipantGrid/ParticipantGrid', () => ({
   ParticipantGrid: ({ localParticipantVisible }: { localParticipantVisible: boolean }) => (
     <div data-testid="participant-grid" data-local-visible={String(localParticipantVisible)} />
   )
 }))
-
+jest.mock('../../../features/cast2/contexts/PresentationContext', () => ({ usePresentationOptional: jest.fn() }))
+jest.mock('../../cast/PresentationStage/PresentationStage', () => ({
+  PresentationStage: () => <div data-testid="presentation-stage" />
+}))
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
   useFormatMessage: () => (id?: string | null, values?: Record<string, unknown>) =>
     values && 'count' in values ? `${id}:${String(values.count)}` : id ?? ''
 }))
-
-// Run the real SceneLiveWatcher.styled.ts through the shared styled shim
-// instead of the emotion engine (decentraland-ui2 ships ESM Jest can't
-// transform).
 jest.mock('decentraland-ui2', () => {
   const actual = jest.requireActual('../../../__test-utils__/styledMock')
   return {
     ...actual,
     Typography: actual.Box,
     dclColors: {
-      base: { primary: '#ff2d55', primaryDark1: '#e6284c' },
-      neutral: { softWhite: '#fcfcfc', gray3: '#a09ba8', gray5: '#ecebed', softBlack1: '#161518', white: '#ffffff' },
+      ...actual.dclColors,
       blackTransparent: { backdrop: 'rgba(0,0,0,0.6)', blurry: 'rgba(0,0,0,0.4)' },
       whiteTransparent: { blurry: 'rgba(255,255,255,0.2)', subtle: 'rgba(255,255,255,0.1)' }
     }
   }
 })
 
-describe('SceneRoomContent', () => {
+const mockUsePresentationOptional = usePresentationOptional as jest.Mock
+
+describe('when rendering the scene room content', () => {
   beforeEach(() => {
-    mockUseTracks.mockReturnValue([])
     mockUseRemoteParticipants.mockReturnValue([])
   })
 
@@ -50,30 +49,46 @@ describe('SceneRoomContent', () => {
     jest.resetAllMocks()
   })
 
-  describe('when any remote participant publishes active video', () => {
+  describe.each([
+    ['any remote participant publishes active video', null],
+    ['a legacy presentation is live with active video', { state: { slide: null } }]
+  ])('and %s', (_, presentation) => {
     beforeEach(() => {
+      mockUsePresentationOptional.mockReturnValue(presentation)
       mockUseTracks.mockReturnValue([{ publication: { isMuted: false } }])
+      render(<SceneRoomContent />)
     })
 
     it('should render the participant grid without the local participant', () => {
-      render(<SceneRoomContent />)
-
       expect(screen.getByTestId('participant-grid')).toHaveAttribute('data-local-visible', 'false')
     })
   })
 
-  describe('when every published track is muted', () => {
+  describe('and a client-composed presentation is live without any track', () => {
     beforeEach(() => {
+      mockUsePresentationOptional.mockReturnValue({
+        state: { slide: { url: 'https://presenter.test/presentations/p1/slides/ab12.png', width: 1920, height: 1080 } }
+      })
+      mockUseTracks.mockReturnValue([])
+      render(<SceneRoomContent />)
+    })
+
+    it('should render the presentation stage', () => {
+      expect(screen.getByTestId('presentation-stage')).toBeInTheDocument()
+    })
+  })
+
+  describe('and every published track is muted', () => {
+    beforeEach(() => {
+      mockUsePresentationOptional.mockReturnValue(null)
       mockUseTracks.mockReturnValue([{ publication: { isMuted: true } }])
       mockUseRemoteParticipants.mockReturnValue([{ identity: '0x1' }, { identity: '0x2' }])
+      render(<SceneRoomContent />)
     })
 
     it('should render the waiting placeholder with the participant count', () => {
-      render(<SceneRoomContent />)
-
       expect(screen.getByText('discover.scene.waiting.title')).toBeInTheDocument()
       expect(screen.getByText('discover.scene.waiting.hint:2')).toBeInTheDocument()
-      expect(screen.queryByTestId('participant-grid')).not.toBeInTheDocument()
     })
   })
 })

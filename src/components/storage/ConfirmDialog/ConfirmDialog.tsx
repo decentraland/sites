@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from 'decentraland-ui2'
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from 'decentraland-ui2'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -10,6 +10,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void
   onCancel: () => void
   isDestructive?: boolean
+  pending?: boolean
 }
 
 const ConfirmDialog: FC<ConfirmDialogProps> = ({
@@ -20,12 +21,13 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
   cancelLabel,
   onConfirm,
   onCancel,
-  isDestructive = true
+  isDestructive = true,
+  pending = false
 }) => {
   return (
     <Dialog
       open={open}
-      onClose={onCancel}
+      onClose={pending ? undefined : onCancel}
       aria-labelledby="storage-confirm-dialog-title"
       aria-describedby="storage-confirm-dialog-description"
     >
@@ -36,10 +38,17 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} aria-label={cancelLabel}>
+        <Button onClick={onCancel} aria-label={cancelLabel} disabled={pending}>
           {cancelLabel}
         </Button>
-        <Button onClick={onConfirm} color={isDestructive ? 'error' : 'primary'} variant="contained" aria-label={confirmLabel}>
+        <Button
+          onClick={onConfirm}
+          color={isDestructive ? 'error' : 'primary'}
+          variant="contained"
+          aria-label={confirmLabel}
+          disabled={pending}
+          startIcon={pending ? <CircularProgress size={16} aria-hidden /> : undefined}
+        >
           {confirmLabel}
         </Button>
       </DialogActions>

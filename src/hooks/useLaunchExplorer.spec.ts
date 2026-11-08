@@ -27,10 +27,10 @@ jest.mock('./useTotalDownloads', () => ({ useTotalDownloads: jest.fn(() => '+400
 jest.mock('../config/env', () => ({ getEnv: jest.fn() }))
 jest.mock('../utils/mobileAppLaunch', () => ({ launchMobileApp: jest.fn() }))
 jest.mock('../modules/campaignParams', () => ({ collectCampaignParams: jest.fn(() => ({})) }))
-jest.mock('../modules/url', () => ({
+jest.mock('../modules/url', () => {
   // Mirror the real helper: resolve relative bases against the origin, append
   // the params, and fall back to the raw base if the URL can't be parsed.
-  buildTrackedDownloadUrl: (base: string, params: Record<string, string | undefined | null>) => {
+  const buildTrackedDownloadUrl = (base: string, params: Record<string, string | undefined | null>) => {
     try {
       const url = new URL(base, window.location.origin)
       Object.entries(params).forEach(([key, value]) => {
@@ -41,8 +41,15 @@ jest.mock('../modules/url', () => ({
       return base
     }
   }
-}))
+  // The modal CTA builder routes through the same stub; its installer routing is covered in url.test.ts.
+  return {
+    buildTrackedDownloadUrl,
+    buildModalDownloadUrl: (_os: unknown, base: string, params: Record<string, string | undefined | null>) =>
+      buildTrackedDownloadUrl(base, params)
+  }
+})
 jest.mock('../modules/downloadConstants', () => ({
+  detectDesktopInstallerOs: () => null,
   DOWNLOAD_URLS: {
     apple: 'https://dl.test/apple',
     windows: 'https://dl.test/windows',
@@ -210,6 +217,94 @@ describe('useLaunchExplorer', () => {
       const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
 
       expect(result.current.downloadModalProps.i18n.totalDownloads).toBe('Total Downloads: 42000')
+    })
+  })
+
+  describe('when a caller launches a different target than the hook default', () => {
+    beforeEach(() => {
+      mockedLaunchDesktopApp.mockResolvedValue(false)
+    })
+
+    it('should launch, track and prompt the download for the given target', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      await act(() => result.current.launchExplorerAt({ position: '7,8', realm: 'myworld.dcl.eth' }))
+
+      expect(mockedLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ position: '7,8', realm: 'myworld.dcl.eth' }))
+      expect(track).toHaveBeenCalledWith(
+        SegmentEvent.GO_TO_EXPLORER,
+        expect.objectContaining({ position: '7,8', realm: 'myworld.dcl.eth' })
+      )
+      const url = new URL(result.current.downloadModalProps.downloadUrl)
+      expect(url.searchParams.get('position')).toBe('7,8')
+      expect(url.searchParams.get('realm')).toBe('myworld.dcl.eth')
+    })
+
+    it('should fall back to the hook default once the modal is closed', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '3,4' }))
+
+      await act(() => result.current.launchExplorerAt({ position: '7,8' }))
+      act(() => result.current.closeDownloadModal())
+
+      expect(new URL(result.current.downloadModalProps.downloadUrl).searchParams.get('position')).toBe('3,4')
+    })
+
+    it('should ignore an argument handed over by an onClick, keeping the hook target', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '3,4' }))
+      const launch = result.current.launchExplorer as unknown as (event: unknown) => Promise<void>
+
+      await act(() => launch({ type: 'click', position: 'not-a-position' }))
+
+      expect(mockedLaunchDesktopApp).toHaveBeenCalledWith(expect.objectContaining({ position: '3,4' }))
+    })
+  })
+
+  describe('when launches resolve out of order', () => {
+    let resolveFirst: (launched: boolean) => void
+    let resolveSecond: (launched: boolean) => void
+
+    beforeEach(() => {
+      mockedLaunchDesktopApp
+        .mockImplementationOnce(() => new Promise<boolean>(resolve => (resolveFirst = resolve)))
+        .mockImplementationOnce(() => new Promise<boolean>(resolve => (resolveSecond = resolve)))
+    })
+
+    it('should not retarget the modal from an older launch that fails after a newer one', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      let first: Promise<void> = Promise.resolve()
+      let second: Promise<void> = Promise.resolve()
+      act(() => {
+        first = result.current.launchExplorerAt({ position: '3,4' })
+        second = result.current.launchExplorerAt({ position: '7,8' })
+      })
+      await act(async () => {
+        resolveSecond(false)
+        await second
+      })
+      await act(async () => {
+        resolveFirst(false)
+        await first
+      })
+
+      expect(result.current.isDownloadModalOpen).toBe(true)
+      expect(new URL(result.current.downloadModalProps.downloadUrl).searchParams.get('position')).toBe('7,8')
+    })
+
+    it('should not reopen the modal from a launch that was still in flight when it was closed', async () => {
+      const { result } = renderHook(() => useLaunchExplorer({ position: '0,0' }))
+
+      let first: Promise<void> = Promise.resolve()
+      act(() => {
+        first = result.current.launchExplorerAt({ position: '3,4' })
+      })
+      act(() => result.current.closeDownloadModal())
+      await act(async () => {
+        resolveFirst(false)
+        await first
+      })
+
+      expect(result.current.isDownloadModalOpen).toBe(false)
     })
   })
 

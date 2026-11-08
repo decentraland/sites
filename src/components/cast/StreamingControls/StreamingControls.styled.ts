@@ -184,6 +184,20 @@ const DeviceMenuItem = styled('div', {
   }
 }))
 
+const DeviceMenuDivider = styled('div')(({ theme }) => ({
+  height: 1,
+  margin: theme.spacing(1, 0),
+  backgroundColor: theme.palette.divider
+}))
+
+const DeviceMenuSectionLabel = styled('div')(({ theme }) => ({
+  padding: theme.spacing(1, 2, 0.5),
+  fontSize: 12,
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  opacity: 0.7
+}))
+
 const IconButton = styled('button')(({ theme }) => ({
   position: 'relative',
   width: 40,
@@ -342,7 +356,9 @@ export {
   ControlsRight,
   DesktopMediaControls,
   DeviceMenu,
+  DeviceMenuDivider,
   DeviceMenuItem,
+  DeviceMenuSectionLabel,
   EndStreamButton,
   IconButton,
   MobileIconButton,

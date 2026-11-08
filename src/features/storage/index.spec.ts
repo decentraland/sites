@@ -5,6 +5,8 @@ import * as storage from './index'
 
 const expectedExports = [
   'storageEndpoints',
+  'fetchExportFile',
+  'useLazyGetPlayerValueQuery',
   'useClearAllPlayersMutation',
   'useClearEnvMutation',
   'useClearPlayerMutation',
@@ -27,6 +29,7 @@ const expectedExports = [
   'useGetUserDCLNamesQuery',
   'useGetUserLandsQuery',
   'useGetUserRentalsQuery',
+  'buildExportFile',
   'getLandPosition',
   'getRoleLabelKey',
   'getStorageErrorKey',
@@ -41,6 +44,10 @@ const expectedExports = [
 describe('features/storage barrel', () => {
   it.each(expectedExports)('re-exports %s', name => {
     expect((storage as Record<string, unknown>)[name]).toBeDefined()
+  })
+
+  it.each(['useCreateExportMutation', 'useGetExportQuery'])('no longer exports the export job hook %s', name => {
+    expect((storage as Record<string, unknown>)[name]).toBeUndefined()
   })
 
   it('exports storageEndpoints with the expected RTK Query reducerPath', () => {

@@ -260,6 +260,7 @@ describe('when running the generator', () => {
     for (const url of [
       'https://decentraland.org/shop',
       'https://decentraland.org/marketplace',
+      'https://decentraland.org/create',
       'https://decentraland.org/builder',
       'https://decentraland.org/dao',
       'https://decentraland.org/governance',

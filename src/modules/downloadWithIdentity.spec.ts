@@ -1,3 +1,5 @@
+jest.mock('@dcl/hooks', () => ({ getAnalytics: () => undefined }))
+
 jest.mock('./url', () => ({
   addQueryParamsToUrlString: jest.fn((url: string, params: Record<string, string | undefined>) => {
     const u = new URL(url)

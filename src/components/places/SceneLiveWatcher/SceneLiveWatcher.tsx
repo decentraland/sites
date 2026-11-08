@@ -12,6 +12,8 @@ import { Button, CircularProgress, Typography } from 'decentraland-ui2'
 import type { LiveKitCredentials } from '../../../features/cast2/cast2.types'
 import { ChatProvider, useChatContext } from '../../../features/cast2/contexts/ChatProvider'
 import { LiveKitProvider } from '../../../features/cast2/contexts/LiveKitContext'
+import { NotificationProvider } from '../../../features/cast2/contexts/NotificationContext'
+import { PresentationProvider, usePresentationOptional } from '../../../features/cast2/contexts/PresentationContext'
 import { useCastTranslation } from '../../../features/cast2/useCastTranslation'
 import type { DiscoverPlace } from '../../../features/discover'
 import { getLivePeerUrl } from '../../../features/discover/sceneAdapter'
@@ -90,7 +92,11 @@ function SceneRoomMount({ credentials, children }: { credentials: LiveKitCredent
         screen={false}
         onError={handleError}
       >
-        <ChatProvider peerUrl={getLivePeerUrl()}>{children}</ChatProvider>
+        <ChatProvider peerUrl={getLivePeerUrl()}>
+          <NotificationProvider>
+            <PresentationProvider>{children}</PresentationProvider>
+          </NotificationProvider>
+        </ChatProvider>
       </LiveKitRoom>
     </LiveKitProvider>
   )
@@ -141,7 +147,7 @@ function useSceneCtas(streamingHref?: string | null, place?: DiscoverPlace | nul
   return { hasLaunchedScene, setHasLaunchedScene, launchScene, jumpIn }
 }
 
-// Mobile "not supported" card — bevy-web can't run on touch devices, so the
+// Mobile "not supported" card — the bevy web client can't run on touch devices, so the
 // overlay offers the official store badge instead (same pill the Hero uses).
 function MobileStoreCard() {
   const isAndroid = detectDownloadOS() === 'android'
@@ -198,7 +204,7 @@ function JumpInFloatCard({ onJumpIn }: { onJumpIn: () => void }) {
   )
 }
 
-// The bevy-web iframe with the credentialless opt-in + sandbox/permission set.
+// The bevy web client iframe with the credentialless opt-in + sandbox/permission set.
 // `credentialless` has to be part of the initial markup: the browser starts the
 // frame's navigation as soon as the element enters the document, so setting the
 // attribute afterwards (a ref callback) arrives too late to matter.
@@ -225,7 +231,7 @@ interface SceneWatcherCardProps {
   // missing client falls back to the download modal). Its presence also gates
   // whether the JUMP IN CTAs render (launch overlay + floating card).
   place?: DiscoverPlace | null
-  // bevy-web URL embedded in the iframe — usually the `scene viewer` variant
+  // bevy web client URL embedded in the iframe — usually the `scene viewer` variant
   // (no launcher / portables). Optional because Genesis City parcels with no
   // resolved sceneId can't deep-link; the SCENE WEB tab is disabled when
   // absent.
@@ -351,12 +357,9 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
   const [, advancedUserAgent] = useAdvancedUserAgentData()
   const isMobile = Boolean(advancedUserAgent?.mobile)
 
-  // Watch published camera/screen-share tracks. The VIDEO tab is only shown
-  // when at least one remote participant has an active (non-muted) video
-  // track — empty rooms shouldn't advertise a video tab that has nothing
-  // to show. Reacts live to publish / unpublish events.
   const videoTracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], { updateOnlyOn: [] })
-  const hasLiveVideo = videoTracks.some(track => track.publication && !track.publication.isMuted)
+  const presentation = usePresentationOptional()
+  const hasLiveVideo = videoTracks.some(track => track.publication && !track.publication.isMuted) || Boolean(presentation?.state.slide)
 
   // Tab state. `videoAvailable` toggles availability of the VIDEO tab; we
   // keep the user on their current selection unless the video disappears
@@ -366,7 +369,7 @@ function SceneWatcherReady(props: SceneWatcherCardProps) {
     if (!hasLiveVideo && tab === 'video') setTab('scene')
   }, [hasLiveVideo, tab])
 
-  // Explicit launch gate. The bevy-web bundle is ~10MB and triggers a
+  // Explicit launch gate. The bevy web client bundle is ~10MB and triggers a
   // multi-second cold start, so we don't auto-load it just because the user
   // landed on the SCENE WEB tab. Instead show a CTA overlay and only mount
   // the iframe when they click "Launch". Once launched, the iframe stays

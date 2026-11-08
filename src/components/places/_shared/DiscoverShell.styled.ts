@@ -4,7 +4,7 @@ import { Box, TextField, Typography, dclColors, styled } from 'decentraland-ui2'
 const MEDIA_FALLBACK = '#2a2435'
 
 // Card tokens with no dclColors equivalent, shared by every discover card
-// surface (PlaceCard / LiveEventCard / FeaturedCard / SceneJumpInModal).
+// surface (PlaceCard / LiveEventCard / SceneJumpInModal).
 const LIVE_RED = '#ff0000' // LIVE badge — Figma uses pure red
 const ONLINE_GREEN = '#30cd00' // connection dot
 const CARD_BG = 'rgba(0, 0, 0, 0.4)'

@@ -10,6 +10,7 @@ import appleLogo from '../../images/apple-logo.svg'
 import microsoftLogo from '../../images/microsoft-logo.svg'
 import { collectCampaignParams } from '../../modules/campaignParams'
 import { DOWNLOAD_URLS } from '../../modules/downloadConstants'
+import { resolveInstaller } from '../../modules/downloadLinks'
 import { getDownloadLinkWithIdentity, resolveGatewayAnonUserId } from '../../modules/downloadWithIdentity'
 import { ExplorerDownloads } from '../../modules/explorerDownloads'
 import { formatToShorthand } from '../../modules/number'
@@ -187,23 +188,20 @@ const DownloadOptions = memo(({ hideDownloadCounts, downloadOnClick }: DownloadO
       return windowsFallback
     }
 
-    if (userAgentData.os.name === OperativeSystem.MACOS) {
-      return [
-        {
-          text: OperativeSystem.MACOS,
-          image: imageByOs[OperativeSystem.MACOS],
-          link: links[OperativeSystem.MACOS].arm64,
-          arch: userAgentData.cpu.architecture as Architecture
-        }
-      ]
-    }
+    // NOTE: the tracked `arch` is now the architecture of the artifact served, not the one the
+    // browser reported (an Intel Mac used to report amd64 while downloading the arm64 dmg). Events
+    // segmented by `arch` shift accordingly. A Windows visitor whose arch is Unknown or arm64 with
+    // no arm64 build gets the amd64 installer instead of no button.
+    const installer = resolveInstaller(userAgentData.os.name, userAgentData.cpu.architecture, links[userAgentData.os.name])
+    // No published artifact for the detected arch (e.g. ia32): no primary button.
+    if (!installer) return []
 
     return [
       {
         text: userAgentData.os.name,
         image: imageByOs[userAgentData.os.name],
-        link: links[userAgentData.os.name][userAgentData.cpu.architecture],
-        arch: userAgentData.cpu.architecture as Architecture
+        link: installer.link,
+        arch: installer.arch
       }
     ]
   }, [userAgentData, links])
