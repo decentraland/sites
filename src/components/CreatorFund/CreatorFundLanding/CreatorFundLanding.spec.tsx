@@ -199,12 +199,20 @@ describe('CreatorFundLanding', () => {
     ).toHaveLength(1)
   })
 
+  it('should pay cycle 2 on Dec 23', () => {
+    expect(
+      screen.getByText(
+        'page.creator_fund.dates.cycle_row {"name":"page.creator_fund.dates.cycle_name {\\"number\\":2}","amount":"$10,000","date":"Dec 23"}'
+      )
+    ).toBeInTheDocument()
+  })
+
   it('should show the launch date and each cycle in the schedule', () => {
     expect(screen.getByText('Nov 11')).toBeInTheDocument()
     expect(screen.getByText(/^Nov 15\s*–\s*30$/)).toBeInTheDocument()
     expect(
       screen.getByText(
-        'page.creator_fund.dates.cycle_row {"name":"page.creator_fund.dates.cycle_name {\\"number\\":3}","amount":"$10,000","date":"Jan 10, 2027"}'
+        'page.creator_fund.dates.cycle_row {"name":"page.creator_fund.dates.cycle_name {\\"number\\":3}","amount":"$10,000","date":"Jan 11, 2027"}'
       )
     ).toBeInTheDocument()
   })

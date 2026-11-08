@@ -112,14 +112,14 @@
         "scene_alt": "Decentraland의 {name} 씬"
       },
       "how": {
-        "title": "만들고, 벌다",
+        "title": "작동 방식",
         "opt_in_title": "옵트인",
         "opt_in_link": "Creator Hub를 다운로드",
         "opt_in_text": "하고 Creator Fund에 옵트인하세요.",
         "build_title": "제작",
         "build_text": "경험을 만들고 게시하세요.",
-        "paid_title": "보상 받기",
-        "paid_text": "플레이어 참여도에 따라 매 사이클 {amount} {currency}를 나눠 받습니다."
+        "paid_title": "지급",
+        "paid_text": "{amount} {currency} 풀을 각 사이클 종료 후 분배합니다."
       },
       "measure": {
         "title": "보상 평가 기준",
@@ -130,8 +130,7 @@
       },
       "real": {
         "title": "진짜 플레이어. 진짜 플레이.",
-        "bots": "모든 경험은 봇과 가짜 활동 여부를 검토받습니다. 봇 사용은 활동 무효 처리, 지급 보류 또는 펀드 제외로 이어질 수 있습니다.",
-        "apps": "Decentraland 공식 데스크톱 및 모바일 앱의 만 18세 이상 플레이어만 집계되며, 이용약관을 준수해야 합니다."
+        "text": "봇과 가짜 활동 여부를 검토하며, 적발 시 지급 보류나 제외로 이어질 수 있습니다. 이용약관을 준수하는 Decentraland 공식 앱의 만 18세 이상 플레이어만 집계됩니다."
       },
       "eligibility": {
         "title": "참여 자격",
@@ -178,7 +177,7 @@
       "faq": {
         "title": "FAQ",
         "join_question": "어떻게 참여하나요?",
-        "join_answer": "옵트인은 11월 11일 Creator Hub에서 열립니다. 만 18세 이상이며 경험이 배포된 NAME 또는 World를 소유해야 합니다. 소유 지갑으로 프로그램 약관에 서명하세요. 한 번의 옵트인은 하나의 NAME 또는 World에 적용됩니다.",
+        "join_answer": "옵트인은 11월 11일 Creator Hub에서 열립니다. 만 18세 이상이며 경험이 배포된 NAME 또는 World를 소유해야 합니다. 소유 지갑으로 프로그램 약관에 서명하세요. 한 번의 옵트인은 해당 지갑이 소유한 자격 있는 모든 NAME과 World에 적용됩니다.",
         "rewards_question": "지급액은 어떻게 계산되나요?",
         "rewards_answer": "각 사이클의 풀은 활성 플레이 시간, 플레이어 리텐션, Decentraland 신규 플레이어 수를 기준으로 자격을 갖춘 경험들에 나눠 지급됩니다. Creator Hub 수치는 미리보기이며, 최종 지급액은 검토 후 계산되므로 대시보드와 다를 수 있습니다.",
         "worlds_question": "Worlds도 포함되나요?",
@@ -188,7 +187,7 @@
         "transfer_question": "사이클 도중 NAME 또는 World를 이전하면 어떻게 되나요?",
         "transfer_answer": "경험은 이전된 시점부터 집계에서 제외됩니다. 참여 자격과 지급은 프로그램 약관에 따르며, 이전한다고 해서 지급 권리가 새 소유자에게 넘어가지는 않습니다.",
         "runs_question": "Creator Fund는 누가 운영하나요?",
-        "runs_answer": "Regenesis Labs와 Decentraland Foundation의 합작 사업입니다.",
+        "runs_answer": "Creator Fund는 Regenesis Labs와 Decentraland Foundation이 만들고 자금을 지원합니다. 운영은 Decentraland Foundation이 맡습니다.",
         "after_question": "베타 시즌 이후에는 어떻게 되나요?",
         "after_answer": "시즌 1은 2027년 1월부터 3월까지 진행될 예정입니다. 일정과 소식은 12월 28일에 확정됩니다.",
         "grant_question": "지원금(그랜트)인가요?",

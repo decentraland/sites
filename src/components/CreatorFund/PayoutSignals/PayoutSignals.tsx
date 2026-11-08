@@ -40,8 +40,7 @@ const PayoutSignals = memo(() => {
             <div>
               <RealTitle>{l('page.creator_fund.real.title')}</RealTitle>
               <RealBody>
-                <MutedText>{l('page.creator_fund.real.bots')}</MutedText>
-                <MutedText>{l('page.creator_fund.real.apps')}</MutedText>
+                <MutedText>{l('page.creator_fund.real.text')}</MutedText>
               </RealBody>
             </div>
           </RealCard>

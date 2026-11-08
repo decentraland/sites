@@ -26,13 +26,13 @@ const betaProgram: CreatorFundProgram = {
   launchDate: '2026-11-11',
   timeline: {
     start: '2026-11-01',
-    end: '2027-01-10',
-    ticks: ['2026-11-01', '2026-11-15', '2026-12-01', '2026-12-16', '2026-12-31', '2027-01-10']
+    end: '2027-01-11',
+    ticks: ['2026-11-01', '2026-11-15', '2026-12-01', '2026-12-16', '2026-12-31', '2027-01-11']
   },
   cycles: [
     { number: 1, start: '2026-11-15', end: '2026-11-30', allocationUsd: 10000, paymentBy: '2026-12-10' },
-    { number: 2, start: '2026-12-01', end: '2026-12-15', allocationUsd: 10000, paymentBy: '2026-12-25' },
-    { number: 3, start: '2026-12-16', end: '2026-12-31', allocationUsd: 10000, paymentBy: '2027-01-10' }
+    { number: 2, start: '2026-12-01', end: '2026-12-15', allocationUsd: 10000, paymentBy: '2026-12-23' },
+    { number: 3, start: '2026-12-16', end: '2026-12-31', allocationUsd: 10000, paymentBy: '2027-01-11' }
   ]
 }
 

@@ -112,14 +112,14 @@
         "scene_alt": "Decentraland 中的 {name} 场景"
       },
       "how": {
-        "title": "创作即赚取",
+        "title": "运作方式",
         "opt_in_title": "选择加入",
         "opt_in_link": "下载 Creator Hub",
         "opt_in_text": "，并选择加入 Creator Fund。",
         "build_title": "创作",
         "build_text": "打造并发布你的体验。",
-        "paid_title": "获得收益",
-        "paid_text": "每个周期按玩家参与度，分得 {amount} {currency} 中的一份。"
+        "paid_title": "发放",
+        "paid_text": "{amount} {currency} 奖池在每个周期结束后分配。"
       },
       "measure": {
         "title": "我们奖励什么",
@@ -130,8 +130,7 @@
       },
       "real": {
         "title": "真实玩家，真实游玩。",
-        "bots": "我们会审查每个体验是否存在机器人和虚假活动。使用机器人可能导致活动被忽略、发放被扣留或被移出基金。",
-        "apps": "仅统计使用 Decentraland 官方桌面端和移动端应用、年满 18 岁的玩家，且须遵守服务条款。"
+        "text": "我们会审查体验是否存在机器人和虚假活动，违规可能导致发放被扣留或被移出。仅统计在 Decentraland 官方应用中、年满 18 岁且遵守服务条款的玩家。"
       },
       "eligibility": {
         "title": "参与资格",
@@ -178,7 +177,7 @@
       "faq": {
         "title": "常见问题",
         "join_question": "如何加入？",
-        "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 NAME 或 World。请使用所有者钱包签署计划条款；一次加入对应一个 NAME 或 World。",
+        "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 NAME 或 World。请使用所有者钱包签署计划条款；一次加入即涵盖该钱包拥有的所有符合条件的 NAME 和 World。",
         "rewards_question": "发放金额如何计算？",
         "rewards_answer": "每个周期的奖池将根据活跃游玩时长、玩家留存和 Decentraland 新玩家数量，在符合条件的体验之间分配。Creator Hub 的数据仅为预览：最终发放金额在审核后计算，因此可能与你的仪表盘不同。",
         "worlds_question": "Worlds 也计入吗？",
@@ -188,7 +187,7 @@
         "transfer_question": "如果我在周期内转让 NAME 或 World 会怎样？",
         "transfer_answer": "体验自转让之时起不再计入。参与资格和发放以计划条款为准，转让不会将发放权益转给新所有者。",
         "runs_question": "Creator Fund 由谁运营？",
-        "runs_answer": "它是 Regenesis Labs 与 Decentraland Foundation 的合资项目。",
+        "runs_answer": "Creator Fund 由 Regenesis Labs 与 Decentraland Foundation 共同创立并出资，由 Decentraland Foundation 负责运营。",
         "after_question": "测试赛季之后会怎样？",
         "after_answer": "第 1 赛季计划于 2027 年 1 月至 3 月进行。日期及更新将于 12 月 28 日确认。",
         "grant_question": "这是资助吗？",

@@ -60,9 +60,10 @@ const StepText = styled('p')(({ theme }) => ({
   }
 }))
 
+// Same weight and color as the sentence around it; only the underline marks it as a link.
 const StepLink = styled('a')({
-  fontWeight: 600,
-  color: creatorFundColors.white,
+  fontWeight: 'inherit',
+  color: 'inherit',
   textDecoration: 'underline',
   textUnderlineOffset: 4,
   ['&:hover']: {

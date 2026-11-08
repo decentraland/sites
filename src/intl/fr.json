@@ -112,14 +112,14 @@
         "scene_alt": "Scène {name} sur Decentraland"
       },
       "how": {
-        "title": "Créez pour gagner",
+        "title": "Comment ça marche",
         "opt_in_title": "Inscrivez-vous",
         "opt_in_link": "Téléchargez Creator Hub",
         "opt_in_text": " et inscrivez-vous au Creator Fund.",
         "build_title": "Créez",
         "build_text": "Créez et publiez votre expérience.",
-        "paid_title": "Soyez payé",
-        "paid_text": "Recevez une part de {amount} {currency} à chaque cycle, selon l'engagement des joueurs."
+        "paid_title": "Paiement",
+        "paid_text": "Cagnotte de {amount} {currency} répartie à la fin de chaque cycle."
       },
       "measure": {
         "title": "Ce que nous récompensons",
@@ -130,8 +130,7 @@
       },
       "real": {
         "title": "De vrais joueurs. Du vrai jeu.",
-        "bots": "Nous examinons chaque expérience pour détecter les bots et l'activité factice. L'utilisation de bots peut entraîner la perte d'activité, la retenue des paiements ou l'exclusion du Fonds.",
-        "apps": "Seuls les joueurs de 18 ans et plus sur les applications officielles de Decentraland, sur ordinateur et mobile, sont comptabilisés, et ils doivent respecter les Conditions d'utilisation."
+        "text": "Nous vérifions les expériences pour détecter les bots et l’activité factice, ce qui peut entraîner la retenue des paiements ou l’exclusion. Seuls comptent les joueurs de 18 ans et plus sur les applications officielles de Decentraland qui respectent les Conditions d’utilisation."
       },
       "eligibility": {
         "title": "Éligibilité",
@@ -178,7 +177,7 @@
       "faq": {
         "title": "FAQ",
         "join_question": "Comment participer ?",
-        "join_answer": "L'inscription ouvre dans Creator Hub le 11 novembre. Vous devez avoir au moins 18 ans et posséder le NAME ou le Monde où votre expérience est déployée. Signez les Conditions du Programme avec le wallet propriétaire ; une inscription couvre un seul NAME ou Monde.",
+        "join_answer": "L'inscription ouvre dans Creator Hub le 11 novembre. Vous devez avoir au moins 18 ans et posséder le NAME ou le Monde où votre expérience est déployée. Signez les Conditions du Programme avec le wallet propriétaire ; une inscription couvre tous les NAME et Mondes éligibles détenus par ce wallet.",
         "rewards_question": "Comment les paiements sont-ils calculés ?",
         "rewards_answer": "La cagnotte de chaque cycle est répartie entre les expériences éligibles selon le temps de jeu actif, la fidélisation des joueurs et les nouveaux joueurs Decentraland. Les chiffres de Creator Hub sont un aperçu : les paiements finaux sont calculés après examen et peuvent donc différer de votre tableau de bord.",
         "worlds_question": "Les Mondes comptent-ils ?",
@@ -188,7 +187,7 @@
         "transfer_question": "Que se passe-t-il si je transfère mon NAME ou Monde pendant un cycle ?",
         "transfer_answer": "Une expérience cesse d'être comptabilisée dès son transfert. Les Conditions du Programme régissent l'éligibilité et les paiements, et un transfert ne transmet pas le paiement au nouveau propriétaire.",
         "runs_question": "Qui gère le Creator Fund ?",
-        "runs_answer": "C'est une coentreprise entre Regenesis Labs et la Decentraland Foundation.",
+        "runs_answer": "Le Creator Fund a été créé et est financé par Regenesis Labs et la Decentraland Foundation. Il est géré par la Decentraland Foundation.",
         "after_question": "Que se passe-t-il après la Beta Season ?",
         "after_answer": "La Season 1 est prévue de janvier à mars 2027. Les dates et les nouveautés seront confirmées le 28 décembre.",
         "grant_question": "S'agit-il d'une subvention ?",
