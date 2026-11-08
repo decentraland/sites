@@ -132,7 +132,7 @@
       },
       "measure": {
         "title": "What we reward",
-        "subtitle": "Each cycle, the pool is split by how much each experience contributes:",
+        "subtitle": "Each cycle, the pool is split proportional to player engagement in the experience:",
         "new_players": "New Decentraland players",
         "playtime": "Active playtime",
         "retention": "Player retention"
@@ -162,7 +162,7 @@
         "where_label": "Where",
         "where": "The wallet that owns your NAME or World, or a custom payout wallet you set.",
         "leaderboard_label": "Leaderboard",
-        "leaderboard": "The top experiences and their payouts appear on a public leaderboard."
+        "leaderboard": "The top experiences and their rewards appear on a public leaderboard."
       },
       "more_ways": {
         "title": "More ways to earn",
@@ -200,7 +200,7 @@
         "after_question": "What happens after the Beta Season?",
         "after_answer": "Season 1 is planned for January–March 2027. Dates and updates will be confirmed December 28.",
         "grant_question": "Is this a grant?",
-        "grant_answer": "No. Grants support projects before they launch. The Creator Fund pays experiences that are already live and growing on Decentraland.",
+        "grant_answer": "No. Grants support projects before they launch. The Creator Fund rewards experiences that are already live and growing on Decentraland.",
         "contact_prompt": "Questions or need support? Email us at"
       }
     },

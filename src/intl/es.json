@@ -123,7 +123,7 @@
       },
       "measure": {
         "title": "Qué recompensamos",
-        "subtitle": "En cada ciclo, el fondo se reparte según lo que aporta cada experiencia:",
+        "subtitle": "En cada ciclo, el fondo se reparte en proporción a la participación de los jugadores en la experiencia:",
         "new_players": "Nuevos jugadores de Decentraland",
         "playtime": "Tiempo de juego activo",
         "retention": "Retención de jugadores"
@@ -153,7 +153,7 @@
         "where_label": "Dónde",
         "where": "En la wallet propietaria de tu NAME o Mundo, o en una wallet de pago personalizada que tú configures.",
         "leaderboard_label": "Clasificación",
-        "leaderboard": "Las mejores experiencias y sus pagos aparecen en una clasificación pública."
+        "leaderboard": "Las mejores experiencias y sus recompensas aparecen en una clasificación pública."
       },
       "more_ways": {
         "title": "Más formas de ganar",
@@ -191,7 +191,7 @@
         "after_question": "¿Qué pasa después de la Beta Season?",
         "after_answer": "La Season 1 está prevista de enero a marzo de 2027. Las fechas y novedades se confirmarán el 28 de diciembre.",
         "grant_question": "¿Es una subvención?",
-        "grant_answer": "No. Las subvenciones apoyan proyectos antes de su lanzamiento. Creator Fund paga a las experiencias que ya están activas y creciendo en Decentraland.",
+        "grant_answer": "No. Las subvenciones apoyan proyectos antes de su lanzamiento. Creator Fund recompensa a las experiencias que ya están activas y creciendo en Decentraland.",
         "contact_prompt": "¿Tienes preguntas o necesitas ayuda? Escríbenos a"
       }
     },

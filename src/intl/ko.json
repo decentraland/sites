@@ -123,7 +123,7 @@
       },
       "measure": {
         "title": "보상 평가 기준",
-        "subtitle": "매 사이클마다 각 경험의 기여도에 따라 풀을 나눕니다.",
+        "subtitle": "매 사이클마다 경험 내 플레이어 참여도에 비례해 풀을 나눕니다.",
         "new_players": "Decentraland 신규 플레이어",
         "playtime": "활성 플레이 시간",
         "retention": "플레이어 리텐션"
@@ -153,7 +153,7 @@
         "where_label": "수령 지갑",
         "where": "NAME 또는 World를 소유한 지갑 또는 직접 설정한 지급용 지갑.",
         "leaderboard_label": "리더보드",
-        "leaderboard": "상위 경험과 지급 금액은 공개 리더보드에 표시됩니다."
+        "leaderboard": "상위 경험과 보상 금액은 공개 리더보드에 표시됩니다."
       },
       "more_ways": {
         "title": "더 벌 수 있는 방법",
