@@ -38,15 +38,30 @@ function isDeniedPermission(error: unknown): boolean {
   return error.name === 'NotAllowedError' || DENIED_PERMISSION_REGEX.test(error.message)
 }
 
-// A connection attempt the page aborts itself (the room is disconnected while it is
-// still connecting: the streamer leaves, the view unmounts) rejects with a
-// `ConnectionError` whose reason is `Cancelled`. livekit-client copies the inner
-// reason onto the error it finally throws, so the reason holds even when the message
-// reads "could not establish signal connection: Abort handler called" (SITES-2SS).
-// Nothing failed there, so there is nothing to report.
+// A connection attempt the page aborts itself, because the room is disconnected while
+// it is still connecting (the streamer leaves, the view unmounts), is not a failure.
+// livekit-client 2.19.1 rejects it in one of two shapes, both with reason `Cancelled`:
+// - `Room.disconnect()` rejects the pending connect with "Client initiated disconnect"
+//   (SITES-2SS: the breadcrumbs read "Abort connection attempt due to user initiated
+//   disconnect" right before each event);
+// - `Room.connect()` wraps the inner error as "Signal connection aborted: …" when the
+//   room's own abort signal fired.
+//
+// The reason alone is not enough. A signal websocket that never answers within
+// `websocketTimeout` also ends up with reason `Cancelled` (its timer goes through the
+// abort handler, which rejects with `ConnectionError.cancelled('Abort handler called')`),
+// but `Room.connect()` wraps that one as "could not establish signal connection: …".
+// That is a real outage and must keep reporting, so the match is on the two messages
+// livekit-client only uses for a page-initiated abort. They are tied to the pinned
+// livekit-client version: re-check them when it is bumped.
+const PAGE_CANCELLED_MESSAGE_REGEX = /^(Client initiated disconnect|Signal connection aborted)/
+
 function isCancelledConnection(error: unknown): boolean {
   return (
-    error instanceof Error && error.name === 'ConnectionError' && (error as { reason?: unknown }).reason === ConnectionErrorReason.Cancelled
+    error instanceof Error &&
+    error.name === 'ConnectionError' &&
+    (error as { reason?: unknown }).reason === ConnectionErrorReason.Cancelled &&
+    PAGE_CANCELLED_MESSAGE_REGEX.test(error.message)
   )
 }
 
