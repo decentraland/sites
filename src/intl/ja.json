@@ -148,20 +148,21 @@
       "rewards": {
         "title": "支払い",
         "when_label": "時期",
-        "when": "各サイクル終了後{days}日以内。各サイクルの支払い日は下のスケジュールをご覧ください。",
+        "when": "各サイクル終了後{days}日以内。",
+        "see_below": "下記を参照",
         "currency_label": "通貨",
         "currency": "{network}上の{currency}（{standard}）。",
         "where_label": "受取先",
-        "where": "Creator Hubで設定した支払い用ウォレット。サイクル終了から7日以内に設定しない場合、報酬の支払いは失効します。",
+        "where": "Creator Hubで設定した支払い用ウォレット。",
         "leaderboard_label": "リーダーボード",
         "leaderboard": "上位の体験と報酬額は、公開リーダーボードに掲載されます。"
       },
       "more_ways": {
         "title": "もっと稼ぐ方法",
-        "wearables": "WearablesとEmotesを販売して、売上の97.5%を受け取れる",
-        "funding": "Creator Successの資金援助や助成金に応募できる",
-        "contests": "Buildathons、Game Jams、シーズンコンテストで賞品を獲得できる",
-        "purchases": "ゲーム内でのクリエイター向け購入機能を近日提供予定"
+        "wearables": "WearablesとEmotesを販売して、<b>売上の97.5%を受け取れる</b>",
+        "funding": "<b>Creator Success</b>の資金援助や助成金に応募できる",
+        "contests": "<b>Buildathons、Game Jams</b>、シーズンコンテストで賞品を獲得できる",
+        "purchases": "<b>ゲーム内でのクリエイター向け購入機能</b>を近日提供予定"
       },
       "dates": {
         "title": "ベータスケジュール",

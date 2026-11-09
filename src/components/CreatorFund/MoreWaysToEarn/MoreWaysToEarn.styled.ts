@@ -36,7 +36,7 @@ const MoreWaysItem = styled('li')(({ theme }) => ({
   gap: theme.spacing(1.5),
   fontSize: 16,
   lineHeight: 1.5,
-  color: creatorFundColors.text,
+  color: creatorFundColors.white,
   ['& > svg']: {
     flexShrink: 0,
     marginTop: 2,
@@ -45,4 +45,10 @@ const MoreWaysItem = styled('li')(({ theme }) => ({
   }
 }))
 
-export { MoreWaysBand, MoreWaysHeader, MoreWaysItem, MoreWaysList, MoreWaysTitle }
+// The key term in each line (marked <b>…</b> in the copy).
+const MoreWaysStrong = styled('strong')({
+  fontWeight: 700,
+  color: creatorFundColors.white
+})
+
+export { MoreWaysBand, MoreWaysHeader, MoreWaysItem, MoreWaysList, MoreWaysStrong, MoreWaysTitle }

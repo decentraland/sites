@@ -157,20 +157,21 @@
       "rewards": {
         "title": "Payouts",
         "when_label": "When",
-        "when": "Within {days} days after each cycle ends. Each cycle’s payment date is in the schedule below.",
+        "when": "Within {days} days after each cycle ends.",
+        "see_below": "See Below",
         "currency_label": "Currency",
         "currency": "{currency} ({standard}) on {network}.",
         "where_label": "Where",
-        "where": "The Payout Wallet you set in Creator Hub. If you haven’t set one 7 days after a Cycle ends, the reward payout is lost.",
+        "where": "The Payout Wallet you set in Creator Hub.",
         "leaderboard_label": "Leaderboard",
         "leaderboard": "The top experiences and their rewards appear on a public leaderboard."
       },
       "more_ways": {
         "title": "More ways to earn",
-        "wearables": "Sell Wearables and Emotes and keep 97.5% of each sale",
-        "funding": "Apply for Creator Success funding and grants",
-        "contests": "Win prizes in Buildathons, Game Jams and seasonal contests",
-        "purchases": "In-game creator purchases coming soon"
+        "wearables": "Sell Wearables and Emotes and <b>keep 97.5%</b> of each sale",
+        "funding": "Apply for <b>Creator Success</b> funding and grants",
+        "contests": "Win prizes in <b>Buildathons, Game Jams</b> and seasonal contests",
+        "purchases": "<b>In-game creator purchases</b> coming soon"
       },
       "dates": {
         "title": "Beta Schedule",

@@ -9,9 +9,11 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 import TollOutlinedIcon from '@mui/icons-material/TollOutlined'
 import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
+import { clickTrackingAttributes } from '../CreatorFund.helpers'
 import { CreatorFundSection, DisplayTitle, SectionInner, creatorFundColors } from '../CreatorFund.styled'
-import { betaProgram } from '../data'
-import { PAYOUT_ICON_GRADIENT_ID, PayoutIconGradient, PayoutLabel, PayoutRow, PayoutTerms, PayoutValue } from './Payouts.styled'
+import { CLICK_SECTIONS, betaProgram } from '../data'
+import { PAYOUT_ICON_GRADIENT_ID, PayoutIconGradient, PayoutLabel, PayoutLink, PayoutRow, PayoutTerms, PayoutValue } from './Payouts.styled'
 
 const PAYOUT_ROWS = [
   { id: 'when', icon: AccessTimeOutlinedIcon },
@@ -19,13 +21,18 @@ const PAYOUT_ROWS = [
   { id: 'where', icon: CalendarMonthOutlinedIcon },
   { id: 'leaderboard', icon: EmojiEventsOutlinedIcon }
 ].map(({ id, icon }) => ({
+  id,
   icon,
   labelKey: `page.creator_fund.rewards.${id}_label`,
   valueKey: `page.creator_fund.rewards.${id}`
 }))
 
+// The "When" row points at the per-cycle payment dates in the Beta Schedule section.
+const SCHEDULE_ANCHOR = '#dates'
+
 const Payouts = memo(() => {
   const l = useFormatMessage()
+  const trackClick = useUnloadSafeTrackClick()
   const values = {
     days: betaProgram.paymentWindowDays,
     currency: betaProgram.currency,
@@ -49,13 +56,27 @@ const Payouts = memo(() => {
         <DisplayTitle>{l('page.creator_fund.rewards.title')}</DisplayTitle>
         <PayoutTerms>
           {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
-          {PAYOUT_ROWS.map(({ icon: Icon, labelKey, valueKey }) => (
+          {PAYOUT_ROWS.map(({ id, icon: Icon, labelKey, valueKey }) => (
             <PayoutRow key={labelKey}>
               <PayoutLabel>
                 <Icon aria-hidden="true" />
                 {l(labelKey)}
               </PayoutLabel>
-              <PayoutValue>{l(valueKey, values)}</PayoutValue>
+              <PayoutValue>
+                {l(valueKey, values)}
+                {id === 'when' && (
+                  <>
+                    {' '}
+                    <PayoutLink
+                      href={SCHEDULE_ANCHOR}
+                      {...clickTrackingAttributes(CLICK_SECTIONS.payouts, 'See Below')}
+                      onClick={trackClick}
+                    >
+                      {l('page.creator_fund.rewards.see_below')}
+                    </PayoutLink>
+                  </>
+                )}
+              </PayoutValue>
             </PayoutRow>
           ))}
         </PayoutTerms>

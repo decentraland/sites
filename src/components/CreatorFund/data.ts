@@ -124,6 +124,7 @@ const CLICK_SECTIONS = {
   hero: 'hero-banner',
   intro: 'decentraland-intro',
   howItWorks: 'how-it-works',
+  payouts: 'payouts',
   faq: 'faq',
   finalCta: 'final-cta'
 } as const

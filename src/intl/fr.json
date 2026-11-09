@@ -148,20 +148,21 @@
       "rewards": {
         "title": "Paiements",
         "when_label": "Quand",
-        "when": "Dans les {days} jours suivant la fin de chaque cycle. La date de paiement de chaque cycle figure dans le calendrier ci-dessous.",
+        "when": "Dans les {days} jours suivant la fin de chaque cycle.",
+        "see_below": "Voir ci-dessous",
         "currency_label": "Devise",
         "currency": "{currency} ({standard}) sur {network}.",
         "where_label": "Où",
-        "where": "Le wallet de paiement que vous définissez dans Creator Hub. Si vous n’en avez pas défini 7 jours après la fin d’un cycle, le paiement de la récompense est perdu.",
+        "where": "Le wallet de paiement que vous définissez dans Creator Hub.",
         "leaderboard_label": "Classement",
         "leaderboard": "Les meilleures expériences et leurs récompenses apparaissent dans un classement public."
       },
       "more_ways": {
         "title": "D'autres façons de gagner",
-        "wearables": "Vendez des Wearables et des Emotes et gardez 97,5 % de chaque vente",
-        "funding": "Demandez un financement et des subventions Creator Success",
-        "contests": "Remportez des prix lors des Buildathons, des Game Jams et des concours saisonniers",
-        "purchases": "Achats créateurs en jeu, bientôt disponibles"
+        "wearables": "Vendez des Wearables et des Emotes et <b>gardez 97,5 %</b> de chaque vente",
+        "funding": "Demandez un financement et des subventions <b>Creator Success</b>",
+        "contests": "Remportez des prix lors des <b>Buildathons, des Game Jams</b> et des concours saisonniers",
+        "purchases": "<b>Achats créateurs en jeu</b>, bientôt disponibles"
       },
       "dates": {
         "title": "Calendrier de la bêta",

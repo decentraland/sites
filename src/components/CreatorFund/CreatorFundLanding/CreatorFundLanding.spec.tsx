@@ -26,7 +26,11 @@ jest.mock('decentraland-ui2', () => {
 })
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (id: string, values?: Record<string, unknown>) => (values ? `${id} ${JSON.stringify(values)}` : id)
+  useFormatMessage: () => (id: string, values?: Record<string, unknown>) => (values ? `${id} ${JSON.stringify(values)}` : id),
+  // Renders the <b> term through the passed tag function, like formatjs does.
+  useIntl: () => ({
+    formatMessage: ({ id }: { id: string }, values?: { b?: (chunks: string) => unknown }) => [id, values?.b?.('bold term')]
+  })
 }))
 
 const mockTrackClick = jest.fn()
@@ -147,6 +151,15 @@ describe('CreatorFundLanding', () => {
     expect(document.getElementById('join')).toContainElement(decorative[1] as HTMLElement)
   })
 
+  it('should link the payout timing to the Beta Schedule section', () => {
+    const payouts = document.getElementById('payouts') as HTMLElement
+    const link = within(payouts).getByRole('link', { name: 'page.creator_fund.rewards.see_below' })
+
+    expect(link).toHaveAttribute('href', '#dates')
+    expect(document.getElementById('dates')).toBeInTheDocument()
+    expect(link).toHaveAttribute('data-section', 'payouts')
+  })
+
   it('should show an icon in every payout label', () => {
     const payouts = document.getElementById('payouts') as HTMLElement
 
@@ -244,7 +257,16 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should list the other ways to earn', () => {
-    moreWaysToEarnKeys.forEach(key => expect(screen.getByText(key)).toBeInTheDocument())
+    moreWaysToEarnKeys.forEach(key => expect(screen.getByText(key, { exact: false })).toBeInTheDocument())
+  })
+
+  it('should bold the key term of each other way to earn', () => {
+    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' }).closest('section') as HTMLElement
+
+    expect(within(moreWays).getAllByText('bold term')).toHaveLength(moreWaysToEarnKeys.length)
+    within(moreWays)
+      .getAllByText('bold term')
+      .forEach(term => expect(term.tagName).toBe('STRONG'))
   })
 
   it('should show the other ways to earn right after the schedule', () => {

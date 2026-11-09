@@ -148,20 +148,21 @@
       "rewards": {
         "title": "发放",
         "when_label": "时间",
-        "when": "每个周期结束后 {days} 天内。各周期的发放日期见下方日程。",
+        "when": "每个周期结束后 {days} 天内。",
+        "see_below": "见下方",
         "currency_label": "币种",
         "currency": "{network} 上的 {currency}（{standard}）。",
         "where_label": "接收方式",
-        "where": "你在 Creator Hub 中设置的收款钱包。如果在周期结束 7 天后仍未设置，该笔奖励发放将作废。",
+        "where": "你在 Creator Hub 中设置的收款钱包。",
         "leaderboard_label": "排行榜",
         "leaderboard": "表现最佳的体验及其奖励金额将显示在公开排行榜上。"
       },
       "more_ways": {
         "title": "更多赚取方式",
-        "wearables": "出售 Wearables 和 Emotes，每笔销售额保留 97.5%",
-        "funding": "申请 Creator Success 资金和资助",
-        "contests": "在 Buildathons、Game Jams 和赛季比赛中赢取奖品",
-        "purchases": "游戏内创作者购买功能即将推出"
+        "wearables": "出售 Wearables 和 Emotes，<b>每笔销售额保留 97.5%</b>",
+        "funding": "申请 <b>Creator Success</b> 资金和资助",
+        "contests": "在 <b>Buildathons、Game Jams</b> 和赛季比赛中赢取奖品",
+        "purchases": "<b>游戏内创作者购买功能</b>即将推出"
       },
       "dates": {
         "title": "测试版日程",

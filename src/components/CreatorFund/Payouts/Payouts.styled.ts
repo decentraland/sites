@@ -59,4 +59,19 @@ const PayoutValue = styled('dd')({
   color: creatorFundColors.onBand
 })
 
-export { PAYOUT_ICON_GRADIENT_ID, PayoutIconGradient, PayoutLabel, PayoutRow, PayoutTerms, PayoutValue }
+// "See Below": underlined like the "See Terms" link in the closing section.
+const PayoutLink = styled('a')({
+  color: 'inherit',
+  textDecoration: 'underline',
+  textUnderlineOffset: 4,
+  ['&:hover']: {
+    color: creatorFundColors.linkHover
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${creatorFundColors.white}`,
+    outlineOffset: 2,
+    borderRadius: 2
+  }
+})
+
+export { PAYOUT_ICON_GRADIENT_ID, PayoutIconGradient, PayoutLabel, PayoutLink, PayoutRow, PayoutTerms, PayoutValue }
