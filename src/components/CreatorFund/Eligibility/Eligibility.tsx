@@ -2,15 +2,23 @@ import { memo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import CheckIcon from '@mui/icons-material/Check'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { CreatorFundSection, SectionInner } from '../CreatorFund.styled'
+import { SectionInner } from '../CreatorFund.styled'
 import { betaProgram, eligibilityCards } from '../data'
-import { CardTitle, EligibilityCard, EligibilityGrid, EligibilityTitle, Requirement, RequirementList } from './Eligibility.styled'
+import {
+  CardTitle,
+  EligibilityCard,
+  EligibilityGrid,
+  EligibilitySection,
+  EligibilityTitle,
+  Requirement,
+  RequirementList
+} from './Eligibility.styled'
 
 const Eligibility = memo(() => {
   const l = useFormatMessage()
 
   return (
-    <CreatorFundSection id="eligibility" spacing="top">
+    <EligibilitySection id="eligibility">
       <SectionInner>
         <EligibilityTitle>{l('page.creator_fund.eligibility.title')}</EligibilityTitle>
         <EligibilityGrid>
@@ -29,7 +37,7 @@ const Eligibility = memo(() => {
           ))}
         </EligibilityGrid>
       </SectionInner>
-    </CreatorFundSection>
+    </EligibilitySection>
   )
 })
 

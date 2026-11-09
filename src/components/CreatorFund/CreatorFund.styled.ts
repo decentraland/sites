@@ -1,4 +1,5 @@
-import { Box, dclColors, styled } from 'decentraland-ui2'
+import { Box, dclColors, keyframes, styled } from 'decentraland-ui2'
+import bandPattern from '../../images/creator-fund/band-pattern.jpg'
 
 // Palette of the Creator Fund design, on the same DCL tokens decentraland.org uses:
 // white headings, gray5 body copy, primary-red CTAs that darken on hover.
@@ -19,10 +20,18 @@ const creatorFundColors = {
   orange: dclColors.brand.melon,
   purpleDeep: dclColors.brand.purple,
   purpleBright: dclColors.brand.violet,
+  lavender: dclColors.brand.lavender,
   white: dclColors.neutral.white,
   // Translucent white layers over the hero video and the purple bands.
   glass: 'rgba(255, 255, 255, 0.08)',
-  glassBorder: 'rgba(255, 255, 255, 0.15)'
+  glassBorder: 'rgba(255, 255, 255, 0.15)',
+  // Darker translucent surfaces from the design: black 25% (step cards, payout pills) and the
+  // softBlack2 card at 35% (hero facts) and 75% (Real players card over its photo).
+  darkSurface: 'rgba(0, 0, 0, 0.25)',
+  cardSurfaceLight: 'rgba(36, 33, 41, 0.35)',
+  cardSurfaceStrong: 'rgba(36, 33, 41, 0.75)',
+  // Matched to the bottom edge of the "What we reward" background photo.
+  eligibilitySurface: '#090507'
 }
 
 // The Creator Fund navbar replaces the site one, so it uses the site navbar's
@@ -41,14 +50,51 @@ const labelStyles = {
 
 const rubyGradient = `linear-gradient(135deg, ${creatorFundColors.primary}, ${creatorFundColors.orange})`
 const purpleGradient = `linear-gradient(135deg, ${creatorFundColors.purpleDeep}, ${creatorFundColors.purpleBright})`
+// Metric cards and scene frames.
+const rewardCardGradient = `linear-gradient(135deg, ${creatorFundColors.lavender}, ${creatorFundColors.purpleDeep})`
 
-// Purple band. Its background is decentraland.org's own <AnimatedBackground variant="absolute" />
-// (the WebGL purple glow with the drifting Decentraland logo pattern used on the homepage), which
-// each band renders as its first child. The canvas sits at z-index -1, so the band isolates it.
+// useScrollParallax writes each band's scroll offset to this property; the artwork layer moves
+// at a quarter of the page's pace, clamped to ±80px so the finite image keeps covering the band.
+const PARALLAX_OFFSET_PROPERTY = '--parallax-offset'
+const PARALLAX_SPEED = 0.25
+const PARALLAX_LIMIT = 80
+
+const artworkDrift = keyframes({
+  from: { transform: `translate(120px, calc(-50% + var(${PARALLAX_OFFSET_PROPERTY}, 0px)))` },
+  to: { transform: `translate(-120px, calc(-50% + var(${PARALLAX_OFFSET_PROPERTY}, 0px) - 160px))` }
+})
+
+// Purple band: the design's purple pattern artwork, drifting slowly sideways behind the content.
+// The layer is 240px wider than the band on each side and at least 1400px tall, so the artwork is
+// scaled the same in short and tall bands (the icons keep one size) and the drift never shows an
+// edge. `bandPattern` is a bundled asset URL, never user input.
 const purpleBandStyles = {
   position: 'relative',
   isolation: 'isolate',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  backgroundImage: purpleGradient,
+  ['&::before']: {
+    content: '""',
+    position: 'absolute',
+    left: -240,
+    right: -240,
+    top: '50%',
+    height: 'max(1400px, calc(100% + 480px))',
+    zIndex: -1,
+    pointerEvents: 'none',
+    backgroundImage: `url("${bandPattern}")`,
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    transform: `translateY(calc(-50% + var(${PARALLAX_OFFSET_PROPERTY}, 0px)))`,
+    animation: `${artworkDrift} 30s ease-in-out infinite alternate`
+  },
+  ['@media (prefers-reduced-motion: reduce)']: {
+    ['&::before']: {
+      animation: 'none',
+      transform: 'translateY(-50%)'
+    }
+  }
 } as const
 
 type SectionSpacing = 'both' | 'top' | 'bottom'
@@ -132,10 +178,10 @@ const Eyebrow = styled('span')({
 
 type TileSize = 'small' | 'medium' | 'large'
 
-const TILE_SIZES: Record<TileSize, { box: number; radius: number; icon: number }> = {
-  small: { box: 36, radius: 8, icon: 20 },
-  medium: { box: 48, radius: 12, icon: 24 },
-  large: { box: 56, radius: 12, icon: 28 }
+const TILE_SIZES: Record<TileSize, { box: number; icon: number }> = {
+  small: { box: 36, icon: 20 },
+  medium: { box: 48, icon: 24 },
+  large: { box: 56, icon: 28 }
 }
 
 const RubyTile = styled('span', {
@@ -147,7 +193,7 @@ const RubyTile = styled('span', {
   justifyContent: 'center',
   width: TILE_SIZES[size].box,
   height: TILE_SIZES[size].box,
-  borderRadius: TILE_SIZES[size].radius,
+  borderRadius: '50%',
   background: rubyGradient,
   color: creatorFundColors.white,
   ['& svg']: {
@@ -249,6 +295,9 @@ export {
   NAVBAR_DESKTOP_QUERY,
   NAVBAR_HEIGHT,
   NavButtonLink,
+  PARALLAX_LIMIT,
+  PARALLAX_OFFSET_PROPERTY,
+  PARALLAX_SPEED,
   PrimaryButtonLink,
   RubyTile,
   SECTION_SCROLL_MARGIN,
@@ -258,5 +307,6 @@ export {
   labelStyles,
   purpleBandStyles,
   purpleGradient,
+  rewardCardGradient,
   rubyGradient
 }

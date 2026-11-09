@@ -116,6 +116,8 @@ const FactCard = styled(GlassCard)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1.5),
   padding: theme.spacing(2),
+  border: `1px solid ${creatorFundColors.border}`,
+  backgroundColor: creatorFundColors.cardSurfaceLight,
   backdropFilter: 'blur(8px)'
 }))
 

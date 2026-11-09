@@ -25,9 +25,15 @@ const StepsGrid = styled('ol')(({ theme }) => ({
   }
 }))
 
+// Centered on a darker translucent surface so the cards read over the band artwork.
 const StepCard = styled(GlassCard)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  textAlign: 'center',
   height: '100%',
   boxSizing: 'border-box',
+  backgroundColor: creatorFundColors.darkSurface,
   padding: theme.spacing(4),
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(5),

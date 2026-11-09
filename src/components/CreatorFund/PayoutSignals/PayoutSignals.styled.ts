@@ -1,11 +1,38 @@
 import { Box, styled } from 'decentraland-ui2'
-import { CardTitle, CreatorFundSection, DisplayTitle, LeadText, SolidCard } from '../CreatorFund.styled'
+import { CardTitle, DisplayTitle, LeadText, SolidCard, creatorFundColors, rewardCardGradient } from '../CreatorFund.styled'
 
-// Sits tighter than the other sections on the "Real players" card below it.
-const SignalsSection = styled(CreatorFundSection)(({ theme }) => ({
+// One section for "What we reward" and the Real players card, so the photo behind them runs
+// continuously. The photo sits at z-index -1, so the section isolates it.
+const RewardsSection = styled('section')({
+  position: 'relative',
+  isolation: 'isolate',
+  overflow: 'hidden'
+})
+
+const RewardsBackground = styled('img')({
+  position: 'absolute',
+  inset: 0,
+  zIndex: -1,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  objectPosition: 'center'
+})
+
+// Same rhythm as the other sections; the metrics sit tight on the Real players card below.
+const SignalsBlock = styled(Box)(({ theme }) => ({
+  paddingTop: theme.spacing(6),
   paddingBottom: theme.spacing(3),
   [theme.breakpoints.up('sm')]: {
+    paddingTop: theme.spacing(10),
     paddingBottom: theme.spacing(5)
+  }
+}))
+
+const RealBlock = styled(Box)(({ theme }) => ({
+  paddingBottom: theme.spacing(6),
+  [theme.breakpoints.up('sm')]: {
+    paddingBottom: theme.spacing(10)
   }
 }))
 
@@ -25,16 +52,25 @@ const SignalsGrid = styled('ul')(({ theme }) => ({
   }
 }))
 
+// Purple gradient metric cards, content centered.
 const SignalCard = styled(SolidCard)({
-  height: '100%'
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  textAlign: 'center',
+  height: '100%',
+  boxSizing: 'border-box',
+  background: rewardCardGradient
 })
 
 const SignalTitle = styled(CardTitle)(({ theme }) => ({
   marginTop: theme.spacing(3)
 }))
 
+// Translucent, so the photo shows through.
 const RealCard = styled(SolidCard)(({ theme }) => ({
   display: 'grid',
+  backgroundColor: creatorFundColors.cardSurfaceStrong,
   gap: theme.spacing(3),
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(5)
@@ -57,4 +93,16 @@ const RealBody = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2.5)
 }))
 
-export { RealBody, RealCard, RealTitle, SignalCard, SignalTitle, SignalsGrid, SignalsLead, SignalsSection }
+export {
+  RealBlock,
+  RealBody,
+  RealCard,
+  RealTitle,
+  RewardsBackground,
+  RewardsSection,
+  SignalCard,
+  SignalTitle,
+  SignalsBlock,
+  SignalsGrid,
+  SignalsLead
+}

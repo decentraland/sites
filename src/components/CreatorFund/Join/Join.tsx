@@ -1,20 +1,20 @@
 import { memo } from 'react'
-import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
 import avatarsImage from '../../../images/creator-fund/avatars.webp'
+import closingBackground from '../../../images/creator-fund/closing-scene-background.jpg'
 import { clickTrackingAttributes } from '../CreatorFund.helpers'
 import { PrimaryButtonLink } from '../CreatorFund.styled'
 import { CLICK_SECTIONS, CREATOR_FUND_TERMS_URL } from '../data'
-import { AvatarsImage, JoinActions, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink } from './Join.styled'
+import { AvatarsImage, JoinActions, JoinBackground, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink } from './Join.styled'
 
 const Join = memo(() => {
   const l = useFormatMessage()
   const trackClick = useUnloadSafeTrackClick()
 
   return (
-    <JoinSection id="join" band spacing="top">
-      <AnimatedBackground variant="absolute" />
+    <JoinSection id="join" spacing="top">
+      <JoinBackground src={closingBackground} alt="" aria-hidden="true" loading="lazy" />
       <JoinInner>
         <JoinTitle>{l('page.creator_fund.join.title')}</JoinTitle>
         <JoinSubtitle>

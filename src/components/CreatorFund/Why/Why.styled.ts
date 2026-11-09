@@ -1,5 +1,5 @@
 import { Box, Logo, styled } from 'decentraland-ui2'
-import { DisplayTitle, MutedText, SectionInner, creatorFundColors } from '../CreatorFund.styled'
+import { DisplayTitle, MutedText, SectionInner, creatorFundColors, rewardCardGradient } from '../CreatorFund.styled'
 
 const WhyGrid = styled(SectionInner)(({ theme }) => ({
   display: 'grid',
@@ -141,8 +141,7 @@ const SceneCard = styled('figure', {
   margin: 0,
   padding: theme.spacing(1),
   borderRadius: 16,
-  border: `1px solid ${creatorFundColors.glassBorder}`,
-  backgroundColor: creatorFundColors.card,
+  background: rewardCardGradient,
   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   transform: SCENE_OFFSETS[position]?.mobile,
   [theme.breakpoints.up('sm')]: {
