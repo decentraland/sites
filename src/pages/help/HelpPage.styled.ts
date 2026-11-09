@@ -100,7 +100,6 @@ const HelpTabButton = styled(Button)<{ active?: boolean }>(({ theme, active }) =
   backgroundImage: 'none',
   color: active ? '#161518' : '#cfcdd4',
   textTransform: 'none',
-  whiteSpace: 'nowrap',
   fontSize: 14,
   fontWeight: 600,
   lineHeight: '17px',
@@ -116,6 +115,11 @@ const HelpTabButton = styled(Button)<{ active?: boolean }>(({ theme, active }) =
   '& svg': {
     height: 20,
     width: 20
+  },
+  // Phones wrap the tab row instead (see HelpTabButtonsContainer); the desktop sidebar can
+  // shrink, so long es/fr labels still wrap there.
+  [theme.breakpoints.down('sm')]: {
+    whiteSpace: 'nowrap'
   }
 }))
 
@@ -411,7 +415,6 @@ const ChatCtaButton = styled(Button)(({ theme }) => ({
 }))
 
 export {
-  CreatorFundContact,
   AccordionContainer,
   ChatCtaBanner,
   ChatCtaBannerContent,
@@ -420,6 +423,7 @@ export {
   ChatCtaBannerTexts,
   ChatCtaBannerTitle,
   ChatCtaButton,
+  CreatorFundContact,
   DesktopStatusWrapper,
   FaqAccordion,
   FaqAccordionDetails,

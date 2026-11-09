@@ -1,5 +1,5 @@
 import { createElement } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactNode, SyntheticEvent } from 'react'
 import { Box, dclColors, fakeTheme, keyframes, styled } from './styledMock'
 
 /**
@@ -24,6 +24,28 @@ const createUi2Mock = () => ({
 
   Typography: ({ component, children, ...rest }: { component?: string; children?: ReactNode }) =>
     createElement(component ?? 'span', rest, children),
+
+  Button: ({ children, ...rest }: { children?: ReactNode }) => createElement('button', { type: 'button', ...rest }, children),
+
+  // Controlled like MUI's: `expanded` comes in, a click asks `onChange` for the opposite.
+  Accordion: ({
+    children,
+    expanded,
+    onChange
+  }: {
+    children?: ReactNode
+    expanded?: boolean
+    onChange?: (event: SyntheticEvent, expanded: boolean) => void
+  }) =>
+    createElement(
+      'div',
+      { ['data-expanded']: String(Boolean(expanded)), onClick: (event: SyntheticEvent) => onChange?.(event, !expanded) },
+      children
+    ),
+
+  AccordionSummary: ({ children, ...rest }: { children?: ReactNode }) => createElement('div', rest, children),
+
+  AccordionDetails: ({ children, ...rest }: { children?: ReactNode }) => createElement('div', rest, children),
 
   CircularProgress: () => createElement('div', { role: 'progressbar' }),
 

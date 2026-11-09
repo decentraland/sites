@@ -1,4 +1,3 @@
-import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { isCreatorFundContentEnabled } from '../CreatorFund/CreatorFund.visibility'
 import { HelpCenterSection, HelpTab } from './HelpCenterSection'
@@ -15,30 +14,7 @@ jest.mock('./StatusDropdown', () => ({
   StatusDropdown: () => null
 }))
 
-jest.mock('decentraland-ui2', () => {
-  const { styled, Box, dclColors } = jest.requireActual('../../__test-utils__/styledMock')
-  type Props = { children?: React.ReactNode; expanded?: boolean; onChange?: (event: unknown, expanded: boolean) => void; active?: boolean }
-  const Accordion = ({ children, expanded, onChange }: Props) =>
-    React.createElement(
-      'div',
-      { 'data-expanded': String(Boolean(expanded)), onClick: (event: unknown) => onChange?.(event, !expanded) },
-      children
-    )
-  const Tag =
-    (tag: string) =>
-    ({ children, expanded: _expanded, onChange: _onChange, active: _active, ...rest }: Props & Record<string, unknown>) =>
-      React.createElement(tag, rest, children)
-  return {
-    styled,
-    Box,
-    dclColors,
-    Typography: Tag('p'),
-    Button: Tag('button'),
-    Accordion,
-    AccordionSummary: Tag('div'),
-    AccordionDetails: Tag('div')
-  }
-})
+jest.mock('decentraland-ui2', () => jest.requireActual('../../__test-utils__/ui2Mock').createUi2Mock())
 
 const CREATOR_FUND_TAB = 'component.landing.help.center.creator_fund_button_label'
 

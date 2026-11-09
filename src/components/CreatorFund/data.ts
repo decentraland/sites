@@ -126,7 +126,9 @@ const CLICK_SECTIONS = {
   howItWorks: 'how-it-works',
   payouts: 'payouts',
   faq: 'faq',
-  finalCta: 'final-cta'
+  finalCta: 'final-cta',
+  // The Creator Fund tab of /help, so its clicks can be told apart from the page's own FAQ.
+  helpCenter: 'help-center'
 } as const
 
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'

@@ -1,38 +1,34 @@
-import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { CREATOR_FUND_CONTACT_EMAIL, faqEntries } from '../CreatorFund/data'
 import { CreatorFundFAQSection } from './CreatorFundFAQSection'
 
-jest.mock('@dcl/hooks', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+jest.mock('../../hooks/adapters/useFormatMessage', () => ({
+  useFormatMessage: () => (key: string) => key
 }))
 
-jest.mock('decentraland-ui2', () => {
-  const { styled, Box, dclColors } = jest.requireActual('../../__test-utils__/styledMock')
-  type Props = { children?: React.ReactNode; expanded?: boolean; onChange?: (event: unknown, expanded: boolean) => void; active?: boolean }
-  const Accordion = ({ children, expanded, onChange }: Props) =>
-    React.createElement(
-      'div',
-      { 'data-expanded': String(Boolean(expanded)), onClick: (event: unknown) => onChange?.(event, !expanded) },
-      children
-    )
-  const Tag =
-    (tag: string) =>
-    ({ children, expanded: _expanded, onChange: _onChange, active: _active, ...rest }: Props & Record<string, unknown>) =>
-      React.createElement(tag, rest, children)
-  return {
-    styled,
-    Box,
-    dclColors,
-    Typography: Tag('p'),
-    Button: Tag('button'),
-    Accordion,
-    AccordionSummary: Tag('div'),
-    AccordionDetails: Tag('div')
-  }
-})
+jest.mock('decentraland-ui2', () => jest.requireActual('../../__test-utils__/ui2Mock').createUi2Mock())
+
+const mockTrackClick = jest.fn()
+
+jest.mock('../../hooks/useUnloadSafeTrackClick', () => ({
+  useUnloadSafeTrackClick: () => mockTrackClick
+}))
+
+// React clears `currentTarget` once the handler returns, so record what each click tracked at call time.
+const tracked: Array<{ section: string | null; button: string | null }> = []
 
 describe('CreatorFundFAQSection', () => {
+  beforeEach(() => {
+    tracked.length = 0
+    mockTrackClick.mockImplementation((event: { currentTarget: Element }) => {
+      tracked.push({ section: event.currentTarget.getAttribute('data-section'), button: event.currentTarget.getAttribute('data-button') })
+    })
+  })
+
+  afterEach(() => {
+    mockTrackClick.mockReset()
+  })
+
   describe('when the Creator Fund tab is active', () => {
     beforeEach(() => {
       render(<CreatorFundFAQSection isActive />)
@@ -63,6 +59,23 @@ describe('CreatorFundFAQSection', () => {
 
         fireEvent.click(accordion)
         expect(accordion).toHaveAttribute('data-expanded', 'false')
+      })
+
+      it('should track opening it under the help-center section, but not closing it', () => {
+        const question = screen.getByText(faqEntries[0].questionKey)
+
+        fireEvent.click(question)
+        fireEvent.click(question)
+
+        expect(tracked).toEqual([{ section: 'help-center', button: faqEntries[0].trackingName }])
+      })
+    })
+
+    describe('and the support address is clicked', () => {
+      it('should track it under the help-center section', () => {
+        fireEvent.click(screen.getByRole('link', { name: CREATOR_FUND_CONTACT_EMAIL }))
+
+        expect(tracked).toEqual([{ section: 'help-center', button: 'Email Creator Fund' }])
       })
     })
   })
