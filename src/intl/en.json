@@ -109,9 +109,10 @@
         "subtitle": "Rewards for experiences that bring and retain real players.",
         "pool_amount": "{pool} {currency}",
         "pool_text": "pool shared across three cycles.",
-        "fact_pool": "Beta Season pool",
-        "fact_cycle": "Per cycle",
-        "fact_season": "Beta Season"
+        "fact_pool": "In Beta Season Rewards",
+        "fact_cycle": "Shared each cycle",
+        "fact_start_value": "Nov 15",
+        "fact_start": "Beta Season starts"
       },
       "why": {
         "title": "Decentraland",

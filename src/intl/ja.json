@@ -100,9 +100,10 @@
         "subtitle": "本物のプレイヤーを呼び込み、定着させる体験に報酬を。",
         "pool_amount": "{pool} {currency}",
         "pool_text": "のプールを3つのサイクルで分配します。",
-        "fact_pool": "ベータシーズンのプール",
-        "fact_cycle": "サイクルごと",
-        "fact_season": "ベータシーズン"
+        "fact_pool": "ベータシーズンの報酬総額",
+        "fact_cycle": "各サイクルの分配額",
+        "fact_start_value": "11月15日",
+        "fact_start": "ベータシーズン開始"
       },
       "why": {
         "title": "Decentraland",

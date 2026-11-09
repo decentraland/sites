@@ -100,9 +100,10 @@
         "subtitle": "Des récompenses pour les expériences qui attirent et fidélisent de vrais joueurs.",
         "pool_amount": "{pool} {currency}",
         "pool_text": "de cagnotte répartie sur trois cycles.",
-        "fact_pool": "Cagnotte de la Beta Season",
-        "fact_cycle": "Par cycle",
-        "fact_season": "Beta Season"
+        "fact_pool": "En récompenses pour la Beta Season",
+        "fact_cycle": "Réparti à chaque cycle",
+        "fact_start_value": "15 nov.",
+        "fact_start": "Début de la Beta Season"
       },
       "why": {
         "title": "Decentraland",

@@ -183,8 +183,11 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'Mac' })).toHaveAttribute('href', getDownloadUrl('apple'))
   })
 
-  it('should show the Beta Season dates in the hero', () => {
-    expect(screen.getByText(/^Nov 15\s*–\s*Dec 31$/)).toBeInTheDocument()
+  it('should show the three hero facts from the design', () => {
+    expect(screen.getByText('page.creator_fund.hero.fact_pool')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.fact_cycle')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.fact_start_value')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.fact_start')).toBeInTheDocument()
   })
 
   it('should list the steps in order: opt in, build, get paid', () => {

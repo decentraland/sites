@@ -100,9 +100,10 @@
         "subtitle": "奖励那些能吸引并留住真实玩家的体验。",
         "pool_amount": "{pool} {currency}",
         "pool_text": "奖池将在三个周期内分配。",
-        "fact_pool": "测试赛季奖池",
-        "fact_cycle": "每个周期",
-        "fact_season": "测试赛季"
+        "fact_pool": "测试赛季奖励总额",
+        "fact_cycle": "每个周期分配",
+        "fact_start_value": "11 月 15 日",
+        "fact_start": "测试赛季开始"
       },
       "why": {
         "title": "Decentraland",

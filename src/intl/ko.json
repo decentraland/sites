@@ -100,9 +100,10 @@
         "subtitle": "진짜 플레이어를 끌어들이고 머물게 하는 경험에 보상합니다.",
         "pool_amount": "{pool} {currency}",
         "pool_text": "규모의 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
-        "fact_pool": "베타 시즌 풀",
-        "fact_cycle": "사이클당",
-        "fact_season": "베타 시즌"
+        "fact_pool": "베타 시즌 보상 총액",
+        "fact_cycle": "사이클당 지급액",
+        "fact_start_value": "11월 15일",
+        "fact_start": "베타 시즌 시작"
       },
       "why": {
         "title": "Decentraland",
