@@ -20,6 +20,7 @@ const Layout = lazyWithRetry(() => import('./components/Layout').then(m => ({ de
 // bloat the main bundle for the landing page (saves ~560 KB of unused JS).
 const BrandTerms = lazyWithRetry(() => import('./pages/brand').then(m => ({ default: m.BrandTerms })))
 const ContentPolicy = lazyWithRetry(() => import('./pages/content').then(m => ({ default: m.ContentPolicy })))
+const CreatorFundTerms = lazyWithRetry(() => import('./pages/creator-fund-terms').then(m => ({ default: m.CreatorFundTerms })))
 const CreditsTerms = lazyWithRetry(() => import('./pages/credits-terms').then(m => ({ default: m.CreditsTerms })))
 const DownloadPage = lazyWithRetry(() => import('./pages/download').then(m => ({ default: m.DownloadPage })))
 const CodeOfEthics = lazyWithRetry(() => import('./pages/ethics').then(m => ({ default: m.CodeOfEthics })))
@@ -226,6 +227,8 @@ const App = () => {
               <Route path="/ethics" element={<CodeOfEthics />} />
               {/* route-manifest: sitemap */}
               <Route path="/rewards-terms" element={<RewardsTerms />} />
+              {/* Draft legal text: kept out of the sitemap until the terms are final. */}
+              <Route path="/creator-fund-terms" element={<CreatorFundTerms />} />
               {/* route-manifest: sitemap */}
               <Route path="/credits-terms" element={<CreditsTerms />} />
               {/* route-manifest: sitemap */}

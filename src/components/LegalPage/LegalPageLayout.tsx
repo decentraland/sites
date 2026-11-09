@@ -10,6 +10,8 @@ import ExploreIcon from '@mui/icons-material/Explore'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import FavoriteIcon from '@mui/icons-material/Favorite'
 // eslint-disable-next-line @typescript-eslint/naming-convention
+import PaidIcon from '@mui/icons-material/Paid'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import ParkIcon from '@mui/icons-material/Park'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import RedeemIcon from '@mui/icons-material/Redeem'
@@ -27,6 +29,7 @@ const SIDEBAR_PAGES: { label: string; slug: string; icon: ComponentType }[] = [
   { label: 'Content Policy', slug: '/content', icon: ParkIcon },
   { label: 'Code of Ethics', slug: '/ethics', icon: BalanceIcon },
   { label: 'Rewards Program', slug: '/rewards-terms', icon: CardGiftcardIcon },
+  { label: 'Creator Fund', slug: '/creator-fund-terms', icon: PaidIcon },
   { label: 'Credits', slug: '/credits-terms', icon: TokenIcon },
   { label: 'Security', slug: '/security', icon: ShieldIcon },
   { label: 'Privacy Policy', slug: '/privacy', icon: VpnKeyIcon },

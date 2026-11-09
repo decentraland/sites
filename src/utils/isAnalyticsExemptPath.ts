@@ -27,6 +27,7 @@
 const ANALYTICS_EXEMPT_PATHS = new Set([
   '/brand',
   '/content',
+  '/creator-fund-terms',
   '/download',
   '/ethics',
   '/privacy',
