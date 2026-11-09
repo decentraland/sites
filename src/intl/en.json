@@ -105,10 +105,10 @@
       "hero": {
         "eyebrow": "Beta starts Nov 15",
         "title": "Creator Fund",
-        "title_highlight": "Get paid when people play.",
-        "subtitle": "Bring players in, keep them playing, get paid in USDC.",
-        "pool_amount": "{pool}",
-        "pool_text": "Beta Season pool, shared across three cycles.",
+        "title_highlight": "Earn in Decentraland.",
+        "subtitle": "Rewards for experiences that bring and retain real players.",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "pool shared across three cycles.",
         "fact_pool": "Beta Season pool",
         "fact_cycle": "Per cycle",
         "fact_season": "Beta Season"
@@ -122,7 +122,7 @@
       },
       "how": {
         "title": "How it Works",
-        "opt_in_title": "Opt In",
+        "opt_in_title": "Join",
         "opt_in_link": "Download Creator Hub",
         "opt_in_text": " and opt in to the Creator Fund.",
         "build_title": "Build",

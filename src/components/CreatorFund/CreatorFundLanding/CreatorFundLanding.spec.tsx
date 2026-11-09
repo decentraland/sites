@@ -19,6 +19,7 @@ jest.mock('decentraland-ui2', () => {
     Box,
     dclColors,
     keyframes,
+    AnimatedBackground: () => React.createElement('div', { 'data-testid': 'animated-background' }),
     Logo: (props: Record<string, unknown>) => React.createElement('svg', props),
     useMediaQuery: jest.fn()
   }
@@ -134,6 +135,10 @@ describe('CreatorFundLanding', () => {
     expect(heading).toHaveTextContent('page.creator_fund.hero.title_highlight')
   })
 
+  it('should paint the three purple bands with the decentraland.org animated background', () => {
+    expect(screen.getAllByTestId('animated-background')).toHaveLength(3)
+  })
+
   it('should put decorative background photos behind the rewards and the closing sections', () => {
     const decorative = Array.from(document.querySelectorAll('img[aria-hidden="true"]'))
 
@@ -151,7 +156,7 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should show the season pool in the hero', () => {
-    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000","currency":"USDC"}')).toBeInTheDocument()
   })
 
   it('should render a target section for every section link', () => {

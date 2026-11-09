@@ -96,10 +96,10 @@
       "hero": {
         "eyebrow": "베타 11월 15일 시작",
         "title": "Creator Fund",
-        "title_highlight": "플레이할수록 수익이 됩니다.",
-        "subtitle": "플레이어를 끌어들이고, 계속 플레이하게 하고, USDC로 보상받으세요.",
-        "pool_amount": "{pool}",
-        "pool_text": "규모의 베타 시즌 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
+        "title_highlight": "Decentraland에서 수익을 만드세요.",
+        "subtitle": "진짜 플레이어를 끌어들이고 머물게 하는 경험에 보상합니다.",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "규모의 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
         "fact_pool": "베타 시즌 풀",
         "fact_cycle": "사이클당",
         "fact_season": "베타 시즌"
@@ -113,7 +113,7 @@
       },
       "how": {
         "title": "작동 방식",
-        "opt_in_title": "옵트인",
+        "opt_in_title": "참여",
         "opt_in_link": "Creator Hub를 다운로드",
         "opt_in_text": "하고 Creator Fund에 옵트인하세요.",
         "build_title": "제작",

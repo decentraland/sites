@@ -1,5 +1,4 @@
-import { Box, dclColors, keyframes, styled } from 'decentraland-ui2'
-import bandPattern from '../../images/creator-fund/band-pattern.jpg'
+import { Box, dclColors, styled } from 'decentraland-ui2'
 
 // Palette of the Creator Fund design, on the same DCL tokens decentraland.org uses:
 // white headings, gray5 body copy, primary-red CTAs that darken on hover.
@@ -53,48 +52,13 @@ const purpleGradient = `linear-gradient(135deg, ${creatorFundColors.purpleDeep},
 // Metric cards and scene frames.
 const rewardCardGradient = `linear-gradient(135deg, ${creatorFundColors.lavender}, ${creatorFundColors.purpleDeep})`
 
-// useScrollParallax writes each band's scroll offset to this property; the artwork layer moves
-// at a quarter of the page's pace, clamped to ±80px so the finite image keeps covering the band.
-const PARALLAX_OFFSET_PROPERTY = '--parallax-offset'
-const PARALLAX_SPEED = 0.25
-const PARALLAX_LIMIT = 80
-
-const artworkDrift = keyframes({
-  from: { transform: `translate(120px, calc(-50% + var(${PARALLAX_OFFSET_PROPERTY}, 0px)))` },
-  to: { transform: `translate(-120px, calc(-50% + var(${PARALLAX_OFFSET_PROPERTY}, 0px) - 160px))` }
-})
-
-// Purple band: the design's purple pattern artwork, drifting slowly sideways behind the content.
-// The layer is 240px wider than the band on each side and at least 1400px tall, so the artwork is
-// scaled the same in short and tall bands (the icons keep one size) and the drift never shows an
-// edge. `bandPattern` is a bundled asset URL, never user input.
+// Purple band. Its background is decentraland.org's own <AnimatedBackground variant="absolute" />
+// (the WebGL purple glow with the drifting Decentraland logo pattern used on the homepage), which
+// each band renders as its first child. The canvas sits at z-index -1, so the band isolates it.
 const purpleBandStyles = {
   position: 'relative',
   isolation: 'isolate',
-  overflow: 'hidden',
-  backgroundImage: purpleGradient,
-  ['&::before']: {
-    content: '""',
-    position: 'absolute',
-    left: -240,
-    right: -240,
-    top: '50%',
-    height: 'max(1400px, calc(100% + 480px))',
-    zIndex: -1,
-    pointerEvents: 'none',
-    backgroundImage: `url("${bandPattern}")`,
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
-    transform: `translateY(calc(-50% + var(${PARALLAX_OFFSET_PROPERTY}, 0px)))`,
-    animation: `${artworkDrift} 30s ease-in-out infinite alternate`
-  },
-  ['@media (prefers-reduced-motion: reduce)']: {
-    ['&::before']: {
-      animation: 'none',
-      transform: 'translateY(-50%)'
-    }
-  }
+  overflow: 'hidden'
 } as const
 
 type SectionSpacing = 'both' | 'top' | 'bottom'
@@ -216,8 +180,8 @@ const SolidCard = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3)
 }))
 
-// Main page CTA, same shape as the homepage hero's Download button:
-// 64px tall, 16px radius, uppercase 600, white focus/hover ring.
+// Main page CTA: the homepage hero Download button's size and type (64px tall, uppercase 600,
+// white focus/hover ring), pill-shaped as in the design.
 const PrimaryButtonLink = styled('a')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
@@ -227,7 +191,7 @@ const PrimaryButtonLink = styled('a')(({ theme }) => ({
   minWidth: 304,
   height: 64,
   padding: `0 ${theme.spacing(4)}`,
-  borderRadius: 16,
+  borderRadius: 9999,
   backgroundColor: creatorFundColors.primary,
   color: creatorFundColors.buttonText,
   fontSize: '19.89px',
@@ -252,7 +216,7 @@ const PrimaryButtonLink = styled('a')(({ theme }) => ({
   }
 }))
 
-// Compact CTA, same as the site navbar's Download button: 40px tall, 12px radius.
+// Compact CTA: the site navbar's Download button (40px tall), pill-shaped as in the design.
 const NavButtonLink = styled('a')({
   display: 'inline-flex',
   alignItems: 'center',
@@ -260,7 +224,7 @@ const NavButtonLink = styled('a')({
   boxSizing: 'border-box',
   height: 40,
   padding: '0 16px',
-  borderRadius: 12,
+  borderRadius: 9999,
   backgroundColor: creatorFundColors.primary,
   color: creatorFundColors.white,
   fontSize: 15,
@@ -295,9 +259,6 @@ export {
   NAVBAR_DESKTOP_QUERY,
   NAVBAR_HEIGHT,
   NavButtonLink,
-  PARALLAX_LIMIT,
-  PARALLAX_OFFSET_PROPERTY,
-  PARALLAX_SPEED,
   PrimaryButtonLink,
   RubyTile,
   SECTION_SCROLL_MARGIN,

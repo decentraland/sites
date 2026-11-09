@@ -65,7 +65,9 @@ const Hero = memo(() => {
         <HeroSubtitle>
           <SubtitleLine>{l('page.creator_fund.hero.subtitle')}</SubtitleLine>
           <SubtitleLine>
-            <strong>{l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd) })}</strong>{' '}
+            <strong>
+              {l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd), currency: betaProgram.currency })}
+            </strong>{' '}
             {l('page.creator_fund.hero.pool_text')}
           </SubtitleLine>
         </HeroSubtitle>

@@ -96,10 +96,10 @@
       "hero": {
         "eyebrow": "La Beta empieza el 15 nov",
         "title": "Creator Fund",
-        "title_highlight": "Cobra cuando la gente juega.",
-        "subtitle": "Atrae jugadores, mantenlos jugando y cobra en USDC.",
-        "pool_amount": "{pool}",
-        "pool_text": "en el fondo de la Beta Season, repartido en tres ciclos.",
+        "title_highlight": "Gana en Decentraland.",
+        "subtitle": "Recompensas para experiencias que atraen y retienen a jugadores reales.",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "en un fondo repartido en tres ciclos.",
         "fact_pool": "Fondo de la Beta Season",
         "fact_cycle": "Por ciclo",
         "fact_season": "Beta Season"
@@ -113,7 +113,7 @@
       },
       "how": {
         "title": "Cómo funciona",
-        "opt_in_title": "Inscríbete",
+        "opt_in_title": "Únete",
         "opt_in_link": "Descarga Creator Hub",
         "opt_in_text": " e inscríbete en el Creator Fund.",
         "build_title": "Construye",

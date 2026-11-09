@@ -7,17 +7,9 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import TollOutlinedIcon from '@mui/icons-material/TollOutlined'
+import { AnimatedBackground } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { useScrollParallax } from '../../../hooks/useScrollParallax'
-import {
-  CreatorFundSection,
-  DisplayTitle,
-  PARALLAX_LIMIT,
-  PARALLAX_OFFSET_PROPERTY,
-  PARALLAX_SPEED,
-  SectionInner,
-  creatorFundColors
-} from '../CreatorFund.styled'
+import { CreatorFundSection, DisplayTitle, SectionInner, creatorFundColors } from '../CreatorFund.styled'
 import { betaProgram } from '../data'
 import { PAYOUT_ICON_GRADIENT_ID, PayoutIconGradient, PayoutLabel, PayoutRow, PayoutTerms, PayoutValue } from './Payouts.styled'
 
@@ -34,7 +26,6 @@ const PAYOUT_ROWS = [
 
 const Payouts = memo(() => {
   const l = useFormatMessage()
-  const bandRef = useScrollParallax<HTMLElement>(PARALLAX_OFFSET_PROPERTY, PARALLAX_SPEED, PARALLAX_LIMIT)
   const values = {
     days: betaProgram.paymentWindowDays,
     currency: betaProgram.currency,
@@ -43,7 +34,8 @@ const Payouts = memo(() => {
   }
 
   return (
-    <CreatorFundSection id="payouts" band ref={bandRef}>
+    <CreatorFundSection id="payouts" band>
+      <AnimatedBackground variant="absolute" />
       {/* The red-orange gradient every label icon is painted with. */}
       <PayoutIconGradient aria-hidden="true" focusable="false">
         <defs>

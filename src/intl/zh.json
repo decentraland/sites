@@ -96,10 +96,10 @@
       "hero": {
         "eyebrow": "测试版 11 月 15 日开始",
         "title": "Creator Fund",
-        "title_highlight": "玩家在玩，你就有收益。",
-        "subtitle": "吸引玩家、留住玩家，用 USDC 赚取收益。",
-        "pool_amount": "{pool}",
-        "pool_text": "测试赛季奖池，将在三个周期内分配。",
+        "title_highlight": "在 Decentraland 赚取收益。",
+        "subtitle": "奖励那些能吸引并留住真实玩家的体验。",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "奖池将在三个周期内分配。",
         "fact_pool": "测试赛季奖池",
         "fact_cycle": "每个周期",
         "fact_season": "测试赛季"
@@ -113,7 +113,7 @@
       },
       "how": {
         "title": "运作方式",
-        "opt_in_title": "选择加入",
+        "opt_in_title": "加入",
         "opt_in_link": "下载 Creator Hub",
         "opt_in_text": "，并选择加入 Creator Fund。",
         "build_title": "创作",
