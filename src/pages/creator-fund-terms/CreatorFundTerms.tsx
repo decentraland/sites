@@ -38,18 +38,19 @@ const CreatorFundTerms = memo(() => (
         1.1 The Decentraland Creator Fund (the &quot;<strong>Program</strong>&quot;) is a reward program operated by Decentraland Foundation
         (the &quot;<strong>Foundation</strong>&quot;, &quot;<strong>we</strong>&quot;, &quot;<strong>us</strong>&quot;). It grants rewards
         (&quot;Creator Rewards&quot;, or &quot;Rewards&quot; in these Terms) to creators whose Decentraland experiences attract and retain
-        real players, measured against the criteria published in these Terms. In Program communications, Rewards may also be referred to as
-        &quot;payouts&quot; or &quot;Creator Fund payouts&quot;. This does not change their nature under Section 2.
+        real players, measured against the criteria published in these Terms and on the <ProgramRulesLink />. In Program communications,
+        Rewards may also be referred to as &quot;payouts&quot; or &quot;Creator Fund payouts&quot;. This does not change their nature under
+        Section 2.
       </Paragraph>
       <Paragraph>
         1.2 These Terms govern the Beta Season of the Program divided into payout periods (each a &quot;<strong>Cycle</strong>&quot;) as set
         out on the <ProgramRulesLink />. All Cycle dates and times are in UTC.
       </Paragraph>
       <Paragraph>
-        1.3 You join the Program by opting in through Creator Hub and signing these Terms with the wallet that owns your NAME or World. By
-        signing, you confirm that you have read and accept these Terms, the Decentraland Terms of Use (
+        1.3 You join the Program by opting in through Creator Hub and signing these Terms with the wallet that owns your LAND, NAME or
+        World. By signing, you confirm that you have read and accept these Terms, the Decentraland Terms of Use (
         <a href="/terms">decentraland.org/terms</a>, the &quot;Terms of Use&quot;), the Content Policy (
-        <a href="/content">decentraland.org/content</a>) and the Privacy Policy (<a href="/privacy">decentraland.org/privacy</a>), and the{' '}
+        <a href="/content">decentraland.org/content</a>), the Privacy Policy (<a href="/privacy">decentraland.org/privacy</a>) and the{' '}
         <ProgramRulesLink />, which form part of these Terms. These Terms are additional terms of participation issued by the Foundation
         under Section 1.3 of the Terms of Use. Under Section 19.1 of the Terms of Use, they prevail over the Terms of Use to the extent of
         any conflict on matters relating to the Program.
@@ -62,8 +63,8 @@ const CreatorFundTerms = memo(() => (
         1.5 Capitalised terms not defined in these Terms have the meaning given to them in the Decentraland Terms of Use.
       </Paragraph>
       <Paragraph>
-        1.6 These Terms apply only to the Creator Fund. Any other Decentraland program, now or in the future (for example the{' '}
-        <a href="/rewards-terms">Rewards Program</a>, <a href="/credits-terms">Credits</a> or the{' '}
+        1.6 <strong>These Terms apply only to the Creator Fund.</strong> Any other Decentraland program, now or in the future (for example
+        the <a href="/rewards-terms">Rewards Program</a>, <a href="/credits-terms">Credits</a> or the{' '}
         <a href="/referral-terms">Referral Program</a>), is separate and governed by its own terms. Those terms do not apply to the Creator
         Fund, and nothing earned under them counts toward Creator Rewards, unless the <ProgramRulesLink /> says otherwise. In these Terms,
         &quot;Rewards&quot; and &quot;Season&quot; refer only to Creator Fund rewards and seasons.
@@ -103,7 +104,7 @@ const CreatorFundTerms = memo(() => (
       <Paragraph>3.1 To take part, you must, at opt-in and for as long as you take part in the Program:</Paragraph>
       <BulletList as="ol">
         <li>be at least 18 years old, or the age of legal majority in your jurisdiction if higher (Terms of Use, Section 8);</li>
-        <li>own the NAME or World where your experience is deployed;</li>
+        <li>own the LAND, NAME or World where your experience is deployed;</li>
         <li>not be an Excluded Person under Section 3.2;</li>
         <li>be resident in a place where we can lawfully pay you in the currency you elected;</li>
         <li>
@@ -124,7 +125,7 @@ const CreatorFundTerms = memo(() => (
       <Paragraph>
         3.4 <strong>Verification.</strong> We may ask you to verify your identity, age or residence at any time, and will do so before
         paying further Rewards once your total Rewards in the Season exceed USD 5,000 or if we detect signals of fraud. If you do not
-        complete verification within 15 days, we may withhold and then cancel unpaid Rewards.
+        complete verification within 15 days, we cancel unpaid Rewards.
       </Paragraph>
       <Paragraph>
         3.5 <strong>Entities.</strong> If you accept these Terms on behalf of a company or other entity, you confirm that you are authorised
@@ -135,10 +136,10 @@ const CreatorFundTerms = memo(() => (
     <Section id="enrollment-and-payout-wallet">
       <SectionTitle>4. Enrollment and Payout Wallet</SectionTitle>
       <Paragraph>
-        4.1 <strong>Owner Wallet and opt-in.</strong> The wallet that owns your NAME or World (the &quot;Owner Wallet&quot;) signs these
-        Terms and is the participant in the Program. One opt-in covers every eligible NAME and World owned by that wallet, including any
-        experience you publish later, which joins when you next open the Creator Fund tab in Creator Hub. If you own NAMEs or Worlds through
-        more than one wallet, each wallet needs its own opt-in.
+        4.1 <strong>Owner Wallet and opt-in.</strong> The wallet that owns your LAND, NAME or World (the &quot;Owner Wallet&quot;) signs
+        these Terms and is the participant in the Program. One opt-in covers every eligible LAND, NAME and World owned by that wallet,
+        including any experience you publish later, which joins when you next open the Creator Fund tab in Creator Hub. If you own a LAND,
+        NAMEs or Worlds through more than one wallet, each wallet needs its own opt-in.
       </Paragraph>
       <Paragraph>
         4.2 <strong>Payout Wallet.</strong> Rewards are paid to the Payout Wallet you set in Creator Hub, which must be a wallet or exchange
@@ -153,33 +154,33 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         4.4 <strong>Teams and collaborators.</strong> If others help build or run your experience, the Owner Wallet is the only participant.
-        We pay only to the Payout Wallet on record for each of those Cycles, and how Rewards are shared is solely a matter between you and
-        your collaborators. You are responsible for complying with any law that applies to that arrangement, including labour and tax law
-        where your collaborators live. Collaborators, deployers and studios have no claim against the Foundation, and their only remedy in
-        any payment dispute is against you.
+        We pay only to the Payout Wallet on record, and how Rewards are shared is solely a matter between you and your collaborators. You
+        are responsible for complying with any law that applies to that arrangement, including labour and tax law where your collaborators
+        live. Collaborators, deployers and studios have no claim against the Foundation, and their only remedy in any payment dispute is
+        against you.
       </Paragraph>
       <Paragraph>
-        4.5 <strong>Transfer of a NAME or World.</strong> If a NAME or World is transferred during a Cycle, the Owner Wallet&apos;s
-        participation ends on the date of transfer, and that experience&apos;s activity in that Cycle does not count toward Rewards for
-        anyone. Rewards for Cycles completed before the transfer remain payable to the wallet that was the Owner Wallet when each of those
-        Cycles ended. Participation does not pass to the new owner, who may opt in and will count from the next Cycle. If you are moving the
-        NAME or World to another wallet you control, tell us before the transfer. We may, at our discretion, treat it as a continuation of
-        your participation.
+        4.5 <strong>Transfer of a LAND, NAME or World.</strong> If a LAND, NAME or World is transferred during a Cycle, the Owner
+        Wallet&apos;s participation for that LAND, NAME or World ends on the date of transfer, and that experience&apos;s activity in that
+        Cycle does not count toward Rewards for anyone. Rewards for Cycles completed before the transfer remain payable to the Payout Wallet
+        on record for each of those Cycles. Participation does not pass to the new owner, who may opt in and will count from the next Cycle.
+        If you are moving the LAND, NAME or World to another wallet you control, tell us before the transfer. We may, at our discretion,
+        treat it as a continuation of your participation.
       </Paragraph>
       <Paragraph>
         4.6 <strong>Joining during a Cycle.</strong> If you opt in during a Cycle, the whole Cycle counts toward your Rewards, including
-        activity before your opt-in, provided that you opt in before the Cycle ends and have owned the NAME or World for the entire Cycle.
-        Otherwise, your participation counts from the next Cycle. These Terms, including Sections 5 and 8, apply to that earlier activity as
-        if you had opted in when the Cycle started. Activity from earlier Cycles or before the Season does not count.
+        activity before your opt-in, provided that you opt in before the Cycle ends and have owned the LAND, NAME or World for the entire
+        Cycle. Otherwise, your participation counts from the next Cycle. These Terms, including Sections 5 and 8, apply to that earlier
+        activity as if you had opted in when the Cycle started. Activity from earlier Cycles or before the Season does not count.
       </Paragraph>
     </Section>
 
     <Section id="qualifying-experiences-and-players">
       <SectionTitle>5. Qualifying Experiences and Qualifying Players</SectionTitle>
       <Paragraph>
-        5.1 <strong>Qualifying Experience.</strong> An experience counts in a Cycle only if, throughout that Cycle, it complies with the
-        Terms of Use and the Content Policy, and does not include gambling or other content restricted to people aged 18 or older under
-        Sections 3 and 5 of the Content Policy.
+        5.1 <strong>Qualifying Experience.</strong> An experience counts in a Cycle only if, throughout that Cycle, it complies with the{' '}
+        <a href="/terms">Terms of Use</a> and the <a href="/content">Content Policy</a>, and does not include gambling or other content
+        restricted to people aged 18 or older under Sections 3 and 5 of the Content Policy.
       </Paragraph>
       <Paragraph>
         5.2 <strong>Qualifying Players.</strong> Only Qualifying Players count toward Rewards. A Qualifying Player is a player session that
@@ -188,7 +189,8 @@ const CreatorFundTerms = memo(() => (
       <Paragraph>
         5.3 <strong>Excluded activity.</strong> The following never count: (a) sessions by you, your collaborators or other Program
         participants; (b) sessions by Excluded Persons; (c) activity generated in breach of Section 8; (d) if a Rewards Program season runs
-        at the same time, visits rewarded under that program.
+        at the same time, visits rewarded under that program; and (e) players brought to your experience through advertising or campaigns
+        run by the Foundation or DCL Regenesis Labs Foundation.
       </Paragraph>
       <Paragraph>
         5.4 <strong>Classification is ours.</strong> Classification of sessions and players is carried out by the Foundation and its service
@@ -218,8 +220,8 @@ const CreatorFundTerms = memo(() => (
         described on the <ProgramRulesLink />. How we weigh, filter and combine them is determined by us and is not published.
       </Paragraph>
       <Paragraph>
-        6.3 <strong>Changes to the calculation.</strong> We may change the metrics described on the Program Rules page by updating that page
-        before the Cycle in which the change applies. We may adjust weighting and filtering at any time, including to correct errors or
+        6.3 <strong>Changes to the calculation.</strong> We may change the metrics described on the <ProgramRulesLink /> by updating that
+        page before the Cycle in which the change applies. We may adjust weighting and filtering at any time, including to correct errors or
         prevent abuse. Changes never affect Rewards already calculated.
       </Paragraph>
       <Paragraph>
@@ -241,7 +243,8 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         7.2 <strong>Minimum Reward.</strong> A Reward is payable only if it reaches the minimum set out on the <ProgramRulesLink />{' '}
-        (currently USD 5). Amounts below the minimum are not earned, are not carried forward and are not paid.
+        (currently USD 5). Amounts below the minimum are not earned, are not carried forward and are not paid. Your Reward for a Cycle is
+        the total for all your Qualifying Experiences.
       </Paragraph>
       <Paragraph>
         7.3 <strong>No balances.</strong> Each Cycle is calculated and paid on its own. No balance is carried between Cycles or Seasons, and
@@ -266,11 +269,11 @@ const CreatorFundTerms = memo(() => (
         8.1 <strong>Fair play.</strong> You must take part in the Program honestly. You must not, directly or through others, do anything
         that artificially inflates or manipulates your metrics or Rewards, misleads us, or undermines the fairness of the Program for other
         creators. This includes, for example: (a) generating activity through bots, scripts, fake or multiple accounts, or any other
-        non-genuine means; (b) splitting participation across several NAMEs, Worlds or wallets, or coordinating with others, to increase
-        Rewards or evade any limit or exclusion; (c) giving false or misleading declarations or information; and (d) misusing the review or
-        dispute process, or engaging in any conduct prohibited by Section 12.3 of the Terms of Use. Promoting your experience or paying or
-        rewarding real players to visit it is not by itself a breach of this Section, and those players count only if they are Qualifying
-        Players.
+        non-genuine means; (b) splitting participation across several LAND parcels, NAMEs, Worlds or wallets, or coordinating with others,
+        to increase Rewards or evade any limit or exclusion; (c) giving false or misleading declarations or information; and (d) misusing
+        the review or dispute process, or engaging in any conduct prohibited by Section 12.3 of the Terms of Use. Promoting your experience
+        or paying or rewarding real players to visit it is not by itself a breach of this Section, and those players count only if they are
+        Qualifying Players.
       </Paragraph>
       <Paragraph>
         8.2 <strong>What we may do.</strong> If we reasonably believe you have engaged in prohibited conduct or breached these Terms, we
@@ -293,10 +296,10 @@ const CreatorFundTerms = memo(() => (
         participants excluded for fraud.
       </Paragraph>
       <Paragraph>
-        8.6 <strong>Exclusion period.</strong> If we find that you did not cause the affected activity, we only disregard it. In any other
-        case, exclusion is permanent. It applies to you as a person or entity and to any wallet, NAME or World you control or that acts on
-        your behalf, and continues to apply under any later version of these Terms. Taking part through another wallet, NAME or World during
-        an exclusion is itself a breach of these Terms.
+        8.6 <strong>Exclusion period.</strong> If we find that you did not cause the affected activity, we only disregard it. Any exclusion
+        under Section 8.2 is permanent. It applies to you as a person or entity and to any wallet, LAND, NAME or World you control or that
+        acts on your behalf, and continues to apply under any later version of these Terms. Taking part through another wallet, LAND, NAME
+        or World during an exclusion is itself a breach of these Terms.
       </Paragraph>
     </Section>
 
@@ -309,7 +312,8 @@ const CreatorFundTerms = memo(() => (
       <Paragraph>
         9.2 Consistent with Sections 5.8 and 6.5 of the Terms of Use, Rewards are paid without deduction of tax and the Foundation does not
         act as a withholding agent. If a law that applies to the Foundation nonetheless requires it to collect tax information or withhold
-        tax on Rewards, we will tell you and may hold payment until you provide the information we need.
+        tax on Rewards, we will tell you and may hold payment until you provide the information we need. If you do not provide it within 15
+        days, the Reward is not earned and is not paid.
       </Paragraph>
       <Paragraph>
         9.3 We do not give tax advice. Nothing in the Program or these Terms is a representation about how Rewards are taxed.
@@ -334,10 +338,10 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         10.4 <strong>Publicity.</strong> You agree that we may display information about your experience and its results in the Program,
-        such as its scene name, NAME or World, thumbnail, rank, metrics, the Rewards awarded to it and the wallet and transaction through
-        which they were paid, in Program rankings, leaderboards and Decentraland communications about the Program. We will not publish your
-        contact name or email. You may ask us to stop using your name and thumbnail in new communications at any time; past rankings stay
-        published, and payment records on the blockchain are public and cannot be removed.
+        such as its scene name, LAND, NAME or World, thumbnail, rank, metrics and the Rewards awarded to it, in Program rankings,
+        leaderboards and Decentraland communications about the Program. We will not publish your contact name, email or wallet addresses.
+        You may ask us to stop using your scene name and thumbnail in new communications at any time; past rankings stay published. Payments
+        are recorded on a public blockchain.
       </Paragraph>
       <Paragraph>
         10.5 <strong>Your content.</strong> You keep all rights in your experience. The Program does not grant us any licence beyond those
