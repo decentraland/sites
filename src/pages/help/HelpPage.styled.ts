@@ -82,7 +82,10 @@ const HelpTabButtonsContainer = styled(Box)(({ theme }) => ({
   padding: `${theme.spacing(1.5)} ${theme.spacing(2)} ${theme.spacing(1.5)} 0`,
   [theme.breakpoints.down('sm')]: {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    // Three tabs don't fit one phone row; wrap them instead of breaking their labels.
+    flexWrap: 'wrap',
+    columnGap: theme.spacing(1)
   }
 }))
 
@@ -97,6 +100,7 @@ const HelpTabButton = styled(Button)<{ active?: boolean }>(({ theme, active }) =
   backgroundImage: 'none',
   color: active ? '#161518' : '#cfcdd4',
   textTransform: 'none',
+  whiteSpace: 'nowrap',
   fontSize: 14,
   fontWeight: 600,
   lineHeight: '17px',
@@ -152,6 +156,11 @@ const HelpSectionDescription = styled(Typography)({
     textDecoration: 'underline'
   }
 })
+
+// Support line under the Creator Fund questions.
+const CreatorFundContact = styled(HelpSectionDescription)(({ theme }) => ({
+  marginTop: theme.spacing(3)
+}))
 
 const FaqAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(1),
@@ -402,6 +411,7 @@ const ChatCtaButton = styled(Button)(({ theme }) => ({
 }))
 
 export {
+  CreatorFundContact,
   AccordionContainer,
   ChatCtaBanner,
   ChatCtaBannerContent,

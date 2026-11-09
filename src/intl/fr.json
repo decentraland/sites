@@ -708,7 +708,12 @@
           "title": "Centre d'aide",
           "paragraph": "Parcourez les FAQ et les Mises à jour du Support ou parlez directement avec l'Équipe Support via le chat en bas à droite.",
           "faq_button_label": "FAQ",
-          "support_updates_button_label": "MISES À JOUR DU SUPPORT"
+          "support_updates_button_label": "MISES À JOUR DU SUPPORT",
+          "creator_fund_button_label": "CREATOR FUND"
+        },
+        "creator_fund_section": {
+          "title": "Creator Fund",
+          "paragraph": "Réponses sur la Beta Season du Creator Fund."
         },
         "support_updates_section": {
           "title": "Mises à jour du Support",

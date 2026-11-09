@@ -708,7 +708,12 @@
           "title": "도움말 센터",
           "paragraph": "FAQ와 지원 업데이트를 검색하거나 오른쪽 하단의 채팅 상자를 사용하여 지원팀과 직접 대화하세요.",
           "faq_button_label": "FAQ",
-          "support_updates_button_label": "지원 업데이트"
+          "support_updates_button_label": "지원 업데이트",
+          "creator_fund_button_label": "CREATOR FUND"
+        },
+        "creator_fund_section": {
+          "title": "Creator Fund",
+          "paragraph": "Creator Fund 베타 시즌에 대한 질문과 답변입니다."
         },
         "support_updates_section": {
           "title": "지원 업데이트",
