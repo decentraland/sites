@@ -131,19 +131,19 @@
       },
       "real": {
         "title": "Jugadores reales. Juego real.",
-        "text": "Revisamos las experiencias en busca de bots y actividad falsa, lo que puede implicar pagos retenidos o la expulsión. Solo cuentan los jugadores reales en apps oficiales de Decentraland que cumplan los Términos de Uso."
+        "text": "Revisamos las experiencias en busca de bots y actividad falsa, lo que puede implicar pagos retenidos o la exclusión del Creator Fund. Solo cuentan los jugadores reales en apps oficiales de Decentraland que cumplan los Términos de Uso."
       },
       "eligibility": {
         "title": "Requisitos",
         "you_title": "Tú",
         "you_age": "Tienes al menos {age} años.",
-        "you_owner": "Eres dueño del NAME o Mundo donde está desplegada tu experiencia.",
+        "you_owner": "Eres dueño del LAND, NAME o Mundo donde está desplegada tu experiencia.",
         "you_sign": "Firmas los Términos del Programa con la wallet propietaria.",
         "you_terms": "Cumples los requisitos de elegibilidad de los Términos del Programa.",
         "scene_title": "Tu escena o Mundo",
         "scene_policy": "Cumple los Términos de Uso y la Política de Contenido de Decentraland durante todo el ciclo.",
         "scene_content": "No contiene apuestas ni otro contenido restringido para mayores de 18 años.",
-        "scene_removed": "Deja de contar si se elimina, se hace privada o se transfiere."
+        "scene_removed": "Deja de contar si se elimina o se transfiere."
       },
       "rewards": {
         "title": "Pagos",
@@ -179,17 +179,17 @@
       "faq": {
         "title": "Preguntas frecuentes",
         "join_question": "¿Cómo me uno?",
-        "join_answer": "La inscripción abre en Creator Hub el 11 de noviembre. Debes tener al menos 18 años y ser dueño del NAME o Mundo donde está desplegada tu experiencia. Firma los Términos del Programa con la wallet propietaria; una inscripción cubre todos los NAME y Mundos elegibles de esa wallet.",
+        "join_answer": "La inscripción abre en Creator Hub el 11 de noviembre. Debes tener al menos 18 años y ser dueño del LAND, NAME o Mundo donde está desplegada tu experiencia. Firma los Términos del Programa con la wallet propietaria; una inscripción cubre todos los LAND, NAME y Mundos elegibles de esa wallet.",
         "rewards_question": "¿Cómo se deciden las recompensas?",
         "rewards_answer": "La asignación de cada ciclo se reparte entre las experiencias que califican según el tiempo de juego activo, la retención de jugadores y los nuevos jugadores de Decentraland. Las métricas de Creator Hub son informativas; las recompensas finales se calculan tras la revisión y un filtrado adicional, por lo que las cifras usadas pueden diferir de tu panel.",
         "worlds_question": "¿Cuentan los Mundos?",
-        "worlds_answer": "Sí. Cuentan tanto las Escenas en Genesis City como los Mundos públicos.",
+        "worlds_answer": "Sí. Cuentan tanto las Escenas en Genesis City como los Mundos.",
         "wallet_question": "¿Puedo usar una wallet de pago personalizada?",
         "wallet_answer": "Sí. Las recompensas se pagan a la wallet de pago que configures en Creator Hub, que puede ser cualquier wallet o cuenta de exchange que controles. Si no la has configurado 7 días después de que termine un ciclo, se pierde el pago de la recompensa.",
-        "transfer_question": "¿Qué pasa si transfiero mi NAME o Mundo durante un ciclo?",
+        "transfer_question": "¿Qué pasa si transfiero mi LAND, NAME o Mundo durante un ciclo?",
         "transfer_answer": "Una experiencia deja de contar desde el momento en que se transfiere. Los Términos del Programa rigen la elegibilidad y los pagos, y una transferencia no traspasa el pago al nuevo propietario.",
         "runs_question": "¿Quién gestiona el Creator Fund?",
-        "runs_answer": "El Creator Fund fue creado y está financiado por Regenesis Labs y la Decentraland Foundation. Lo opera la Decentraland Foundation.",
+        "runs_answer": "El Creator Fund fue creado y está financiado por DCL Regenesis Labs Foundation y la Decentraland Foundation. Lo opera la Decentraland Foundation.",
         "after_question": "¿Qué pasa después de la Beta Season?",
         "after_answer": "La Season 1 está prevista de enero a marzo de 2027. Las fechas y novedades se confirmarán el 28 de diciembre.",
         "grant_question": "¿Es una subvención?",

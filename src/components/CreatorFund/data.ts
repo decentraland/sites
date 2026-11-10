@@ -135,10 +135,6 @@ const CLICK_SECTIONS = {
 // Roustan's quote is shortened from the design's two longer sentences.
 const builderQuotes: BuilderQuote[] = [
   {
-    name: 'Stom',
-    quote: 'Getting paid repeatedly makes you feel like you’re actually building something professionally.'
-  },
-  {
     name: 'Roustan',
     image: roustanAvatar,
     quote: 'Building in Decentraland let me cut out all the middlemen. I grew a community and following faster than anything IRL ever did.'
@@ -153,10 +149,11 @@ const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
 const CREATOR_HUB_DOWNLOAD_PATH = '/download/creator-hub'
 
-// Program Rules live on the docs site (decentraland/docs: creator/creator-fund/program-rules.md);
-// Program Terms are the /creator-fund-terms page on decentraland.org.
+// Program Rules and Program Terms are two separate pages. The rules live on the docs site
+// (/creator/creator-fund/program-rules redirects to the docs page); the terms are this site's
+// legal page at /creator-fund-terms, linked relatively so each environment opens its own copy.
 const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
-const CREATOR_FUND_TERMS_URL = 'https://decentraland.org/creator-fund-terms'
+const CREATOR_FUND_TERMS_URL = '/creator-fund-terms'
 
 export {
   CLICK_SECTIONS,

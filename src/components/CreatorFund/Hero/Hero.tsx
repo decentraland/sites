@@ -37,8 +37,8 @@ const Hero = memo(() => {
   const poster = isMobile ? heroData.imagePortrait : heroData.imageLandscape
 
   const facts = [
-    { value: formatUsd(betaProgram.seasonPoolUsd), label: l('page.creator_fund.hero.fact_pool') },
-    { value: formatUsd(betaProgram.cycles[0].allocationUsd), label: l('page.creator_fund.hero.fact_cycle') },
+    { value: `${formatUsd(betaProgram.seasonPoolUsd)} ${betaProgram.currency}`, label: l('page.creator_fund.hero.fact_pool') },
+    { value: `${formatUsd(betaProgram.cycles[0].allocationUsd)} ${betaProgram.currency}`, label: l('page.creator_fund.hero.fact_cycle') },
     { value: l('page.creator_fund.hero.fact_start_value'), label: l('page.creator_fund.hero.fact_start') }
   ]
 

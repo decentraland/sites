@@ -52,13 +52,13 @@ const BuilderSlide = memo(({ builder, perPage }: BuilderSlideProps) => (
 
 BuilderSlide.displayName = 'BuilderSlide'
 
-// "Meet Decentraland Builders": creator quotes below the FAQ. Three same-size cards in a row on
-// desktop; one card per page on mobile, with arrows and page dots.
+// "Meet Decentraland Builders": creator quotes below the FAQ. Same-size cards in one row on desktop
+// (up to three); one card per page on mobile, with arrows and page dots.
 const Builders = memo(() => {
   const l = useFormatMessage()
   const trackClick = useUnloadSafeTrackClick()
   const isMobile = useMediaQuery('(max-width: 767px)')
-  const perPage = isMobile ? 1 : 3
+  const perPage = Math.min(isMobile ? 1 : 3, builderQuotes.length)
   // One "page" per possible first visible card, so the last page is never half empty.
   const pageCount = Math.max(builderQuotes.length - perPage + 1, 1)
   const [requestedPage, setRequestedPage] = useState(0)

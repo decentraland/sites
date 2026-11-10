@@ -201,6 +201,11 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'Mac' })).toHaveAttribute('href', getDownloadUrl('apple'))
   })
 
+  it('should state the hero fact amounts in USDC', () => {
+    expect(screen.getByText('$30,000 USDC')).toBeInTheDocument()
+    expect(screen.getByText('$10,000 USDC')).toBeInTheDocument()
+  })
+
   it('should show the three hero facts from the design', () => {
     expect(screen.getByText('page.creator_fund.hero.fact_pool')).toBeInTheDocument()
     expect(screen.getByText('page.creator_fund.hero.fact_cycle')).toBeInTheDocument()
@@ -328,8 +333,8 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'page.creator_fund.join.see_terms' })).toHaveAttribute('href', CREATOR_FUND_TERMS_URL)
   })
 
-  it('should keep the Program Terms on decentraland.org and the Program Rules on the docs site', () => {
-    expect(CREATOR_FUND_TERMS_URL).toBe('https://decentraland.org/creator-fund-terms')
+  it('should link the Program Terms on this site and the Program Rules on the docs site', () => {
+    expect(CREATOR_FUND_TERMS_URL).toBe('/creator-fund-terms')
     expect(CREATOR_FUND_RULES_URL).toBe('https://docs.decentraland.org/creator/creator-fund/program-rules')
   })
 

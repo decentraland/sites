@@ -131,19 +131,19 @@
       },
       "real": {
         "title": "真实玩家，真实游玩。",
-        "text": "我们会审查体验是否存在机器人和虚假活动，违规可能导致发放被扣留或被移出。仅统计在 Decentraland 官方应用中遵守服务条款的真实玩家。"
+        "text": "我们会审查体验是否存在机器人和虚假活动，违规可能导致发放被扣留或被移出 Creator Fund。仅统计在 Decentraland 官方应用中遵守服务条款的真实玩家。"
       },
       "eligibility": {
         "title": "参与资格",
         "you_title": "你",
         "you_age": "年满 {age} 岁。",
-        "you_owner": "拥有部署你的体验的 NAME 或 World。",
+        "you_owner": "拥有部署你的体验的 LAND、NAME 或 World。",
         "you_sign": "使用所有者钱包签署计划条款。",
         "you_terms": "符合计划条款中的参与资格要求。",
         "scene_title": "你的场景或 World",
         "scene_policy": "在整个周期内遵守 Decentraland 使用条款和内容政策。",
         "scene_content": "不含赌博或其他限制 18 岁以上的内容。",
-        "scene_removed": "若被删除、设为私有或转让，将不再计入。"
+        "scene_removed": "若被删除或转让，将不再计入。"
       },
       "rewards": {
         "title": "发放",
@@ -179,17 +179,17 @@
       "faq": {
         "title": "常见问题",
         "join_question": "如何加入？",
-        "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 NAME 或 World。请使用所有者钱包签署计划条款；一次加入即涵盖该钱包拥有的所有符合条件的 NAME 和 World。",
+        "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 LAND、NAME 或 World。请使用所有者钱包签署计划条款；一次加入即涵盖该钱包拥有的所有符合条件的 LAND、NAME 和 World。",
         "rewards_question": "奖励如何决定？",
         "rewards_answer": "每个周期的分配额将根据活跃游玩时长、玩家留存和 Decentraland 新玩家数量，在符合条件的体验之间分配。Creator Hub 的指标仅供参考：最终奖励在审核和进一步筛选后计算，因此所用数据可能与你的仪表盘不同。",
         "worlds_question": "Worlds 也计入吗？",
-        "worlds_answer": "是的。Genesis City 中的场景和公开的 Worlds 均计入。",
+        "worlds_answer": "是的。Genesis City 中的场景和 Worlds 均计入。",
         "wallet_question": "可以使用自定义收款钱包吗？",
         "wallet_answer": "可以。奖励将发放到你在 Creator Hub 中设置的收款钱包，可以是你控制的任何钱包或交易所账户。如果在周期结束 7 天后仍未设置，该笔奖励发放将作废。",
-        "transfer_question": "如果我在周期内转让 NAME 或 World 会怎样？",
+        "transfer_question": "如果我在周期内转让 LAND、NAME 或 World 会怎样？",
         "transfer_answer": "体验自转让之时起不再计入。参与资格和发放以计划条款为准，转让不会将发放权益转给新所有者。",
         "runs_question": "Creator Fund 由谁运营？",
-        "runs_answer": "Creator Fund 由 Regenesis Labs 与 Decentraland Foundation 共同创立并出资，由 Decentraland Foundation 负责运营。",
+        "runs_answer": "Creator Fund 由 DCL Regenesis Labs Foundation 与 Decentraland Foundation 共同创立并出资，由 Decentraland Foundation 负责运营。",
         "after_question": "测试赛季之后会怎样？",
         "after_answer": "第 1 赛季计划于 2027 年 1 月至 3 月进行。日期及更新将于 12 月 28 日确认。",
         "grant_question": "这是资助吗？",

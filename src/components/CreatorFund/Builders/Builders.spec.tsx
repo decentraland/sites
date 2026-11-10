@@ -99,11 +99,11 @@ describe('Builders', () => {
 
     describe('and a page dot is clicked', () => {
       beforeEach(() => {
-        fireEvent.click(slideButton(3))
+        fireEvent.click(slideButton(builderQuotes.length))
       })
 
       it('should jump to that page', () => {
-        expect(currentSlide()).toEqual([slideButton(3)])
+        expect(currentSlide()).toEqual([slideButton(builderQuotes.length)])
       })
     })
   })
