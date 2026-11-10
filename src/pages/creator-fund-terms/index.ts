@@ -1,0 +1,1 @@
+export { CreatorFundTerms } from './CreatorFundTerms'

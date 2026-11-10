@@ -1,0 +1,97 @@
+import { memo } from 'react'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import CheckIcon from '@mui/icons-material/Check'
+import { useMediaQuery } from 'decentraland-ui2'
+import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
+import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
+import { DownloadTarget } from '../../../modules/segment'
+import { heroData } from '../../Create/data'
+import { Video } from '../../Video'
+import { clickTrackingAttributes, formatUsd } from '../CreatorFund.helpers'
+import { PrimaryButtonLink, RubyTile } from '../CreatorFund.styled'
+import { CLICK_SECTIONS, CREATOR_HUB_DOWNLOAD_PATH, betaProgram } from '../data'
+import {
+  EyebrowDot,
+  FactCard,
+  FactLabel,
+  FactValue,
+  FactsGrid,
+  HeroActions,
+  HeroContent,
+  HeroEyebrow,
+  HeroOverlay,
+  HeroSection,
+  HeroSubtitle,
+  HeroTitle,
+  HeroTitleHighlight,
+  HeroVideo,
+  SubtitleLine
+} from './Hero.styled'
+
+const Hero = memo(() => {
+  const l = useFormatMessage()
+  const trackClick = useUnloadSafeTrackClick()
+  // Same footage as the /create hero, so the two creator pages read as one.
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const video = isMobile ? heroData.videoPortrait : heroData.videoLandscape
+  const poster = isMobile ? heroData.imagePortrait : heroData.imageLandscape
+
+  const facts = [
+    { value: formatUsd(betaProgram.seasonPoolUsd), label: l('page.creator_fund.hero.fact_pool') },
+    { value: formatUsd(betaProgram.cycles[0].allocationUsd), label: l('page.creator_fund.hero.fact_cycle') },
+    { value: l('page.creator_fund.hero.fact_start_value'), label: l('page.creator_fund.hero.fact_start') }
+  ]
+
+  return (
+    <HeroSection id="overview">
+      <HeroVideo>
+        <Video loop muted autoPlay playsInline width={video.width} height={video.height} poster={poster.url} source={video.url} />
+      </HeroVideo>
+      <HeroOverlay />
+      <HeroContent>
+        <HeroEyebrow>
+          <EyebrowDot />
+          {l('page.creator_fund.hero.eyebrow')}
+        </HeroEyebrow>
+        <HeroTitle>
+          {l('page.creator_fund.hero.title')}
+          <br />
+          <HeroTitleHighlight>{l('page.creator_fund.hero.title_highlight')}</HeroTitleHighlight>
+        </HeroTitle>
+        <HeroSubtitle>
+          <SubtitleLine>{l('page.creator_fund.hero.subtitle')}</SubtitleLine>
+          <SubtitleLine>
+            <strong>{l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd) })}</strong>{' '}
+            {l('page.creator_fund.hero.pool_text', { currency: betaProgram.currency })}
+          </SubtitleLine>
+        </HeroSubtitle>
+        <HeroActions>
+          <PrimaryButtonLink
+            href={CREATOR_HUB_DOWNLOAD_PATH}
+            {...clickTrackingAttributes(CLICK_SECTIONS.hero, 'Join From Creator Hub', DownloadTarget.CREATOR_HUB)}
+            onClick={trackClick}
+          >
+            {l('page.creator_fund.cta.join')}
+          </PrimaryButtonLink>
+        </HeroActions>
+        <FactsGrid>
+          {facts.map(fact => (
+            <FactCard key={fact.label}>
+              <RubyTile size="small">
+                <CheckIcon />
+              </RubyTile>
+              <div>
+                <FactValue>{fact.value}</FactValue>
+                <FactLabel>{fact.label}</FactLabel>
+              </div>
+            </FactCard>
+          ))}
+        </FactsGrid>
+      </HeroContent>
+    </HeroSection>
+  )
+})
+
+Hero.displayName = 'Hero'
+
+export { Hero }

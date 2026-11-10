@@ -1,37 +1,50 @@
-import { memo } from 'react'
-import { useMediaQuery } from 'decentraland-ui2'
-import { heroData } from '../../components/Create/data'
-import { HeroBackground, HeroContent, HeroSection, HeroTitle } from '../../components/Create/Hero/Hero.styled'
-import { Video } from '../../components/Video'
-import { useFormatMessage } from '../../hooks/adapters/useFormatMessage'
-import { CreatorFundOverlay } from './CreatorFundPage.styled'
+import { Suspense, memo, useEffect } from 'react'
+import { Env } from '@dcl/ui-env'
+import { CreatorFundComingSoon } from '../../components/CreatorFund/ComingSoon'
+import { Layout } from '../../components/Layout'
+import { getCurrentEnv } from '../../config/env'
+import { lazyWithRetry } from '../../utils/lazyWithRetry'
+import { LandingFallback } from './CreatorFundPage.styled'
 
-// Coming-soon placeholder for the Creator Fund. Deliberately carries no program
-// details (dates, pool, rules) until they are announced. Reuses the /create hero
-// (same video, layout and type scale) so the two creator pages read as one.
+// Browser tab title, on both the coming-soon view and the full page.
+const CREATOR_FUND_TITLE = 'Decentraland Creator Fund'
+
+// Its own chunk, so decentraland.org visitors never download the full page.
+const CreatorFundLanding = lazyWithRetry(() =>
+  import('../../components/CreatorFund/CreatorFundLanding').then(m => ({ default: m.CreatorFundLanding }))
+)
+
+// NOTE: environment gate. decentraland.org keeps the coming-soon placeholder (with the
+// site navbar) until the program is announced; every other environment (decentraland.zone,
+// .today, Vercel previews, localhost) renders the full page, whose own Creator Fund navbar
+// replaces the site one. On launch, drop the gate and CreatorFundComingSoon, and render
+// CreatorFundLanding everywhere.
 const CreatorFundPage = memo(() => {
-  const l = useFormatMessage()
-  const isMobile = useMediaQuery('(max-width: 767px)')
-  const video = isMobile ? heroData.videoPortrait : heroData.videoLandscape
-  const poster = isMobile ? heroData.imagePortrait : heroData.imageLandscape
+  useEffect(() => {
+    const previous = document.title
+    document.title = CREATOR_FUND_TITLE
+    return () => {
+      document.title = previous
+    }
+  }, [])
+
+  if (getCurrentEnv() === Env.PRODUCTION) {
+    return (
+      <Layout>
+        <CreatorFundComingSoon />
+      </Layout>
+    )
+  }
 
   return (
-    <HeroSection>
-      <HeroBackground>
-        <Video loop muted autoPlay playsInline width={video.width} height={video.height} poster={poster.url} source={video.url} />
-      </HeroBackground>
-      <CreatorFundOverlay />
-      <HeroContent>
-        <HeroTitle variant="h1">
-          {l('page.creator_fund.title')}
-          <br />
-          <span>{l('page.creator_fund.coming_soon')}</span>
-        </HeroTitle>
-      </HeroContent>
-    </HeroSection>
+    <Layout withNavbar={false}>
+      <Suspense fallback={<LandingFallback />}>
+        <CreatorFundLanding />
+      </Suspense>
+    </Layout>
   )
 })
 
 CreatorFundPage.displayName = 'CreatorFundPage'
 
-export { CreatorFundPage }
+export { CREATOR_FUND_TITLE, CreatorFundPage }

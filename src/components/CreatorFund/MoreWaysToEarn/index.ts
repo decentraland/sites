@@ -1,0 +1,1 @@
+export { MoreWaysToEarn } from './MoreWaysToEarn'

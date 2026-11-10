@@ -145,6 +145,15 @@ const dclColors = {
     primaryDark2: '#D80029',
     primaryLight1: '#F8919D',
     primaryLight2: '#FFC9D5'
+  },
+  brand: {
+    yellow: '#FFBC5B',
+    melon: '#FFA25A',
+    orange: '#FF7439',
+    ruby: '#FF2D55',
+    lavender: '#C640CD',
+    violet: '#A524B3',
+    purple: '#691FA9'
   }
 }
 
