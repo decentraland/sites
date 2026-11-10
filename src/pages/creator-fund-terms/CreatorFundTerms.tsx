@@ -35,12 +35,12 @@ const CreatorFundTerms = memo(() => (
     <Section id="about-the-program">
       <SectionTitle>1. About the Program and these Terms</SectionTitle>
       <Paragraph>
-        1.1 The Decentraland Creator Fund (the &quot;<strong>Program</strong>&quot;) is a reward program operated by Decentraland Foundation
-        (the &quot;<strong>Foundation</strong>&quot;, &quot;<strong>we</strong>&quot;, &quot;<strong>us</strong>&quot;). It grants rewards
-        (&quot;Creator Rewards&quot;, or &quot;Rewards&quot; in these Terms) to creators whose Decentraland experiences attract and retain
-        real players, measured against the criteria published in these Terms and on the <ProgramRulesLink />. In Program communications,
-        Rewards may also be referred to as &quot;payouts&quot; or &quot;Creator Fund payouts&quot;. This does not change their nature under
-        Section 2.
+        1.1 The <a href="/creator-fund">Decentraland Creator Fund</a> (the &quot;<strong>Program</strong>&quot;) is a reward program
+        operated by Decentraland Foundation (the &quot;<strong>Foundation</strong>&quot;, &quot;<strong>we</strong>&quot;, &quot;
+        <strong>us</strong>&quot;). It grants rewards (&quot;Creator Rewards&quot;, or &quot;Rewards&quot; in these Terms) to creators whose
+        Decentraland experiences attract and retain real players, measured against the criteria published in these Terms and on the{' '}
+        <ProgramRulesLink />. In Program communications, Rewards may also be referred to as &quot;payouts&quot; or &quot;Creator Fund
+        payouts&quot;. This does not change their nature under Section 2.
       </Paragraph>
       <Paragraph>
         1.2 These Terms govern the Beta Season of the Program divided into payout periods (each a &quot;<strong>Cycle</strong>&quot;) as set

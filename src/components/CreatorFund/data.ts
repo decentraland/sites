@@ -151,10 +151,11 @@ const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
 const CREATOR_HUB_DOWNLOAD_PATH = '/download/creator-hub'
 
-// Program Rules and Program Terms are two separate pages on the docs site
-// (decentraland/docs: creator/creator-fund/program-rules.md and program-terms.md).
+// Program Rules and Program Terms are two separate pages. The rules live on the docs site
+// (decentraland/docs: creator/creator-fund/program-rules.md); the terms are this site's
+// legal page at /creator-fund-terms (https://decentraland.org/creator-fund-terms).
 const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
-const CREATOR_FUND_TERMS_URL = 'https://docs.decentraland.org/creator/creator-fund/program-terms'
+const CREATOR_FUND_TERMS_URL = '/creator-fund-terms'
 
 export {
   CLICK_SECTIONS,
