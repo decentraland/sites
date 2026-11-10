@@ -25,10 +25,10 @@ const CreatorFundLanding = memo(() => (
     <Payouts />
     <Eligibility />
     <Schedule />
-    <Builders />
     <MoreWaysToEarn />
     <Join />
     <Faq />
+    <Builders />
   </LandingRoot>
 ))
 

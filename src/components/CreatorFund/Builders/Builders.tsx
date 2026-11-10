@@ -52,7 +52,7 @@ const BuilderSlide = memo(({ builder, perPage }: BuilderSlideProps) => (
 
 BuilderSlide.displayName = 'BuilderSlide'
 
-// "Meet Decentraland Builders": creator quotes right above More Ways To Earn. Same-size cards in one row on desktop
+// "Meet Decentraland Builders": creator quotes at the bottom of the page, after the FAQ. Same-size cards in one row on desktop
 // (up to three); one card per page on mobile, with arrows and page dots.
 const Builders = memo(() => {
   const l = useFormatMessage()
