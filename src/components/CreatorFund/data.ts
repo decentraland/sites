@@ -131,7 +131,7 @@ const CLICK_SECTIONS = {
   finalCta: 'final-cta'
 } as const
 
-// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown right above the FAQ.
+// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown between the Beta Schedule and More Ways To Earn.
 // Roustan's quote is shortened from the design's two longer sentences.
 const builderQuotes: BuilderQuote[] = [
   {

@@ -283,19 +283,18 @@ describe('CreatorFundLanding', () => {
       .forEach(term => expect(term.tagName).toBe('STRONG'))
   })
 
-  it('should show the other ways to earn right after the schedule', () => {
+  it('should show the builders right after the schedule', () => {
     const schedule = document.getElementById('dates') as HTMLElement
-    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' })
-
-    expect(schedule.compareDocumentPosition(moreWays) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(schedule.contains(moreWays)).toBe(false)
-  })
-
-  it('should show the builders right before the FAQ', () => {
-    const faq = document.getElementById('faq') as HTMLElement
     const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' }).closest('section') as HTMLElement
 
-    expect(builders.nextElementSibling).toBe(faq)
+    expect(schedule.nextElementSibling).toBe(builders)
+  })
+
+  it('should show the builders right above the other ways to earn', () => {
+    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' }).closest('section') as HTMLElement
+    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' }).closest('section') as HTMLElement
+
+    expect(builders.nextElementSibling).toBe(moreWays)
   })
 
   it('should show a quote for every builder', () => {
