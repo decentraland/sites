@@ -2,7 +2,7 @@ import { memo, useEffect } from 'react'
 import { BulletList, LegalPageLayout, Paragraph, Section, SectionTitle } from '../../components/LegalPage'
 import type { TOCEntry } from '../../components/LegalPage'
 
-// DRAFT: text from the "Creator Fund — Program Terms (Beta Season)" legal draft, with the Nov 10
+// Text from the "Creator Fund — Program Terms (Beta Season)" legal doc, with the Nov 10
 // corrections. The values that were bracketed (7 and 14 days, 6 months) are now confirmed.
 const PROGRAM_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
 
@@ -45,7 +45,6 @@ const CreatorFundTerms = memo(() => (
   <LegalPageLayout title="Creator Fund" activeSlug="/creator-fund-terms" tableOfContents={TABLE_OF_CONTENTS}>
     <TabTitle />
     <Paragraph>Terms and Conditions (Beta Season)</Paragraph>
-    <Paragraph>Draft</Paragraph>
 
     <Section id="about-the-program">
       <SectionTitle>1. About the Program and these Terms</SectionTitle>
