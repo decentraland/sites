@@ -13,7 +13,6 @@ import {
   HelpTabButtonsContainer,
   MobileStatusWrapper
 } from '../../pages/help/HelpPage.styled'
-import { isCreatorFundContentEnabled } from '../CreatorFund/CreatorFund.visibility'
 import { FaqIcon, SupportIcon } from '../Icons'
 import { StatusDropdown } from './StatusDropdown'
 import type { Service } from './utils'
@@ -60,13 +59,11 @@ const HelpCenterSection = ({ activeTab, setTab, serviceList }: HelpCenterSection
           <SupportIcon dark={activeTab === HelpTab.SUPPORT_UPDATES} />
           {t('component.landing.help.center.support_updates_button_label')}
         </HelpTabButton>
-        {isCreatorFundContentEnabled() && (
-          <HelpTabButton active={activeTab === HelpTab.CREATOR_FUND} onClick={handleTabClick(HelpTab.CREATOR_FUND)}>
-            {/* Same light/dark swap as the FAQ and Support icons. */}
-            <TollOutlinedIcon htmlColor={activeTab === HelpTab.CREATOR_FUND ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite} />
-            {t('component.landing.help.center.creator_fund_button_label')}
-          </HelpTabButton>
-        )}
+        <HelpTabButton active={activeTab === HelpTab.CREATOR_FUND} onClick={handleTabClick(HelpTab.CREATOR_FUND)}>
+          {/* Same light/dark swap as the FAQ and Support icons. */}
+          <TollOutlinedIcon htmlColor={activeTab === HelpTab.CREATOR_FUND ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite} />
+          {t('component.landing.help.center.creator_fund_button_label')}
+        </HelpTabButton>
       </HelpTabButtonsContainer>
     </HelpSidebar>
   )

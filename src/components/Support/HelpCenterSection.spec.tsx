@@ -1,13 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { isCreatorFundContentEnabled } from '../CreatorFund/CreatorFund.visibility'
 import { HelpCenterSection, HelpTab } from './HelpCenterSection'
 
 jest.mock('@dcl/hooks', () => ({
   useTranslation: () => ({ t: (key: string) => key })
-}))
-
-jest.mock('../CreatorFund/CreatorFund.visibility', () => ({
-  isCreatorFundContentEnabled: jest.fn()
 }))
 
 jest.mock('./StatusDropdown', () => ({
@@ -29,13 +24,14 @@ describe('HelpCenterSection', () => {
     jest.resetAllMocks()
   })
 
-  describe('when the Creator Fund content is enabled', () => {
+  describe('when the help center renders', () => {
     beforeEach(() => {
-      ;(isCreatorFundContentEnabled as jest.Mock).mockReturnValue(true)
       render(<HelpCenterSection activeTab={HelpTab.FAQ} setTab={setTab} serviceList={[]} />)
     })
 
-    it('should offer a Creator Fund tab', () => {
+    it('should offer the FAQ, Support Updates and Creator Fund tabs', () => {
+      expect(screen.getByRole('button', { name: 'component.landing.help.center.faq_button_label' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'component.landing.help.center.support_updates_button_label' })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: CREATOR_FUND_TAB })).toBeInTheDocument()
     })
 
@@ -43,22 +39,6 @@ describe('HelpCenterSection', () => {
       fireEvent.click(screen.getByRole('button', { name: CREATOR_FUND_TAB }))
 
       expect(setTab).toHaveBeenCalledWith(HelpTab.CREATOR_FUND)
-    })
-  })
-
-  describe('when the Creator Fund content is not enabled yet (decentraland.org)', () => {
-    beforeEach(() => {
-      ;(isCreatorFundContentEnabled as jest.Mock).mockReturnValue(false)
-      render(<HelpCenterSection activeTab={HelpTab.FAQ} setTab={setTab} serviceList={[]} />)
-    })
-
-    it('should not offer a Creator Fund tab', () => {
-      expect(screen.queryByRole('button', { name: CREATOR_FUND_TAB })).not.toBeInTheDocument()
-    })
-
-    it('should keep the FAQ and Support Updates tabs', () => {
-      expect(screen.getByRole('button', { name: 'component.landing.help.center.faq_button_label' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'component.landing.help.center.support_updates_button_label' })).toBeInTheDocument()
     })
   })
 })
