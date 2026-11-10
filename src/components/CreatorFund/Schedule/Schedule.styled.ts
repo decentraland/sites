@@ -1,5 +1,5 @@
 import { Box, styled } from 'decentraland-ui2'
-import { DisplayTitle, Eyebrow, creatorFundColors, labelStyles, purpleGradient, rubyGradient } from '../CreatorFund.styled'
+import { DisplayTitle, Eyebrow, creatorFundColors, labelStyles, rubyGradient } from '../CreatorFund.styled'
 
 const ScheduleTitle = styled(DisplayTitle)({
   maxWidth: 768
@@ -26,7 +26,7 @@ const CycleSegment = styled('span', {
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: 9999,
-  background: alternate ? purpleGradient : rubyGradient,
+  background: alternate ? creatorFundColors.purpleDeep : rubyGradient,
   color: creatorFundColors.white,
   fontSize: 10,
   fontWeight: 600,

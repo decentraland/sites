@@ -1,5 +1,9 @@
 import { styled } from 'decentraland-ui2'
-import { CardTitle, DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
+import { CardTitle, CreatorFundSection, DisplayTitle, SolidCard, creatorFundColors } from '../CreatorFund.styled'
+
+const EligibilitySection = styled(CreatorFundSection)({
+  backgroundColor: creatorFundColors.eligibilitySurface
+})
 
 const EligibilityTitle = styled(DisplayTitle)({
   maxWidth: 768
@@ -42,4 +46,4 @@ const Requirement = styled('li')(({ theme }) => ({
   }
 }))
 
-export { CardTitle, EligibilityCard, EligibilityGrid, EligibilityTitle, Requirement, RequirementList }
+export { CardTitle, EligibilityCard, EligibilitySection, EligibilityGrid, EligibilityTitle, Requirement, RequirementList }

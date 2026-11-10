@@ -96,24 +96,26 @@
       "hero": {
         "eyebrow": "La Beta empieza el 15 nov",
         "title": "Creator Fund",
-        "title_highlight": "Cobra cuando la gente juega.",
-        "subtitle": "Atrae jugadores, mantenlos jugando y cobra en USDC.",
-        "pool_amount": "{pool}",
-        "pool_text": "en el fondo de la Beta Season, repartido en tres ciclos.",
-        "fact_pool": "Fondo de la Beta Season",
-        "fact_cycle": "Por ciclo",
-        "fact_season": "Beta Season"
+        "title_highlight": "Gana en Decentraland.",
+        "subtitle": "Recompensas para experiencias que atraen y retienen a jugadores reales.",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "en un fondo repartido en tres ciclos.",
+        "fact_pool": "En recompensas de la Beta Season",
+        "fact_cycle": "Se reparte cada ciclo",
+        "fact_start_value": "15 nov",
+        "fact_start": "Empieza la Beta Season"
       },
       "why": {
         "title": "Decentraland",
         "visit": "Visita Decentraland",
         "subtitle": "Un mundo de juegos sociales creado y gestionado por su comunidad.",
+        "awarded": "$349k+ otorgados a creadores en lo que va de 2026.",
         "platforms_label": "Descarga Decentraland",
         "scene_alt": "Escena {name} en Decentraland"
       },
       "how": {
         "title": "Cómo funciona",
-        "opt_in_title": "Inscríbete",
+        "opt_in_title": "Únete",
         "opt_in_link": "Descarga Creator Hub",
         "opt_in_text": " e inscríbete en el Creator Fund.",
         "build_title": "Construye",
@@ -147,20 +149,21 @@
       "rewards": {
         "title": "Pagos",
         "when_label": "Cuándo",
-        "when": "En un plazo de {days} días tras el fin de cada ciclo. La fecha de pago de cada ciclo está en el calendario de abajo.",
+        "when": "En un plazo de {days} días tras el fin de cada ciclo.",
+        "see_below": "Ver abajo",
         "currency_label": "Moneda",
         "currency": "{currency} ({standard}) en {network}.",
         "where_label": "Dónde",
-        "where": "La wallet de pago que configures en Creator Hub. Si no la has configurado 7 días después de que termine un ciclo, se pierde el pago de la recompensa.",
+        "where": "La wallet de pago que configures en Creator Hub.",
         "leaderboard_label": "Clasificación",
         "leaderboard": "Las mejores experiencias y sus recompensas aparecen en una clasificación pública."
       },
       "more_ways": {
         "title": "Más formas de ganar",
-        "wearables": "Vende Wearables y Emotes y quédate con el 97,5% de cada venta",
-        "funding": "Solicita financiación y subvenciones de Creator Success",
-        "contests": "Gana premios en Buildathons, Game Jams y concursos de temporada",
-        "purchases": "Compras de creadores dentro del juego, a partir del Q1 2027"
+        "wearables": "Vende Wearables y Emotes y <b>quédate con el 97,5%</b> de cada venta",
+        "funding": "Solicita financiación y subvenciones de <b>Creator Success</b>",
+        "contests": "Gana premios en <b>Buildathons, Game Jams</b> y concursos de temporada",
+        "purchases": "<b>Compras de creadores dentro del juego</b>, próximamente"
       },
       "dates": {
         "title": "Calendario de la Beta",
@@ -170,7 +173,7 @@
       },
       "join": {
         "title": "Creator Fund empieza el 15 de noviembre",
-        "subtitle": "Empieza a construir desde el primer día.",
+        "subtitle": "Construye desde el primer día.",
         "see_terms": "Ver términos",
         "avatars_alt": "Avatares de la comunidad de Decentraland"
       },
@@ -193,6 +196,13 @@
         "grant_question": "¿Es una subvención?",
         "grant_answer": "No. Las subvenciones apoyan proyectos antes de su lanzamiento. Creator Fund recompensa a las experiencias que ya están activas y creciendo en Decentraland.",
         "contact_prompt": "¿Tienes preguntas o necesitas ayuda? Escríbenos a"
+      },
+      "builders": {
+        "title": "Conoce a los creadores de Decentraland",
+        "subtitle": "Artistas, estudios y creadores de juegos que ya construyen en Decentraland.",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "go_to_slide": "Ir a la diapositiva {number}"
       }
     },
     "home": {

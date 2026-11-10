@@ -2,17 +2,31 @@ import { memo } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
-import { CreatorFundSection, DisplayTitle, MutedText, RubyTile, SectionInner } from '../CreatorFund.styled'
+import rewardsBackground from '../../../images/creator-fund/rewards-players-background.jpg'
+import { DisplayTitle, MutedText, RubyTile, SectionInner } from '../CreatorFund.styled'
 import { payoutSignals } from '../data'
-import { RealBody, RealCard, RealTitle, SignalCard, SignalTitle, SignalsGrid, SignalsLead, SignalsSection } from './PayoutSignals.styled'
+import {
+  RealBlock,
+  RealBody,
+  RealCard,
+  RealTitle,
+  RewardsBackground,
+  RewardsSection,
+  SignalCard,
+  SignalTitle,
+  SignalsBlock,
+  SignalsGrid,
+  SignalsLead
+} from './PayoutSignals.styled'
 
-// "What Payouts Reward" plus the anti-botting card that qualifies it.
+// "What we reward" plus the anti-botting card that qualifies it, sharing one background photo.
 const PayoutSignals = memo(() => {
   const l = useFormatMessage()
 
   return (
-    <>
-      <SignalsSection spacing="both">
+    <RewardsSection>
+      <RewardsBackground src={rewardsBackground} alt="" aria-hidden="true" loading="lazy" />
+      <SignalsBlock>
         <SectionInner>
           <DisplayTitle>{l('page.creator_fund.measure.title')}</DisplayTitle>
           <SignalsLead>{l('page.creator_fund.measure.subtitle')}</SignalsLead>
@@ -30,8 +44,8 @@ const PayoutSignals = memo(() => {
             ))}
           </SignalsGrid>
         </SectionInner>
-      </SignalsSection>
-      <CreatorFundSection spacing="bottom">
+      </SignalsBlock>
+      <RealBlock>
         <SectionInner>
           <RealCard>
             <RubyTile size="large">
@@ -45,8 +59,8 @@ const PayoutSignals = memo(() => {
             </div>
           </RealCard>
         </SectionInner>
-      </CreatorFundSection>
-    </>
+      </RealBlock>
+    </RewardsSection>
   )
 })
 

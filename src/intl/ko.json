@@ -96,24 +96,26 @@
       "hero": {
         "eyebrow": "베타 11월 15일 시작",
         "title": "Creator Fund",
-        "title_highlight": "플레이할수록 수익이 됩니다.",
-        "subtitle": "플레이어를 끌어들이고, 계속 플레이하게 하고, USDC로 보상받으세요.",
-        "pool_amount": "{pool}",
-        "pool_text": "규모의 베타 시즌 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
-        "fact_pool": "베타 시즌 풀",
-        "fact_cycle": "사이클당",
-        "fact_season": "베타 시즌"
+        "title_highlight": "Decentraland에서 수익을 만드세요.",
+        "subtitle": "진짜 플레이어를 끌어들이고 머물게 하는 경험에 보상합니다.",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "규모의 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
+        "fact_pool": "베타 시즌 보상 총액",
+        "fact_cycle": "사이클당 지급액",
+        "fact_start_value": "11월 15일",
+        "fact_start": "베타 시즌 시작"
       },
       "why": {
         "title": "Decentraland",
         "visit": "Decentraland 방문하기",
         "subtitle": "커뮤니티가 만들고 소유하는 소셜 게이밍 세계.",
+        "awarded": "2026년 현재까지 크리에이터에게 $349k+ 지급.",
         "platforms_label": "Decentraland 다운로드",
         "scene_alt": "Decentraland의 {name} 씬"
       },
       "how": {
         "title": "작동 방식",
-        "opt_in_title": "옵트인",
+        "opt_in_title": "참여",
         "opt_in_link": "Creator Hub를 다운로드",
         "opt_in_text": "하고 Creator Fund에 옵트인하세요.",
         "build_title": "제작",
@@ -147,20 +149,21 @@
       "rewards": {
         "title": "지급",
         "when_label": "시기",
-        "when": "각 사이클 종료 후 {days}일 이내. 사이클별 지급일은 아래 일정에서 확인하세요.",
+        "when": "각 사이클 종료 후 {days}일 이내.",
+        "see_below": "아래 참조",
         "currency_label": "통화",
         "currency": "{network}의 {currency}({standard}).",
         "where_label": "수령 지갑",
-        "where": "Creator Hub에서 설정한 지급용 지갑. 사이클 종료 후 7일이 지나도 설정하지 않으면 보상 지급이 소멸됩니다.",
+        "where": "Creator Hub에서 설정한 지급용 지갑.",
         "leaderboard_label": "리더보드",
         "leaderboard": "상위 경험과 보상 금액은 공개 리더보드에 표시됩니다."
       },
       "more_ways": {
         "title": "더 벌 수 있는 방법",
-        "wearables": "Wearables와 Emotes를 판매하고 판매액의 97.5%를 가져가세요",
-        "funding": "Creator Success 지원금과 그랜트에 신청하세요",
-        "contests": "Buildathons, Game Jams, 시즌 콘테스트에서 상품을 받으세요",
-        "purchases": "게임 내 크리에이터 구매 기능이 Q1 2027에 출시됩니다"
+        "wearables": "Wearables와 Emotes를 판매하고 <b>판매액의 97.5%를 가져가세요</b>",
+        "funding": "<b>Creator Success</b> 지원금과 그랜트에 신청하세요",
+        "contests": "<b>Buildathons, Game Jams</b>, 시즌 콘테스트에서 상품을 받으세요",
+        "purchases": "<b>게임 내 크리에이터 구매 기능</b>이 곧 출시됩니다"
       },
       "dates": {
         "title": "베타 일정",
@@ -170,7 +173,7 @@
       },
       "join": {
         "title": "Creator Fund 11월 15일 시작",
-        "subtitle": "첫날부터 만들어 보세요.",
+        "subtitle": "첫날부터 만드세요.",
         "see_terms": "약관 보기",
         "avatars_alt": "Decentraland 커뮤니티 아바타"
       },
@@ -193,6 +196,13 @@
         "grant_question": "지원금(그랜트)인가요?",
         "grant_answer": "아니요. 그랜트는 출시 전 프로젝트를 지원합니다. Creator Fund는 이미 Decentraland에서 운영 중이며 성장하는 경험에 보상합니다.",
         "contact_prompt": "문의 사항이나 지원이 필요하시면 다음 주소로 연락해 주세요:"
+      },
+      "builders": {
+        "title": "Decentraland 빌더를 만나보세요",
+        "subtitle": "아티스트, 스튜디오, 게임 제작자들이 이미 Decentraland에서 만들고 있습니다.",
+        "previous": "이전",
+        "next": "다음",
+        "go_to_slide": "슬라이드 {number}(으)로 이동"
       }
     },
     "home": {

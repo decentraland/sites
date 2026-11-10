@@ -1,5 +1,5 @@
 import { Box, Logo, styled } from 'decentraland-ui2'
-import { DisplayTitle, MutedText, SectionInner, creatorFundColors } from '../CreatorFund.styled'
+import { DisplayTitle, MutedText, SectionInner, creatorFundColors, rewardCardGradient } from '../CreatorFund.styled'
 
 const WhyGrid = styled(SectionInner)(({ theme }) => ({
   display: 'grid',
@@ -57,6 +57,16 @@ const WhySubtitle = styled(MutedText)(({ theme }) => ({
   },
   [theme.breakpoints.up('lg')]: {
     whiteSpace: 'nowrap'
+  }
+}))
+
+// Paid-to-creators figure under the subtitle, in body text color (no icon, per the Nov 9 design).
+const AwardedLine = styled('p')(({ theme }) => ({
+  margin: `${theme.spacing(2)} 0 0`,
+  fontSize: 18,
+  color: creatorFundColors.text,
+  [theme.breakpoints.up('sm')]: {
+    fontSize: 20
   }
 }))
 
@@ -141,8 +151,7 @@ const SceneCard = styled('figure', {
   margin: 0,
   padding: theme.spacing(1),
   borderRadius: 16,
-  border: `1px solid ${creatorFundColors.glassBorder}`,
-  backgroundColor: creatorFundColors.card,
+  background: rewardCardGradient,
   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   transform: SCENE_OFFSETS[position]?.mobile,
   [theme.breakpoints.up('sm')]: {
@@ -158,4 +167,4 @@ const SceneImage = styled('img')({
   borderRadius: 12
 })
 
-export { HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }
+export { AwardedLine, HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }

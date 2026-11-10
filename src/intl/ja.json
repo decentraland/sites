@@ -96,24 +96,26 @@
       "hero": {
         "eyebrow": "ベータは11月15日スタート",
         "title": "Creator Fund",
-        "title_highlight": "遊ばれるほど、収益になる。",
-        "subtitle": "プレイヤーを呼び込み、遊び続けてもらい、USDCで報酬を受け取ろう。",
-        "pool_amount": "{pool}",
-        "pool_text": "のベータシーズンプールを、3つのサイクルで分配します。",
-        "fact_pool": "ベータシーズンのプール",
-        "fact_cycle": "サイクルごと",
-        "fact_season": "ベータシーズン"
+        "title_highlight": "Decentralandで稼ごう。",
+        "subtitle": "本物のプレイヤーを呼び込み、定着させる体験に報酬を。",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "のプールを3つのサイクルで分配します。",
+        "fact_pool": "ベータシーズンの報酬総額",
+        "fact_cycle": "各サイクルの分配額",
+        "fact_start_value": "11月15日",
+        "fact_start": "ベータシーズン開始"
       },
       "why": {
         "title": "Decentraland",
         "visit": "Decentralandを見る",
         "subtitle": "コミュニティが築き、コミュニティが所有するソーシャルゲームの世界。",
+        "awarded": "2026年はこれまでに$349k+をクリエイターへ授与。",
         "platforms_label": "Decentralandをダウンロード",
         "scene_alt": "Decentralandの{name}シーン"
       },
       "how": {
         "title": "仕組み",
-        "opt_in_title": "オプトイン",
+        "opt_in_title": "参加",
         "opt_in_link": "Creator Hubをダウンロード",
         "opt_in_text": "して、Creator Fundにオプトインします。",
         "build_title": "制作",
@@ -147,20 +149,21 @@
       "rewards": {
         "title": "支払い",
         "when_label": "時期",
-        "when": "各サイクル終了後{days}日以内。各サイクルの支払い日は下のスケジュールをご覧ください。",
+        "when": "各サイクル終了後{days}日以内。",
+        "see_below": "下記を参照",
         "currency_label": "通貨",
         "currency": "{network}上の{currency}（{standard}）。",
         "where_label": "受取先",
-        "where": "Creator Hubで設定した支払い用ウォレット。サイクル終了から7日以内に設定しない場合、報酬の支払いは失効します。",
+        "where": "Creator Hubで設定した支払い用ウォレット。",
         "leaderboard_label": "リーダーボード",
         "leaderboard": "上位の体験と報酬額は、公開リーダーボードに掲載されます。"
       },
       "more_ways": {
         "title": "もっと稼ぐ方法",
-        "wearables": "WearablesとEmotesを販売して、売上の97.5%を受け取れる",
-        "funding": "Creator Successの資金援助や助成金に応募できる",
-        "contests": "Buildathons、Game Jams、シーズンコンテストで賞品を獲得できる",
-        "purchases": "ゲーム内でのクリエイター向け購入機能をQ1 2027に提供予定"
+        "wearables": "WearablesとEmotesを販売して、<b>売上の97.5%を受け取れる</b>",
+        "funding": "<b>Creator Success</b>の資金援助や助成金に応募できる",
+        "contests": "<b>Buildathons、Game Jams</b>、シーズンコンテストで賞品を獲得できる",
+        "purchases": "<b>ゲーム内でのクリエイター向け購入機能</b>を近日提供予定"
       },
       "dates": {
         "title": "ベータスケジュール",
@@ -170,7 +173,7 @@
       },
       "join": {
         "title": "Creator Fund は11月15日スタート",
-        "subtitle": "初日から制作を始めよう。",
+        "subtitle": "初日から制作しよう。",
         "see_terms": "規約を見る",
         "avatars_alt": "Decentralandコミュニティのアバター"
       },
@@ -193,6 +196,13 @@
         "grant_question": "これは助成金ですか？",
         "grant_answer": "いいえ。助成金はローンチ前のプロジェクトを支援するものです。Creator Fundが報酬を提供するのは、Decentralandですでに公開され、成長している体験です。",
         "contact_prompt": "ご質問やサポートについては、こちらまでご連絡ください："
+      },
+      "builders": {
+        "title": "Decentralandのビルダーに会おう",
+        "subtitle": "アーティスト、スタジオ、ゲームクリエイターがすでにDecentralandで制作しています。",
+        "previous": "前へ",
+        "next": "次へ",
+        "go_to_slide": "スライド{number}へ移動"
       }
     },
     "home": {

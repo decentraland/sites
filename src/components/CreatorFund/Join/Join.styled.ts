@@ -1,8 +1,12 @@
 import { Box, styled } from 'decentraland-ui2'
 import { CreatorFundSection, DisplayTitle, SectionInner, creatorFundColors } from '../CreatorFund.styled'
 
-// Shorter top padding than the other bands: the avatars image closes the section instead.
+// Shorter top padding than the other sections: the avatars image closes it instead. The scene
+// photo behind it sits at z-index -1, so the section isolates it.
 const JoinSection = styled(CreatorFundSection)(({ theme }) => ({
+  position: 'relative',
+  isolation: 'isolate',
+  overflow: 'hidden',
   paddingTop: theme.spacing(6),
   [theme.breakpoints.up('sm')]: {
     paddingTop: theme.spacing(8)
@@ -19,12 +23,17 @@ const JoinTitle = styled(DisplayTitle)({
   marginRight: 'auto'
 })
 
+// Larger and soft white, so it reads over the scene photo.
 const JoinSubtitle = styled('p')(({ theme }) => ({
   maxWidth: 576,
   margin: `${theme.spacing(2.5)} auto 0`,
-  fontSize: 18,
-  lineHeight: 1.55,
-  color: creatorFundColors.text
+  fontSize: 20,
+  fontWeight: 500,
+  lineHeight: 1.5,
+  color: creatorFundColors.onBand,
+  [theme.breakpoints.up('sm')]: {
+    fontSize: 22
+  }
 }))
 
 const TermsLink = styled('a')({
@@ -55,4 +64,14 @@ const AvatarsImage = styled('img')(({ theme }) => ({
   }
 }))
 
-export { AvatarsImage, JoinActions, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink }
+const JoinBackground = styled('img')({
+  position: 'absolute',
+  inset: 0,
+  zIndex: -1,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  objectPosition: 'center'
+})
+
+export { AvatarsImage, JoinActions, JoinBackground, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink }

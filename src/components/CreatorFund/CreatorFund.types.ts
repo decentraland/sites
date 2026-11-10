@@ -49,10 +49,18 @@ type BuildStep = Required<IconCopy> & {
   linkKey?: string
 }
 
+// A builder testimonial. Quotes stay in the builder's own words, so they are not translated.
+type BuilderQuote = {
+  name: string
+  quote: string
+  // Avatar photo. Without one, the card shows the name's first letter.
+  image?: string
+}
+
 type FaqEntry = {
   questionKey: string
   answerKey: string
   trackingName: string
 }
 
-export type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, ProgramCycle, SectionLink }
+export type { BuilderQuote, BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, ProgramCycle, SectionLink }

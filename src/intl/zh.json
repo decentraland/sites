@@ -96,24 +96,26 @@
       "hero": {
         "eyebrow": "测试版 11 月 15 日开始",
         "title": "Creator Fund",
-        "title_highlight": "玩家在玩，你就有收益。",
-        "subtitle": "吸引玩家、留住玩家，用 USDC 赚取收益。",
-        "pool_amount": "{pool}",
-        "pool_text": "测试赛季奖池，将在三个周期内分配。",
-        "fact_pool": "测试赛季奖池",
-        "fact_cycle": "每个周期",
-        "fact_season": "测试赛季"
+        "title_highlight": "在 Decentraland 赚取收益。",
+        "subtitle": "奖励那些能吸引并留住真实玩家的体验。",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "奖池将在三个周期内分配。",
+        "fact_pool": "测试赛季奖励总额",
+        "fact_cycle": "每个周期分配",
+        "fact_start_value": "11 月 15 日",
+        "fact_start": "测试赛季开始"
       },
       "why": {
         "title": "Decentraland",
         "visit": "访问 Decentraland",
         "subtitle": "一个由社区共建、社区共有的社交游戏世界。",
+        "awarded": "2026 年至今已向创作者发放 $349k+。",
         "platforms_label": "下载 Decentraland",
         "scene_alt": "Decentraland 中的 {name} 场景"
       },
       "how": {
         "title": "运作方式",
-        "opt_in_title": "选择加入",
+        "opt_in_title": "加入",
         "opt_in_link": "下载 Creator Hub",
         "opt_in_text": "，并选择加入 Creator Fund。",
         "build_title": "创作",
@@ -147,20 +149,21 @@
       "rewards": {
         "title": "发放",
         "when_label": "时间",
-        "when": "每个周期结束后 {days} 天内。各周期的发放日期见下方日程。",
+        "when": "每个周期结束后 {days} 天内。",
+        "see_below": "见下方",
         "currency_label": "币种",
         "currency": "{network} 上的 {currency}（{standard}）。",
         "where_label": "接收方式",
-        "where": "你在 Creator Hub 中设置的收款钱包。如果在周期结束 7 天后仍未设置，该笔奖励发放将作废。",
+        "where": "你在 Creator Hub 中设置的收款钱包。",
         "leaderboard_label": "排行榜",
         "leaderboard": "表现最佳的体验及其奖励金额将显示在公开排行榜上。"
       },
       "more_ways": {
         "title": "更多赚取方式",
-        "wearables": "出售 Wearables 和 Emotes，每笔销售额保留 97.5%",
-        "funding": "申请 Creator Success 资金和资助",
-        "contests": "在 Buildathons、Game Jams 和赛季比赛中赢取奖品",
-        "purchases": "游戏内创作者购买功能将于 Q1 2027 推出"
+        "wearables": "出售 Wearables 和 Emotes，<b>每笔销售额保留 97.5%</b>",
+        "funding": "申请 <b>Creator Success</b> 资金和资助",
+        "contests": "在 <b>Buildathons、Game Jams</b> 和赛季比赛中赢取奖品",
+        "purchases": "<b>游戏内创作者购买功能</b>即将推出"
       },
       "dates": {
         "title": "测试版日程",
@@ -170,7 +173,7 @@
       },
       "join": {
         "title": "Creator Fund 11 月 15 日启动",
-        "subtitle": "从第一天起开始创作。",
+        "subtitle": "从第一天开始创作。",
         "see_terms": "查看条款",
         "avatars_alt": "Decentraland 社区头像"
       },
@@ -193,6 +196,13 @@
         "grant_question": "这是资助吗？",
         "grant_answer": "不是。资助用于支持项目上线之前的阶段。Creator Fund 奖励的是已在 Decentraland 上线并持续增长的体验。",
         "contact_prompt": "如有疑问或需要支持，请发送邮件至"
+      },
+      "builders": {
+        "title": "认识 Decentraland 创作者",
+        "subtitle": "艺术家、工作室和游戏开发者已经在 Decentraland 中创作。",
+        "previous": "上一个",
+        "next": "下一个",
+        "go_to_slide": "前往第 {number} 张幻灯片"
       }
     },
     "home": {

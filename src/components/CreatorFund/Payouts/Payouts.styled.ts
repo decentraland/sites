@@ -12,15 +12,40 @@ const PayoutRow = styled('div')(({ theme }) => ({
   padding: `${theme.spacing(3)} 0`,
   borderBottom: `1px solid ${creatorFundColors.glassBorder}`,
   [theme.breakpoints.up('sm')]: {
-    gridTemplateColumns: '210px 1fr',
+    gridTemplateColumns: '250px 1fr',
+    alignItems: 'center',
     columnGap: theme.spacing(4)
   }
 }))
 
+const PAYOUT_ICON_GRADIENT_ID = 'creator-fund-payout-icon-gradient'
+
+// Holds the gradient definition only; takes no space.
+const PayoutIconGradient = styled('svg')({
+  position: 'absolute',
+  width: 0,
+  height: 0,
+  overflow: 'hidden'
+})
+
+// Label in a dark pill, led by an icon painted with the red-orange gradient.
 const PayoutLabel = styled('dt')(({ theme }) => ({
   ...labelStyles,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  boxSizing: 'border-box',
+  width: '100%',
+  padding: `${theme.spacing(1.5)} ${theme.spacing(2.5)}`,
+  borderRadius: 9999,
+  backgroundColor: creatorFundColors.darkSurface,
   fontSize: 14,
   color: creatorFundColors.onBand,
+  ['& > svg']: {
+    flexShrink: 0,
+    fontSize: 28,
+    fill: `url(#${PAYOUT_ICON_GRADIENT_ID})`
+  },
   [theme.breakpoints.up('sm')]: {
     fontSize: 16
   }
@@ -34,4 +59,19 @@ const PayoutValue = styled('dd')({
   color: creatorFundColors.onBand
 })
 
-export { PayoutLabel, PayoutRow, PayoutTerms, PayoutValue }
+// "See Below": underlined like the "See Terms" link in the closing section.
+const PayoutLink = styled('a')({
+  color: 'inherit',
+  textDecoration: 'underline',
+  textUnderlineOffset: 4,
+  ['&:hover']: {
+    color: creatorFundColors.linkHover
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${creatorFundColors.white}`,
+    outlineOffset: 2,
+    borderRadius: 2
+  }
+})
+
+export { PAYOUT_ICON_GRADIENT_ID, PayoutIconGradient, PayoutLabel, PayoutLink, PayoutRow, PayoutTerms, PayoutValue }

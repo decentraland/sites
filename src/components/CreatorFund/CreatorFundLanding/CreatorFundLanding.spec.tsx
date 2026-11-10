@@ -6,6 +6,7 @@ import {
   CREATOR_FUND_CONTACT_EMAIL,
   CREATOR_FUND_TERMS_URL,
   CREATOR_HUB_DOWNLOAD_PATH,
+  builderQuotes,
   faqEntries,
   moreWaysToEarnKeys,
   sectionLinks
@@ -26,7 +27,11 @@ jest.mock('decentraland-ui2', () => {
 })
 
 jest.mock('../../../hooks/adapters/useFormatMessage', () => ({
-  useFormatMessage: () => (id: string, values?: Record<string, unknown>) => (values ? `${id} ${JSON.stringify(values)}` : id)
+  useFormatMessage: () => (id: string, values?: Record<string, unknown>) => (values ? `${id} ${JSON.stringify(values)}` : id),
+  // Renders the <b> term through the passed tag function, like formatjs does.
+  useIntl: () => ({
+    formatMessage: ({ id }: { id: string }, values?: { b?: (chunks: string) => unknown }) => [id, values?.b?.('bold term')]
+  })
 }))
 
 const mockTrackClick = jest.fn()
@@ -135,12 +140,37 @@ describe('CreatorFundLanding', () => {
     expect(heading).toHaveTextContent('page.creator_fund.hero.title_highlight')
   })
 
-  it('should paint every purple band with the decentraland.org animated background', () => {
-    expect(screen.getAllByTestId('animated-background')).toHaveLength(4)
+  it('should paint the three purple bands with the decentraland.org animated background', () => {
+    expect(screen.getAllByTestId('animated-background')).toHaveLength(3)
+  })
+
+  it('should put decorative background photos behind the rewards and the closing sections', () => {
+    const decorative = Array.from(document.querySelectorAll('img[aria-hidden="true"]'))
+
+    expect(decorative).toHaveLength(2)
+    decorative.forEach(image => expect(image).toHaveAttribute('alt', ''))
+    expect(document.getElementById('join')).toContainElement(decorative[1] as HTMLElement)
+  })
+
+  it('should link the payout timing to the Beta Schedule section', () => {
+    const payouts = document.getElementById('payouts') as HTMLElement
+    const link = within(payouts).getByRole('link', { name: 'page.creator_fund.rewards.see_below' })
+
+    expect(link).toHaveAttribute('href', '#dates')
+    expect(document.getElementById('dates')).toBeInTheDocument()
+    expect(link).toHaveAttribute('data-section', 'payouts')
+  })
+
+  it('should show an icon in every payout label', () => {
+    const payouts = document.getElementById('payouts') as HTMLElement
+
+    within(payouts)
+      .getAllByRole('term')
+      .forEach(label => expect(label.querySelector('svg')).toBeInTheDocument())
   })
 
   it('should show the season pool in the hero', () => {
-    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000","currency":"USDC"}')).toBeInTheDocument()
   })
 
   it('should render a target section for every section link', () => {
@@ -167,8 +197,11 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'Mac' })).toHaveAttribute('href', getDownloadUrl('apple'))
   })
 
-  it('should show the Beta Season dates in the hero', () => {
-    expect(screen.getByText(/^Nov 15\s*–\s*Dec 31$/)).toBeInTheDocument()
+  it('should show the three hero facts from the design', () => {
+    expect(screen.getByText('page.creator_fund.hero.fact_pool')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.fact_cycle')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.fact_start_value')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.fact_start')).toBeInTheDocument()
   })
 
   it('should list the steps in order: opt in, build, get paid', () => {
@@ -225,7 +258,16 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should list the other ways to earn', () => {
-    moreWaysToEarnKeys.forEach(key => expect(screen.getByText(key)).toBeInTheDocument())
+    moreWaysToEarnKeys.forEach(key => expect(screen.getByText(key, { exact: false })).toBeInTheDocument())
+  })
+
+  it('should bold the key term of each other way to earn', () => {
+    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' }).closest('section') as HTMLElement
+
+    expect(within(moreWays).getAllByText('bold term')).toHaveLength(moreWaysToEarnKeys.length)
+    within(moreWays)
+      .getAllByText('bold term')
+      .forEach(term => expect(term.tagName).toBe('STRONG'))
   })
 
   it('should show the other ways to earn right after the schedule', () => {
@@ -236,8 +278,22 @@ describe('CreatorFundLanding', () => {
     expect(schedule.contains(moreWays)).toBe(false)
   })
 
-  it('should not render the builders section', () => {
-    expect(screen.queryByText('page.creator_fund.builders.title')).not.toBeInTheDocument()
+  it('should show the builders right after the FAQ', () => {
+    const faq = document.getElementById('faq') as HTMLElement
+    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' })
+
+    expect(faq.compareDocumentPosition(builders) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(faq.contains(builders)).toBe(false)
+  })
+
+  it('should show a quote for every builder', () => {
+    builderQuotes.forEach(builder => expect(screen.getByText(builder.name)).toBeInTheDocument())
+  })
+
+  it('should show the amount awarded to creators right under the Decentraland subtitle', () => {
+    const subtitle = screen.getByText('page.creator_fund.why.subtitle')
+
+    expect(subtitle.nextElementSibling).toHaveTextContent('page.creator_fund.why.awarded')
   })
 
   it('should render every FAQ entry', () => {

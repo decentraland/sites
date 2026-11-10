@@ -105,24 +105,26 @@
       "hero": {
         "eyebrow": "Beta starts Nov 15",
         "title": "Creator Fund",
-        "title_highlight": "Get paid when people play.",
-        "subtitle": "Bring players in, keep them playing, get paid in USDC.",
-        "pool_amount": "{pool}",
-        "pool_text": "Beta Season pool, shared across three cycles.",
-        "fact_pool": "Beta Season pool",
-        "fact_cycle": "Per cycle",
-        "fact_season": "Beta Season"
+        "title_highlight": "Earn in Decentraland.",
+        "subtitle": "Rewards for experiences that bring and retain real players.",
+        "pool_amount": "{pool} {currency}",
+        "pool_text": "pool shared across three cycles.",
+        "fact_pool": "In Beta Season Rewards",
+        "fact_cycle": "Shared each cycle",
+        "fact_start_value": "Nov 15",
+        "fact_start": "Beta Season starts"
       },
       "why": {
         "title": "Decentraland",
         "visit": "Visit Decentraland",
         "subtitle": "A social gaming world built and owned by its community.",
+        "awarded": "$349k+ awarded to creators in 2026 so far.",
         "platforms_label": "Download Decentraland",
         "scene_alt": "{name} scene in Decentraland"
       },
       "how": {
         "title": "How it Works",
-        "opt_in_title": "Opt In",
+        "opt_in_title": "Join",
         "opt_in_link": "Download Creator Hub",
         "opt_in_text": " and opt in to the Creator Fund.",
         "build_title": "Build",
@@ -156,20 +158,21 @@
       "rewards": {
         "title": "Payouts",
         "when_label": "When",
-        "when": "Within {days} days after each cycle ends. Each cycle’s payment date is in the schedule below.",
+        "when": "Within {days} days after each cycle ends.",
+        "see_below": "See Below",
         "currency_label": "Currency",
         "currency": "{currency} ({standard}) on {network}.",
         "where_label": "Where",
-        "where": "The Payout Wallet you set in Creator Hub. If you haven’t set one 7 days after a Cycle ends, the reward payout is lost.",
+        "where": "The Payout Wallet you set in Creator Hub.",
         "leaderboard_label": "Leaderboard",
         "leaderboard": "The top experiences and their rewards appear on a public leaderboard."
       },
       "more_ways": {
         "title": "More ways to earn",
-        "wearables": "Sell Wearables and Emotes and keep 97.5% of each sale",
-        "funding": "Apply for Creator Success funding and grants",
-        "contests": "Win prizes in Buildathons, Game Jams and seasonal contests",
-        "purchases": "In-game creator purchases arriving Q1 2027"
+        "wearables": "Sell Wearables and Emotes and <b>keep 97.5%</b> of each sale",
+        "funding": "Apply for <b>Creator Success</b> funding and grants",
+        "contests": "Win prizes in <b>Buildathons, Game Jams</b> and seasonal contests",
+        "purchases": "<b>In-game creator purchases</b> coming soon"
       },
       "dates": {
         "title": "Beta Schedule",
@@ -179,7 +182,7 @@
       },
       "join": {
         "title": "Creator Fund starts November 15",
-        "subtitle": "Start building from day one.",
+        "subtitle": "Build from day one.",
         "see_terms": "See Terms",
         "avatars_alt": "Decentraland community avatars"
       },
@@ -202,6 +205,13 @@
         "grant_question": "Is this a grant?",
         "grant_answer": "No. Grants support projects before they launch. The Creator Fund rewards experiences that are already live and growing on Decentraland.",
         "contact_prompt": "Questions or need support? Email us at"
+      },
+      "builders": {
+        "title": "Meet Decentraland builders",
+        "subtitle": "Artists, studios and game makers already building in Decentraland.",
+        "previous": "Previous",
+        "next": "Next",
+        "go_to_slide": "Go to slide {number}"
       }
     },
     "creator-hub": {

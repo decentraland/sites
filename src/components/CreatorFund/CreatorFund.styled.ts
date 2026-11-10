@@ -19,10 +19,18 @@ const creatorFundColors = {
   orange: dclColors.brand.melon,
   purpleDeep: dclColors.brand.purple,
   purpleBright: dclColors.brand.violet,
+  lavender: dclColors.brand.lavender,
   white: dclColors.neutral.white,
   // Translucent white layers over the hero video and the purple bands.
   glass: 'rgba(255, 255, 255, 0.08)',
-  glassBorder: 'rgba(255, 255, 255, 0.15)'
+  glassBorder: 'rgba(255, 255, 255, 0.15)',
+  // Darker translucent surfaces from the design: black 25% (step cards, payout pills) and the
+  // softBlack2 card at 35% (hero facts) and 75% (Real players card over its photo).
+  darkSurface: 'rgba(0, 0, 0, 0.25)',
+  cardSurfaceLight: 'rgba(36, 33, 41, 0.35)',
+  cardSurfaceStrong: 'rgba(36, 33, 41, 0.75)',
+  // Matched to the bottom edge of the "What we reward" background photo.
+  eligibilitySurface: '#090507'
 }
 
 // The Creator Fund navbar replaces the site one, so it uses the site navbar's
@@ -41,6 +49,8 @@ const labelStyles = {
 
 const rubyGradient = `linear-gradient(135deg, ${creatorFundColors.primary}, ${creatorFundColors.orange})`
 const purpleGradient = `linear-gradient(135deg, ${creatorFundColors.purpleDeep}, ${creatorFundColors.purpleBright})`
+// Metric cards and scene frames.
+const rewardCardGradient = `linear-gradient(135deg, ${creatorFundColors.lavender}, ${creatorFundColors.purpleDeep})`
 
 // Purple band. Its background is decentraland.org's own <AnimatedBackground variant="absolute" />
 // (the WebGL purple glow with the drifting Decentraland logo pattern used on the homepage), which
@@ -132,10 +142,10 @@ const Eyebrow = styled('span')({
 
 type TileSize = 'small' | 'medium' | 'large'
 
-const TILE_SIZES: Record<TileSize, { box: number; radius: number; icon: number }> = {
-  small: { box: 36, radius: 8, icon: 20 },
-  medium: { box: 48, radius: 12, icon: 24 },
-  large: { box: 56, radius: 12, icon: 28 }
+const TILE_SIZES: Record<TileSize, { box: number; icon: number }> = {
+  small: { box: 36, icon: 20 },
+  medium: { box: 48, icon: 24 },
+  large: { box: 56, icon: 28 }
 }
 
 const RubyTile = styled('span', {
@@ -147,7 +157,7 @@ const RubyTile = styled('span', {
   justifyContent: 'center',
   width: TILE_SIZES[size].box,
   height: TILE_SIZES[size].box,
-  borderRadius: TILE_SIZES[size].radius,
+  borderRadius: '50%',
   background: rubyGradient,
   color: creatorFundColors.white,
   ['& svg']: {
@@ -170,8 +180,8 @@ const SolidCard = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3)
 }))
 
-// Main page CTA, same shape as the homepage hero's Download button:
-// 64px tall, 16px radius, uppercase 600, white focus/hover ring.
+// Main page CTA: the homepage hero Download button's size and type (64px tall, uppercase 600,
+// white focus/hover ring), pill-shaped as in the design.
 const PrimaryButtonLink = styled('a')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
@@ -181,7 +191,7 @@ const PrimaryButtonLink = styled('a')(({ theme }) => ({
   minWidth: 304,
   height: 64,
   padding: `0 ${theme.spacing(4)}`,
-  borderRadius: 16,
+  borderRadius: 9999,
   backgroundColor: creatorFundColors.primary,
   color: creatorFundColors.buttonText,
   fontSize: '19.89px',
@@ -206,7 +216,7 @@ const PrimaryButtonLink = styled('a')(({ theme }) => ({
   }
 }))
 
-// Compact CTA, same as the site navbar's Download button: 40px tall, 12px radius.
+// Compact CTA: the site navbar's Download button (40px tall), pill-shaped as in the design.
 const NavButtonLink = styled('a')({
   display: 'inline-flex',
   alignItems: 'center',
@@ -214,7 +224,7 @@ const NavButtonLink = styled('a')({
   boxSizing: 'border-box',
   height: 40,
   padding: '0 16px',
-  borderRadius: 12,
+  borderRadius: 9999,
   backgroundColor: creatorFundColors.primary,
   color: creatorFundColors.white,
   fontSize: 15,
@@ -258,5 +268,6 @@ export {
   labelStyles,
   purpleBandStyles,
   purpleGradient,
+  rewardCardGradient,
   rubyGradient
 }
