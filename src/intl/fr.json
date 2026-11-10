@@ -98,8 +98,8 @@
         "title": "Creator Fund",
         "title_highlight": "Gagnez de l'argent sur Decentraland.",
         "subtitle": "Des récompenses pour les expériences qui attirent et fidélisent de vrais joueurs.",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "de cagnotte répartie sur trois cycles.",
+        "pool_amount": "{pool}",
+        "pool_text": "de cagnotte répartie sur trois cycles, versée en {currency}.",
         "fact_pool": "En récompenses pour la Beta Season",
         "fact_cycle": "Réparti à chaque cycle",
         "fact_start_value": "15 nov.",
@@ -117,14 +117,14 @@
         "opt_in_title": "Rejoindre",
         "opt_in_link": "Téléchargez Creator Hub",
         "opt_in_text": " et inscrivez-vous au programme.",
-        "build_title": "Créez",
-        "build_text": "Créez et publiez votre expérience.",
+        "grow_title": "Grandissez",
+        "grow_text": "Faites revenir les joueurs.",
         "paid_title": "Paiement",
-        "paid_text": "Cagnotte de {amount} {currency} répartie à la fin de chaque cycle."
+        "paid_text": "Cagnotte de {amount} répartie à la fin de chaque cycle."
       },
       "measure": {
         "title": "Ce que nous récompensons",
-        "subtitle": "À chaque cycle, la cagnotte est répartie selon la contribution de chaque expérience.",
+        "subtitle": "À chaque cycle, la cagnotte est répartie selon l’engagement des joueurs.",
         "new_players": "Nouveaux joueurs Decentraland",
         "playtime": "Temps de jeu actif",
         "retention": "Fidélisation des joueurs"
@@ -143,7 +143,7 @@
         "scene_title": "Votre scène ou Monde",
         "scene_policy": "Respecte les Conditions d'utilisation et la Politique de contenu de Decentraland pendant tout le cycle.",
         "scene_content": "Ne contient ni jeux d'argent ni autre contenu réservé aux plus de 18 ans.",
-        "scene_removed": "Cesse d'être comptabilisé s'il est supprimé ou transféré."
+        "scene_removed": "Cesse d'être comptabilisé s'il est supprimé, et ne compte pas pour un cycle au cours duquel il est transféré."
       },
       "rewards": {
         "title": "Paiements",
@@ -168,7 +168,7 @@
         "title": "Creator Fund : calendrier de la bêta",
         "cycle_name": "Cycle {number}",
         "launch": "Lancement du programme. L'inscription ouvre dans Creator Hub",
-        "cycle_row": "{name} · {amount} USDC · Paiement avant le {date}"
+        "cycle_row": "{name} · {amount} · Paiement avant le {date}"
       },
       "join": {
         "title": "Creator Fund démarre le 15 novembre",
@@ -187,7 +187,7 @@
         "wallet_question": "Puis-je utiliser un wallet de paiement personnalisé ?",
         "wallet_answer": "Oui. Les récompenses sont versées sur le wallet de paiement que vous définissez dans Creator Hub, qui peut être n’importe quel wallet ou compte d’exchange que vous contrôlez. Si vous n’en avez pas défini 7 jours après la fin d’un cycle, le paiement de la récompense est perdu.",
         "transfer_question": "Que se passe-t-il si je transfère mon LAND, NAME ou Monde pendant un cycle ?",
-        "transfer_answer": "Une expérience cesse d'être comptabilisée dès son transfert. Les Conditions du Programme régissent l'éligibilité et les paiements, et un transfert ne transmet pas le paiement au nouveau propriétaire.",
+        "transfer_answer": "Si vous le transférez pendant un cycle, l’activité de ce cycle ne compte pour personne. Le nouveau propriétaire est comptabilisé à partir du cycle suivant. Les récompenses des cycles terminés avant le transfert restent versées au wallet de paiement enregistré pour chacun de ces cycles. Si vous le déplacez vers un autre wallet que vous contrôlez, prévenez-nous avant le transfert : nous pourrons le traiter comme une continuité de votre participation.",
         "runs_question": "Qui gère le Creator Fund ?",
         "runs_answer": "Le Creator Fund a été créé et est financé par DCL Regenesis Labs Foundation et la Decentraland Foundation. Il est géré par la Decentraland Foundation.",
         "after_question": "Que se passe-t-il après la Beta Season ?",

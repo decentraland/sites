@@ -106,10 +106,10 @@
         "eyebrow": "Beta starts Nov 15",
         "title": "Creator Fund",
         "title_highlight": "Earn In Decentraland.",
-        "subtitle": "Rewards for experiences that bring and retain real players.",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "pool shared across three cycles.",
-        "fact_pool": "In Beta Season Rewards",
+        "subtitle": "Rewards for experiences that attract and keep real players.",
+        "pool_amount": "{pool}",
+        "pool_text": "pool shared across three cycles, paid in {currency}.",
+        "fact_pool": "In Beta Season rewards",
         "fact_cycle": "Shared each cycle",
         "fact_start_value": "Nov 15",
         "fact_start": "Beta Season starts"
@@ -126,14 +126,14 @@
         "opt_in_title": "Join",
         "opt_in_link": "Download Creator Hub",
         "opt_in_text": " and Opt\u00a0In to the program.",
-        "build_title": "Build",
-        "build_text": "Create and publish your experience.",
+        "grow_title": "Grow",
+        "grow_text": "Keep players coming back.",
         "paid_title": "Payout",
-        "paid_text": "{amount} {currency} pool split after each cycle ends."
+        "paid_text": "{amount} pool split after each cycle ends."
       },
       "measure": {
         "title": "What We Reward",
-        "subtitle": "Each cycle, the pool is shared based on each experience’s contribution.",
+        "subtitle": "Each cycle, the pool is shared based on player engagement.",
         "new_players": "New Decentraland Players",
         "playtime": "Active Playtime",
         "retention": "Player Retention"
@@ -152,7 +152,7 @@
         "scene_title": "Your Scene Or World",
         "scene_policy": "Follows Decentraland Terms of Use and Content Policy throughout the cycle.",
         "scene_content": "Has no gambling or other 18+ restricted content.",
-        "scene_removed": "Stops counting if it is removed or transferred."
+        "scene_removed": "Stops counting if it is removed, and doesn’t count for a cycle in which it is transferred."
       },
       "rewards": {
         "title": "Payouts",
@@ -177,7 +177,7 @@
         "title": "Creator Fund: Beta Schedule",
         "cycle_name": "Cycle {number}",
         "launch": "Program launch. Opt-in opens in Creator Hub",
-        "cycle_row": "{name} · {amount} USDC · Payment by {date}"
+        "cycle_row": "{name} · {amount} · Payment by {date}"
       },
       "join": {
         "title": "Creator Fund Starts November 15",
@@ -196,7 +196,7 @@
         "wallet_question": "Can I Use A Custom Payout Wallet?",
         "wallet_answer": "Yes. Rewards are paid to the Payout Wallet you set in Creator Hub, which can be any wallet or exchange account you control. If you haven’t set one 7 days after a Cycle ends, the reward payout is lost.",
         "transfer_question": "What If I Transfer My LAND, NAME Or World During A Cycle?",
-        "transfer_answer": "An experience stops counting from the moment it is transferred. The Program Terms govern eligibility and payouts, and a transfer doesn’t pass a payout to the new owner.",
+        "transfer_answer": "If you transfer it during a cycle, that cycle’s activity doesn’t count for anyone. The new owner counts from the next cycle. Rewards for cycles completed before the transfer are still paid to the Payout Wallet on record for each of those cycles. If you’re moving it to another wallet you control, tell us before the transfer and we may treat it as a continuation of your participation.",
         "runs_question": "Who Runs The Creator Fund?",
         "runs_answer": "The Creator Fund was created and is funded by DCL Regenesis Labs Foundation and the Decentraland Foundation. It is operated by the Decentraland Foundation.",
         "after_question": "What Happens After The Beta Season?",

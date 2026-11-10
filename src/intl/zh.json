@@ -98,8 +98,8 @@
         "title": "Creator Fund",
         "title_highlight": "在 Decentraland 赚取收益。",
         "subtitle": "奖励那些能吸引并留住真实玩家的体验。",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "奖池将在三个周期内分配。",
+        "pool_amount": "{pool}",
+        "pool_text": "奖池将在三个周期内分配，以 {currency} 发放。",
         "fact_pool": "测试赛季奖励总额",
         "fact_cycle": "每个周期分配",
         "fact_start_value": "11 月 15 日",
@@ -117,14 +117,14 @@
         "opt_in_title": "加入",
         "opt_in_link": "下载 Creator Hub",
         "opt_in_text": "，并选择加入该计划。",
-        "build_title": "创作",
-        "build_text": "打造并发布你的体验。",
+        "grow_title": "成长",
+        "grow_text": "让玩家不断回来。",
         "paid_title": "发放",
-        "paid_text": "{amount} {currency} 奖池在每个周期结束后分配。"
+        "paid_text": "{amount} 奖池在每个周期结束后分配。"
       },
       "measure": {
         "title": "我们奖励什么",
-        "subtitle": "每个周期，奖池将根据每个体验的贡献进行分配。",
+        "subtitle": "每个周期，奖池将根据玩家参与度进行分配。",
         "new_players": "Decentraland 新玩家",
         "playtime": "活跃游玩时长",
         "retention": "玩家留存"
@@ -143,7 +143,7 @@
         "scene_title": "你的场景或 World",
         "scene_policy": "在整个周期内遵守 Decentraland 使用条款和内容政策。",
         "scene_content": "不含赌博或其他限制 18 岁以上的内容。",
-        "scene_removed": "若被删除或转让，将不再计入。"
+        "scene_removed": "若被删除，将不再计入；在发生转让的周期内也不计入。"
       },
       "rewards": {
         "title": "发放",
@@ -168,7 +168,7 @@
         "title": "Creator Fund：测试版日程",
         "cycle_name": "第 {number} 周期",
         "launch": "计划启动。Creator Hub 开放加入",
-        "cycle_row": "{name} · {amount} USDC · 发放截止 {date}"
+        "cycle_row": "{name} · {amount} · 发放截止 {date}"
       },
       "join": {
         "title": "Creator Fund 11 月 15 日启动",
@@ -187,7 +187,7 @@
         "wallet_question": "可以使用自定义收款钱包吗？",
         "wallet_answer": "可以。奖励将发放到你在 Creator Hub 中设置的收款钱包，可以是你控制的任何钱包或交易所账户。如果在周期结束 7 天后仍未设置，该笔奖励发放将作废。",
         "transfer_question": "如果我在周期内转让 LAND、NAME 或 World 会怎样？",
-        "transfer_answer": "体验自转让之时起不再计入。参与资格和发放以计划条款为准，转让不会将发放权益转给新所有者。",
+        "transfer_answer": "如果你在周期内转让，该周期的活动不计入任何人。新所有者从下一个周期开始计入。转让前已结束周期的奖励，仍会发放到各周期登记的收款钱包。如果你要转移到自己控制的另一个钱包，请在转让前告知我们，我们可能会将其视为参与的延续。",
         "runs_question": "Creator Fund 由谁运营？",
         "runs_answer": "Creator Fund 由 DCL Regenesis Labs Foundation 与 Decentraland Foundation 共同创立并出资，由 Decentraland Foundation 负责运营。",
         "after_question": "测试赛季之后会怎样？",

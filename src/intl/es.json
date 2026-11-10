@@ -98,8 +98,8 @@
         "title": "Creator Fund",
         "title_highlight": "Gana en Decentraland.",
         "subtitle": "Recompensas para experiencias que atraen y retienen a jugadores reales.",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "en un fondo repartido en tres ciclos.",
+        "pool_amount": "{pool}",
+        "pool_text": "en un fondo repartido en tres ciclos, pagado en {currency}.",
         "fact_pool": "En recompensas de la Beta Season",
         "fact_cycle": "Se reparte cada ciclo",
         "fact_start_value": "15 nov",
@@ -117,14 +117,14 @@
         "opt_in_title": "Únete",
         "opt_in_link": "Descarga Creator Hub",
         "opt_in_text": " e inscríbete en el programa.",
-        "build_title": "Construye",
-        "build_text": "Crea y publica tu experiencia.",
+        "grow_title": "Crece",
+        "grow_text": "Haz que los jugadores vuelvan.",
         "paid_title": "Pago",
-        "paid_text": "Fondo de {amount} {currency} repartido al terminar cada ciclo."
+        "paid_text": "Fondo de {amount} repartido al terminar cada ciclo."
       },
       "measure": {
         "title": "Qué recompensamos",
-        "subtitle": "En cada ciclo, el fondo se reparte según la contribución de cada experiencia.",
+        "subtitle": "En cada ciclo, el fondo se reparte según la participación de los jugadores.",
         "new_players": "Nuevos jugadores de Decentraland",
         "playtime": "Tiempo de juego activo",
         "retention": "Retención de jugadores"
@@ -143,7 +143,7 @@
         "scene_title": "Tu escena o Mundo",
         "scene_policy": "Cumple los Términos de Uso y la Política de Contenido de Decentraland durante todo el ciclo.",
         "scene_content": "No contiene apuestas ni otro contenido restringido para mayores de 18 años.",
-        "scene_removed": "Deja de contar si se elimina o se transfiere."
+        "scene_removed": "Deja de contar si se elimina, y no cuenta en un ciclo en el que se transfiere."
       },
       "rewards": {
         "title": "Pagos",
@@ -168,7 +168,7 @@
         "title": "Creator Fund: calendario de la Beta",
         "cycle_name": "Ciclo {number}",
         "launch": "Lanzamiento del programa. La inscripción abre en Creator Hub",
-        "cycle_row": "{name} · {amount} USDC · Pago antes del {date}"
+        "cycle_row": "{name} · {amount} · Pago antes del {date}"
       },
       "join": {
         "title": "Creator Fund empieza el 15 de noviembre",
@@ -187,7 +187,7 @@
         "wallet_question": "¿Puedo usar una wallet de pago personalizada?",
         "wallet_answer": "Sí. Las recompensas se pagan a la wallet de pago que configures en Creator Hub, que puede ser cualquier wallet o cuenta de exchange que controles. Si no la has configurado 7 días después de que termine un ciclo, se pierde el pago de la recompensa.",
         "transfer_question": "¿Qué pasa si transfiero mi LAND, NAME o Mundo durante un ciclo?",
-        "transfer_answer": "Una experiencia deja de contar desde el momento en que se transfiere. Los Términos del Programa rigen la elegibilidad y los pagos, y una transferencia no traspasa el pago al nuevo propietario.",
+        "transfer_answer": "Si lo transfieres durante un ciclo, la actividad de ese ciclo no cuenta para nadie. El nuevo propietario cuenta desde el siguiente ciclo. Las recompensas de los ciclos completados antes de la transferencia se siguen pagando a la wallet de pago registrada para cada uno de esos ciclos. Si lo mueves a otra wallet que controlas, avísanos antes de la transferencia y podremos tratarlo como una continuación de tu participación.",
         "runs_question": "¿Quién gestiona el Creator Fund?",
         "runs_answer": "El Creator Fund fue creado y está financiado por DCL Regenesis Labs Foundation y la Decentraland Foundation. Lo opera la Decentraland Foundation.",
         "after_question": "¿Qué pasa después de la Beta Season?",

@@ -98,8 +98,8 @@
         "title": "Creator Fund",
         "title_highlight": "Decentraland에서 수익을 만드세요.",
         "subtitle": "진짜 플레이어를 끌어들이고 머물게 하는 경험에 보상합니다.",
-        "pool_amount": "{pool} {currency}",
-        "pool_text": "규모의 풀을 세 번의 사이클에 걸쳐 나눠 지급합니다.",
+        "pool_amount": "{pool}",
+        "pool_text": "규모의 풀을 세 번의 사이클에 걸쳐 나누며, {currency}로 지급합니다.",
         "fact_pool": "베타 시즌 보상 총액",
         "fact_cycle": "사이클당 지급액",
         "fact_start_value": "11월 15일",
@@ -117,14 +117,14 @@
         "opt_in_title": "참여",
         "opt_in_link": "Creator Hub를 다운로드",
         "opt_in_text": "하고 프로그램에 옵트인하세요.",
-        "build_title": "제작",
-        "build_text": "경험을 만들고 게시하세요.",
+        "grow_title": "성장",
+        "grow_text": "플레이어가 계속 돌아오게 하세요.",
         "paid_title": "지급",
-        "paid_text": "{amount} {currency} 풀을 각 사이클 종료 후 분배합니다."
+        "paid_text": "{amount} 풀을 각 사이클 종료 후 분배합니다."
       },
       "measure": {
         "title": "보상 평가 기준",
-        "subtitle": "매 사이클마다 각 경험의 기여도에 따라 풀을 나눕니다.",
+        "subtitle": "매 사이클마다 플레이어 참여도에 따라 풀을 나눕니다.",
         "new_players": "Decentraland 신규 플레이어",
         "playtime": "활성 플레이 시간",
         "retention": "플레이어 리텐션"
@@ -143,7 +143,7 @@
         "scene_title": "내 씬 또는 World",
         "scene_policy": "사이클 내내 Decentraland 이용약관과 콘텐츠 정책을 준수해야 합니다.",
         "scene_content": "도박 등 18세 이상 제한 콘텐츠가 없어야 합니다.",
-        "scene_removed": "삭제되거나 이전되면 집계에서 제외됩니다."
+        "scene_removed": "삭제되면 집계에서 제외되며, 이전된 사이클은 집계되지 않습니다."
       },
       "rewards": {
         "title": "지급",
@@ -168,7 +168,7 @@
         "title": "Creator Fund: 베타 일정",
         "cycle_name": "사이클 {number}",
         "launch": "프로그램 시작. Creator Hub에서 옵트인 오픈",
-        "cycle_row": "{name} · {amount} USDC · 지급 기한 {date}"
+        "cycle_row": "{name} · {amount} · 지급 기한 {date}"
       },
       "join": {
         "title": "Creator Fund 11월 15일 시작",
@@ -187,7 +187,7 @@
         "wallet_question": "별도의 지급용 지갑을 사용할 수 있나요?",
         "wallet_answer": "네. 보상은 Creator Hub에서 설정한 지급용 지갑으로 지급되며, 직접 관리하는 어떤 지갑이나 거래소 계정이든 설정할 수 있습니다. 사이클 종료 후 7일이 지나도 설정하지 않으면 보상 지급이 소멸됩니다.",
         "transfer_question": "사이클 도중 LAND, NAME 또는 World를 이전하면 어떻게 되나요?",
-        "transfer_answer": "경험은 이전된 시점부터 집계에서 제외됩니다. 참여 자격과 지급은 프로그램 약관에 따르며, 이전한다고 해서 지급 권리가 새 소유자에게 넘어가지는 않습니다.",
+        "transfer_answer": "사이클 도중 이전하면 해당 사이클의 활동은 누구에게도 집계되지 않습니다. 새 소유자는 다음 사이클부터 집계됩니다. 이전 전에 끝난 사이클의 보상은 각 사이클에 등록된 지급용 지갑으로 계속 지급됩니다. 본인이 관리하는 다른 지갑으로 옮기는 경우 이전 전에 알려 주세요. 참여가 이어지는 것으로 처리할 수 있습니다.",
         "runs_question": "Creator Fund는 누가 운영하나요?",
         "runs_answer": "Creator Fund는 DCL Regenesis Labs Foundation과 Decentraland Foundation이 만들고 자금을 지원합니다. 운영은 Decentraland Foundation이 맡습니다.",
         "after_question": "베타 시즌 이후에는 어떻게 되나요?",

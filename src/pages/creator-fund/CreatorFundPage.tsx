@@ -1,10 +1,13 @@
-import { Suspense, memo } from 'react'
+import { Suspense, memo, useEffect } from 'react'
 import { Env } from '@dcl/ui-env'
 import { CreatorFundComingSoon } from '../../components/CreatorFund/ComingSoon'
 import { Layout } from '../../components/Layout'
 import { getCurrentEnv } from '../../config/env'
 import { lazyWithRetry } from '../../utils/lazyWithRetry'
 import { LandingFallback } from './CreatorFundPage.styled'
+
+// Browser tab title, on both the coming-soon view and the full page.
+const CREATOR_FUND_TITLE = 'Decentraland Creator Fund'
 
 // Its own chunk, so decentraland.org visitors never download the full page.
 const CreatorFundLanding = lazyWithRetry(() =>
@@ -17,6 +20,14 @@ const CreatorFundLanding = lazyWithRetry(() =>
 // replaces the site one. On launch, drop the gate and CreatorFundComingSoon, and render
 // CreatorFundLanding everywhere.
 const CreatorFundPage = memo(() => {
+  useEffect(() => {
+    const previous = document.title
+    document.title = CREATOR_FUND_TITLE
+    return () => {
+      document.title = previous
+    }
+  }, [])
+
   if (getCurrentEnv() === Env.PRODUCTION) {
     return (
       <Layout>
@@ -36,4 +47,4 @@ const CreatorFundPage = memo(() => {
 
 CreatorFundPage.displayName = 'CreatorFundPage'
 
-export { CreatorFundPage }
+export { CREATOR_FUND_TITLE, CreatorFundPage }

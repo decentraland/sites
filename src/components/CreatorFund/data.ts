@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import AndroidIcon from '@mui/icons-material/Android'
 import AppleIcon from '@mui/icons-material/Apple'
-import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 import MicrosoftIcon from '@mui/icons-material/Microsoft'
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined'
 import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined'
 import RepeatIcon from '@mui/icons-material/Repeat'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 /* eslint-enable @typescript-eslint/naming-convention */
 import roustanAvatar from '../../images/creator-fund/creator-roustan.jpg'
 import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
@@ -66,7 +66,7 @@ const buildToEarnSteps: BuildStep[] = [
     linkKey: 'page.creator_fund.how.opt_in_link',
     textKey: 'page.creator_fund.how.opt_in_text'
   },
-  { icon: BuildOutlinedIcon, titleKey: 'page.creator_fund.how.build_title', textKey: 'page.creator_fund.how.build_text' },
+  { icon: TrendingUpIcon, titleKey: 'page.creator_fund.how.grow_title', textKey: 'page.creator_fund.how.grow_text' },
   { icon: EmojiEventsOutlinedIcon, titleKey: 'page.creator_fund.how.paid_title', textKey: 'page.creator_fund.how.paid_text' }
 ]
 

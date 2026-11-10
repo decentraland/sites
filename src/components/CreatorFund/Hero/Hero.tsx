@@ -37,8 +37,8 @@ const Hero = memo(() => {
   const poster = isMobile ? heroData.imagePortrait : heroData.imageLandscape
 
   const facts = [
-    { value: `${formatUsd(betaProgram.seasonPoolUsd)} ${betaProgram.currency}`, label: l('page.creator_fund.hero.fact_pool') },
-    { value: `${formatUsd(betaProgram.cycles[0].allocationUsd)} ${betaProgram.currency}`, label: l('page.creator_fund.hero.fact_cycle') },
+    { value: formatUsd(betaProgram.seasonPoolUsd), label: l('page.creator_fund.hero.fact_pool') },
+    { value: formatUsd(betaProgram.cycles[0].allocationUsd), label: l('page.creator_fund.hero.fact_cycle') },
     { value: l('page.creator_fund.hero.fact_start_value'), label: l('page.creator_fund.hero.fact_start') }
   ]
 
@@ -61,10 +61,8 @@ const Hero = memo(() => {
         <HeroSubtitle>
           <SubtitleLine>{l('page.creator_fund.hero.subtitle')}</SubtitleLine>
           <SubtitleLine>
-            <strong>
-              {l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd), currency: betaProgram.currency })}
-            </strong>{' '}
-            {l('page.creator_fund.hero.pool_text')}
+            <strong>{l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd) })}</strong>{' '}
+            {l('page.creator_fund.hero.pool_text', { currency: betaProgram.currency })}
           </SubtitleLine>
         </HeroSubtitle>
         <HeroActions>

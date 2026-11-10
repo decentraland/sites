@@ -11,7 +11,7 @@ import { BuildSection, StepCard, StepLink, StepNumber, StepText, StepTitle, Step
 const BuildToEarn = memo(() => {
   const l = useFormatMessage()
   const trackClick = useUnloadSafeTrackClick()
-  const values = { amount: formatUsd(betaProgram.cycles[0].allocationUsd), currency: betaProgram.currency }
+  const values = { amount: formatUsd(betaProgram.cycles[0].allocationUsd) }
 
   return (
     <BuildSection id="how" band>

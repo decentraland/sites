@@ -171,7 +171,7 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should show the season pool in the hero', () => {
-    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000","currency":"USDC"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000"}')).toBeInTheDocument()
   })
 
   it('should render a target section for every section link', () => {
@@ -201,9 +201,13 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'Mac' })).toHaveAttribute('href', getDownloadUrl('apple'))
   })
 
-  it('should state the hero fact amounts in USDC', () => {
-    expect(screen.getByText('$30,000 USDC')).toBeInTheDocument()
-    expect(screen.getByText('$10,000 USDC')).toBeInTheDocument()
+  it('should show the hero fact amounts in dollars', () => {
+    expect(screen.getByText('$30,000')).toBeInTheDocument()
+    expect(screen.getByText('$10,000')).toBeInTheDocument()
+  })
+
+  it('should say once in the hero that the pool is paid in USDC', () => {
+    expect(screen.getByText('page.creator_fund.hero.pool_text {"currency":"USDC"}')).toBeInTheDocument()
   })
 
   it('should show the three hero facts from the design', () => {
@@ -213,12 +217,12 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByText('page.creator_fund.hero.fact_start')).toBeInTheDocument()
   })
 
-  it('should list the steps in order: opt in, build, get paid', () => {
+  it('should list the steps in order: join, grow, payout', () => {
     const steps = within(document.getElementById('how') as HTMLElement).getAllByRole('heading', { level: 3 })
 
     expect(steps.map(step => step.textContent)).toEqual([
       'page.creator_fund.how.opt_in_title',
-      'page.creator_fund.how.build_title',
+      'page.creator_fund.how.grow_title',
       'page.creator_fund.how.paid_title'
     ])
   })
@@ -230,7 +234,7 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should interpolate the cycle allocation into the get-paid step', () => {
-    expect(screen.getByText('page.creator_fund.how.paid_text {"amount":"$10,000","currency":"USDC"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.how.paid_text {"amount":"$10,000"}')).toBeInTheDocument()
   })
 
   it('should list the payout terms with the program values', () => {
