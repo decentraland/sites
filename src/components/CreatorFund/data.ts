@@ -9,12 +9,11 @@ import RepeatIcon from '@mui/icons-material/Repeat'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 /* eslint-enable @typescript-eslint/naming-convention */
-import roustanAvatar from '../../images/creator-fund/creator-roustan.jpg'
 import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
 import sceneCryocene from '../../images/creator-fund/scene-cryocene.jpg'
 import sceneGenesisPlaza from '../../images/creator-fund/scene-genesis-plaza.jpg'
 import { DownloadTarget } from '../../modules/segment'
-import type { BuildStep, BuilderQuote, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
+import type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
 
 // Beta Season facts from the Creator Fund Program Rules. Amounts are USD.
 const betaProgram: CreatorFundProgram = {
@@ -127,27 +126,8 @@ const CLICK_SECTIONS = {
   howItWorks: 'how-it-works',
   payouts: 'payouts',
   faq: 'faq',
-  builders: 'builders',
   finalCta: 'final-cta'
 } as const
-
-// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown last, after the FAQ.
-// Roustan's quote is shortened from the design's two longer sentences.
-const builderQuotes: BuilderQuote[] = [
-  {
-    name: 'Stom',
-    quote: 'Getting paid repeatedly makes you feel like you’re actually building something professionally.'
-  },
-  {
-    name: 'Roustan',
-    image: roustanAvatar,
-    quote: 'Building in Decentraland let me cut out all the middlemen. I grew a community and following faster than anything IRL ever did.'
-  },
-  {
-    name: 'Low Poly Models (KJ)',
-    quote: "Since Decentraland is a platform for adults, I have a lot more creative freedom in what I'm building."
-  }
-]
 
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
@@ -167,7 +147,6 @@ export {
   CREATOR_HUB_DOWNLOAD_PATH,
   betaProgram,
   buildToEarnSteps,
-  builderQuotes,
   eligibilityCards,
   faqEntries,
   moreWaysToEarnKeys,
