@@ -9,7 +9,9 @@ import { DownloadTarget } from '../../../modules/segment'
 import { clickTrackingAttributes } from '../CreatorFund.helpers'
 import { CLICK_SECTIONS, CREATOR_FUND_RULES_URL, CREATOR_FUND_TERMS_URL, CREATOR_HUB_DOWNLOAD_PATH, sectionLinks } from '../data'
 import {
+  Brand,
   BrandBy,
+  BrandHomeLink,
   BrandLink,
   BrandLogo,
   BrandName,
@@ -52,13 +54,22 @@ const SectionNav = memo(() => {
   return (
     <NavHeader>
       <NavBar>
-        <BrandLink href="#overview" {...clickTrackingAttributes(navbar, 'Creator Fund Logo')} onClick={trackClick}>
-          <BrandLogo aria-hidden="true" />
-          <BrandText>
-            <BrandName>{l('page.creator_fund.nav.brand')}</BrandName>
-            <BrandBy>{l('page.creator_fund.nav.by')}</BrandBy>
-          </BrandText>
-        </BrandLink>
+        <Brand>
+          <BrandHomeLink
+            href="/"
+            aria-label={l('page.creator_fund.why.visit')}
+            {...clickTrackingAttributes(navbar, 'Decentraland Logo')}
+            onClick={trackClick}
+          >
+            <BrandLogo aria-hidden="true" />
+          </BrandHomeLink>
+          <BrandLink href="#overview" {...clickTrackingAttributes(navbar, 'Creator Fund Name')} onClick={trackClick}>
+            <BrandText>
+              <BrandName>{l('page.creator_fund.nav.brand')}</BrandName>
+              <BrandBy>{l('page.creator_fund.nav.by')}</BrandBy>
+            </BrandText>
+          </BrandLink>
+        </Brand>
         <DesktopLinks aria-label={l('page.creator_fund.nav.aria_label')}>
           {sectionLinks.map(link => (
             <DesktopLink key={link.id} href={`#${link.id}`} {...clickTrackingAttributes(navbar, link.trackingName)} onClick={trackClick}>

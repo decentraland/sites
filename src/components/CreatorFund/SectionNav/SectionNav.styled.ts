@@ -27,6 +27,34 @@ const NavBar = styled('div')({
   }
 })
 
+// Logo and name sit side by side as two links: the logo goes to the Decentraland home page and
+// the name back to the top of this page.
+const Brand = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12
+})
+
+const BrandHomeLink = styled('a')({
+  display: 'flex',
+  flexShrink: 0,
+  borderRadius: '50%',
+  transition: 'transform 0.15s ease',
+  ['&:hover']: {
+    transform: 'scale(1.05)'
+  },
+  ['&:focus-visible']: {
+    outline: `2px solid ${creatorFundColors.white}`,
+    outlineOffset: 4
+  },
+  ['@media (prefers-reduced-motion: reduce)']: {
+    transition: 'none',
+    ['&:hover']: {
+      transform: 'none'
+    }
+  }
+})
+
 const BrandLink = styled('a')({
   display: 'flex',
   alignItems: 'center',
@@ -154,7 +182,9 @@ const MobileCta = styled(NavButtonLink)({
 })
 
 export {
+  Brand,
   BrandBy,
+  BrandHomeLink,
   BrandLink,
   BrandLogo,
   BrandName,

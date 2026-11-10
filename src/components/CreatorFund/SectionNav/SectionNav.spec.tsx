@@ -51,6 +51,14 @@ describe('SectionNav', () => {
       expect(screen.getByRole('link', { name: 'page.creator_fund.nav.terms' })).toHaveAttribute('href', CREATOR_FUND_TERMS_URL)
     })
 
+    it('should send the Decentraland logo to the Decentraland home page', () => {
+      expect(screen.getByRole('link', { name: 'page.creator_fund.why.visit' })).toHaveAttribute('href', '/')
+    })
+
+    it('should send the Creator Fund name back to the top of the page', () => {
+      expect(screen.getByRole('link', { name: /page\.creator_fund\.nav\.brand/ })).toHaveAttribute('href', '#overview')
+    })
+
     it('should send Join from Creator Hub straight to the Creator Hub page', () => {
       expect(screen.getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
     })
