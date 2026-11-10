@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useEffect } from 'react'
 import { BulletList, LegalPageLayout, Paragraph, Section, SectionTitle } from '../../components/LegalPage'
 import type { TOCEntry } from '../../components/LegalPage'
 
@@ -21,6 +21,20 @@ const TABLE_OF_CONTENTS: TOCEntry[] = [
   { id: 'disclaimers-liability-and-disputes', label: '12. Disclaimers, Liability and Disputes' }
 ]
 
+// Browser tab title while the page is open.
+const CREATOR_FUND_TERMS_TITLE = 'Creator Fund - Terms'
+
+const TabTitle = () => {
+  useEffect(() => {
+    const previous = document.title
+    document.title = CREATOR_FUND_TERMS_TITLE
+    return () => {
+      document.title = previous
+    }
+  }, [])
+  return null
+}
+
 const ProgramRulesLink = () => (
   <a href={PROGRAM_RULES_URL} target="_blank" rel="noopener noreferrer">
     Program Rules page
@@ -29,6 +43,7 @@ const ProgramRulesLink = () => (
 
 const CreatorFundTerms = memo(() => (
   <LegalPageLayout title="Creator Fund" activeSlug="/creator-fund-terms" tableOfContents={TABLE_OF_CONTENTS}>
+    <TabTitle />
     <Paragraph>Terms and Conditions (Beta Season)</Paragraph>
     <Paragraph>Draft</Paragraph>
 
@@ -413,4 +428,4 @@ const CreatorFundTerms = memo(() => (
 
 CreatorFundTerms.displayName = 'CreatorFundTerms'
 
-export { CreatorFundTerms }
+export { CREATOR_FUND_TERMS_TITLE, CreatorFundTerms }
