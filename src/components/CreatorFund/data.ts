@@ -131,9 +131,13 @@ const CLICK_SECTIONS = {
   finalCta: 'final-cta'
 } as const
 
-// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown below the FAQ.
+// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown right above the FAQ.
 // Roustan's quote is shortened from the design's two longer sentences.
 const builderQuotes: BuilderQuote[] = [
+  {
+    name: 'Stom',
+    quote: 'Getting paid repeatedly makes you feel like you’re actually building something professionally.'
+  },
   {
     name: 'Roustan',
     image: roustanAvatar,

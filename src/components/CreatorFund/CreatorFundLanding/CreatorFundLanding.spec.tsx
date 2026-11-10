@@ -287,12 +287,11 @@ describe('CreatorFundLanding', () => {
     expect(schedule.contains(moreWays)).toBe(false)
   })
 
-  it('should show the builders right after the FAQ', () => {
+  it('should show the builders right before the FAQ', () => {
     const faq = document.getElementById('faq') as HTMLElement
-    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' })
+    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' }).closest('section') as HTMLElement
 
-    expect(faq.compareDocumentPosition(builders) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(faq.contains(builders)).toBe(false)
+    expect(builders.nextElementSibling).toBe(faq)
   })
 
   it('should show a quote for every builder', () => {
