@@ -75,7 +75,6 @@
     },
     "creator_fund": {
       "title": "Creator Fund",
-      "coming_soon": "출시 예정",
       "nav": {
         "aria_label": "Creator Fund 섹션",
         "brand": "Creator Fund",

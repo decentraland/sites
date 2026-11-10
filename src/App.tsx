@@ -212,8 +212,7 @@ const App = () => {
             <Route path="/reels" element={<ReelsEmptyPage />} />
             <Route path="/reels/list/:address" element={<ReelsListPage />} />
             <Route path="/reels/:imageId" element={<ReelsImagePage />} />
-            {/* Renders its own <Layout />: the full page swaps the site navbar for the
-              Creator Fund one, while decentraland.org's coming-soon view keeps it. */}
+            {/* Renders its own <Layout />: the page swaps the site navbar for the Creator Fund one. */}
             {/* route-manifest: sitemap */}
             <Route path="/creator-fund" element={<CreatorFundPage />} />
             <Route element={<Layout />}>
