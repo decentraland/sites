@@ -15,7 +15,6 @@ import {
   SceneStack,
   WhyGrid,
   WhyLogo,
-  WhySubtitle,
   WhyTitle
 } from './Why.styled'
 
@@ -36,7 +35,6 @@ const Why = memo(() => {
             <WhyLogo aria-hidden="true" />
             <WhyTitle>{l('page.creator_fund.why.title')}</WhyTitle>
           </HomeLink>
-          <WhySubtitle>{l('page.creator_fund.why.subtitle')}</WhySubtitle>
           <AwardedLine>{l('page.creator_fund.why.awarded')}</AwardedLine>
           <PlatformGrid aria-label={l('page.creator_fund.why.platforms_label')}>
             {/* eslint-disable-next-line @typescript-eslint/naming-convention */}

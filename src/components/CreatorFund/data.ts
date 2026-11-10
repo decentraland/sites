@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import AndroidIcon from '@mui/icons-material/Android'
 import AppleIcon from '@mui/icons-material/Apple'
-import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined'
 import MicrosoftIcon from '@mui/icons-material/Microsoft'
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined'
 import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined'
 import RepeatIcon from '@mui/icons-material/Repeat'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 /* eslint-enable @typescript-eslint/naming-convention */
+import roustanAvatar from '../../images/creator-fund/creator-roustan.jpg'
 import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
 import sceneCryocene from '../../images/creator-fund/scene-cryocene.jpg'
 import sceneGenesisPlaza from '../../images/creator-fund/scene-genesis-plaza.jpg'
@@ -65,7 +66,7 @@ const buildToEarnSteps: BuildStep[] = [
     linkKey: 'page.creator_fund.how.opt_in_link',
     textKey: 'page.creator_fund.how.opt_in_text'
   },
-  { icon: BuildOutlinedIcon, titleKey: 'page.creator_fund.how.build_title', textKey: 'page.creator_fund.how.build_text' },
+  { icon: TrendingUpIcon, titleKey: 'page.creator_fund.how.grow_title', textKey: 'page.creator_fund.how.grow_text' },
   { icon: EmojiEventsOutlinedIcon, titleKey: 'page.creator_fund.how.paid_title', textKey: 'page.creator_fund.how.paid_text' }
 ]
 
@@ -130,20 +131,21 @@ const CLICK_SECTIONS = {
   finalCta: 'final-cta'
 } as const
 
-// "Meet Decentraland builders" quotes, from the Nov 9 design. Shown below the FAQ.
+// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown last, after the FAQ.
+// Roustan's quote is shortened from the design's two longer sentences.
 const builderQuotes: BuilderQuote[] = [
-  {
-    name: 'Low Poly Models (KJ)',
-    quote: "Since Decentraland is a platform for adults, I have a lot more creative freedom in what I'm building."
-  },
-  {
-    name: 'Roustan',
-    quote:
-      'Building in Decentraland allowed me to cut out all the middlemen. It has enabled me to develop a community and following faster than anything IRL has ever done in the past.'
-  },
   {
     name: 'Stom',
     quote: 'Getting paid repeatedly makes you feel like you’re actually building something professionally.'
+  },
+  {
+    name: 'Roustan',
+    image: roustanAvatar,
+    quote: 'Building in Decentraland let me cut out all the middlemen. I grew a community and following faster than anything IRL ever did.'
+  },
+  {
+    name: 'Low Poly Models (KJ)',
+    quote: "Since Decentraland is a platform for adults, I have a lot more creative freedom in what I'm building."
   }
 ]
 
@@ -152,8 +154,8 @@ const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 const CREATOR_HUB_DOWNLOAD_PATH = '/download/creator-hub'
 
 // Program Rules and Program Terms are two separate pages. The rules live on the docs site
-// (decentraland/docs: creator/creator-fund/program-rules.md); the terms are this site's
-// legal page at /creator-fund-terms (https://decentraland.org/creator-fund-terms).
+// (/creator/creator-fund/program-rules redirects to the docs page); the terms are this site's
+// legal page at /creator-fund-terms, linked relatively so each environment opens its own copy.
 const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
 const CREATOR_FUND_TERMS_URL = '/creator-fund-terms'
 

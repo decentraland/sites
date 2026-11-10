@@ -3,9 +3,10 @@ import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
 import avatarsImage from '../../../images/creator-fund/avatars.webp'
 import closingBackground from '../../../images/creator-fund/closing-scene-background.jpg'
+import { DownloadTarget } from '../../../modules/segment'
 import { clickTrackingAttributes } from '../CreatorFund.helpers'
 import { PrimaryButtonLink } from '../CreatorFund.styled'
-import { CLICK_SECTIONS, CREATOR_FUND_TERMS_URL } from '../data'
+import { CLICK_SECTIONS, CREATOR_FUND_TERMS_URL, CREATOR_HUB_DOWNLOAD_PATH } from '../data'
 import { AvatarsImage, JoinActions, JoinBackground, JoinInner, JoinSection, JoinSubtitle, JoinTitle, TermsLink } from './Join.styled'
 
 const Join = memo(() => {
@@ -31,8 +32,8 @@ const Join = memo(() => {
         </JoinSubtitle>
         <JoinActions>
           <PrimaryButtonLink
-            href="/create"
-            {...clickTrackingAttributes(CLICK_SECTIONS.finalCta, 'Join From Creator Hub')}
+            href={CREATOR_HUB_DOWNLOAD_PATH}
+            {...clickTrackingAttributes(CLICK_SECTIONS.finalCta, 'Join From Creator Hub', DownloadTarget.CREATOR_HUB)}
             onClick={trackClick}
           >
             {l('page.creator_fund.cta.join')}

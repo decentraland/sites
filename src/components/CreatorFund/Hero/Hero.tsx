@@ -4,11 +4,12 @@ import CheckIcon from '@mui/icons-material/Check'
 import { useMediaQuery } from 'decentraland-ui2'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
+import { DownloadTarget } from '../../../modules/segment'
 import { heroData } from '../../Create/data'
 import { Video } from '../../Video'
 import { clickTrackingAttributes, formatUsd } from '../CreatorFund.helpers'
 import { PrimaryButtonLink, RubyTile } from '../CreatorFund.styled'
-import { CLICK_SECTIONS, betaProgram } from '../data'
+import { CLICK_SECTIONS, CREATOR_HUB_DOWNLOAD_PATH, betaProgram } from '../data'
 import {
   EyebrowDot,
   FactCard,
@@ -60,14 +61,16 @@ const Hero = memo(() => {
         <HeroSubtitle>
           <SubtitleLine>{l('page.creator_fund.hero.subtitle')}</SubtitleLine>
           <SubtitleLine>
-            <strong>
-              {l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd), currency: betaProgram.currency })}
-            </strong>{' '}
-            {l('page.creator_fund.hero.pool_text')}
+            <strong>{l('page.creator_fund.hero.pool_amount', { pool: formatUsd(betaProgram.seasonPoolUsd) })}</strong>{' '}
+            {l('page.creator_fund.hero.pool_text', { currency: betaProgram.currency })}
           </SubtitleLine>
         </HeroSubtitle>
         <HeroActions>
-          <PrimaryButtonLink href="#join" {...clickTrackingAttributes(CLICK_SECTIONS.hero, 'Join From Creator Hub')} onClick={trackClick}>
+          <PrimaryButtonLink
+            href={CREATOR_HUB_DOWNLOAD_PATH}
+            {...clickTrackingAttributes(CLICK_SECTIONS.hero, 'Join From Creator Hub', DownloadTarget.CREATOR_HUB)}
+            onClick={trackClick}
+          >
             {l('page.creator_fund.cta.join')}
           </PrimaryButtonLink>
         </HeroActions>

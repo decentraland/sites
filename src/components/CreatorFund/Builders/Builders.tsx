@@ -25,15 +25,8 @@ import {
   Quote,
   QuoteAuthor,
   QuoteCard,
-  QuoteMark,
-  type QuoteSize
+  QuoteMark
 } from './Builders.styled'
-
-const quoteSize = (quote: string): QuoteSize => {
-  if (quote.length < 70) return 'large'
-  if (quote.length < 120) return 'medium'
-  return 'small'
-}
 
 type BuilderSlideProps = {
   builder: BuilderQuote
@@ -44,7 +37,7 @@ const BuilderSlide = memo(({ builder, perPage }: BuilderSlideProps) => (
   <CarouselSlide perPage={perPage}>
     <QuoteCard>
       <QuoteMark aria-hidden="true" />
-      <Quote size={quoteSize(builder.quote)}>&ldquo;{builder.quote}&rdquo;</Quote>
+      <Quote>&ldquo;{builder.quote}&rdquo;</Quote>
       <QuoteAuthor>
         {builder.image ? (
           <AuthorAvatar src={builder.image} alt={builder.name} loading="lazy" />
@@ -59,13 +52,13 @@ const BuilderSlide = memo(({ builder, perPage }: BuilderSlideProps) => (
 
 BuilderSlide.displayName = 'BuilderSlide'
 
-// "Meet Decentraland builders": creator quotes below the FAQ. Three cards in a row on
-// desktop; one card per page on mobile, with arrows and page dots.
+// "Meet Decentraland Builders": creator quotes at the bottom of the page, after the FAQ. Same-size cards in one row on desktop
+// (up to three); one card per page on mobile, with arrows and page dots.
 const Builders = memo(() => {
   const l = useFormatMessage()
   const trackClick = useUnloadSafeTrackClick()
   const isMobile = useMediaQuery('(max-width: 767px)')
-  const perPage = isMobile ? 1 : 3
+  const perPage = Math.min(isMobile ? 1 : 3, builderQuotes.length)
   // One "page" per possible first visible card, so the last page is never half empty.
   const pageCount = Math.max(builderQuotes.length - perPage + 1, 1)
   const [requestedPage, setRequestedPage] = useState(0)

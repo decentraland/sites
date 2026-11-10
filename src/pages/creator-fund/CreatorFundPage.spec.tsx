@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { Env } from '@dcl/ui-env'
 import { getCurrentEnv } from '../../config/env'
-import { CreatorFundPage } from './CreatorFundPage'
+import { CREATOR_FUND_TITLE, CreatorFundPage } from './CreatorFundPage'
 
 jest.mock('decentraland-ui2', () => {
   const { styled, Box, dclColors } = jest.requireActual('../../__test-utils__/styledMock')
@@ -54,6 +54,22 @@ describe('CreatorFundPage', () => {
     it('should not load the full page', () => {
       expect(screen.queryByTestId('landing')).not.toBeInTheDocument()
     })
+
+    it('should title the browser tab Decentraland Creator Fund', () => {
+      expect(document.title).toBe('Decentraland Creator Fund')
+    })
+  })
+
+  describe('when the page is left', () => {
+    beforeEach(() => {
+      document.title = 'Decentraland'
+      ;(getCurrentEnv as jest.Mock).mockReturnValue(Env.PRODUCTION)
+      render(<CreatorFundPage />).unmount()
+    })
+
+    it('should restore the previous tab title', () => {
+      expect(document.title).toBe('Decentraland')
+    })
   })
 
   describe.each([Env.DEVELOPMENT, Env.STAGING])('when served from the %s environment', env => {
@@ -74,6 +90,11 @@ describe('CreatorFundPage', () => {
     it('should not show the coming-soon placeholder', async () => {
       await screen.findByTestId('landing')
       expect(screen.queryByTestId('coming-soon')).not.toBeInTheDocument()
+    })
+
+    it('should title the browser tab with the Creator Fund name', async () => {
+      await screen.findByTestId('landing')
+      expect(document.title).toBe(CREATOR_FUND_TITLE)
     })
   })
 })

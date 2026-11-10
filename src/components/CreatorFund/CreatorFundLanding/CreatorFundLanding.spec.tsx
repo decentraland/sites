@@ -4,6 +4,7 @@ import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import {
   CREATOR_FUND_CONTACT_EMAIL,
+  CREATOR_FUND_RULES_URL,
   CREATOR_FUND_TERMS_URL,
   CREATOR_HUB_DOWNLOAD_PATH,
   builderQuotes,
@@ -170,7 +171,7 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should show the season pool in the hero', () => {
-    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000","currency":"USDC"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.hero.pool_amount {"pool":"$30,000"}')).toBeInTheDocument()
   })
 
   it('should render a target section for every section link', () => {
@@ -182,12 +183,15 @@ describe('CreatorFundLanding', () => {
     })
   })
 
-  it('should point the join calls to action above the join section at it', () => {
-    const join = document.getElementById('join') as HTMLElement
-    const earlierLinks = screen.getAllByRole('link', { name: 'page.creator_fund.cta.join' }).filter(link => !join.contains(link))
+  it('should send every join call to action straight to the Creator Hub page', () => {
+    const joinLinks = screen.getAllByRole('link', { name: 'page.creator_fund.cta.join' })
 
-    expect(earlierLinks.length).toBeGreaterThan(0)
-    earlierLinks.forEach(link => expect(link).toHaveAttribute('href', '#join'))
+    // Navbar, hero and the closing section.
+    expect(joinLinks).toHaveLength(3)
+    joinLinks.forEach(link => {
+      expect(link).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
+      expect(link).toHaveAttribute('data-download-target', 'creator_hub')
+    })
   })
 
   it('should link each platform to its download', () => {
@@ -197,6 +201,15 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByRole('link', { name: 'Mac' })).toHaveAttribute('href', getDownloadUrl('apple'))
   })
 
+  it('should show the hero fact amounts in dollars', () => {
+    expect(screen.getByText('$30,000')).toBeInTheDocument()
+    expect(screen.getByText('$10,000')).toBeInTheDocument()
+  })
+
+  it('should say once in the hero that the pool is paid in USDC', () => {
+    expect(screen.getByText('page.creator_fund.hero.pool_text {"currency":"USDC"}')).toBeInTheDocument()
+  })
+
   it('should show the three hero facts from the design', () => {
     expect(screen.getByText('page.creator_fund.hero.fact_pool')).toBeInTheDocument()
     expect(screen.getByText('page.creator_fund.hero.fact_cycle')).toBeInTheDocument()
@@ -204,12 +217,12 @@ describe('CreatorFundLanding', () => {
     expect(screen.getByText('page.creator_fund.hero.fact_start')).toBeInTheDocument()
   })
 
-  it('should list the steps in order: opt in, build, get paid', () => {
+  it('should list the steps in order: join, grow, payout', () => {
     const steps = within(document.getElementById('how') as HTMLElement).getAllByRole('heading', { level: 3 })
 
     expect(steps.map(step => step.textContent)).toEqual([
       'page.creator_fund.how.opt_in_title',
-      'page.creator_fund.how.build_title',
+      'page.creator_fund.how.grow_title',
       'page.creator_fund.how.paid_title'
     ])
   })
@@ -221,7 +234,7 @@ describe('CreatorFundLanding', () => {
   })
 
   it('should interpolate the cycle allocation into the get-paid step', () => {
-    expect(screen.getByText('page.creator_fund.how.paid_text {"amount":"$10,000","currency":"USDC"}')).toBeInTheDocument()
+    expect(screen.getByText('page.creator_fund.how.paid_text {"amount":"$10,000"}')).toBeInTheDocument()
   })
 
   it('should list the payout terms with the program values', () => {
@@ -272,38 +285,41 @@ describe('CreatorFundLanding', () => {
 
   it('should show the other ways to earn right after the schedule', () => {
     const schedule = document.getElementById('dates') as HTMLElement
-    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' })
+    const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' }).closest('section') as HTMLElement
 
-    expect(schedule.compareDocumentPosition(moreWays) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(schedule.contains(moreWays)).toBe(false)
+    expect(schedule.nextElementSibling).toBe(moreWays)
   })
 
-  it('should show the builders right after the FAQ', () => {
+  it('should show the builders last, right after the FAQ', () => {
     const faq = document.getElementById('faq') as HTMLElement
-    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' })
+    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' }).closest('section') as HTMLElement
 
-    expect(faq.compareDocumentPosition(builders) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(faq.contains(builders)).toBe(false)
+    expect(faq.nextElementSibling).toBe(builders)
+    expect(builders.nextElementSibling).toBeNull()
   })
 
   it('should show a quote for every builder', () => {
     builderQuotes.forEach(builder => expect(screen.getByText(builder.name)).toBeInTheDocument())
   })
 
-  it('should show the amount awarded to creators right under the Decentraland subtitle', () => {
-    const subtitle = screen.getByText('page.creator_fund.why.subtitle')
+  it('should show the amount awarded to creators right under the Decentraland title', () => {
+    const title = screen.getByRole('heading', { name: 'page.creator_fund.why.title' })
 
-    expect(subtitle.nextElementSibling).toHaveTextContent('page.creator_fund.why.awarded')
+    expect(title.closest('a')?.nextElementSibling).toHaveTextContent('page.creator_fund.why.awarded')
+  })
+
+  it('should not show a subtitle under the Decentraland title', () => {
+    expect(screen.queryByText('page.creator_fund.why.subtitle')).not.toBeInTheDocument()
   })
 
   it('should render every FAQ entry', () => {
     faqEntries.forEach(entry => expect(screen.getByText(entry.questionKey)).toBeInTheDocument())
   })
 
-  it('should send creators to Creator Hub from the join section CTA', () => {
+  it('should send creators to the Creator Hub page from the join section CTA', () => {
     const join = document.getElementById('join') as HTMLElement
 
-    expect(within(join).getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', '/create')
+    expect(within(join).getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
   })
 
   it('should offer the support address under the FAQ', () => {
@@ -318,6 +334,11 @@ describe('CreatorFundLanding', () => {
 
   it('should link See Terms to the Program Terms page', () => {
     expect(screen.getByRole('link', { name: 'page.creator_fund.join.see_terms' })).toHaveAttribute('href', CREATOR_FUND_TERMS_URL)
+  })
+
+  it('should link the Program Terms on this site and the Program Rules on the docs site', () => {
+    expect(CREATOR_FUND_TERMS_URL).toBe('/creator-fund-terms')
+    expect(CREATOR_FUND_RULES_URL).toBe('https://docs.decentraland.org/creator/creator-fund/program-rules')
   })
 
   it('should not render a Creator Fund footer of its own', () => {
