@@ -3,15 +3,6 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote'
 import { Box, styled } from 'decentraland-ui2'
 import { MutedText, creatorFundColors } from '../CreatorFund.styled'
 
-type QuoteSize = 'large' | 'medium' | 'small'
-
-// The design sizes each quote by length so short and long quotes fill their cards evenly.
-const QUOTE_TYPE: Record<QuoteSize, { fontSize: number; lineHeight: number }> = {
-  large: { fontSize: 24, lineHeight: 1.375 },
-  medium: { fontSize: 20, lineHeight: 1.625 },
-  small: { fontSize: 18, lineHeight: 1.625 }
-}
-
 const BuildersSubtitle = styled(MutedText)(({ theme }) => ({
   marginTop: theme.spacing(2),
   fontSize: 18
@@ -26,7 +17,7 @@ const CarouselTrack = styled('ul', {
   shouldForwardProp: prop => prop !== 'page' && prop !== 'perPage'
 })<{ page: number; perPage: number }>(({ page, perPage }) => ({
   display: 'flex',
-  alignItems: 'flex-start',
+  alignItems: 'stretch',
   transform: `translateX(-${(page * 100) / perPage}%)`,
   margin: 0,
   padding: 0,
@@ -40,14 +31,17 @@ const CarouselTrack = styled('ul', {
 const CarouselSlide = styled('li', {
   shouldForwardProp: prop => prop !== 'perPage'
 })<{ perPage: number }>(({ theme, perPage }) => ({
+  display: 'flex',
   flexShrink: 0,
   width: `${100 / perPage}%`,
   padding: `0 ${theme.spacing(1)}`
 }))
 
+// Every card fills its slide, so all three are the same size with the author row at the bottom.
 const QuoteCard = styled('figure')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
+  flex: 1,
   margin: 0,
   padding: theme.spacing(3),
   borderRadius: 16,
@@ -62,12 +56,16 @@ const QuoteMark = styled(FormatQuoteIcon)(({ theme }) => ({
   color: creatorFundColors.primary
 }))
 
-const Quote = styled('blockquote', {
-  shouldForwardProp: prop => prop !== 'size'
-})<{ size: QuoteSize }>(({ size }) => ({
+// One type size for every quote, so the cards read as a set.
+const Quote = styled('blockquote')(({ theme }) => ({
+  flex: 1,
   margin: 0,
-  ...QUOTE_TYPE[size],
-  color: creatorFundColors.heading
+  fontSize: 18,
+  lineHeight: 1.5,
+  color: creatorFundColors.heading,
+  [theme.breakpoints.up('sm')]: {
+    fontSize: 20
+  }
 }))
 
 const QuoteAuthor = styled('figcaption')(({ theme }) => ({
@@ -184,4 +182,3 @@ export {
   QuoteCard,
   QuoteMark
 }
-export type { QuoteSize }

@@ -1,6 +1,6 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { CREATOR_FUND_RULES_URL, CREATOR_FUND_TERMS_URL, sectionLinks } from '../data'
+import { CREATOR_FUND_RULES_URL, CREATOR_FUND_TERMS_URL, CREATOR_HUB_DOWNLOAD_PATH, sectionLinks } from '../data'
 import { SectionNav } from './SectionNav'
 
 jest.mock('decentraland-ui2', () => {
@@ -49,6 +49,10 @@ describe('SectionNav', () => {
     it('should link Rules and Terms to their own pages', () => {
       expect(screen.getByRole('link', { name: 'page.creator_fund.nav.rules' })).toHaveAttribute('href', CREATOR_FUND_RULES_URL)
       expect(screen.getByRole('link', { name: 'page.creator_fund.nav.terms' })).toHaveAttribute('href', CREATOR_FUND_TERMS_URL)
+    })
+
+    it('should send Join from Creator Hub straight to the Creator Hub page', () => {
+      expect(screen.getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
     })
 
     it('should render only the desktop section links', () => {

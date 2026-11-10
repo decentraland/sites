@@ -9,6 +9,7 @@ import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined'
 import RepeatIcon from '@mui/icons-material/Repeat'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 /* eslint-enable @typescript-eslint/naming-convention */
+import roustanAvatar from '../../images/creator-fund/creator-roustan.jpg'
 import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
 import sceneCryocene from '../../images/creator-fund/scene-cryocene.jpg'
 import sceneGenesisPlaza from '../../images/creator-fund/scene-genesis-plaza.jpg'
@@ -130,20 +131,21 @@ const CLICK_SECTIONS = {
   finalCta: 'final-cta'
 } as const
 
-// "Meet Decentraland builders" quotes, from the Nov 9 design. Shown below the FAQ.
+// "Meet Decentraland Builders" quotes, from the Nov 9 design. Shown below the FAQ.
+// Roustan's quote is shortened from the design's two longer sentences.
 const builderQuotes: BuilderQuote[] = [
-  {
-    name: 'Low Poly Models (KJ)',
-    quote: "Since Decentraland is a platform for adults, I have a lot more creative freedom in what I'm building."
-  },
-  {
-    name: 'Roustan',
-    quote:
-      'Building in Decentraland allowed me to cut out all the middlemen. It has enabled me to develop a community and following faster than anything IRL has ever done in the past.'
-  },
   {
     name: 'Stom',
     quote: 'Getting paid repeatedly makes you feel like you’re actually building something professionally.'
+  },
+  {
+    name: 'Roustan',
+    image: roustanAvatar,
+    quote: 'Building in Decentraland let me cut out all the middlemen. I grew a community and following faster than anything IRL ever did.'
+  },
+  {
+    name: 'Low Poly Models (KJ)',
+    quote: "Since Decentraland is a platform for adults, I have a lot more creative freedom in what I'm building."
   }
 ]
 
@@ -151,10 +153,10 @@ const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
 const CREATOR_HUB_DOWNLOAD_PATH = '/download/creator-hub'
 
-// Program Rules and Program Terms are two separate pages on the docs site
-// (decentraland/docs: creator/creator-fund/program-rules.md and program-terms.md).
+// Program Rules live on the docs site (decentraland/docs: creator/creator-fund/program-rules.md);
+// Program Terms are the /creator-fund-terms page on decentraland.org.
 const CREATOR_FUND_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
-const CREATOR_FUND_TERMS_URL = 'https://docs.decentraland.org/creator/creator-fund/program-terms'
+const CREATOR_FUND_TERMS_URL = 'https://decentraland.org/creator-fund-terms'
 
 export {
   CLICK_SECTIONS,

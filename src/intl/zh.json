@@ -108,7 +108,6 @@
       "why": {
         "title": "Decentraland",
         "visit": "访问 Decentraland",
-        "subtitle": "一个由社区共建、社区共有的社交游戏世界。",
         "awarded": "2026 年至今已向创作者发放 $349k+。",
         "platforms_label": "下载 Decentraland",
         "scene_alt": "Decentraland 中的 {name} 场景"
@@ -117,7 +116,7 @@
         "title": "运作方式",
         "opt_in_title": "加入",
         "opt_in_link": "下载 Creator Hub",
-        "opt_in_text": "，并选择加入 Creator Fund。",
+        "opt_in_text": "，并选择加入该计划。",
         "build_title": "创作",
         "build_text": "打造并发布你的体验。",
         "paid_title": "发放",
@@ -125,7 +124,7 @@
       },
       "measure": {
         "title": "我们奖励什么",
-        "subtitle": "每个周期，奖池将按玩家在体验中的参与度比例分配：",
+        "subtitle": "每个周期，奖池将根据每个体验的贡献进行分配。",
         "new_players": "Decentraland 新玩家",
         "playtime": "活跃游玩时长",
         "retention": "玩家留存"
@@ -166,9 +165,9 @@
         "purchases": "<b>游戏内创作者购买功能</b>即将推出"
       },
       "dates": {
-        "title": "测试版日程",
+        "title": "Creator Fund：测试版日程",
         "cycle_name": "第 {number} 周期",
-        "launch": "基金启动。Creator Hub 开放加入。",
+        "launch": "计划启动。Creator Hub 开放加入",
         "cycle_row": "{name} · {amount} USDC · 发放截止 {date}"
       },
       "join": {
@@ -181,8 +180,8 @@
         "title": "常见问题",
         "join_question": "如何加入？",
         "join_answer": "11 月 11 日起可在 Creator Hub 中选择加入。你必须年满 18 岁，并拥有部署你的体验的 NAME 或 World。请使用所有者钱包签署计划条款；一次加入即涵盖该钱包拥有的所有符合条件的 NAME 和 World。",
-        "rewards_question": "发放金额如何计算？",
-        "rewards_answer": "每个周期的奖池将根据活跃游玩时长、玩家留存和 Decentraland 新玩家数量，在符合条件的体验之间分配。Creator Hub 的数据仅为预览：最终发放金额在审核后计算，因此可能与你的仪表盘不同。",
+        "rewards_question": "奖励如何决定？",
+        "rewards_answer": "每个周期的分配额将根据活跃游玩时长、玩家留存和 Decentraland 新玩家数量，在符合条件的体验之间分配。Creator Hub 的指标仅供参考：最终奖励在审核和进一步筛选后计算，因此所用数据可能与你的仪表盘不同。",
         "worlds_question": "Worlds 也计入吗？",
         "worlds_answer": "是的。Genesis City 中的场景和公开的 Worlds 均计入。",
         "wallet_question": "可以使用自定义收款钱包吗？",

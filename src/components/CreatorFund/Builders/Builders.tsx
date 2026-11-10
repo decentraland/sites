@@ -25,15 +25,8 @@ import {
   Quote,
   QuoteAuthor,
   QuoteCard,
-  QuoteMark,
-  type QuoteSize
+  QuoteMark
 } from './Builders.styled'
-
-const quoteSize = (quote: string): QuoteSize => {
-  if (quote.length < 70) return 'large'
-  if (quote.length < 120) return 'medium'
-  return 'small'
-}
 
 type BuilderSlideProps = {
   builder: BuilderQuote
@@ -44,7 +37,7 @@ const BuilderSlide = memo(({ builder, perPage }: BuilderSlideProps) => (
   <CarouselSlide perPage={perPage}>
     <QuoteCard>
       <QuoteMark aria-hidden="true" />
-      <Quote size={quoteSize(builder.quote)}>&ldquo;{builder.quote}&rdquo;</Quote>
+      <Quote>&ldquo;{builder.quote}&rdquo;</Quote>
       <QuoteAuthor>
         {builder.image ? (
           <AuthorAvatar src={builder.image} alt={builder.name} loading="lazy" />
@@ -59,7 +52,7 @@ const BuilderSlide = memo(({ builder, perPage }: BuilderSlideProps) => (
 
 BuilderSlide.displayName = 'BuilderSlide'
 
-// "Meet Decentraland builders": creator quotes below the FAQ. Three cards in a row on
+// "Meet Decentraland Builders": creator quotes below the FAQ. Three same-size cards in a row on
 // desktop; one card per page on mobile, with arrows and page dots.
 const Builders = memo(() => {
   const l = useFormatMessage()

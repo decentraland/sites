@@ -4,6 +4,7 @@ import { useMediaQuery } from 'decentraland-ui2'
 import { getDownloadUrl } from '../../../modules/downloadConstants'
 import {
   CREATOR_FUND_CONTACT_EMAIL,
+  CREATOR_FUND_RULES_URL,
   CREATOR_FUND_TERMS_URL,
   CREATOR_HUB_DOWNLOAD_PATH,
   builderQuotes,
@@ -182,12 +183,15 @@ describe('CreatorFundLanding', () => {
     })
   })
 
-  it('should point the join calls to action above the join section at it', () => {
-    const join = document.getElementById('join') as HTMLElement
-    const earlierLinks = screen.getAllByRole('link', { name: 'page.creator_fund.cta.join' }).filter(link => !join.contains(link))
+  it('should send every join call to action straight to the Creator Hub page', () => {
+    const joinLinks = screen.getAllByRole('link', { name: 'page.creator_fund.cta.join' })
 
-    expect(earlierLinks.length).toBeGreaterThan(0)
-    earlierLinks.forEach(link => expect(link).toHaveAttribute('href', '#join'))
+    // Navbar, hero and the closing section.
+    expect(joinLinks).toHaveLength(3)
+    joinLinks.forEach(link => {
+      expect(link).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
+      expect(link).toHaveAttribute('data-download-target', 'creator_hub')
+    })
   })
 
   it('should link each platform to its download', () => {
@@ -290,20 +294,24 @@ describe('CreatorFundLanding', () => {
     builderQuotes.forEach(builder => expect(screen.getByText(builder.name)).toBeInTheDocument())
   })
 
-  it('should show the amount awarded to creators right under the Decentraland subtitle', () => {
-    const subtitle = screen.getByText('page.creator_fund.why.subtitle')
+  it('should show the amount awarded to creators right under the Decentraland title', () => {
+    const title = screen.getByRole('heading', { name: 'page.creator_fund.why.title' })
 
-    expect(subtitle.nextElementSibling).toHaveTextContent('page.creator_fund.why.awarded')
+    expect(title.closest('a')?.nextElementSibling).toHaveTextContent('page.creator_fund.why.awarded')
+  })
+
+  it('should not show a subtitle under the Decentraland title', () => {
+    expect(screen.queryByText('page.creator_fund.why.subtitle')).not.toBeInTheDocument()
   })
 
   it('should render every FAQ entry', () => {
     faqEntries.forEach(entry => expect(screen.getByText(entry.questionKey)).toBeInTheDocument())
   })
 
-  it('should send creators to Creator Hub from the join section CTA', () => {
+  it('should send creators to the Creator Hub page from the join section CTA', () => {
     const join = document.getElementById('join') as HTMLElement
 
-    expect(within(join).getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', '/create')
+    expect(within(join).getByRole('link', { name: 'page.creator_fund.cta.join' })).toHaveAttribute('href', CREATOR_HUB_DOWNLOAD_PATH)
   })
 
   it('should offer the support address under the FAQ', () => {
@@ -318,6 +326,11 @@ describe('CreatorFundLanding', () => {
 
   it('should link See Terms to the Program Terms page', () => {
     expect(screen.getByRole('link', { name: 'page.creator_fund.join.see_terms' })).toHaveAttribute('href', CREATOR_FUND_TERMS_URL)
+  })
+
+  it('should keep the Program Terms on decentraland.org and the Program Rules on the docs site', () => {
+    expect(CREATOR_FUND_TERMS_URL).toBe('https://decentraland.org/creator-fund-terms')
+    expect(CREATOR_FUND_RULES_URL).toBe('https://docs.decentraland.org/creator/creator-fund/program-rules')
   })
 
   it('should not render a Creator Fund footer of its own', () => {

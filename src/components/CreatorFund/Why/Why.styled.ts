@@ -1,5 +1,5 @@
 import { Box, Logo, styled } from 'decentraland-ui2'
-import { DisplayTitle, MutedText, SectionInner, creatorFundColors, rewardCardGradient } from '../CreatorFund.styled'
+import { DisplayTitle, SectionInner, creatorFundColors, rewardCardGradient } from '../CreatorFund.styled'
 
 const WhyGrid = styled(SectionInner)(({ theme }) => ({
   display: 'grid',
@@ -49,18 +49,7 @@ const HomeLink = styled('a')(({ theme }) => ({
   }
 }))
 
-const WhySubtitle = styled(MutedText)(({ theme }) => ({
-  marginTop: theme.spacing(1.5),
-  fontSize: 16,
-  [theme.breakpoints.up('sm')]: {
-    fontSize: 18
-  },
-  [theme.breakpoints.up('lg')]: {
-    whiteSpace: 'nowrap'
-  }
-}))
-
-// Paid-to-creators figure under the subtitle, in body text color (no icon, per the Nov 9 design).
+// Paid-to-creators figure under the title, in body text color (no icon, per the Nov 9 design).
 const AwardedLine = styled('p')(({ theme }) => ({
   margin: `${theme.spacing(2)} 0 0`,
   fontSize: 18,
@@ -167,4 +156,4 @@ const SceneImage = styled('img')({
   borderRadius: 12
 })
 
-export { AwardedLine, HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }
+export { AwardedLine, HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhyTitle }

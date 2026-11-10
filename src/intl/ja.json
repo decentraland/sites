@@ -108,7 +108,6 @@
       "why": {
         "title": "Decentraland",
         "visit": "Decentralandを見る",
-        "subtitle": "コミュニティが築き、コミュニティが所有するソーシャルゲームの世界。",
         "awarded": "2026年はこれまでに$349k+をクリエイターへ授与。",
         "platforms_label": "Decentralandをダウンロード",
         "scene_alt": "Decentralandの{name}シーン"
@@ -117,7 +116,7 @@
         "title": "仕組み",
         "opt_in_title": "参加",
         "opt_in_link": "Creator Hubをダウンロード",
-        "opt_in_text": "して、Creator Fundにオプトインします。",
+        "opt_in_text": "して、プログラムにオプトインします。",
         "build_title": "制作",
         "build_text": "体験をつくって公開します。",
         "paid_title": "支払い",
@@ -125,7 +124,7 @@
       },
       "measure": {
         "title": "報酬の評価対象",
-        "subtitle": "各サイクルのプールは、体験におけるプレイヤーのエンゲージメントに比例して分配されます。",
+        "subtitle": "各サイクルのプールは、各体験の貢献度に基づいて分配されます。",
         "new_players": "Decentralandの新規プレイヤー",
         "playtime": "アクティブなプレイ時間",
         "retention": "プレイヤーの定着率"
@@ -166,9 +165,9 @@
         "purchases": "<b>ゲーム内でのクリエイター向け購入機能</b>を近日提供予定"
       },
       "dates": {
-        "title": "ベータスケジュール",
+        "title": "Creator Fund：ベータスケジュール",
         "cycle_name": "サイクル{number}",
-        "launch": "ファンド開始。Creator Hubでオプトイン受付開始。",
+        "launch": "プログラム開始。Creator Hubでオプトイン受付開始",
         "cycle_row": "{name} · {amount} USDC · 支払い期限 {date}"
       },
       "join": {
@@ -181,8 +180,8 @@
         "title": "FAQ",
         "join_question": "参加方法は？",
         "join_answer": "オプトインは11月11日にCreator Hubで開始します。18歳以上で、体験をデプロイしているNAMEまたはWorldを所有している必要があります。所有ウォレットでプログラム規約に署名してください。1回のオプトインで、そのウォレットが所有する対象のNAMEとWorldがすべて含まれます。",
-        "rewards_question": "支払いはどのように計算されますか？",
-        "rewards_answer": "各サイクルのプールは、アクティブなプレイ時間、プレイヤーの定着率、Decentralandの新規プレイヤー数に基づいて、対象となる体験で分配されます。Creator Hubの数値はプレビューです。最終的な支払い額は審査後に算出されるため、ダッシュボードと異なる場合があります。",
+        "rewards_question": "報酬はどのように決まりますか？",
+        "rewards_answer": "各サイクルの割り当て額は、アクティブなプレイ時間、プレイヤーの定着率、Decentralandの新規プレイヤー数に基づいて、対象となる体験で分配されます。Creator Hubの指標は参考情報です。最終的な報酬は審査とさらなるフィルタリングの後に算出されるため、使用される数値はダッシュボードと異なる場合があります。",
         "worlds_question": "Worldsも対象ですか？",
         "worlds_answer": "はい。Genesis Cityのシーンも公開Worldsも対象です。",
         "wallet_question": "支払い用ウォレットを指定できますか？",

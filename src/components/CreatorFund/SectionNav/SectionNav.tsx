@@ -5,8 +5,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import MenuIcon from '@mui/icons-material/Menu'
 import { useFormatMessage } from '../../../hooks/adapters/useFormatMessage'
 import { useUnloadSafeTrackClick } from '../../../hooks/useUnloadSafeTrackClick'
+import { DownloadTarget } from '../../../modules/segment'
 import { clickTrackingAttributes } from '../CreatorFund.helpers'
-import { CLICK_SECTIONS, CREATOR_FUND_RULES_URL, CREATOR_FUND_TERMS_URL, sectionLinks } from '../data'
+import { CLICK_SECTIONS, CREATOR_FUND_RULES_URL, CREATOR_FUND_TERMS_URL, CREATOR_HUB_DOWNLOAD_PATH, sectionLinks } from '../data'
 import {
   BrandBy,
   BrandLink,
@@ -83,7 +84,11 @@ const SectionNav = memo(() => {
             {l('page.creator_fund.nav.terms')}
           </DesktopLink>
         </DesktopLinks>
-        <DesktopCta href="#join" {...clickTrackingAttributes(navbar, 'Join From Creator Hub')} onClick={trackClick}>
+        <DesktopCta
+          href={CREATOR_HUB_DOWNLOAD_PATH}
+          {...clickTrackingAttributes(navbar, 'Join From Creator Hub', DownloadTarget.CREATOR_HUB)}
+          onClick={trackClick}
+        >
           {l('page.creator_fund.cta.join')}
         </DesktopCta>
         <MenuButton
@@ -128,7 +133,11 @@ const SectionNav = memo(() => {
             >
               {l('page.creator_fund.nav.terms')}
             </MobileLink>
-            <MobileCta href="#join" {...clickTrackingAttributes(navbarMenu, 'Join From Creator Hub')} onClick={trackAndClose}>
+            <MobileCta
+              href={CREATOR_HUB_DOWNLOAD_PATH}
+              {...clickTrackingAttributes(navbarMenu, 'Join From Creator Hub', DownloadTarget.CREATOR_HUB)}
+              onClick={trackAndClose}
+            >
               {l('page.creator_fund.cta.join')}
             </MobileCta>
           </MobileLinks>
