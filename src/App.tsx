@@ -226,7 +226,7 @@ const App = () => {
               <Route path="/ethics" element={<CodeOfEthics />} />
               {/* route-manifest: sitemap */}
               <Route path="/rewards-terms" element={<RewardsTerms />} />
-              {/* Draft legal text: kept out of the sitemap until the terms are final. */}
+              {/* route-manifest: sitemap */}
               <Route path="/creator-fund-terms" element={<CreatorFundTerms />} />
               {/* route-manifest: sitemap */}
               <Route path="/credits-terms" element={<CreditsTerms />} />
