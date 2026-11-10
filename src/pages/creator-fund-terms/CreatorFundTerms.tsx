@@ -2,8 +2,8 @@ import { memo, useEffect } from 'react'
 import { BulletList, LegalPageLayout, Paragraph, Section, SectionTitle } from '../../components/LegalPage'
 import type { TOCEntry } from '../../components/LegalPage'
 
-// DRAFT: text from the "Creator Fund — Program Terms (Beta Season)" legal draft. Values in
-// [brackets] are still open in that draft and stay bracketed until legal confirms them.
+// DRAFT: text from the "Creator Fund — Program Terms (Beta Season)" legal draft, with the Nov 10
+// corrections. The values that were bracketed (7 and 14 days, 6 months) are now confirmed.
 const PROGRAM_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
 
 const TABLE_OF_CONTENTS: TOCEntry[] = [
@@ -153,7 +153,7 @@ const CreatorFundTerms = memo(() => (
       <Paragraph>
         4.1 <strong>Owner Wallet and opt-in.</strong> The wallet that owns your LAND, NAME or World (the &quot;Owner Wallet&quot;) signs
         these Terms and is the participant in the Program. One opt-in covers every eligible LAND, NAME and World owned by that wallet,
-        including any experience you publish later, which joins when you next open the Creator Fund tab in Creator Hub. If you own a LAND,
+        including any experience you publish later, which joins when you next open the Creator Fund tab in Creator Hub. If you own LAND,
         NAMEs or Worlds through more than one wallet, each wallet needs its own opt-in.
       </Paragraph>
       <Paragraph>
@@ -199,7 +199,7 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         5.2 <strong>Qualifying Players.</strong> Only Qualifying Players count toward Rewards. A Qualifying Player is a player session that
-        our systems classify as a genuine human player under the criteria set out in the <ProgramRulesLink />.
+        our systems classify as a genuine human player under the criteria set out on the <ProgramRulesLink />.
       </Paragraph>
       <Paragraph>
         5.3 <strong>Excluded activity.</strong> The following never count: (a) sessions by you, your collaborators or other Program
@@ -225,9 +225,8 @@ const CreatorFundTerms = memo(() => (
         6.1 <strong>Season Pool.</strong> The amount available for Rewards in each Cycle (the &quot;<strong>Cycle Allocation</strong>&quot;)
         is published on the <ProgramRulesLink /> before that Cycle starts. The Cycle Allocations of a Season together make up the &quot;
         <strong>Season Pool</strong>&quot;. We may increase a Cycle Allocation at any time. We may reduce it only for Cycles that have not
-        yet started, by updating the Program Rules page at least [7] days before that Cycle starts. Total Rewards in a Cycle never exceed
-        its Cycle Allocation. Publishing or changing a Cycle Allocation under this Section is not a change to these Terms under Section
-        11.1.
+        yet started, by updating the Program Rules page at least 7 days before that Cycle starts. Total Rewards in a Cycle never exceed its
+        Cycle Allocation. Publishing or changing a Cycle Allocation under this Section is not a change to these Terms under Section 11.1.
       </Paragraph>
       <Paragraph>
         6.2 <strong>How Rewards are calculated.</strong> Each Cycle Allocation is shared among Qualifying Experiences based on the
@@ -302,7 +301,7 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         8.4 <strong>Human review.</strong> No suspension or exclusion of a participant is decided solely by automated means. Each one is
-        reviewed by a member of the Program team before it takes effect. You may send us information within [14] days of the notice, and we
+        reviewed by a member of the Program team before it takes effect. You may send us information within 14 days of the notice, and we
         will consider it before the decision is final.
       </Paragraph>
       <Paragraph>
@@ -311,10 +310,10 @@ const CreatorFundTerms = memo(() => (
         participants excluded for fraud.
       </Paragraph>
       <Paragraph>
-        8.6 <strong>Exclusion period.</strong> If we find that you did not cause the affected activity, we only disregard it. Any exclusion
-        under Section 8.2 is permanent. It applies to you as a person or entity and to any wallet, LAND, NAME or World you control or that
-        acts on your behalf, and continues to apply under any later version of these Terms. Taking part through another wallet, LAND, NAME
-        or World during an exclusion is itself a breach of these Terms.
+        8.6 <strong>Exclusion.</strong> If we find that you did not cause the affected activity, we only disregard it. Any exclusion under
+        Section 8.2 is permanent. It applies to you as a person or entity and to any wallet, LAND, NAME or World you control or that acts on
+        your behalf, and continues to apply under any later version of these Terms. Taking part through another wallet, LAND, NAME or World
+        during an exclusion is itself a breach of these Terms.
       </Paragraph>
     </Section>
 
@@ -348,8 +347,8 @@ const CreatorFundTerms = memo(() => (
         Labs Foundation, analytics providers and sanctions-screening providers, under appropriate data-protection terms.
       </Paragraph>
       <Paragraph>
-        10.3 <strong>Retention.</strong> We keep Program data for the Season plus [6] months, or longer where needed to deal with a claim or
-        a legal obligation.
+        10.3 <strong>Retention.</strong> We keep Program data for the Season plus 6 months, or longer where needed to deal with a claim or a
+        legal obligation.
       </Paragraph>
       <Paragraph>
         10.4 <strong>Publicity.</strong> You agree that we may display information about your experience and its results in the Program,
@@ -372,7 +371,7 @@ const CreatorFundTerms = memo(() => (
       <SectionTitle>11. Changes, Suspension and Termination</SectionTitle>
       <Paragraph>
         11.1 <strong>Changes to these Terms.</strong> We may change these Terms by posting a new version and notifying you by email at least
-        [14] days before it takes effect. Changes do not affect Rewards already earned. If you do not accept a change, you may leave the
+        14 days before it takes effect. Changes do not affect Rewards already earned. If you do not accept a change, you may leave the
         Program before it takes effect.
       </Paragraph>
       <Paragraph>
@@ -382,7 +381,7 @@ const CreatorFundTerms = memo(() => (
         Season, you may rejoin from the next Season.
       </Paragraph>
       <Paragraph>
-        11.3 <strong>Suspension or end of the Program.</strong> We may suspend or end the Program, or subject to Section 6.1, reduce the
+        11.3 <strong>Suspension or end of the Program.</strong> We may suspend or end the Program, or, subject to Section 6.1, reduce the
         Season Pool for future Cycles, at any time. If we do, we will pay all Rewards earned for complete Cycles.
       </Paragraph>
       <Paragraph>
