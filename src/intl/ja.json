@@ -109,6 +109,7 @@
         "title": "Decentraland",
         "visit": "Decentralandを見る",
         "subtitle": "コミュニティが築き、コミュニティが所有するソーシャルゲームの世界。",
+        "awarded": "2026年はこれまでに$349k+をクリエイターへ授与。",
         "platforms_label": "Decentralandをダウンロード",
         "scene_alt": "Decentralandの{name}シーン"
       },
@@ -195,6 +196,13 @@
         "grant_question": "これは助成金ですか？",
         "grant_answer": "いいえ。助成金はローンチ前のプロジェクトを支援するものです。Creator Fundが報酬を提供するのは、Decentralandですでに公開され、成長している体験です。",
         "contact_prompt": "ご質問やサポートについては、こちらまでご連絡ください："
+      },
+      "builders": {
+        "title": "Decentralandのビルダーに会おう",
+        "subtitle": "アーティスト、スタジオ、ゲームクリエイターがすでにDecentralandで制作しています。",
+        "previous": "前へ",
+        "next": "次へ",
+        "go_to_slide": "スライド{number}へ移動"
       }
     },
     "home": {

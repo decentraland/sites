@@ -109,6 +109,7 @@
         "title": "Decentraland",
         "visit": "Decentraland 방문하기",
         "subtitle": "커뮤니티가 만들고 소유하는 소셜 게이밍 세계.",
+        "awarded": "2026년 현재까지 크리에이터에게 $349k+ 지급.",
         "platforms_label": "Decentraland 다운로드",
         "scene_alt": "Decentraland의 {name} 씬"
       },
@@ -195,6 +196,13 @@
         "grant_question": "지원금(그랜트)인가요?",
         "grant_answer": "아니요. 그랜트는 출시 전 프로젝트를 지원합니다. Creator Fund는 이미 Decentraland에서 운영 중이며 성장하는 경험에 보상합니다.",
         "contact_prompt": "문의 사항이나 지원이 필요하시면 다음 주소로 연락해 주세요:"
+      },
+      "builders": {
+        "title": "Decentraland 빌더를 만나보세요",
+        "subtitle": "아티스트, 스튜디오, 게임 제작자들이 이미 Decentraland에서 만들고 있습니다.",
+        "previous": "이전",
+        "next": "다음",
+        "go_to_slide": "슬라이드 {number}(으)로 이동"
       }
     },
     "home": {

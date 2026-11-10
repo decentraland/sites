@@ -6,6 +6,7 @@ import {
   CREATOR_FUND_CONTACT_EMAIL,
   CREATOR_FUND_TERMS_URL,
   CREATOR_HUB_DOWNLOAD_PATH,
+  builderQuotes,
   faqEntries,
   moreWaysToEarnKeys,
   sectionLinks
@@ -277,8 +278,22 @@ describe('CreatorFundLanding', () => {
     expect(schedule.contains(moreWays)).toBe(false)
   })
 
-  it('should not render the builders section', () => {
-    expect(screen.queryByText('page.creator_fund.builders.title')).not.toBeInTheDocument()
+  it('should show the builders right after the FAQ', () => {
+    const faq = document.getElementById('faq') as HTMLElement
+    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' })
+
+    expect(faq.compareDocumentPosition(builders) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(faq.contains(builders)).toBe(false)
+  })
+
+  it('should show a quote for every builder', () => {
+    builderQuotes.forEach(builder => expect(screen.getByText(builder.name)).toBeInTheDocument())
+  })
+
+  it('should show the amount awarded to creators right under the Decentraland subtitle', () => {
+    const subtitle = screen.getByText('page.creator_fund.why.subtitle')
+
+    expect(subtitle.nextElementSibling).toHaveTextContent('page.creator_fund.why.awarded')
   })
 
   it('should render every FAQ entry', () => {

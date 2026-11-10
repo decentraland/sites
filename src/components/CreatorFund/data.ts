@@ -13,7 +13,7 @@ import sceneCozyFarm from '../../images/creator-fund/scene-cozy-farm.jpg'
 import sceneCryocene from '../../images/creator-fund/scene-cryocene.jpg'
 import sceneGenesisPlaza from '../../images/creator-fund/scene-genesis-plaza.jpg'
 import { DownloadTarget } from '../../modules/segment'
-import type { BuildStep, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
+import type { BuildStep, BuilderQuote, CreatorFundProgram, FaqEntry, IconCopy, PlatformLink, SectionLink } from './CreatorFund.types'
 
 // Beta Season facts from the Creator Fund Program Rules. Amounts are USD.
 const betaProgram: CreatorFundProgram = {
@@ -126,8 +126,26 @@ const CLICK_SECTIONS = {
   howItWorks: 'how-it-works',
   payouts: 'payouts',
   faq: 'faq',
+  builders: 'builders',
   finalCta: 'final-cta'
 } as const
+
+// "Meet Decentraland builders" quotes, from the Nov 9 design. Shown below the FAQ.
+const builderQuotes: BuilderQuote[] = [
+  {
+    name: 'Low Poly Models (KJ)',
+    quote: "Since Decentraland is a platform for adults, I have a lot more creative freedom in what I'm building."
+  },
+  {
+    name: 'Roustan',
+    quote:
+      'Building in Decentraland allowed me to cut out all the middlemen. It has enabled me to develop a community and following faster than anything IRL has ever done in the past.'
+  },
+  {
+    name: 'Stom',
+    quote: 'Getting paid repeatedly makes you feel like you’re actually building something professionally.'
+  }
+]
 
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
@@ -146,6 +164,7 @@ export {
   CREATOR_HUB_DOWNLOAD_PATH,
   betaProgram,
   buildToEarnSteps,
+  builderQuotes,
   eligibilityCards,
   faqEntries,
   moreWaysToEarnKeys,

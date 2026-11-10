@@ -6,6 +6,7 @@ import { clickTrackingAttributes } from '../CreatorFund.helpers'
 import { CreatorFundSection } from '../CreatorFund.styled'
 import { CLICK_SECTIONS, platformLinks, scenes } from '../data'
 import {
+  AwardedLine,
   HomeLink,
   PlatformGrid,
   PlatformLink,
@@ -36,6 +37,7 @@ const Why = memo(() => {
             <WhyTitle>{l('page.creator_fund.why.title')}</WhyTitle>
           </HomeLink>
           <WhySubtitle>{l('page.creator_fund.why.subtitle')}</WhySubtitle>
+          <AwardedLine>{l('page.creator_fund.why.awarded')}</AwardedLine>
           <PlatformGrid aria-label={l('page.creator_fund.why.platforms_label')}>
             {/* eslint-disable-next-line @typescript-eslint/naming-convention */}
             {platformLinks.map(({ name, os, icon: Icon, downloadTarget }) => (

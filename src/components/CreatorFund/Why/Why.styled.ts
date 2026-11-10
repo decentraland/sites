@@ -60,6 +60,16 @@ const WhySubtitle = styled(MutedText)(({ theme }) => ({
   }
 }))
 
+// Paid-to-creators figure under the subtitle, in body text color (no icon, per the Nov 9 design).
+const AwardedLine = styled('p')(({ theme }) => ({
+  margin: `${theme.spacing(2)} 0 0`,
+  fontSize: 18,
+  color: creatorFundColors.text,
+  [theme.breakpoints.up('sm')]: {
+    fontSize: 20
+  }
+}))
+
 const PlatformGrid = styled('ul')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, 1fr)',
@@ -157,4 +167,4 @@ const SceneImage = styled('img')({
   borderRadius: 12
 })
 
-export { HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }
+export { AwardedLine, HomeLink, PlatformGrid, PlatformLink, SceneCard, SceneImage, SceneStack, WhyGrid, WhyLogo, WhySubtitle, WhyTitle }

@@ -109,6 +109,7 @@
         "title": "Decentraland",
         "visit": "访问 Decentraland",
         "subtitle": "一个由社区共建、社区共有的社交游戏世界。",
+        "awarded": "2026 年至今已向创作者发放 $349k+。",
         "platforms_label": "下载 Decentraland",
         "scene_alt": "Decentraland 中的 {name} 场景"
       },
@@ -195,6 +196,13 @@
         "grant_question": "这是资助吗？",
         "grant_answer": "不是。资助用于支持项目上线之前的阶段。Creator Fund 奖励的是已在 Decentraland 上线并持续增长的体验。",
         "contact_prompt": "如有疑问或需要支持，请发送邮件至"
+      },
+      "builders": {
+        "title": "认识 Decentraland 创作者",
+        "subtitle": "艺术家、工作室和游戏开发者已经在 Decentraland 中创作。",
+        "previous": "上一个",
+        "next": "下一个",
+        "go_to_slide": "前往第 {number} 张幻灯片"
       }
     },
     "home": {

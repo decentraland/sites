@@ -118,6 +118,7 @@
         "title": "Decentraland",
         "visit": "Visit Decentraland",
         "subtitle": "A social gaming world built and owned by its community.",
+        "awarded": "$349k+ awarded to creators in 2026 so far.",
         "platforms_label": "Download Decentraland",
         "scene_alt": "{name} scene in Decentraland"
       },
@@ -204,6 +205,13 @@
         "grant_question": "Is this a grant?",
         "grant_answer": "No. Grants support projects before they launch. The Creator Fund rewards experiences that are already live and growing on Decentraland.",
         "contact_prompt": "Questions or need support? Email us at"
+      },
+      "builders": {
+        "title": "Meet Decentraland builders",
+        "subtitle": "Artists, studios and game makers already building in Decentraland.",
+        "previous": "Previous",
+        "next": "Next",
+        "go_to_slide": "Go to slide {number}"
       }
     },
     "creator-hub": {

@@ -109,6 +109,7 @@
         "title": "Decentraland",
         "visit": "Visita Decentraland",
         "subtitle": "Un mundo de juegos sociales creado y gestionado por su comunidad.",
+        "awarded": "$349k+ otorgados a creadores en lo que va de 2026.",
         "platforms_label": "Descarga Decentraland",
         "scene_alt": "Escena {name} en Decentraland"
       },
@@ -195,6 +196,13 @@
         "grant_question": "¿Es una subvención?",
         "grant_answer": "No. Las subvenciones apoyan proyectos antes de su lanzamiento. Creator Fund recompensa a las experiencias que ya están activas y creciendo en Decentraland.",
         "contact_prompt": "¿Tienes preguntas o necesitas ayuda? Escríbenos a"
+      },
+      "builders": {
+        "title": "Conoce a los creadores de Decentraland",
+        "subtitle": "Artistas, estudios y creadores de juegos que ya construyen en Decentraland.",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "go_to_slide": "Ir a la diapositiva {number}"
       }
     },
     "home": {
