@@ -85,6 +85,8 @@ enum SegmentEvent {
   REPORT_PLAYER_SUBMITTED = 'Report Player Submitted',
   REPORT_PLAYER_SUBMIT_FAILED = 'Report Player Submit Failed',
   SECTION_VIEWED = 'Section Viewed',
+  // Scroll checkpoints on a long page: one per section reached, with `place` and `scroll_to` (the section name).
+  SCROLL = 'Scroll',
   // /discover surfaces. Card clicks navigate to the scene preview; JUMP_IN is
   // the decentraland:// deep-link (its `place` payload key says which surface
   // fired it); LAUNCH_SCENE is the in-browser bevy iframe boot.

@@ -129,6 +129,23 @@ const CLICK_SECTIONS = {
   finalCta: 'final-cta'
 } as const
 
+// Scroll checkpoints, in page order: the `scroll_to` value of each `Scroll` event (see ScrollCheckpoint).
+// A section with tracked clicks reuses its CLICK_SECTIONS name, so scroll and click data join on it.
+const SCROLL_SECTIONS = {
+  hero: CLICK_SECTIONS.hero,
+  intro: CLICK_SECTIONS.intro,
+  howItWorks: CLICK_SECTIONS.howItWorks,
+  whatWeReward: 'what-we-reward',
+  payouts: CLICK_SECTIONS.payouts,
+  eligibility: 'eligibility',
+  dates: 'dates',
+  moreWaysToEarn: 'more-ways-to-earn',
+  finalCta: CLICK_SECTIONS.finalCta,
+  faq: CLICK_SECTIONS.faq
+} as const
+
+type ScrollSection = (typeof SCROLL_SECTIONS)[keyof typeof SCROLL_SECTIONS]
+
 const CREATOR_FUND_CONTACT_EMAIL = 'creatorfund@decentraland.org'
 
 const CREATOR_HUB_DOWNLOAD_PATH = '/download/creator-hub'
@@ -145,6 +162,7 @@ export {
   CREATOR_FUND_RULES_URL,
   CREATOR_FUND_TERMS_URL,
   CREATOR_HUB_DOWNLOAD_PATH,
+  SCROLL_SECTIONS,
   betaProgram,
   buildToEarnSteps,
   eligibilityCards,
@@ -155,3 +173,4 @@ export {
   scenes,
   sectionLinks
 }
+export type { ScrollSection }
