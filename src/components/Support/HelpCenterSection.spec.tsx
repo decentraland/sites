@@ -35,6 +35,14 @@ describe('HelpCenterSection', () => {
       expect(screen.getByRole('button', { name: CREATOR_FUND_TAB })).toBeInTheDocument()
     })
 
+    it('should list the Creator Fund tab between FAQ and Support Updates', () => {
+      expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual([
+        'component.landing.help.center.faq_button_label',
+        CREATOR_FUND_TAB,
+        'component.landing.help.center.support_updates_button_label'
+      ])
+    })
+
     it('should switch to the Creator Fund tab when it is clicked', () => {
       fireEvent.click(screen.getByRole('button', { name: CREATOR_FUND_TAB }))
 

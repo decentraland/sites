@@ -55,14 +55,14 @@ const HelpCenterSection = ({ activeTab, setTab, serviceList }: HelpCenterSection
           <FaqIcon dark={activeTab === HelpTab.FAQ} />
           {t('component.landing.help.center.faq_button_label')}
         </HelpTabButton>
-        <HelpTabButton active={activeTab === HelpTab.SUPPORT_UPDATES} onClick={handleTabClick(HelpTab.SUPPORT_UPDATES)}>
-          <SupportIcon dark={activeTab === HelpTab.SUPPORT_UPDATES} />
-          {t('component.landing.help.center.support_updates_button_label')}
-        </HelpTabButton>
         <HelpTabButton active={activeTab === HelpTab.CREATOR_FUND} onClick={handleTabClick(HelpTab.CREATOR_FUND)}>
           {/* Same light/dark swap as the FAQ and Support icons. */}
           <TollOutlinedIcon htmlColor={activeTab === HelpTab.CREATOR_FUND ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite} />
           {t('component.landing.help.center.creator_fund_button_label')}
+        </HelpTabButton>
+        <HelpTabButton active={activeTab === HelpTab.SUPPORT_UPDATES} onClick={handleTabClick(HelpTab.SUPPORT_UPDATES)}>
+          <SupportIcon dark={activeTab === HelpTab.SUPPORT_UPDATES} />
+          {t('component.landing.help.center.support_updates_button_label')}
         </HelpTabButton>
       </HelpTabButtonsContainer>
     </HelpSidebar>
