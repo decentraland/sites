@@ -108,16 +108,21 @@ function CloseGlyph({ size = 40 }: IconProps) {
 }
 
 // Copy-link glyph (two rounded rects), white.
-function CopyGlyph({ size = 20 }: IconProps) {
+// Share glyph: the arrow-out-of-box mark every platform uses for a share sheet.
+// Not a clipboard icon, because the control's primary action on mobile is the OS
+// share sheet and copying is only its desktop fallback.
+function ShareGlyph({ size = 20 }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={glyphStyle(size)}>
+      <path d="M10 1V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 5L10 1L14 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path
-        d="M15.3854 15H16C17.6569 15 19 13.6569 19 12V4C19 2.34315 17.6569 1 16 1H8C6.34315 1 5 2.34315 5 4V4.88124"
-        stroke="white"
+        d="M4 8H3C1.89543 8 1 8.89543 1 10V17C1 18.1046 1.89543 19 3 19H17C18.1046 19 19 18.1046 19 17V10C19 8.89543 18.1046 8 17 8H16"
+        stroke="currentColor"
         strokeWidth="2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <rect x="1" y="5" width="14" height="14" rx="3" stroke="white" strokeWidth="2" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -145,4 +150,4 @@ function JumpInGlyph({ size = 24.874 }: IconProps) {
   )
 }
 
-export { CloseGlyph, CopyGlyph, glyphStyle, JumpInGlyph, LiveGlyph, LiveHeadingGlyph, MedalGlyph, PinGlyph }
+export { CloseGlyph, glyphStyle, JumpInGlyph, LiveGlyph, LiveHeadingGlyph, MedalGlyph, PinGlyph, ShareGlyph }
