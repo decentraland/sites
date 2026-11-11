@@ -7,7 +7,6 @@ import {
   CREATOR_FUND_RULES_URL,
   CREATOR_FUND_TERMS_URL,
   CREATOR_HUB_DOWNLOAD_PATH,
-  builderQuotes,
   faqEntries,
   moreWaysToEarnKeys,
   sectionLinks
@@ -290,16 +289,11 @@ describe('CreatorFundLanding', () => {
     expect(schedule.nextElementSibling).toBe(moreWays)
   })
 
-  it('should show the builders last, right after the FAQ', () => {
+  it('should end with the FAQ, with no builder quotes section', () => {
     const faq = document.getElementById('faq') as HTMLElement
-    const builders = screen.getByRole('heading', { name: 'page.creator_fund.builders.title' }).closest('section') as HTMLElement
 
-    expect(faq.nextElementSibling).toBe(builders)
-    expect(builders.nextElementSibling).toBeNull()
-  })
-
-  it('should show a quote for every builder', () => {
-    builderQuotes.forEach(builder => expect(screen.getByText(builder.name)).toBeInTheDocument())
+    expect(faq.nextElementSibling).toBeNull()
+    expect(screen.queryByText('page.creator_fund.builders.title')).not.toBeInTheDocument()
   })
 
   it('should show the amount awarded to creators right under the Decentraland title', () => {

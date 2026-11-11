@@ -194,13 +194,6 @@
         "grant_question": "S'agit-il d'une subvention ?",
         "grant_answer": "Non. Les subventions soutiennent des projets avant leur lancement. Creator Fund récompense les expériences déjà en ligne et en croissance sur Decentraland.",
         "contact_prompt": "Des questions ou besoin d’aide ? Écrivez-nous à"
-      },
-      "builders": {
-        "title": "Rencontrez les créateurs de Decentraland",
-        "subtitle": "Artistes, studios et créateurs de jeux qui construisent déjà sur Decentraland.",
-        "previous": "Précédent",
-        "next": "Suivant",
-        "go_to_slide": "Aller à la diapositive {number}"
       }
     },
     "home": {

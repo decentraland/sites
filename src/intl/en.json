@@ -203,13 +203,6 @@
         "grant_question": "Is This A Grant?",
         "grant_answer": "No. Grants support projects before they launch. The Creator Fund rewards experiences that are already live and growing on Decentraland.",
         "contact_prompt": "Questions or need support? Email us at"
-      },
-      "builders": {
-        "title": "Meet Decentraland Builders",
-        "subtitle": "Artists, studios and game makers already building in Decentraland.",
-        "previous": "Previous",
-        "next": "Next",
-        "go_to_slide": "Go to slide {number}"
       }
     },
     "creator-hub": {
