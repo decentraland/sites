@@ -1,5 +1,5 @@
 import type { EventEntry, LiveNowCard } from '../../../features/events'
-import { weekdayMaskToDayIndices } from '../../../utils/recurrence'
+import { getOccurrenceFinishAt, weekdayMaskToDayIndices } from '../../../utils/recurrence'
 import { buildEventJumpInUrl, buildJumpInUrl, parseCoordinates, resolveEventRealm } from '../../../utils/whatsOnUrl'
 import type { ModalEventData } from './EventDetailModal.types'
 
@@ -22,7 +22,7 @@ function normalizeEventEntry(event: EventEntry): ModalEventData {
     creatorAddress: event.user || undefined,
     creatorName: event.user_name || undefined,
     startAt: event.start_at,
-    finishAt: event.finish_at,
+    finishAt: getOccurrenceFinishAt(event),
     recurrent: event.recurrent,
     recurrentFrequency: event.recurrent_frequency,
     recurrentInterval: event.recurrent_interval,
