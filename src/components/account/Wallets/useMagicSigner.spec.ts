@@ -11,6 +11,7 @@ type Account = { address: string | undefined; chainId?: number; connector: { id:
 const mockConnectAsync = jest.fn()
 const mockSwitchChainAsync = jest.fn()
 const mockDisconnect = jest.fn()
+const mockDisconnectAsync = jest.fn()
 const magicConnector = { id: 'magic', name: 'Magic' }
 const thirdwebConnector = { id: 'thirdweb', name: 'Thirdweb' }
 const walletConnectConnector = { id: 'walletConnect', name: 'WalletConnect' }
@@ -24,7 +25,7 @@ jest.mock('wagmi', () => ({
   useConnections: () => mockConnections,
   useConnect: () => ({ connectAsync: mockConnectAsync, connectors: mockConnectors }),
   useSwitchChain: () => ({ switchChainAsync: mockSwitchChainAsync }),
-  useDisconnect: () => ({ disconnect: mockDisconnect })
+  useDisconnect: () => ({ disconnect: mockDisconnect, disconnectAsync: mockDisconnectAsync })
 }))
 
 const mockUseIsThirdwebAccount = useIsThirdwebAccount as jest.MockedFunction<typeof useIsThirdwebAccount>
@@ -51,6 +52,7 @@ describe('useMagicSigner', () => {
     mockGetMagicAddress.mockResolvedValue(null)
     mockConnectAsync.mockReset().mockResolvedValue({ accounts: [SIGNED_IN] })
     mockSwitchChainAsync.mockReset().mockResolvedValue({})
+    mockDisconnectAsync.mockReset().mockResolvedValue(undefined)
     mockAccount = { address: undefined, connector: undefined, status: 'disconnected' }
     mockConnectors = [walletConnectConnector, metaMaskConnector, magicConnector]
     mockConnections = []
@@ -123,7 +125,28 @@ describe('useMagicSigner', () => {
       const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
 
       await waitFor(() => expect(result.current.state).toBe('failed'))
+      expect(mockDisconnectAsync).toHaveBeenCalledWith({ connector: thirdwebConnector })
       expect(mockSwitchChainAsync).not.toHaveBeenCalled()
+    })
+
+    it('should connect again when the user retries after a session for another account', async () => {
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      mockConnectAsync.mockResolvedValueOnce({ accounts: [OTHER] })
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+      await waitFor(() => expect(result.current.state).toBe('failed'))
+
+      act(() => result.current.retry())
+
+      await waitFor(() => expect(mockConnectAsync).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(mockSwitchChainAsync).toHaveBeenCalledWith({ connector: thirdwebConnector, chainId: TARGET_CHAIN }))
+    })
+
+    it('should report failed when the thirdweb connector is not configured', async () => {
+      mockConnectors = [walletConnectConnector, magicConnector]
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+
+      await waitFor(() => expect(result.current.state).toBe('failed'))
+      expect(mockConnectAsync).not.toHaveBeenCalled()
     })
 
     it('should keep signing with another wallet already on the signed-in account', () => {

@@ -24,6 +24,7 @@ const getWeb3Config = (): Web3CoreConfig => {
       environment: resolveEnvironment(),
       appMetadata: { name: 'Decentraland', urlPath: '/account' },
       // Only for thirdweb logins: the connector restores its session on mount, which loads the thirdweb SDK.
+      // Decided once per page load; a login changed from another tab needs a reload to pick it up.
       // Its chains default to Ethereum only, so the Polygon ones are listed for MANA on Polygon.
       additionalConnectors: isThirdwebAccount()
         ? [

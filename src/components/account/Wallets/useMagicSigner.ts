@@ -26,7 +26,7 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
   const connections = useConnections()
   const { connectAsync, connectors } = useConnect()
   const { switchChainAsync } = useSwitchChain()
-  const { disconnect } = useDisconnect()
+  const { disconnect, disconnectAsync } = useDisconnect()
   const [magicAddresses, setMagicAddresses] = useState<Record<string, string | null>>({})
   const [preparedSession, setPreparedSession] = useState<string | undefined>(undefined)
   const [failedSession, setFailedSession] = useState<string | undefined>(undefined)
@@ -73,7 +73,11 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
     const prepare = async () => {
       if (!isSocialCurrent) {
         const { accounts } = await connectAsync({ connector: social, chainId: targetChainId })
-        if (accounts[0]?.toLowerCase() !== session) throw new Error('The social session is not the signed-in account')
+        if (accounts[0]?.toLowerCase() !== session) {
+          // Left connected, the wrong account would stay wagmi's current one and block every retry.
+          await disconnectAsync({ connector: social })
+          throw new Error('The social session is not the signed-in account')
+        }
       }
       await switchChainAsync({ connector: social, chainId: targetChainId })
       setPreparedSession(session)
@@ -95,6 +99,7 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
     socialConnectorId,
     connectors,
     connectAsync,
+    disconnectAsync,
     switchChainAsync,
     targetChainId
   ])

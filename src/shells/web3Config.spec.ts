@@ -2,6 +2,7 @@ const mockCreateWeb3CoreConfig = jest.fn((..._args: unknown[]) => ({ created: tr
 const mockThirdweb = jest.fn((..._args: unknown[]) => 'thirdweb-connector')
 let mockEnv: string
 let mockIsThirdwebAccount: boolean
+let mockClientId: string | undefined
 
 jest.mock('@dcl/core-web3', () => ({
   createWeb3CoreConfig: (...args: unknown[]) => mockCreateWeb3CoreConfig(...args),
@@ -18,7 +19,7 @@ jest.mock('@dcl/ui-env', () => ({
 
 jest.mock('../config/env', () => ({
   getCurrentEnv: () => mockEnv,
-  getEnv: () => 'client-example123'
+  getEnv: () => mockClientId
 }))
 
 describe('web3Config', () => {
@@ -27,6 +28,7 @@ describe('web3Config', () => {
     mockCreateWeb3CoreConfig.mockClear()
     mockThirdweb.mockClear()
     mockIsThirdwebAccount = false
+    mockClientId = 'client-example123'
   })
 
   it('should build the config with the prd environment on production', () => {
@@ -54,6 +56,18 @@ describe('web3Config', () => {
 
     expect(mockThirdweb).toHaveBeenCalledWith({ clientId: 'client-example123', supportedChainIds: [1, 137, 11155111, 80002] })
     expect(mockCreateWeb3CoreConfig).toHaveBeenCalledWith(expect.objectContaining({ additionalConnectors: ['thirdweb-connector'] }))
+  })
+
+  it('should still build the config when the thirdweb client id is missing', () => {
+    mockEnv = 'prod'
+    mockIsThirdwebAccount = true
+    mockClientId = undefined
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getWeb3Config } = require('./web3Config')
+
+    getWeb3Config()
+
+    expect(mockThirdweb).toHaveBeenCalledWith(expect.objectContaining({ clientId: '' }))
   })
 
   it('should build the config with the dev environment off production', () => {
