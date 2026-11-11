@@ -708,7 +708,12 @@
           "title": "帮助中心",
           "paragraph": "浏览常见问题和支持更新，或使用右下角的聊天框直接与支持团队交流。",
           "faq_button_label": "FAQ",
-          "support_updates_button_label": "支持更新"
+          "support_updates_button_label": "支持更新",
+          "creator_fund_button_label": "CREATOR FUND"
+        },
+        "creator_fund_section": {
+          "title": "Creator Fund",
+          "paragraph": "关于 Creator Fund 测试赛季的常见问题解答。"
         },
         "support_updates_section": {
           "title": "支持更新",

@@ -708,7 +708,12 @@
           "title": "ヘルプセンター",
           "paragraph": "FAQとサポートアップデートを検索するか、右下のチャットボックスを使用してサポートチームと直接お話しください。",
           "faq_button_label": "FAQ",
-          "support_updates_button_label": "サポートアップデート"
+          "support_updates_button_label": "サポートアップデート",
+          "creator_fund_button_label": "CREATOR FUND"
+        },
+        "creator_fund_section": {
+          "title": "Creator Fund",
+          "paragraph": "Creator Fund ベータシーズンに関する質問と回答です。"
         },
         "support_updates_section": {
           "title": "サポートアップデート",

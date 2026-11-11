@@ -1,5 +1,8 @@
 import { useCallback } from 'react'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import TollOutlinedIcon from '@mui/icons-material/TollOutlined'
 import { useTranslation } from '@dcl/hooks'
+import { dclColors } from 'decentraland-ui2'
 import {
   HelpMobileHeader,
   HelpSidebar,
@@ -16,7 +19,8 @@ import type { Service } from './utils'
 
 enum HelpTab {
   FAQ = 'faq',
-  SUPPORT_UPDATES = 'support updates'
+  SUPPORT_UPDATES = 'support updates',
+  CREATOR_FUND = 'creator fund'
 }
 
 type HelpCenterSectionProps = {
@@ -50,6 +54,11 @@ const HelpCenterSection = ({ activeTab, setTab, serviceList }: HelpCenterSection
         <HelpTabButton active={activeTab === HelpTab.FAQ} onClick={handleTabClick(HelpTab.FAQ)}>
           <FaqIcon dark={activeTab === HelpTab.FAQ} />
           {t('component.landing.help.center.faq_button_label')}
+        </HelpTabButton>
+        <HelpTabButton active={activeTab === HelpTab.CREATOR_FUND} onClick={handleTabClick(HelpTab.CREATOR_FUND)}>
+          {/* Same light/dark swap as the FAQ and Support icons. */}
+          <TollOutlinedIcon htmlColor={activeTab === HelpTab.CREATOR_FUND ? dclColors.neutral.softBlack1 : dclColors.neutral.softWhite} />
+          {t('component.landing.help.center.creator_fund_button_label')}
         </HelpTabButton>
         <HelpTabButton active={activeTab === HelpTab.SUPPORT_UPDATES} onClick={handleTabClick(HelpTab.SUPPORT_UPDATES)}>
           <SupportIcon dark={activeTab === HelpTab.SUPPORT_UPDATES} />

@@ -756,7 +756,12 @@
           "title": "Help Center",
           "paragraph": "Browse through FAQs and Support Updates or speak with the Support Team directly using the chat box on the bottom right.",
           "faq_button_label": "FAQ",
-          "support_updates_button_label": "SUPPORT UPDATES"
+          "support_updates_button_label": "SUPPORT UPDATES",
+          "creator_fund_button_label": "CREATOR FUND"
+        },
+        "creator_fund_section": {
+          "title": "Creator Fund",
+          "paragraph": "Answers about the Creator Fund Beta Season."
         },
         "support_updates_section": {
           "title": "Support Updates",

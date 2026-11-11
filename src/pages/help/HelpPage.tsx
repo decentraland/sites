@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { Intercom } from '../../components/Intercom'
-import { ChatCTABanner, FAQSection, HelpCenterSection, HelpTab, StatusDropdown, SupportUpdatesSection } from '../../components/Support'
+import {
+  ChatCTABanner,
+  CreatorFundFAQSection,
+  FAQSection,
+  HelpCenterSection,
+  HelpTab,
+  StatusDropdown,
+  SupportUpdatesSection
+} from '../../components/Support'
 import { DesktopStatusWrapper, HelpContentArea, HelpPageContainer, HelpPageWrapper } from './HelpPage.styled'
 
 const INTERCOM_APP_ID = 'z0h94kay'
@@ -32,6 +40,7 @@ const HelpPage = () => {
           <HelpContentArea>
             <FAQSection isActive={activeTab === HelpTab.FAQ} />
             <SupportUpdatesSection isActive={activeTab === HelpTab.SUPPORT_UPDATES} />
+            <CreatorFundFAQSection isActive={activeTab === HelpTab.CREATOR_FUND} />
           </HelpContentArea>
           <DesktopStatusWrapper>
             <StatusDropdown serviceList={SERVICES} />
