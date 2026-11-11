@@ -1,8 +1,15 @@
 const mockCreateWeb3CoreConfig = jest.fn((..._args: unknown[]) => ({ created: true }))
+const mockThirdweb = jest.fn((..._args: unknown[]) => 'thirdweb-connector')
 let mockEnv: string
+let mockIsThirdwebAccount: boolean
 
 jest.mock('@dcl/core-web3', () => ({
-  createWeb3CoreConfig: (...args: unknown[]) => mockCreateWeb3CoreConfig(...args)
+  createWeb3CoreConfig: (...args: unknown[]) => mockCreateWeb3CoreConfig(...args),
+  thirdweb: (...args: unknown[]) => mockThirdweb(...args)
+}))
+
+jest.mock('../hooks/useIsThirdwebAccount', () => ({
+  isThirdwebAccount: () => mockIsThirdwebAccount
 }))
 
 jest.mock('@dcl/ui-env', () => ({
@@ -10,13 +17,16 @@ jest.mock('@dcl/ui-env', () => ({
 }))
 
 jest.mock('../config/env', () => ({
-  getCurrentEnv: () => mockEnv
+  getCurrentEnv: () => mockEnv,
+  getEnv: () => 'client-example123'
 }))
 
 describe('web3Config', () => {
   beforeEach(() => {
     jest.resetModules()
     mockCreateWeb3CoreConfig.mockClear()
+    mockThirdweb.mockClear()
+    mockIsThirdwebAccount = false
   })
 
   it('should build the config with the prd environment on production', () => {
@@ -28,8 +38,22 @@ describe('web3Config', () => {
 
     expect(mockCreateWeb3CoreConfig).toHaveBeenCalledWith({
       environment: 'prd',
-      appMetadata: { name: 'Decentraland', urlPath: '/account' }
+      appMetadata: { name: 'Decentraland', urlPath: '/account' },
+      additionalConnectors: []
     })
+    expect(mockThirdweb).not.toHaveBeenCalled()
+  })
+
+  it('should add the thirdweb connector with the Polygon chains for a thirdweb login', () => {
+    mockEnv = 'prod'
+    mockIsThirdwebAccount = true
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getWeb3Config } = require('./web3Config')
+
+    getWeb3Config()
+
+    expect(mockThirdweb).toHaveBeenCalledWith({ clientId: 'client-example123', supportedChainIds: [1, 137, 11155111, 80002] })
+    expect(mockCreateWeb3CoreConfig).toHaveBeenCalledWith(expect.objectContaining({ additionalConnectors: ['thirdweb-connector'] }))
   })
 
   it('should build the config with the dev environment off production', () => {

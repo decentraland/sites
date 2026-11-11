@@ -1,7 +1,9 @@
-import { createWeb3CoreConfig } from '@dcl/core-web3'
+import { mainnet, polygon, polygonAmoy, sepolia } from 'viem/chains'
+import { createWeb3CoreConfig, thirdweb } from '@dcl/core-web3'
 import type { Web3CoreConfig } from '@dcl/core-web3'
 import { Env } from '@dcl/ui-env'
-import { getCurrentEnv } from '../config/env'
+import { getCurrentEnv, getEnv } from '../config/env'
+import { isThirdwebAccount } from '../hooks/useIsThirdwebAccount'
 
 // core-web3's `environment` selects the default Magic key + default chains. sites only
 // distinguishes production from everything else (dev/stg run on testnets), mirroring
@@ -20,7 +22,17 @@ const getWeb3Config = (): Web3CoreConfig => {
   if (!config) {
     config = createWeb3CoreConfig({
       environment: resolveEnvironment(),
-      appMetadata: { name: 'Decentraland', urlPath: '/account' }
+      appMetadata: { name: 'Decentraland', urlPath: '/account' },
+      // Only for thirdweb logins: the connector restores its session on mount, which loads the thirdweb SDK.
+      // Its chains default to Ethereum only, so the Polygon ones are listed for MANA on Polygon.
+      additionalConnectors: isThirdwebAccount()
+        ? [
+            thirdweb({
+              clientId: getEnv('THIRDWEB_CLIENT_ID') ?? '',
+              supportedChainIds: [mainnet.id, polygon.id, sepolia.id, polygonAmoy.id]
+            })
+          ]
+        : []
     })
   }
   return config

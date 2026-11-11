@@ -15,9 +15,10 @@ interface MagicSigner {
 const MAGIC_LOOKUP_TIMEOUT_MS = 5000
 
 /**
- * When the signed-in account is the Magic account, connects the Magic connector on `targetChainId` so
- * wallet actions sign with it rather than an external wallet (e.g. a leftover WalletConnect session).
- * A connected wallet that isn't the signed-in account is reported as `mismatch` and never signs.
+ * When the signed-in account is a social login (Magic, or a thirdweb in-app wallet), connects its
+ * connector on `targetChainId` so wallet actions sign with it rather than an external wallet (e.g. a
+ * leftover WalletConnect session). For any other login, a connected wallet that isn't the signed-in
+ * account is reported as `mismatch` and never signs.
  */
 function useMagicSigner(sessionAddress: string | undefined, targetChainId: number): MagicSigner {
   const isThirdweb = useIsThirdwebAccount()
@@ -38,12 +39,14 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
   const isOnSessionAccount = Boolean(session) && connectedAddress?.toLowerCase() === session
   const isSettling = status === 'connecting' || status === 'reconnecting'
   const magicAddress = session ? magicAddresses[session] : undefined
-  const isMagicCurrent = isOnSessionAccount && connector?.id === 'magic'
-  const isMagic = isMagicCurrent || (Boolean(session) && magicAddress === session)
+  const socialConnectorId = isThirdweb ? 'thirdweb' : 'magic'
+  const isSocialCurrent = isOnSessionAccount && connector?.id === socialConnectorId
+  // A thirdweb login already on the signed-in account through another wallet keeps signing with that one.
+  const isSocial = isSocialCurrent || (Boolean(session) && (isThirdweb ? !isOnSessionAccount : magicAddress === session))
   const hasFailed = Boolean(session) && failedSession === session
   // Every Magic (re)connect resets its network to the first configured chain and may keep an instance on
   // another one, so Magic is always switched once to the target chain, which silently rebuilds it.
-  const needsPrepare = isMagic && (!isMagicCurrent || chainId !== targetChainId || preparedSession !== session)
+  const needsPrepare = isSocial && (!isSocialCurrent || chainId !== targetChainId || preparedSession !== session)
 
   useEffect(() => {
     // Skipped when the right account is already connected, which keeps the Magic SDK off wallet logins.
@@ -61,26 +64,40 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
 
   useEffect(() => {
     if (!session || !needsPrepare || hasFailed || isSettling || isPreparing.current) return
-    const magic = connectors.find(candidate => candidate.id === 'magic')
-    if (!magic) {
+    const social = connectors.find(candidate => candidate.id === socialConnectorId)
+    if (!social) {
       setFailedSession(session)
       return
     }
     isPreparing.current = true
     const prepare = async () => {
-      if (!isMagicCurrent) await connectAsync({ connector: magic, chainId: targetChainId })
-      await switchChainAsync({ connector: magic, chainId: targetChainId })
+      if (!isSocialCurrent) {
+        const { accounts } = await connectAsync({ connector: social, chainId: targetChainId })
+        if (accounts[0]?.toLowerCase() !== session) throw new Error('The social session is not the signed-in account')
+      }
+      await switchChainAsync({ connector: social, chainId: targetChainId })
       setPreparedSession(session)
     }
     prepare()
       .catch(error => {
-        console.error('[useMagicSigner] Magic connect failed:', error)
+        console.error('[useMagicSigner] Social connect failed:', error)
         setFailedSession(session)
       })
       .finally(() => {
         isPreparing.current = false
       })
-  }, [session, needsPrepare, hasFailed, isSettling, isMagicCurrent, connectors, connectAsync, switchChainAsync, targetChainId])
+  }, [
+    session,
+    needsPrepare,
+    hasFailed,
+    isSettling,
+    isSocialCurrent,
+    socialConnectorId,
+    connectors,
+    connectAsync,
+    switchChainAsync,
+    targetChainId
+  ])
 
   const retry = useCallback(() => setFailedSession(undefined), [])
   const disconnectOtherWallets = useCallback(() => {
@@ -92,9 +109,9 @@ function useMagicSigner(sessionAddress: string | undefined, targetChainId: numbe
 
   if (!session) return signer('ready')
   // Checked before `isSettling`: wagmi reports our own Magic connect as "connecting" too.
-  if (isMagic) return signer(hasFailed ? 'failed' : needsPrepare ? 'connecting' : 'ready')
+  if (isSocial) return signer(hasFailed ? 'failed' : needsPrepare ? 'connecting' : 'ready')
   if (isOnSessionAccount) return signer('ready')
-  if (isSettling || (!isThirdweb && magicAddress === undefined)) return signer('checking')
+  if (isSettling || magicAddress === undefined) return signer('checking')
   return signer(isConnected ? 'mismatch' : 'ready')
 }
 

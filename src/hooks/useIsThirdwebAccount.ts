@@ -21,4 +21,4 @@ function useIsThirdwebAccount(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, () => false)
 }
 
-export { useIsThirdwebAccount }
+export { getSnapshot as isThirdwebAccount, useIsThirdwebAccount }
