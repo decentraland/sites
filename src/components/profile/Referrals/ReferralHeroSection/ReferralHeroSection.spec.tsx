@@ -1,5 +1,5 @@
 import * as mockReact from 'react'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ReferralHeroSection } from './ReferralHeroSection'
 
@@ -19,8 +19,14 @@ jest.mock('decentraland-ui2', () => {
     Box: passthrough,
     InputAdornment: passthrough,
     // Expose `onClose` as a clickable affordance so the inline dismiss arrows run.
-    Menu: ({ children, onClose }: { children?: React.ReactNode; onClose?: () => void }) =>
-      mockReact.createElement('div', null, mockReact.createElement('button', { 'aria-label': 'menu-close', onClick: onClose }), children),
+    // `data-open` mirrors the `open` prop so a test can tell whether the menu was anchored.
+    Menu: ({ children, onClose, open }: { children?: React.ReactNode; onClose?: () => void; open?: boolean }) =>
+      mockReact.createElement(
+        'div',
+        { 'data-testid': 'share-menu', 'data-open': String(Boolean(open)) },
+        mockReact.createElement('button', { 'aria-label': 'menu-close', onClick: onClose }),
+        children
+      ),
     MenuItem: ({ children, onClick }: { children?: React.ReactNode; onClick?: () => void }) =>
       mockReact.createElement('button', { role: 'menuitem', onClick }, children),
     Tooltip: ({ children, onClose }: { children?: React.ReactNode; onClose?: () => void }) =>
@@ -258,6 +264,51 @@ describe('ReferralHeroSection', () => {
 
       expect(shareSpy).toHaveBeenCalledWith(expect.objectContaining({ url: `${window.location.origin}/invite/${ADDRESS}` }))
       Reflect.deleteProperty(navigator, 'share')
+    })
+
+    describe('and the user dismisses the share sheet', () => {
+      let shareSpy: jest.Mock
+
+      beforeEach(() => {
+        shareSpy = jest.fn().mockRejectedValue(new DOMException('Share canceled', 'AbortError'))
+        Object.defineProperty(navigator, 'share', { value: shareSpy, configurable: true })
+      })
+
+      afterEach(() => {
+        Reflect.deleteProperty(navigator, 'share')
+      })
+
+      it('should settle the rejection and leave the share menu closed', async () => {
+        const user = userEvent.setup()
+        render(<ReferralHeroSection profileAddress={ADDRESS} />)
+
+        await user.click(screen.getByText('profile.referral_hero_section.share'))
+
+        expect(shareSpy).toHaveBeenCalledTimes(1)
+        expect(screen.getByTestId('share-menu')).toHaveAttribute('data-open', 'false')
+      })
+    })
+
+    describe('and the browser refuses to share', () => {
+      beforeEach(() => {
+        Object.defineProperty(navigator, 'share', {
+          value: jest.fn().mockRejectedValue(new DOMException('Permission denied', 'NotAllowedError')),
+          configurable: true
+        })
+      })
+
+      afterEach(() => {
+        Reflect.deleteProperty(navigator, 'share')
+      })
+
+      it('should fall back to the share menu', async () => {
+        const user = userEvent.setup()
+        render(<ReferralHeroSection profileAddress={ADDRESS} />)
+
+        await user.click(screen.getByText('profile.referral_hero_section.share'))
+
+        await waitFor(() => expect(screen.getByTestId('share-menu')).toHaveAttribute('data-open', 'true'))
+      })
     })
   })
 })
