@@ -11,7 +11,9 @@ type Account = { address: string | undefined; chainId?: number; connector: { id:
 const mockConnectAsync = jest.fn()
 const mockSwitchChainAsync = jest.fn()
 const mockDisconnect = jest.fn()
+const mockDisconnectAsync = jest.fn()
 const magicConnector = { id: 'magic', name: 'Magic' }
+const thirdwebConnector = { id: 'thirdweb', name: 'Thirdweb' }
 const walletConnectConnector = { id: 'walletConnect', name: 'WalletConnect' }
 const metaMaskConnector = { id: 'injected', name: 'MetaMask' }
 let mockAccount: Account
@@ -23,7 +25,7 @@ jest.mock('wagmi', () => ({
   useConnections: () => mockConnections,
   useConnect: () => ({ connectAsync: mockConnectAsync, connectors: mockConnectors }),
   useSwitchChain: () => ({ switchChainAsync: mockSwitchChainAsync }),
-  useDisconnect: () => ({ disconnect: mockDisconnect })
+  useDisconnect: () => ({ disconnect: mockDisconnect, disconnectAsync: mockDisconnectAsync })
 }))
 
 const mockUseIsThirdwebAccount = useIsThirdwebAccount as jest.MockedFunction<typeof useIsThirdwebAccount>
@@ -48,8 +50,9 @@ describe('useMagicSigner', () => {
   beforeEach(() => {
     mockUseIsThirdwebAccount.mockReturnValue(false)
     mockGetMagicAddress.mockResolvedValue(null)
-    mockConnectAsync.mockReset().mockResolvedValue({})
+    mockConnectAsync.mockReset().mockResolvedValue({ accounts: [SIGNED_IN] })
     mockSwitchChainAsync.mockReset().mockResolvedValue({})
+    mockDisconnectAsync.mockReset().mockResolvedValue(undefined)
     mockAccount = { address: undefined, connector: undefined, status: 'disconnected' }
     mockConnectors = [walletConnectConnector, metaMaskConnector, magicConnector]
     mockConnections = []
@@ -83,16 +86,75 @@ describe('useMagicSigner', () => {
     })
   })
 
-  describe('when the user signed in with thirdweb and no wallet is connected', () => {
+  describe('when the user signed in with thirdweb', () => {
     beforeEach(() => {
       mockUseIsThirdwebAccount.mockReturnValue(true)
+      mockConnectors = [walletConnectConnector, magicConnector, thirdwebConnector]
     })
 
-    it('should be ready without looking up Magic', () => {
+    it('should connect the thirdweb wallet on the target network without looking up Magic', async () => {
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+
+      expect(result.current.state).toBe('connecting')
+      await waitFor(() => expect(mockSwitchChainAsync).toHaveBeenCalledWith({ connector: thirdwebConnector, chainId: TARGET_CHAIN }))
+      expect(mockConnectAsync).toHaveBeenCalledWith({ connector: thirdwebConnector, chainId: TARGET_CHAIN })
+      expect(mockGetMagicAddress).not.toHaveBeenCalled()
+    })
+
+    it('should connect the thirdweb wallet over another connected wallet instead of reporting a mismatch', async () => {
+      mockAccount = { address: OTHER, connector: walletConnectConnector, status: 'connected' }
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+
+      expect(result.current.state).toBe('connecting')
+      await waitFor(() => expect(mockConnectAsync).toHaveBeenCalledWith({ connector: thirdwebConnector, chainId: TARGET_CHAIN }))
+    })
+
+    it('should be ready once wagmi reports thirdweb on the signed-in account and target network', async () => {
+      const { result, rerender } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+      await waitFor(() => expect(mockSwitchChainAsync).toHaveBeenCalled())
+
+      mockAccount = { address: SIGNED_IN.toLowerCase(), chainId: TARGET_CHAIN, connector: thirdwebConnector, status: 'connected' }
+      rerender()
+
+      await waitFor(() => expect(result.current.state).toBe('ready'))
+    })
+
+    it('should report failed when the thirdweb session belongs to another account', async () => {
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      mockConnectAsync.mockResolvedValue({ accounts: [OTHER] })
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+
+      await waitFor(() => expect(result.current.state).toBe('failed'))
+      expect(mockDisconnectAsync).toHaveBeenCalledWith({ connector: thirdwebConnector })
+      expect(mockSwitchChainAsync).not.toHaveBeenCalled()
+    })
+
+    it('should connect again when the user retries after a session for another account', async () => {
+      jest.spyOn(console, 'error').mockImplementation(() => undefined)
+      mockConnectAsync.mockResolvedValueOnce({ accounts: [OTHER] })
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+      await waitFor(() => expect(result.current.state).toBe('failed'))
+
+      act(() => result.current.retry())
+
+      await waitFor(() => expect(mockConnectAsync).toHaveBeenCalledTimes(2))
+      await waitFor(() => expect(mockSwitchChainAsync).toHaveBeenCalledWith({ connector: thirdwebConnector, chainId: TARGET_CHAIN }))
+    })
+
+    it('should report failed when the thirdweb connector is not configured', async () => {
+      mockConnectors = [walletConnectConnector, magicConnector]
+      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
+
+      await waitFor(() => expect(result.current.state).toBe('failed'))
+      expect(mockConnectAsync).not.toHaveBeenCalled()
+    })
+
+    it('should keep signing with another wallet already on the signed-in account', () => {
+      mockAccount = { address: SIGNED_IN.toLowerCase(), chainId: TARGET_CHAIN, connector: metaMaskConnector, status: 'connected' }
       const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
 
       expect(result.current.state).toBe('ready')
-      expect(mockGetMagicAddress).not.toHaveBeenCalled()
+      expect(mockConnectAsync).not.toHaveBeenCalled()
     })
   })
 
@@ -137,13 +199,6 @@ describe('useMagicSigner', () => {
       const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
 
       await waitFor(() => expect(result.current.state).toBe('mismatch'))
-    })
-
-    it('should block signing for a thirdweb login too', () => {
-      mockUseIsThirdwebAccount.mockReturnValue(true)
-      const { result } = renderHook(() => useMagicSigner(SIGNED_IN, TARGET_CHAIN))
-
-      expect(result.current.state).toBe('mismatch')
     })
 
     it('should disconnect every wallet that is not the signed-in account', async () => {

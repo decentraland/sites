@@ -161,7 +161,7 @@ const SendManaContent = ({ network, address, balance, onClose, onSuccess }: Send
         onClick={handleSend}
         data-role="send-submit"
       >
-        {isSending && connector?.id !== 'magic'
+        {isSending && connector?.id !== 'magic' && connector?.id !== 'thirdweb'
           ? t('account.wallets.send.confirm_in_wallet')
           : isSending || isConfirming
             ? t('account.wallets.send.sending')
