@@ -83,10 +83,6 @@ jest.mock('../../hooks/adapters/useFormatMessage', () => ({
     values?.location ? `${id}:${values.location}` : id ?? ''
 }))
 
-jest.mock('../../hooks/useAuthIdentity', () => ({
-  useAuthIdentity: () => ({ identity: undefined, hasValidIdentity: false, address: undefined })
-}))
-
 jest.mock('../../hooks/usePageViewTracking', () => ({
   usePageViewTracking: (...args: unknown[]) => mockUsePageViewTracking(...args)
 }))

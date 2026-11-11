@@ -26,7 +26,6 @@ function jsonResponse(body: unknown, ok = true, status = 200): Response {
 }
 
 const guestIdentity = { authChain: [], expiration: new Date() } as unknown as AuthIdentity
-const userIdentity = { authChain: [{ payload: 'user' }], expiration: new Date() } as unknown as AuthIdentity
 
 describe('sceneAdapter', () => {
   let fetchMock: jest.Mock
@@ -78,26 +77,26 @@ describe('sceneAdapter', () => {
     })
 
     it('should parse the livekit adapter envelope into url + token', async () => {
-      const result = await fetchSceneAdapter({ worldName: 'MyWorld.dcl.eth', identity: userIdentity })
+      const result = await fetchSceneAdapter({ worldName: 'MyWorld.dcl.eth' })
 
       expect(result).toEqual({ url: 'wss://livekit.test/rtc', token: 'jwt-123' })
     })
 
     it('should sign the gatekeeper request with the lowercased world as sceneId and realm', async () => {
-      await fetchSceneAdapter({ worldName: 'MyWorld.dcl.eth', identity: userIdentity })
+      await fetchSceneAdapter({ worldName: 'MyWorld.dcl.eth' })
 
       expect(mockSignedFetch).toHaveBeenCalledWith(
         'https://gatekeeper.test/get-scene-adapter',
         expect.objectContaining({
           method: 'POST',
-          identity: userIdentity,
+          identity: guestIdentity,
           metadata: { sceneId: 'myworld.dcl.eth', parcel: '0,0', realmName: 'myworld.dcl.eth', signer: 'decentraland-kernel-scene' }
         })
       )
     })
 
     it('should prefer the explicit sceneId and parcel for multi-scene worlds', async () => {
-      await fetchSceneAdapter({ worldName: 'MyWorld.dcl.eth', sceneId: 'bafyentity', parcel: '4,2', identity: userIdentity })
+      await fetchSceneAdapter({ worldName: 'MyWorld.dcl.eth', sceneId: 'bafyentity', parcel: '4,2' })
 
       expect(mockSignedFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -107,17 +106,11 @@ describe('sceneAdapter', () => {
       )
     })
 
-    it('should mint a guest identity when the caller has none', async () => {
+    it('should mint a guest identity to sign the request', async () => {
       await fetchSceneAdapter({ worldName: 'myworld.dcl.eth' })
 
       expect(mockGetGuestIdentity).toHaveBeenCalledTimes(1)
       expect(mockSignedFetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ identity: guestIdentity }))
-    })
-
-    it('should not mint a guest identity when the caller identity is present', async () => {
-      await fetchSceneAdapter({ worldName: 'myworld.dcl.eth', identity: userIdentity })
-
-      expect(mockGetGuestIdentity).not.toHaveBeenCalled()
     })
 
     it('should return null when the gatekeeper rejects the request', async () => {
