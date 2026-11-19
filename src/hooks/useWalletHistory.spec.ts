@@ -15,7 +15,7 @@ import type { WalletTransaction } from './useWalletTransactions.types'
 
 const queryMock = useGetManaTransfersQuery as unknown as jest.Mock
 const localMock = useWalletTransactions as unknown as jest.Mock
-const USER = '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd'
+const USER = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
 
 const tx = (hash: string, timestamp: number, status: WalletTransaction['status']): WalletTransaction => ({
   hash,

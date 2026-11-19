@@ -78,7 +78,7 @@ jest.mock('../../features/invite/invite.flags', () => ({
 }))
 
 const referrerProfile = {
-  avatars: [{ ethAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', name: 'SirTesla' }]
+  avatars: [{ ethAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', name: 'SirTesla' }]
 }
 
 // Save and restore the original `global.fetch` once per file. The previous
@@ -103,9 +103,9 @@ describe('when the referrer param is a Decentraland name', () => {
     mockUseParams.mockReturnValue({ referrer: 'Brai' })
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/lambdas/names/Brai/owner')) {
-        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' }) })
       }
-      if (url.includes('/lambdas/profiles/0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')) {
+      if (url.includes('/lambdas/profiles/0xabcdefabcdefabcdefabcdefabcdefabcdefabcd')) {
         return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
@@ -137,7 +137,7 @@ describe('when the referrer param is a Decentraland name', () => {
 
     await waitFor(() => {
       expect(mockInviteHero).toHaveBeenCalledWith(
-        expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd', isLoading: false })
+        expect.objectContaining({ referrerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', isLoading: false })
       )
     })
   })
@@ -155,9 +155,9 @@ describe('when the referrer param is a Decentraland name', () => {
 
 describe('when the referrer param is already an Ethereum address', () => {
   beforeEach(() => {
-    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockUseParams.mockReturnValue({ referrer: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' })
     mockFetch.mockImplementation((url: string) => {
-      if (url.includes('/lambdas/profiles/0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')) {
+      if (url.includes('/lambdas/profiles/0xabcdefabcdefabcdefabcdefabcdefabcdefabcd')) {
         return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
@@ -173,7 +173,7 @@ describe('when the referrer param is already an Ethereum address', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://peer.example.com/lambdas/profiles/0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd',
+        'https://peer.example.com/lambdas/profiles/0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
         expect.any(Object)
       )
     })
@@ -184,7 +184,7 @@ describe('when the referrer param is already an Ethereum address', () => {
 
 describe('when the profile lookup is still in flight', () => {
   beforeEach(() => {
-    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockUseParams.mockReturnValue({ referrer: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' })
     // Never resolves: reproduces a slow/hanging catalyst.
     mockFetch.mockImplementation(() => new Promise(() => {}))
   })
@@ -199,7 +199,7 @@ describe('when the profile lookup is still in flight', () => {
     await waitFor(() => {
       expect(mockInviteHero).toHaveBeenCalledWith(
         expect.objectContaining({
-          referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd',
+          referrerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           isReferrerResolving: false
         })
       )
@@ -229,7 +229,7 @@ describe('when the profile fetch fails after a successful name resolution', () =
     mockUseParams.mockReturnValue({ referrer: 'Brai' })
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/lambdas/names/Brai/owner')) {
-        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' }) })
       }
       return Promise.reject(new Error('profile down'))
     })
@@ -253,13 +253,13 @@ describe('when the profile fetch fails after a successful name resolution', () =
     await waitFor(() => {
       expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
     })
-    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' }))
   })
 })
 
 describe('when the referrer address has no deployed profile', () => {
   beforeEach(() => {
-    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockUseParams.mockReturnValue({ referrer: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' })
     mockFetch.mockResolvedValue({ json: () => Promise.resolve({ error: 'Not Found', message: 'Profile not found' }) })
   })
 
@@ -272,7 +272,7 @@ describe('when the referrer address has no deployed profile', () => {
     await waitFor(() => {
       expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ isLoading: false }))
     })
-    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd' }))
+    expect(mockInviteHero).toHaveBeenCalledWith(expect.objectContaining({ referrerAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' }))
   })
 })
 
@@ -398,7 +398,7 @@ describe('when the inviter profile resolves', () => {
     mockUseParams.mockReturnValue({ referrer: 'Brai' })
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/lambdas/names/Brai/owner')) {
-        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' }) })
       }
       if (url.includes('/lambdas/profiles/')) {
         return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
@@ -420,10 +420,10 @@ describe('when the inviter profile resolves', () => {
   it('should fall back to the generic title when the profile carries no name', async () => {
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/lambdas/names/Brai/owner')) {
-        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' }) })
+        return Promise.resolve({ json: () => Promise.resolve({ owner: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' }) })
       }
       if (url.includes('/lambdas/profiles/')) {
-        return Promise.resolve({ json: () => Promise.resolve({ avatars: [{ ethAddress: '0xd9b9', name: '  ' }] }) })
+        return Promise.resolve({ json: () => Promise.resolve({ avatars: [{ ethAddress: '0xabcd', name: '  ' }] }) })
       }
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
     })
@@ -439,7 +439,7 @@ describe('when the direct download flag is enabled', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
     mockUseInviteDirectDownload.mockReturnValue(true)
-    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockUseParams.mockReturnValue({ referrer: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' })
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/lambdas/profiles/')) {
         return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })
@@ -457,7 +457,7 @@ describe('when the direct download flag is enabled', () => {
     render(<InvitePage />)
 
     await waitFor(() => {
-      expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBe('0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')
+      expect(window.sessionStorage.getItem(REFERRER_STORAGE_KEY)).toBe('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd')
     })
   })
 })
@@ -467,7 +467,7 @@ describe('when the direct download flag is disabled', () => {
     window.sessionStorage.clear()
     window.sessionStorage.setItem(REFERRER_STORAGE_KEY, '0x1111111111111111111111111111111111111111')
     mockUseInviteDirectDownload.mockReturnValue(false)
-    mockUseParams.mockReturnValue({ referrer: '0xD9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd' })
+    mockUseParams.mockReturnValue({ referrer: '0xaBcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD' })
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/lambdas/profiles/')) {
         return Promise.resolve({ json: () => Promise.resolve(referrerProfile) })

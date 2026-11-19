@@ -10,7 +10,7 @@ import {
 } from './account-wallet.helpers'
 import type { DecodedManaLog, ManaSubgraphLog } from './account-wallet.types'
 
-const USER = '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd'
+const USER = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
 const OTHER = '0x9a6ebe7e2a7722f8200d0ffb63a1f6406a0d7dce'
 const CONTRACT = '0x0ff58e235b154dd7785c4829d48948ce114248c4'
 const ZERO = '0x0000000000000000000000000000000000000000'
