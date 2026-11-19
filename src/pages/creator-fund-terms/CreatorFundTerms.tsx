@@ -3,7 +3,8 @@ import { BulletList, LegalPageLayout, Paragraph, Section, SectionTitle } from '.
 import type { TOCEntry } from '../../components/LegalPage'
 
 // Text from the "Terms - V2" tab of the "Creator Fund — Program Terms (Beta Season)" legal doc
-// (Nov 19 2026). V2 changes Sections 3.2 (Excluded Persons) and 5.3 (Excluded activity).
+// (Nov 19 2026). V2 changes Sections 3.2 (Excluded Persons) and 5.3 (Excluded activity). In 1.3 the
+// policy names are the links instead of bracketed URLs (approved by legal; the "Terms of Use" definition stays).
 const PROGRAM_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
 
 const TABLE_OF_CONTENTS: TOCEntry[] = [
