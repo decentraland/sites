@@ -62,12 +62,11 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         1.3 You join the Program by opting in through Creator Hub and signing these Terms with the wallet that owns your LAND, NAME or
-        World. By signing, you confirm that you have read and accept these Terms, the Decentraland Terms of Use (
-        <a href="/terms">decentraland.org/terms</a>, the &quot;Terms of Use&quot;), the Content Policy (
-        <a href="/content">decentraland.org/content</a>), the Privacy Policy (<a href="/privacy">decentraland.org/privacy</a>) and the{' '}
-        <ProgramRulesLink />, which form part of these Terms. These Terms are additional terms of participation issued by the Foundation
-        under Section 1.3 of the Terms of Use. Under Section 19.1 of the Terms of Use, they prevail over the Terms of Use to the extent of
-        any conflict on matters relating to the Program.
+        World. By signing, you confirm that you have read and accept these Terms, the Decentraland <a href="/terms">Terms of Use</a>, the{' '}
+        <a href="/content">Content Policy</a>, the <a href="/privacy">Privacy Policy</a> and the <ProgramRulesLink />, which form part of
+        these Terms. These Terms are additional terms of participation issued by the Foundation under Section 1.3 of the Terms of Use. Under
+        Section 19.1 of the Terms of Use, they prevail over the Terms of Use to the extent of any conflict on matters relating to the
+        Program.
       </Paragraph>
       <Paragraph>
         1.4 If you do not accept these Terms, do not opt in. Your scene remains in Decentraland as usual; it simply does not take part in
