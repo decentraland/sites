@@ -3,8 +3,7 @@ import { BulletList, LegalPageLayout, Paragraph, Section, SectionTitle } from '.
 import type { TOCEntry } from '../../components/LegalPage'
 
 // Text from the "Terms - V2" tab of the "Creator Fund — Program Terms (Beta Season)" legal doc
-// (Nov 19 2026). V2 changes Sections 3.2 (Excluded Persons) and 5.3 (Excluded activity). In 1.3 the
-// policy names are the links instead of bracketed URLs (approved by legal; the "Terms of Use" definition stays).
+// (Nov 19 2026). V2 changes Sections 3.2 (Excluded Persons) and 5.3 (Excluded activity).
 const PROGRAM_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
 
 const TABLE_OF_CONTENTS: TOCEntry[] = [
@@ -63,8 +62,9 @@ const CreatorFundTerms = memo(() => (
       </Paragraph>
       <Paragraph>
         1.3 You join the Program by opting in through Creator Hub and signing these Terms with the wallet that owns your LAND, NAME or
-        World. By signing, you confirm that you have read and accept these Terms, the Decentraland <a href="/terms">Terms of Use</a> (the
-        &quot;Terms of Use&quot;), the <a href="/content">Content Policy</a>, the <a href="/privacy">Privacy Policy</a> and the{' '}
+        World. By signing, you confirm that you have read and accept these Terms, the Decentraland Terms of Use (
+        <a href="/terms">decentraland.org/terms</a>, the &quot;Terms of Use&quot;), the Content Policy (
+        <a href="/content">decentraland.org/content</a>), the Privacy Policy (<a href="/privacy">decentraland.org/privacy</a>) and the{' '}
         <ProgramRulesLink />, which form part of these Terms. These Terms are additional terms of participation issued by the Foundation
         under Section 1.3 of the Terms of Use. Under Section 19.1 of the Terms of Use, they prevail over the Terms of Use to the extent of
         any conflict on matters relating to the Program.
