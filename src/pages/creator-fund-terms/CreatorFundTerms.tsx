@@ -2,8 +2,8 @@ import { memo, useEffect } from 'react'
 import { BulletList, LegalPageLayout, Paragraph, Section, SectionTitle } from '../../components/LegalPage'
 import type { TOCEntry } from '../../components/LegalPage'
 
-// Text from the "Creator Fund — Program Terms (Beta Season)" legal doc, with the Nov 10
-// corrections. The values that were bracketed (7 and 14 days, 6 months) are now confirmed.
+// Text from the "Terms - V2" tab of the "Creator Fund — Program Terms (Beta Season)" legal doc
+// (Nov 19 2026). V2 changes Sections 3.2 (Excluded Persons) and 5.3 (Excluded activity).
 const PROGRAM_RULES_URL = 'https://docs.decentraland.org/creator/creator-fund/program-rules'
 
 const TABLE_OF_CONTENTS: TOCEntry[] = [
@@ -127,9 +127,10 @@ const CreatorFundTerms = memo(() => (
         </li>
       </BulletList>
       <Paragraph>
-        3.2 <strong>Excluded Persons.</strong> The following may not take part: (a) members of the Decentraland DAO Council; (b)
-        consultants, contractors and advisors of the Foundation or of DCL Regenesis Labs Foundation, except creators engaged under the
-        Foundation&apos;s Creator Success Program, who may take part in respect of their own experiences.
+        3.2 <strong>Excluded Persons.</strong> The following may not take part: (a) persons who design, operate or make decisions on the
+        Program, or have access to its non-public data or detection methods; (b) consultants, contractors and advisors of the Foundation or
+        of DCL Regenesis Labs Foundation, except creators engaged under the Creator Success Program, who may take part in respect of their
+        own experiences.
       </Paragraph>
       <Paragraph>
         3.3 <strong>Declarations.</strong> At opt-in you declare your contact name, email, and that you meet Section 3.1. If any declaration
@@ -201,10 +202,11 @@ const CreatorFundTerms = memo(() => (
         our systems classify as a genuine human player under the criteria set out on the <ProgramRulesLink />.
       </Paragraph>
       <Paragraph>
-        5.3 <strong>Excluded activity.</strong> The following never count: (a) sessions by you, your collaborators or other Program
-        participants; (b) sessions by Excluded Persons; (c) activity generated in breach of Section 8; (d) if a Rewards Program season runs
-        at the same time, visits rewarded under that program; and (e) players brought to your experience through advertising or campaigns
-        run by the Foundation or DCL Regenesis Labs Foundation.
+        5.3 <strong>Excluded activity.</strong> The following do not count toward Rewards: (a) sessions by you, your collaborators or other
+        Program participants; (b) sessions by Excluded Persons; (c) activity generated in breach of Section 8; (d) if a Rewards Program
+        season runs at the same time, visits rewarded under that program; and (e) players brought to your experience through paid
+        advertising campaigns run or funded by the Foundation or DCL Regenesis Labs Foundation, for the metrics and to the extent set out on
+        the <ProgramRulesLink />.
       </Paragraph>
       <Paragraph>
         5.4 <strong>Classification is ours.</strong> Classification of sessions and players is carried out by the Foundation and its service
