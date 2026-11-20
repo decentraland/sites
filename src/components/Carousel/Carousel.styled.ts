@@ -123,8 +123,10 @@ const NavButton = styled('button')(({ theme }) => ({
     backgroundColor: 'rgba(0, 0, 0, 0.6)'
   },
   fontSize: 24,
+  // Arrows exist for pointers that can hover; touch devices swipe instead,
+  // so hide by pointer capability rather than viewport width.
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  '@media (max-width: 991px)': {
+  '@media (hover: none)': {
     display: 'none'
   }
 }))
