@@ -1110,7 +1110,7 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "승인된 이벤트의 이름, 설명, 이미지 또는 위치를 변경하면 다시 검토 대기 상태가 됩니다.",
-    "daily_duration_warning": "매일 이벤트는 2시간까지. 더 긴 이벤트는 검토 중에 거부됩니다.",
+    "daily_duration_warning": "매일 이벤트는 2시간까지. 초과 시 검토에서 거부됩니다.",
     "featured_item_label": "추천 웨어러블 (선택사항)",
     "featured_item_placeholder": "아이템 및 컬렉션 검색 또는 URN 붙여넣기",
     "featured_item_by": "제작자: {creator}",

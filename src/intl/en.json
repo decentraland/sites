@@ -1360,7 +1360,7 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "Changing the name, description, image, or location of an approved event sends it back for review.",
-    "daily_duration_warning": "Daily events limited to 2 hours. Longer ones will be rejected during review.",
+    "daily_duration_warning": "Daily events limited to 2 hours. Longer ones will be rejected in review.",
     "event_details": "Event Details",
     "date": "Date",
     "start": "Start",
