@@ -19,6 +19,8 @@ jest.mock('./EventForm.styled', () => ({
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DailyDurationDisclaimer: ({ children, ...rest }: { children: React.ReactNode }) => <div {...rest}>{children}</div>,
+  DailyDurationDisclaimerText: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
   DateTimeRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DeleteButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
@@ -493,10 +495,16 @@ describe('EventForm', () => {
       })
     })
 
-    it('should warn that daily events longer than 2 hours are rejected', () => {
+    it('should render the daily duration disclaimer', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.getByRole('alert')).toHaveTextContent('create_event.daily_duration_warning')
+      expect(screen.getByTestId('daily-duration-disclaimer')).toHaveTextContent('create_event.daily_duration_warning')
+    })
+
+    it('should show a warning icon next to the disclaimer', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('daily-duration-disclaimer').querySelector('svg')).toBeInTheDocument()
     })
   })
 
@@ -504,7 +512,7 @@ describe('EventForm', () => {
     it('should not render the daily duration warning', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
 
-      expect(screen.queryByText('create_event.daily_duration_warning')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('daily-duration-disclaimer')).not.toBeInTheDocument()
     })
   })
 
