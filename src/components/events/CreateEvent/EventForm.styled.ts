@@ -653,6 +653,22 @@ const RejectionAlert = styled(Alert)({
   '& .MuiAlert-icon': { color: rejectionAlertText }
 })
 
+/* ── daily recurrence disclaimer (red text + warning icon) ───────────── */
+
+const DailyDurationDisclaimer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
+  color: theme.palette.error.main
+}))
+
+const DailyDurationDisclaimerText = styled(Typography)({
+  fontSize: 14,
+  lineHeight: '20px',
+  fontFamily: "'Inter', sans-serif",
+  color: 'inherit'
+})
+
 const reviewWarningAlertBg = '#ffe8cc'
 const reviewWarningAlertText = '#8a4b00'
 
@@ -674,6 +690,8 @@ export {
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
+  DailyDurationDisclaimer,
+  DailyDurationDisclaimerText,
   DateTimeRow,
   DateTimeSection,
   DescriptionFields,

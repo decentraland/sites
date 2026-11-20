@@ -122,7 +122,7 @@ type UseCreateEventFormOptions = {
 function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId = null }: UseCreateEventFormOptions = {}) {
   const { t } = useTranslation()
   const { identity, address } = useAuthIdentity()
-  const { isAdmin, canApproveAnyEvent, canApproveOwnEvent } = useAdminPermissions()
+  const { isAdmin, canApproveAnyEvent, canApproveOwnEvent, canEditAnyEvent } = useAdminPermissions()
   const [createEvent] = useCreateEventMutation()
   const [updateEvent] = useUpdateEventMutation()
   const [uploadPoster] = useUploadPosterMutation()
@@ -134,6 +134,12 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
+  // Daily events are limited to 2 hours and longer ones are rejected in review, so creators get a disclaimer
+  // when they pick "Every Day". Nothing blocks the submit. The team (approve_any_event / edit_any_event) can
+  // still schedule longer daily events, so they don't see it.
+  const canScheduleLongDailyEvents = canApproveAnyEvent || canEditAnyEvent
+  const showDailyDurationWarning =
+    form.repeatEnabled && recurrenceToApi(form.recurrence).frequency === 'DAILY' && !canScheduleLongDailyEvents
 
   const setField = useCallback(<TKey extends keyof CreateEventFormState>(key: TKey, value: CreateEventFormState[TKey]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -453,6 +459,7 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
     errors,
     mode,
     requiresModerationReview,
+    showDailyDurationWarning,
     setField,
     markRequiredFields,
     handleImageSelect,

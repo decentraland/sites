@@ -1110,6 +1110,7 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "Cambiar el nombre, la descripción, la imagen o la ubicación de un evento aprobado lo devuelve a revisión.",
+    "daily_duration_warning": "Eventos diarios: máx. 2 horas. Si duran más, se rechazan en revisión.",
     "featured_item_label": "Wearables Destacados (Opcional)",
     "featured_item_placeholder": "Busca artículos y colecciones o pega un URN",
     "featured_item_by": "Por {creator}",

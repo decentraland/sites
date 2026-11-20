@@ -11,6 +11,8 @@ import EventIcon from '@mui/icons-material/Event'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 import { useTranslation } from '@dcl/hooks'
 import { Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/events'
@@ -43,6 +45,8 @@ import {
   ContentContainer,
   CoordPrefix,
   CoordinatesRow,
+  DailyDurationDisclaimer,
+  DailyDurationDisclaimerText,
   DateTimeRow,
   DateTimeSection,
   DeleteButton,
@@ -163,6 +167,7 @@ function EventForm({
     errors,
     mode,
     requiresModerationReview,
+    showDailyDurationWarning,
     setField,
     markRequiredFields,
     handleImageSelect,
@@ -376,6 +381,12 @@ function EventForm({
                       ))}
                     </EventSelect>
                   </EventFormControl>
+                  {showDailyDurationWarning && (
+                    <DailyDurationDisclaimer data-testid="daily-duration-disclaimer">
+                      <WarningAmberRoundedIcon fontSize="small" />
+                      <DailyDurationDisclaimerText>{t('create_event.daily_duration_warning')}</DailyDurationDisclaimerText>
+                    </DailyDurationDisclaimer>
+                  )}
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}

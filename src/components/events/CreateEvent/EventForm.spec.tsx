@@ -19,6 +19,8 @@ jest.mock('./EventForm.styled', () => ({
   ContentContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CoordPrefix: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   CoordinatesRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DailyDurationDisclaimer: ({ children, ...rest }: { children: React.ReactNode }) => <div {...rest}>{children}</div>,
+  DailyDurationDisclaimerText: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
   DateTimeRow: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DateTimeSection: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DeleteButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
@@ -471,6 +473,46 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} initialEvent={approvedEvent} />)
 
       expect(screen.getByRole('alert')).toHaveTextContent('create_event.approved_edit_warning')
+    })
+  })
+
+  describe('when the hook flags a daily event for a creator', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ repeatEnabled: true, recurrence: 'every_day' }),
+        errors: {},
+        requiresModerationReview: false,
+        showDailyDurationWarning: true,
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should render the daily duration disclaimer', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('daily-duration-disclaimer')).toHaveTextContent('create_event.daily_duration_warning')
+    })
+
+    it('should show a warning icon next to the disclaimer', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByTestId('daily-duration-disclaimer').querySelector('svg')).toBeInTheDocument()
+    })
+  })
+
+  describe('when the hook does not flag a daily event', () => {
+    it('should not render the daily duration warning', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.queryByTestId('daily-duration-disclaimer')).not.toBeInTheDocument()
     })
   })
 
