@@ -69,14 +69,23 @@ const ReferralHeroSection = memo(({ profileAddress, avatarName, hasClaimedName }
 
   const handleShareButtonClick = useCallback(
     async (event: React.MouseEvent<HTMLButtonElement>) => {
+      // Read before the await: React clears `currentTarget` once the handler yields.
+      const shareButton = event.currentTarget
       if (isTabletOrBelow && typeof navigator !== 'undefined' && navigator.share) {
-        await navigator.share({
-          title: 'Decentraland Referral',
-          text: t('profile.referral_hero_section.share_on_x_title'),
-          url: inviteUrl
-        })
+        try {
+          await navigator.share({
+            title: 'Decentraland Referral',
+            text: t('profile.referral_hero_section.share_on_x_title'),
+            url: inviteUrl
+          })
+        } catch (error) {
+          // Dismissing the share sheet rejects with an AbortError: the user chose not to share, nothing failed.
+          if (error instanceof Error && error.name === 'AbortError') return
+          // Any other refusal (e.g. NotAllowedError) falls back to the share menu, which still offers X and copy link.
+          setAnchorMenu(shareButton)
+        }
       } else {
-        setAnchorMenu(event.currentTarget)
+        setAnchorMenu(shareButton)
       }
     },
     [isTabletOrBelow, inviteUrl, t]
