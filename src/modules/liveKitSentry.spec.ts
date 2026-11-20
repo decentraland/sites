@@ -4,6 +4,7 @@ jest.mock('./captureHandledError', () => ({
   captureHandledError: (...args: unknown[]) => captureHandledErrorMock(...args)
 }))
 
+import { ConnectionError, ConnectionErrorReason } from 'livekit-client'
 import { captureLiveKitConnectError } from './liveKitSentry'
 
 const error = new Error('could not establish signal connection')
@@ -67,6 +68,63 @@ describe('when the visitor declined the camera or microphone', () => {
     failure.name = name
 
     await captureLiveKitConnectError(failure, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('when the page aborted the connection attempt itself', () => {
+  // What `Room.disconnect()` rejects a pending connect with (SITES-2SS).
+  it('should not report a client initiated disconnect', async () => {
+    await captureLiveKitConnectError(ConnectionError.cancelled('Client initiated disconnect'), { surface: 'scene_watcher' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+
+  // What `Room.connect()` throws when the room's own abort signal fired: the wrapper
+  // keeps the inner Cancelled reason.
+  it('should not report a signal connection the room aborted', async () => {
+    const aborted = ConnectionError.cancelled('Signal connection aborted: Abort connection attempt due to user initiated disconnect')
+
+    await captureLiveKitConnectError(aborted, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('when the signal connection failed', () => {
+  // A signal websocket that never answers goes through the abort handler, so the
+  // wrapper carries the Cancelled reason even though nothing cancelled it.
+  it('should report a signal timeout that carries the Cancelled reason', async () => {
+    // `Room.connect()` copies the inner reason onto its serverUnreachable wrapper.
+    const timedOut: ConnectionError = ConnectionError.serverUnreachable('could not establish signal connection: Abort handler called')
+    timedOut.reason = ConnectionErrorReason.Cancelled
+
+    await captureLiveKitConnectError(timedOut, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('should report a cancellation with any other message', async () => {
+    await captureLiveKitConnectError(ConnectionError.cancelled('Abort handler called'), { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('should report a websocket error', async () => {
+    const websocket = ConnectionError.websocket(
+      'could not establish signal connection: Encountered websocket error during connection establishment'
+    )
+
+    await captureLiveKitConnectError(websocket, { surface: 'scene_watcher' })
+
+    expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('should report a signal connection the server never answered', async () => {
+    const unreachable = ConnectionError.serverUnreachable('could not establish signal connection')
+
+    await captureLiveKitConnectError(unreachable, { surface: 'cast_streamer' })
 
     expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
   })
