@@ -163,6 +163,7 @@ function EventForm({
     errors,
     mode,
     requiresModerationReview,
+    showDailyDurationWarning,
     setField,
     markRequiredFields,
     handleImageSelect,
@@ -376,6 +377,11 @@ function EventForm({
                       ))}
                     </EventSelect>
                   </EventFormControl>
+                  {showDailyDurationWarning && (
+                    <ReviewWarningAlert severity="warning" variant="standard">
+                      {t('create_event.daily_duration_warning')}
+                    </ReviewWarningAlert>
+                  )}
                   <EventTextField
                     variant="outlined"
                     label={t('create_event.repeat_until')}

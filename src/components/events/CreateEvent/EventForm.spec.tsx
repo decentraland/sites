@@ -474,6 +474,40 @@ describe('EventForm', () => {
     })
   })
 
+  describe('when the hook flags a daily event for a creator', () => {
+    beforeEach(() => {
+      mockUseCreateEventForm.mockReturnValue({
+        form: createFormState({ repeatEnabled: true, recurrence: 'every_day' }),
+        errors: {},
+        requiresModerationReview: false,
+        showDailyDurationWarning: true,
+        setField: mockSetField,
+        markRequiredFields: jest.fn(),
+        handleImageSelect: mockHandleImageSelect,
+        handleImageRemove: mockHandleImageRemove,
+        handleVerticalImageSelect: jest.fn(),
+        handleVerticalImageRemove: jest.fn(),
+        isFormValid: false,
+        isSubmitting: false,
+        handleSubmit: mockHandleSubmit
+      })
+    })
+
+    it('should warn that daily events longer than 2 hours are rejected', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.getByRole('alert')).toHaveTextContent('create_event.daily_duration_warning')
+    })
+  })
+
+  describe('when the hook does not flag a daily event', () => {
+    it('should not render the daily duration warning', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+
+      expect(screen.queryByText('create_event.daily_duration_warning')).not.toBeInTheDocument()
+    })
+  })
+
   describe('when editing an approved event with no moderated content changes', () => {
     const approvedEvent = createMockEvent({ id: 'evt-approved', approved: true, rejected: false })
 

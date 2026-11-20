@@ -60,12 +60,11 @@ jest.mock('./useAuthIdentity', () => ({
   useAuthIdentity: () => mockUseAuthIdentityReturn
 }))
 
+const CREATOR_PERMISSIONS = { isAdmin: false, canApproveAnyEvent: false, canApproveOwnEvent: false, canEditAnyEvent: false }
+let mockAdminPermissions = CREATOR_PERMISSIONS
+
 jest.mock('./useAdminPermissions', () => ({
-  useAdminPermissions: () => ({
-    isAdmin: false,
-    canApproveAnyEvent: false,
-    canApproveOwnEvent: false
-  })
+  useAdminPermissions: () => mockAdminPermissions
 }))
 
 type FormOverrides = Partial<Record<keyof CreateEventFormState, string>>
@@ -129,6 +128,7 @@ describe('useCreateEventForm', () => {
   let mockIdentity: AuthIdentity
 
   beforeEach(() => {
+    mockAdminPermissions = CREATOR_PERMISSIONS
     mockIdentity = { authChain: [{ payload: '0xabc' }] } as unknown as AuthIdentity
     mockUseAuthIdentityReturn = { identity: mockIdentity }
     mockCreateEvent.mockReturnValue({ unwrap: () => mockUnwrap() })
@@ -504,6 +504,97 @@ describe('useCreateEventForm', () => {
           })
         })
       )
+    })
+  })
+
+  describe('when the event repeats every day', () => {
+    function repeatDaily(setField: ReturnType<typeof useCreateEventForm>['setField']) {
+      act(() => {
+        setField('repeatEnabled', true)
+        setField('recurrence', 'every_day')
+        setField('repeatEndDate', '2030-02-01')
+      })
+    }
+
+    describe('and the creator has no team permissions', () => {
+      it('should show the daily duration warning', () => {
+        const { result } = renderHook(() => useCreateEventForm())
+
+        repeatDaily(result.current.setField)
+
+        expect(result.current.showDailyDurationWarning).toBe(true)
+      })
+
+      it('should still submit a daily event longer than 2 hours', async () => {
+        const { result } = renderHook(() => useCreateEventForm())
+
+        fillValidForm(result.current.setField, { duration: '24:00' })
+        repeatDaily(result.current.setField)
+
+        await act(async () => {
+          await result.current.handleSubmit()
+        })
+
+        expect(result.current.errors.duration).toBeUndefined()
+        expect(mockCreateEvent).toHaveBeenCalledWith(
+          expect.objectContaining({
+            payload: expect.objectContaining({ recurrent_frequency: 'DAILY', duration: 24 * 60 * 60 * 1000 })
+          })
+        )
+      })
+    })
+
+    describe('and the user can approve any event', () => {
+      beforeEach(() => {
+        mockAdminPermissions = { ...CREATOR_PERMISSIONS, isAdmin: true, canApproveAnyEvent: true }
+      })
+
+      it('should not show the daily duration warning', () => {
+        const { result } = renderHook(() => useCreateEventForm())
+
+        repeatDaily(result.current.setField)
+
+        expect(result.current.showDailyDurationWarning).toBe(false)
+      })
+    })
+
+    describe('and the user can edit any event', () => {
+      beforeEach(() => {
+        mockAdminPermissions = { ...CREATOR_PERMISSIONS, isAdmin: true, canEditAnyEvent: true }
+      })
+
+      it('should not show the daily duration warning', () => {
+        const { result } = renderHook(() => useCreateEventForm())
+
+        repeatDaily(result.current.setField)
+
+        expect(result.current.showDailyDurationWarning).toBe(false)
+      })
+    })
+  })
+
+  describe('when the event repeats every week', () => {
+    it('should not show the daily duration warning', () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      act(() => {
+        result.current.setField('repeatEnabled', true)
+        result.current.setField('recurrence', 'every_week')
+      })
+
+      expect(result.current.showDailyDurationWarning).toBe(false)
+    })
+  })
+
+  describe('when the event does not repeat', () => {
+    it('should not show the daily duration warning', () => {
+      const { result } = renderHook(() => useCreateEventForm())
+
+      act(() => {
+        result.current.setField('recurrence', 'every_day')
+      })
+
+      expect(result.current.showDailyDurationWarning).toBe(false)
     })
   })
 

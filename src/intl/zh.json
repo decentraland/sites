@@ -1110,6 +1110,7 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "修改已批准活动的名称、描述、图片或位置后，将重新进入审核。",
+    "daily_duration_warning": "超过 2 小时的每日活动将被自动拒绝。",
     "featured_item_label": "精选可穿戴道具（可选）",
     "featured_item_placeholder": "搜索物品和合集，或粘贴 URN",
     "featured_item_by": "作者：{creator}",
