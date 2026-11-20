@@ -1,5 +1,6 @@
 import publicLinks from '../config/publicLinks.json'
 import { OperativeSystem } from '../types/download.types'
+import { buildAppStoreUrl } from './appStoreUrl'
 import { collectCampaignParams } from './campaignParams'
 import { buildGooglePlayUrl } from './googlePlayUrl'
 
@@ -38,7 +39,12 @@ const DOWNLOAD_URLS = {
   get googlePlay(): string {
     return buildGooglePlayUrl(publicLinks.download.googlePlay, { ...GOOGLE_PLAY_DEFAULT_UTM, ...collectCampaignParams() })
   },
-  appStore: publicLinks.download.appStore
+  // Getter for the same reason as googlePlay: App Store Connect attributes installs by the `ct`
+  // campaign token, so a visitor who arrived via a live campaign gets a token derived from it
+  // instead of the static default on the base URL.
+  get appStore(): string {
+    return buildAppStoreUrl(publicLinks.download.appStore, collectCampaignParams())
+  }
 } as const
 
 type DownloadOS = 'apple' | 'windows' | 'android' | 'ios'

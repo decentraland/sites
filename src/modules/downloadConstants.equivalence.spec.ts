@@ -7,6 +7,7 @@ const PLAY_DEFAULT =
 const PLAY_WITH_CAMPAIGN =
   'https://play.google.com/store/apps/details?id=org.decentraland.godotexplorer&utm_org=dclrgl&utm_source=partner_x&utm_medium=paid&utm_campaign=fall-launch&utm_content=android&utm_term=vr&referrer=utm_org%3Ddclrgl%26utm_source%3Dpartner_x%26utm_medium%3Dpaid%26utm_campaign%3Dfall-launch%26utm_content%3Dandroid%26utm_term%3Dvr'
 const APP_STORE = 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=Decentraland%20Home%20iOS&mt=8'
+const APP_STORE_WITH_CAMPAIGN = 'https://apps.apple.com/app/apple-store/id6478403840?pt=126284288&ct=partner_x-fall-launch&mt=8'
 
 const utmSetOf = (url: string) =>
   [...new URL(url).searchParams.entries()].filter(([key]) => key.startsWith('utm_')).map(([key, value]) => `${key}=${value}`)
@@ -46,9 +47,19 @@ describe('when reading the store URLs the site hands off to', () => {
       window.history.pushState({}, '', '/')
       expect(DOWNLOAD_URLS.googlePlay).toBe(PLAY_DEFAULT)
     })
+
+    it('should derive the App Store campaign token from the normalized source and campaign', () => {
+      expect(DOWNLOAD_URLS.appStore).toBe(APP_STORE_WITH_CAMPAIGN)
+    })
+
+    it('should compute the App Store URL fresh on every read', () => {
+      expect(DOWNLOAD_URLS.appStore).toBe(APP_STORE_WITH_CAMPAIGN)
+      window.history.pushState({}, '', '/')
+      expect(DOWNLOAD_URLS.appStore).toBe(APP_STORE)
+    })
   })
 
-  it('should return the exact App Store URL', () => {
+  it('should return the exact default App Store URL', () => {
     expect(DOWNLOAD_URLS.appStore).toBe(APP_STORE)
   })
 
