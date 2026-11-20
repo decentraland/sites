@@ -25,6 +25,9 @@ function hexToBytes(hex: string): Uint8Array {
 // it does NOT require the signer to be a real on-chain wallet, so a fresh
 // random key works for anonymous scene watching.
 //
+// This is the ONLY identity the scene watcher may use, logged-in visitors
+// included — see the invariant on `fetchSceneAdapter`.
+//
 // Cached for the lifetime of the tab so consecutive scene visits reuse the
 // same identity (and any rate limits / ban records would persist across
 // rooms, matching how the Explorer behaves).
