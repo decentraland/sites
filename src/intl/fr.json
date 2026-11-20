@@ -1105,7 +1105,7 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "Modifier le nom, la description, l'image ou le lieu d'un événement approuvé le renvoie en révision.",
-    "daily_duration_warning": "Avertissement : les événements récurrents quotidiens sont limités à 2 heures. Les événements qui dépassent cette limite peuvent être refusés lors de la vérification.",
+    "daily_duration_warning": "Événements quotidiens limités à 2 heures. Les plus longs seront refusés lors de la vérification.",
     "featured_item_label": "Wearables en Vedette (Optionnel)",
     "featured_item_placeholder": "Recherchez des articles et collections ou collez un URN",
     "featured_item_by": "Par {creator}",

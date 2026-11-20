@@ -1110,7 +1110,7 @@
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "承認済みイベントの名前、説明、画像、場所を変更すると、再審査に戻ります。",
-    "daily_duration_warning": "注意：毎日繰り返すイベントは2時間までです。この制限を超えるイベントは、審査で却下される場合があります。",
+    "daily_duration_warning": "毎日のイベントは2時間まで。それより長いイベントは審査で却下されます。",
     "featured_item_label": "注目のウェアラブル（任意）",
     "featured_item_placeholder": "アイテムやコレクションを検索、またはURNを貼り付け",
     "featured_item_by": "作成者: {creator}",

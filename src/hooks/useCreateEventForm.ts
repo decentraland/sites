@@ -134,9 +134,9 @@ function useCreateEventForm({ onSuccess, initialEvent = null, initialCommunityId
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
-  // Daily recurring events are limited to 2 hours and longer ones may be rejected in review, so creators get a
-  // disclaimer when they pick "Every Day". Nothing blocks the submit. The team (approve_any_event /
-  // edit_any_event) can still schedule longer daily events, so they don't see it.
+  // Daily events are limited to 2 hours and longer ones are rejected in review, so creators get a disclaimer
+  // when they pick "Every Day". Nothing blocks the submit. The team (approve_any_event / edit_any_event) can
+  // still schedule longer daily events, so they don't see it.
   const canScheduleLongDailyEvents = canApproveAnyEvent || canEditAnyEvent
   const showDailyDurationWarning =
     form.repeatEnabled && recurrenceToApi(form.recurrence).frequency === 'DAILY' && !canScheduleLongDailyEvents
