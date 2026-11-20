@@ -44,6 +44,10 @@ jest.mock('../../../intl/LocaleContext', () => ({
   useLocale: () => ({ locale: 'en', setLocale: jest.fn() })
 }))
 
+jest.mock('../ScrollCheckpoint', () => ({
+  ScrollCheckpoint: ({ name }: { name: string }) => React.createElement('div', { 'data-scroll-checkpoint': name })
+}))
+
 jest.mock('../../Video', () => ({
   Video: ({ source }: { source: string }) => React.createElement('video', { 'data-testid': 'hero-video', src: source })
 }))
@@ -286,7 +290,11 @@ describe('CreatorFundLanding', () => {
     const schedule = document.getElementById('dates') as HTMLElement
     const moreWays = screen.getByRole('heading', { name: 'page.creator_fund.more_ways.title' }).closest('section') as HTMLElement
 
-    expect(schedule.nextElementSibling).toBe(moreWays)
+    // Only the more-ways scroll checkpoint, an empty marker, sits between the two sections.
+    const checkpoint = schedule.nextElementSibling as HTMLElement
+
+    expect(checkpoint).toHaveAttribute('data-scroll-checkpoint', 'more-ways-to-earn')
+    expect(checkpoint.nextElementSibling).toBe(moreWays)
   })
 
   it('should end with the FAQ, with no builder quotes section', () => {
@@ -341,5 +349,37 @@ describe('CreatorFundLanding', () => {
 
   it('should play the landscape hero video on desktop', () => {
     expect(screen.getByTestId('hero-video')).toBeInTheDocument()
+  })
+
+  describe('when checking scroll tracking', () => {
+    const checkpointNames = () =>
+      Array.from(document.querySelectorAll('[data-scroll-checkpoint]')).map(checkpoint => checkpoint.getAttribute('data-scroll-checkpoint'))
+
+    it('should place one scroll checkpoint per section, in page order', () => {
+      expect(checkpointNames()).toEqual([
+        'hero-banner',
+        'decentraland-intro',
+        'how-it-works',
+        'what-we-reward',
+        'payouts',
+        'eligibility',
+        'dates',
+        'more-ways-to-earn',
+        'final-cta',
+        'faq'
+      ])
+    })
+
+    it.each([
+      ['hero-banner', 'overview'],
+      ['how-it-works', 'how'],
+      ['payouts', 'payouts'],
+      ['eligibility', 'eligibility'],
+      ['dates', 'dates'],
+      ['final-cta', 'join'],
+      ['faq', 'faq']
+    ])('should put the %s checkpoint right before the #%s section', (name, sectionId) => {
+      expect(document.querySelector(`[data-scroll-checkpoint="${name}"]`)?.nextElementSibling).toHaveAttribute('id', sectionId)
+    })
   })
 })
