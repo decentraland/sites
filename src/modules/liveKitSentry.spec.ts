@@ -60,11 +60,37 @@ describe('when the visitor declined the camera or microphone', () => {
 
     expect(captureHandledErrorMock).toHaveBeenCalledTimes(1)
   })
+})
 
-  // No device and a busy device are left reporting on purpose, for now.
-  it.each(['NotFoundError', 'NotReadableError'])('should still report a %s', async name => {
+// Another app holding the camera or microphone makes the browser refuse to start it. The
+// room connects with the device off; freeing it is the streamer's to do (SITES-2T1, -2V2).
+describe('when the camera or microphone is held by another app', () => {
+  it('should not report a DOMException-shaped refusal', async () => {
+    // A wording the message check doesn't know (Firefox's), so only the name can match it.
+    const busy = new Error('Failed to allocate videosource')
+    busy.name = 'NotReadableError'
+
+    await captureLiveKitConnectError(busy, { surface: 'cast_streamer' })
+
+    expect(captureHandledErrorMock).not.toHaveBeenCalled()
+  })
+
+  // The texts the room wrapped in a plain Error in SITES-2T1 and SITES-2V2, and the audio counterpart.
+  it.each(['NotReadableError: Could not start video source', 'NotReadableError: Device in use', 'Could not start audio source'])(
+    'should not report %s',
+    async message => {
+      await captureLiveKitConnectError(new Error(message), { surface: 'cast_streamer' })
+
+      expect(captureHandledErrorMock).not.toHaveBeenCalled()
+    }
+  )
+})
+
+// A missing device is left reporting on purpose, for now.
+describe('when no camera or microphone is present', () => {
+  it('should still report a NotFoundError', async () => {
     const failure = new Error('device unavailable')
-    failure.name = name
+    failure.name = 'NotFoundError'
 
     await captureLiveKitConnectError(failure, { surface: 'cast_streamer' })
 

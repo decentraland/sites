@@ -21,20 +21,25 @@ function toHost(serverUrl?: string): string | undefined {
   }
 }
 
-// The visitor declining the camera or microphone prompt reaches `onError` as a
-// `NotAllowedError`, because the room requests devices as part of connecting. That is
-// a choice, not a failure: the streamer view already handles it and shows its own
-// copy. Matched on the name and on the message, since the room hands over both a
-// DOMException and an `Error` wrapping its text (SITES-2SP).
+// The room requests the camera and microphone as part of connecting, so two device
+// conditions reach `onError` that are the visitor's, not ours, and are not reported:
 //
-// Its siblings are deliberately not covered. `NotFoundError` (no device) and
-// `NotReadableError` (device held by another app) have never shown up here, and each
-// would earn its own line with an event to point at.
-const DENIED_PERMISSION_REGEX = /NotAllowedError|Permission denied/i
+// - Declining the prompt (`NotAllowedError`): a choice (SITES-2SP).
+// - A device held by another app (`NotReadableError`: "Could not start video source",
+//   "Device in use"). The room stays connected with that device off, and the streamer can
+//   turn it on again from the controls once it is free (SITES-2T1, SITES-2V2).
+//
+// The names are matched both on `error.name` and inside the message, since the room hands
+// over both a DOMException and a plain `Error` whose text starts with the name. `NotFoundError` (no device) is still
+// reported: it has never shown up here, and would earn its own line with an event to
+// point at.
+const EXPECTED_DEVICE_ERROR_NAMES = new Set(['NotAllowedError', 'NotReadableError'])
+const EXPECTED_DEVICE_ERROR_REGEX =
+  /NotAllowedError|Permission denied|NotReadableError|Could not start (?:video|audio) source|Device in use/i
 
-function isDeniedPermission(error: unknown): boolean {
+function isExpectedDeviceError(error: unknown): boolean {
   if (!(error instanceof Error)) return false
-  return error.name === 'NotAllowedError' || DENIED_PERMISSION_REGEX.test(error.message)
+  return EXPECTED_DEVICE_ERROR_NAMES.has(error.name) || EXPECTED_DEVICE_ERROR_REGEX.test(error.message)
 }
 
 /**
@@ -46,7 +51,7 @@ function isDeniedPermission(error: unknown): boolean {
  * behind the connection toast and we get no signal at all.
  */
 async function captureLiveKitConnectError(error: unknown, { surface, serverUrl }: LiveKitConnectErrorContext): Promise<void> {
-  if (isDeniedPermission(error)) return
+  if (isExpectedDeviceError(error)) return
   await captureHandledError(error, { tags: { surface, host: toHost(serverUrl), feature: 'livekit' } })
 }
 
