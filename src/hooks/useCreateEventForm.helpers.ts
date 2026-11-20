@@ -182,6 +182,15 @@ function localDateToEndOfDayIso(date: string): string | null {
   return parsed.toISOString()
 }
 
+// Return today's date as a `YYYY-MM-DD` string in the user's local timezone. Used both as
+// the `min` attribute on native date inputs (so the browser disables past dates in the picker)
+// and in the form's `validate()` to reject stale dates from old drafts or manual keyboard entry.
+function todayDateString(): string {
+  const now = new Date()
+  const pad = (value: number): string => String(value).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
 function durationMsToHhMm(durationMs: number | null | undefined): string {
   if (!durationMs || durationMs <= 0) return ''
   const totalMinutes = Math.round(durationMs / 60000)
@@ -292,5 +301,6 @@ export {
   isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
   parseDurationMs,
-  recurrenceToApi
+  recurrenceToApi,
+  todayDateString
 }

@@ -5,7 +5,8 @@ import {
   hasModeratedContentChanged,
   isValidFeaturedItemUrn,
   localDateToEndOfDayIso,
-  recurrenceToApi
+  recurrenceToApi,
+  todayDateString
 } from './useCreateEventForm.helpers'
 
 // Format an ISO timestamp into the same `YYYY-MM-DD` / `HH:MM` shape the form fields use, so the
@@ -624,5 +625,17 @@ describe('hasModeratedContentChanged', () => {
     it('should return false', () => {
       expect(changed).toBe(false)
     })
+  })
+})
+
+describe('todayDateString', () => {
+  it('should return a YYYY-MM-DD string matching today', () => {
+    const result = todayDateString()
+    expect(result).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+
+    const now = new Date()
+    const pad = (v: number): string => String(v).padStart(2, '0')
+    const expected = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+    expect(result).toBe(expected)
   })
 })
