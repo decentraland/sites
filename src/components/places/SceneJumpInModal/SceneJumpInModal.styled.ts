@@ -201,25 +201,6 @@ const JumpInCta = styled('button')(({ theme }) => ({
   [theme.breakpoints.up('md')]: { flex: '0 0 auto', width: 'clamp(200px, 12.969vw, 249px)' } // 249px
 }))
 
-// Square copy-link button next to JUMP IN — 46×46, 1px snow border, r12.
-const CopyCta = styled('button')(({ theme }) => ({
-  position: 'relative',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 'clamp(38px, 2.396vw, 46px)', // 46px
-  height: 'clamp(38px, 2.396vw, 46px)',
-  padding: 10,
-  border: `1px solid ${SNOW}`,
-  borderRadius: 12,
-  backgroundColor: 'transparent',
-  color: SNOW,
-  cursor: 'pointer',
-  transition: theme.transitions.create('background-color', { duration: theme.transitions.duration.short }),
-  ['&:hover']: { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-  ['&:focus-visible']: { outline: `2px solid ${SNOW}`, outlineOffset: 2 }
-}))
-
 // Close (X) — 40×40 rounded-10 dark button, 20px inset top-right.
 const CloseCta = styled('button')(({ theme }) => ({
   position: 'absolute',
@@ -262,25 +243,7 @@ const AboutText = styled(Typography)({
   whiteSpace: 'pre-wrap'
 })
 
-// Transient confirmation shown above the copy button after a successful
-// clipboard write.
-const CopiedBubble = styled('span')(({ theme }) => ({
-  position: 'absolute',
-  bottom: 'calc(100% + 8px)',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  padding: theme.spacing(0.5, 1.25),
-  borderRadius: 6,
-  backgroundColor: dclColors.neutral.softBlack1,
-  color: dclColors.neutral.softWhite,
-  fontSize: 12,
-  fontWeight: 600,
-  whiteSpace: 'nowrap',
-  pointerEvents: 'none'
-}))
-
 export {
-  CopiedBubble,
   About,
   AboutLabel,
   AboutText,
@@ -288,7 +251,6 @@ export {
   Backdrop,
   ByText,
   CloseCta,
-  CopyCta,
   CreatorName,
   CreatorRow,
   CtaRow,
