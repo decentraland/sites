@@ -6,7 +6,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { subgraphClient } from '../../services/subgraphClient'
 import { accountWalletApi } from './account-wallet.client'
 
-const USER = '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd'
+const USER = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
 const PREDICATE = '0x40ec5b33f54e0e8a33a975908c5ba1c14e5bbbdf'
 const ZERO = '0x0000000000000000000000000000000000000000'
 const OTHER = '0x9a6ebe7e2a7722f8200d0ffb63a1f6406a0d7dce'

@@ -26,7 +26,7 @@ jest.mock('../../../hooks/useProfileAvatar', () => ({
   useProfileAvatar: (address: string | undefined) => mockUseProfileAvatar(address)
 }))
 
-const ADDRESS = '0xd9B96B5dC720fC52BedE1EC3B40A930e15F70Ddd'
+const ADDRESS = '0xABcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD'
 const BODY_SNAPSHOT = 'https://peer.decentraland.org/content/contents/body.png'
 
 function lastPreviewProps(): Record<string, unknown> {

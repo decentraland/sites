@@ -7,7 +7,7 @@ jest.mock('../config/env', () => ({
   getEnv: (key: string) => mockGetEnv(key)
 }))
 
-const REFERRER = '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd'
+const REFERRER = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
 
 describe('when the auth and download URLs are configured', () => {
   beforeEach(() => {

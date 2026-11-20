@@ -72,7 +72,7 @@ jest.mock('../../Buttons/BannerButton', () => ({
   )
 }))
 
-const REFERRER_ADDRESS = '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd'
+const REFERRER_ADDRESS = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
 const URL_WITH_REFERRER = `https://decentraland.org/auth/login?referrer=${REFERRER_ADDRESS}&redirectTo=%2Fdownload`
 const URL_WITHOUT_REFERRER = 'https://decentraland.org/auth/login?redirectTo=%2Fdownload'
 

@@ -3,7 +3,7 @@ import { truncateAddress } from './address'
 describe('truncateAddress', () => {
   describe('when the value is a full address', () => {
     it('should keep the first 6 and last 4 characters around an ellipsis', () => {
-      expect(truncateAddress('0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd')).toBe('0xd9b9…0ddd')
+      expect(truncateAddress('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd')).toBe('0xabcd…abcd')
     })
   })
 

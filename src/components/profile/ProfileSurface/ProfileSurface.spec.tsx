@@ -55,7 +55,7 @@ jest.mock('../ProfileTabs', () => ({
   useProfileTabAvailability: () => ({ hidden: new Set(), isReady: true })
 }))
 
-const ADDRESS = '0xd9b96b5dc720fc52bede1ec3b40a930e15f70ddd'
+const ADDRESS = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'
 
 function renderSurface(props: Partial<React.ComponentProps<typeof ProfileSurface>> = {}) {
   return render(
@@ -98,7 +98,7 @@ describe('ProfileSurface', () => {
 
       it('should append the # suffix with the last 4 characters of the address', () => {
         renderSurface()
-        expect(screen.getByTestId('helmet')).toHaveTextContent('Anon#0ddd | Decentraland')
+        expect(screen.getByTestId('helmet')).toHaveTextContent('Anon#abcd | Decentraland')
       })
     })
 
