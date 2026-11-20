@@ -21,6 +21,8 @@ Profile route group absorbed from the standalone `profile.decentraland.org` dapp
 
 ## Surfaces & modals
 
+Profile URLs accept a wallet, a registered Decentraland name such as `/profile/brai`, or its `/profile/brai.dcl.eth` form. Names resolve case-insensitively through the configured marketplace subgraph and redirect to the wallet URL, preserving the tab, query string and fragment. Missing names and failed lookups have separate states; transient failures can be retried.
+
 - One `ProfileSurface` renders the standalone route, the standalone `ProfileModal` (`?profile=<addr>` via `ProfileModalHost`) and in-modal swaps (whats-on event detail, jump cards).
 - `useModalSurfaceStack` (under `components/profile/ProfileModal/`) keeps modal navigation history: profile/photo/place/community surfaces swap in-place and back unwinds one level — never a dialog on a dialog.
 - Mobile uses hierarchical navigation: no tab segment → `ProfileMobileNav` root screen; tabs are sub-screens with a `MobileTabHeader` breadcrumb.
