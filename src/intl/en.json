@@ -1338,6 +1338,11 @@
     "status_rejected": "Rejected"
   },
   "create_event": {
+    "only_my_locations": "Only my Names and LAND",
+    "land_placeholder": "Select a parcel",
+    "owned_locations_loading": "Loading your locations…",
+    "owned_locations_empty": "No owned locations available.",
+    "owned_locations_error": "Could not load your locations.",
     "title": "Submit an Event",
     "edit_title": "Edit Event",
     "save_changes": "Save Changes",

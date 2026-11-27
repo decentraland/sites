@@ -34,11 +34,16 @@ jest.mock('./EventForm.styled', () => ({
   EventDetailsBlock: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   EventFormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   EventInputLabel: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
-  EventMenuItem: ({ children, value }: { children: React.ReactNode; value: string }) => <option value={value}>{children}</option>,
+  EventMenuItem: ({ children, value, onClick }: React.OptionHTMLAttributes<HTMLOptionElement>) => (
+    <option value={value} onClick={onClick}>
+      {children}
+    </option>
+  ),
   EventSelect: ({
     children,
     value,
-    onChange
+    onChange,
+    label
   }: {
     children: React.ReactNode
     value: string
@@ -46,7 +51,7 @@ jest.mock('./EventForm.styled', () => ({
     label?: string
     notched?: boolean
   }) => (
-    <select data-testid="event-select" value={value} onChange={onChange}>
+    <select data-testid="event-select" aria-label={label} value={value} onChange={onChange}>
       {children}
     </select>
   ),
@@ -212,6 +217,15 @@ jest.mock('../../../features/events', () => ({
   useGetCommunitiesQuery: () => mockUseGetCommunitiesQuery()
 }))
 
+const mockUseGetUserDCLNamesQuery = jest.fn()
+const mockUseGetUserLandsQuery = jest.fn()
+
+jest.mock('../../../features/storage', () => ({
+  useGetUserDCLNamesQuery: (...args: unknown[]) => mockUseGetUserDCLNamesQuery(...args),
+  useGetUserLandsQuery: (...args: unknown[]) => mockUseGetUserLandsQuery(...args),
+  RoleType: { OWNER: 1 }
+}))
+
 const mockUseEventFeaturedItemSearch = jest.fn(() => false)
 
 jest.mock('../../../features/events/events.flags', () => ({
@@ -255,6 +269,13 @@ jest.mock('@mui/icons-material/VisibilityOutlined', () => ({
 }))
 
 jest.mock('decentraland-ui2', () => ({
+  FormControlLabel: ({ control, label }: { control: React.ReactNode; label: string }) => (
+    <label>
+      {control}
+      {label}
+    </label>
+  ),
+  FormHelperText: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
   InputAdornment: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   Tooltip: ({ children }: { children: React.ReactNode; title?: React.ReactNode }) => <>{children}</>
 }))
@@ -312,6 +333,8 @@ describe('EventForm', () => {
     mockOnCancel = jest.fn()
     mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: false, address: null })
     mockUseGetWorldNamesQuery.mockReturnValue({ data: [] })
+    mockUseGetUserDCLNamesQuery.mockReturnValue({})
+    mockUseGetUserLandsQuery.mockReturnValue({})
     mockUseGetCommunitiesQuery.mockReturnValue({ currentData: [] })
     mockUseEventFeaturedItemSearch.mockReturnValue(false)
     mockUseCreateEventForm.mockReturnValue({
@@ -1154,6 +1177,126 @@ describe('EventForm', () => {
       render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
       expect(screen.getByText('alpha.dcl.eth')).toBeInTheDocument()
       expect(screen.getByText('beta.dcl.eth')).toBeInTheDocument()
+    })
+
+    it('should hide the ownership filter without a connected wallet', () => {
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      expect(screen.queryByLabelText('create_event.only_my_locations')).not.toBeInTheDocument()
+    })
+
+    describe('and the connected wallet turns on the ownership filter', () => {
+      let toggle: HTMLElement
+
+      beforeEach(() => {
+        mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xOwner' })
+        mockUseGetUserDCLNamesQuery.mockReturnValue({ currentData: ['ALPHA.dcl.eth', 'undeployed.dcl.eth'] })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+        toggle = screen.getByLabelText('create_event.only_my_locations')
+        fireEvent.click(toggle)
+      })
+
+      it('should show only selectable Worlds whose Names the wallet owns', () => {
+        expect(screen.getByRole('option', { name: 'alpha.dcl.eth' })).toBeInTheDocument()
+        expect(screen.queryByRole('option', { name: 'beta.dcl.eth' })).not.toBeInTheDocument()
+        expect(screen.queryByRole('option', { name: 'undeployed.dcl.eth' })).not.toBeInTheDocument()
+      })
+
+      it('should restore the full World list without changing the saved selection', () => {
+        fireEvent.click(toggle)
+        expect(screen.getByRole('option', { name: 'beta.dcl.eth' })).toBeInTheDocument()
+        expect(mockSetField).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('and ownership is being loaded for a different wallet', () => {
+      beforeEach(() => {
+        mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xOther' })
+        mockUseGetUserDCLNamesQuery.mockReturnValue({ data: ['alpha.dcl.eth'], isFetching: true })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+        fireEvent.click(screen.getByLabelText('create_event.only_my_locations'))
+      })
+
+      it('should show loading without listing the previous wallet’s Names', () => {
+        expect(screen.getByText('create_event.owned_locations_loading')).toBeInTheDocument()
+        expect(screen.queryByRole('option', { name: 'alpha.dcl.eth' })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the selected World is outside the ownership filter', () => {
+      beforeEach(() => {
+        mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xOwner' })
+        mockUseGetUserDCLNamesQuery.mockReturnValue({ currentData: ['beta.dcl.eth'] })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+        fireEvent.click(screen.getByLabelText('create_event.only_my_locations'))
+      })
+
+      it('should clear the retained World only after explicitly selecting the placeholder', () => {
+        expect(mockSetField).not.toHaveBeenCalled()
+        fireEvent.click(screen.getByRole('option', { name: 'create_event.world_placeholder' }))
+        expect(mockSetField).toHaveBeenCalledWith('world', '')
+      })
+    })
+
+    describe('and ownership lookup fails', () => {
+      beforeEach(() => {
+        mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xOwner' })
+        mockUseGetUserDCLNamesQuery.mockReturnValue({ currentData: ['alpha.dcl.eth'], isError: true })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+        fireEvent.click(screen.getByLabelText('create_event.only_my_locations'))
+      })
+
+      it('should show the lookup error and hide stale options', () => {
+        expect(screen.getByText('create_event.owned_locations_error')).toBeInTheDocument()
+        expect(screen.queryByRole('option', { name: 'alpha.dcl.eth' })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('and the connected wallet owns no eligible Worlds', () => {
+      beforeEach(() => {
+        mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xOwner' })
+        mockUseGetUserDCLNamesQuery.mockReturnValue({ currentData: ['undeployed.dcl.eth'] })
+        render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+        fireEvent.click(screen.getByLabelText('create_event.only_my_locations'))
+      })
+
+      it('should show an empty state', () => {
+        expect(screen.getByText('create_event.owned_locations_empty')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('when the connected wallet filters LAND locations', () => {
+    beforeEach(() => {
+      mockUseAuthIdentity.mockReturnValue({ identity: null, hasValidIdentity: true, address: '0xOwner' })
+      mockUseGetUserLandsQuery.mockReturnValue({
+        currentData: [
+          { role: 1, name: 'Owned parcel', x: 0, y: -3 },
+          { role: 1, name: 'Owned estate', parcels: [{ x: -10, y: 20 }] },
+          { role: 4, name: 'Operated parcel', x: 1, y: 1 },
+          { role: 1, name: 'Invalid parcel', x: NaN, y: 20 },
+          { role: 1, name: 'Empty estate', parcels: [] }
+        ]
+      })
+      render(<EventForm onCancel={mockOnCancel} onSuccess={jest.fn()} />)
+      fireEvent.click(screen.getByLabelText('create_event.only_my_locations'))
+    })
+
+    it('should list owned parcels and parcels in owned estates', () => {
+      expect(screen.getByRole('option', { name: 'Owned parcel (0,-3)' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Owned estate (-10,20)' })).toBeInTheDocument()
+      expect(screen.queryByRole('option', { name: /Operated parcel|Invalid parcel|Empty estate/ })).not.toBeInTheDocument()
+    })
+
+    it('should set both coordinates to the chosen parcel', () => {
+      fireEvent.change(screen.getByRole('combobox', { name: 'create_event.land' }), { target: { value: '-10,20' } })
+      expect(mockSetField).toHaveBeenCalledWith('coordX', '-10')
+      expect(mockSetField).toHaveBeenCalledWith('coordY', '20')
+    })
+
+    it('should restore manual coordinates after turning off the ownership filter', () => {
+      fireEvent.click(screen.getByLabelText('create_event.only_my_locations'))
+      expect(screen.getByRole('textbox', { name: 'create_event.latitude' })).toBeInTheDocument()
+      expect(screen.getByRole('textbox', { name: 'create_event.altitude' })).toBeInTheDocument()
     })
   })
 

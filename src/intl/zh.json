@@ -1107,6 +1107,11 @@
     }
   },
   "create_event": {
+    "only_my_locations": "仅显示我的名称和 LAND",
+    "land_placeholder": "选择地块",
+    "owned_locations_loading": "正在加载你拥有的位置…",
+    "owned_locations_empty": "没有可用的自有位置。",
+    "owned_locations_error": "无法加载你拥有的位置。",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "修改已批准活动的名称、描述、图片或位置后，将重新进入审核。",

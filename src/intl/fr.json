@@ -1102,6 +1102,11 @@
     }
   },
   "create_event": {
+    "only_my_locations": "Uniquement mes noms et mes LAND",
+    "land_placeholder": "Sélectionnez une parcelle",
+    "owned_locations_loading": "Chargement de vos lieux…",
+    "owned_locations_empty": "Aucun lieu vous appartenant n’est disponible.",
+    "owned_locations_error": "Impossible de charger vos lieux.",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "Modifier le nom, la description, l'image ou le lieu d'un événement approuvé le renvoie en révision.",

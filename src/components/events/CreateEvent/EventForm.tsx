@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -13,11 +13,13 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
+import { skipToken } from '@reduxjs/toolkit/query'
 import { useTranslation } from '@dcl/hooks'
-import { Tooltip } from 'decentraland-ui2'
+import { FormControlLabel, FormHelperText, Tooltip } from 'decentraland-ui2'
 import { useGetCommunitiesQuery, useGetWorldNamesQuery } from '../../../features/events'
 import type { EventEntry } from '../../../features/events'
 import { useEventFeaturedItemSearch } from '../../../features/events/events.flags'
+import { RoleType, useGetUserDCLNamesQuery, useGetUserLandsQuery } from '../../../features/storage'
 import { useAuthIdentity } from '../../../hooks/useAuthIdentity'
 import { useCreateEventForm } from '../../../hooks/useCreateEventForm'
 import {
@@ -179,11 +181,54 @@ function EventForm({
   } = useCreateEventForm({ onSuccess, initialEvent, initialCommunityId })
   const { identity, address } = useAuthIdentity()
   const isFeaturedItemSearchEnabled = useEventFeaturedItemSearch()
-  const { data: worldNames = [] } = useGetWorldNamesQuery(undefined, { skip: form.location !== 'world' })
+  const [onlyOwned, setOnlyOwned] = useState(false)
+  const filterByOwner = onlyOwned && Boolean(address)
+  const isWorld = form.location === 'world'
+  const locationLabelId = useId()
+  const locationStatusId = useId()
+  const worldNames = useGetWorldNamesQuery(undefined, { skip: !isWorld })
+  const ownedNames = useGetUserDCLNamesQuery(isWorld && onlyOwned && address ? { address } : skipToken)
+  const ownedLands = useGetUserLandsQuery(!isWorld && onlyOwned && address ? { address } : skipToken)
   const { currentData: communities = [] } = useGetCommunitiesQuery({ identity }, { skip: !identity })
   const [verticalPanelOpen, setVerticalPanelOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(initialOpenPreview)
   const showVerticalPanel = verticalPanelOpen || Boolean(form.verticalImagePreviewUrl)
+
+  const locationOptions = useMemo(() => {
+    if (isWorld) {
+      const names = worldNames.data ?? []
+      const owned = new Set(ownedNames.currentData?.map(name => name.toLowerCase()))
+      return names.filter(name => !filterByOwner || owned.has(name.toLowerCase())).map(name => ({ value: name, label: name }))
+    }
+
+    return (ownedLands.currentData ?? [])
+      .filter(land => land.role === RoleType.OWNER)
+      .flatMap(({ name, parcels, x, y }) => {
+        const positions = parcels ?? [{ x, y }]
+        return positions.flatMap(({ x, y }) => {
+          if (!Number.isInteger(x) || !Number.isInteger(y)) return []
+          const value = `${x},${y}`
+          return [{ value, label: `${name} (${value})` }]
+        })
+      })
+  }, [isWorld, filterByOwner, worldNames.data, ownedNames.currentData, ownedLands.currentData])
+  const ownedLocationsFailed = isWorld ? worldNames.isError || ownedNames.isError : ownedLands.isError
+  const ownedLocationsLoading = isWorld ? worldNames.isFetching || ownedNames.isFetching : ownedLands.isFetching
+  const visibleLocations = filterByOwner && ownedLocationsFailed ? [] : locationOptions
+  const locationValue = isWorld ? form.world : `${form.coordX},${form.coordY}`
+  const currentLocation = isWorld ? form.world : form.coordX && form.coordY && locationValue
+  const selectedLocation = visibleLocations.find(option => option.value === locationValue)
+  const locationPlaceholder = t(isWorld ? 'create_event.world_placeholder' : 'create_event.land_placeholder')
+  const locationStatus =
+    filterByOwner &&
+    (ownedLocationsFailed
+      ? t('create_event.owned_locations_error')
+      : ownedLocationsLoading
+        ? t('create_event.owned_locations_loading')
+        : visibleLocations.length === 0
+          ? t('create_event.owned_locations_empty')
+          : undefined)
+  const locationError = isWorld ? errors.world : errors.coordX || errors.coordY
 
   const missingPreviewFields = useMemo(() => PREVIEW_REQUIRED_FIELDS.filter(field => !String(form[field] ?? '').trim()), [form])
 
@@ -422,6 +467,13 @@ function EventForm({
             {/* Location */}
             <LocationBlock>
               <LocationLabel>{t('create_event.location')}</LocationLabel>
+              {address && (
+                <FormControlLabel
+                  sx={{ m: 0 }}
+                  control={<EventSwitch checked={onlyOwned} onChange={(_, checked) => setOnlyOwned(checked)} size="medium" />}
+                  label={t('create_event.only_my_locations')}
+                />
+              )}
               <LocationRow>
                 <EventFormControl variant="outlined" fullWidth sx={{ flex: 1 }}>
                   <EventInputLabel shrink>{t('create_event.location_type')}</EventInputLabel>
@@ -435,23 +487,48 @@ function EventForm({
                     <EventMenuItem value="world">{t('create_event.world')}</EventMenuItem>
                   </EventSelect>
                 </EventFormControl>
-                {form.location === 'world' ? (
-                  <EventFormControl variant="outlined" fullWidth error={Boolean(errors.world)} sx={{ flex: 2 }}>
-                    <EventInputLabel shrink>{t('create_event.world')}</EventInputLabel>
+                {isWorld || filterByOwner ? (
+                  <EventFormControl variant="outlined" fullWidth error={Boolean(locationError)} sx={{ flex: 2 }}>
+                    <EventInputLabel id={locationLabelId} shrink>
+                      {t(isWorld ? 'create_event.world' : 'create_event.land')}
+                    </EventInputLabel>
                     <EventSelect
-                      value={form.world}
-                      onChange={e => setField('world', e.target.value as string)}
-                      label={t('create_event.world')}
+                      value={selectedLocation?.value ?? ''}
+                      onChange={e => {
+                        const value = e.target.value as string
+                        if (isWorld) {
+                          setField('world', value)
+                        } else if (value) {
+                          const [x, y] = value.split(',')
+                          setField('coordX', x)
+                          setField('coordY', y)
+                        }
+                      }}
+                      label={t(isWorld ? 'create_event.world' : 'create_event.land')}
+                      labelId={locationLabelId}
+                      aria-describedby={locationStatus || locationError ? locationStatusId : undefined}
+                      renderValue={() => selectedLocation?.label ?? (currentLocation || locationPlaceholder)}
                       notched
                       displayEmpty
                     >
-                      <EventMenuItem value="">{t('create_event.world_placeholder')}</EventMenuItem>
-                      {worldNames.map(name => (
-                        <EventMenuItem key={name} value={name}>
-                          {name}
+                      <EventMenuItem
+                        value=""
+                        disabled={!isWorld}
+                        onClick={isWorld && form.world && !selectedLocation ? () => setField('world', '') : undefined}
+                      >
+                        {locationPlaceholder}
+                      </EventMenuItem>
+                      {visibleLocations.map(({ value, label }) => (
+                        <EventMenuItem key={value} value={value}>
+                          {label}
                         </EventMenuItem>
                       ))}
                     </EventSelect>
+                    {(locationStatus || locationError) && (
+                      <FormHelperText id={locationStatusId} aria-live="polite">
+                        {locationStatus || locationError}
+                      </FormHelperText>
+                    )}
                   </EventFormControl>
                 ) : (
                   <CoordinatesRow>

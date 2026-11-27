@@ -1107,6 +1107,11 @@
     }
   },
   "create_event": {
+    "only_my_locations": "Solo mis nombres y LAND",
+    "land_placeholder": "Seleccioná una parcela",
+    "owned_locations_loading": "Cargando tus ubicaciones…",
+    "owned_locations_empty": "No hay ubicaciones propias disponibles.",
+    "owned_locations_error": "No se pudieron cargar tus ubicaciones.",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "Cambiar el nombre, la descripción, la imagen o la ubicación de un evento aprobado lo devuelve a revisión.",
