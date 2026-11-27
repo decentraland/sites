@@ -1107,6 +1107,11 @@
     }
   },
   "create_event": {
+    "only_my_locations": "所有する名前とLANDのみ",
+    "land_placeholder": "区画を選択",
+    "owned_locations_loading": "所有する場所を読み込み中…",
+    "owned_locations_empty": "利用できる所有場所がありません。",
+    "owned_locations_error": "所有する場所を読み込めませんでした。",
     "rejected_alert": "This event has been rejected because of {reason}. Please update the information and submit again",
     "rejected_alert_no_reason": "This event has been rejected. Please update the information and submit again",
     "approved_edit_warning": "承認済みイベントの名前、説明、画像、場所を変更すると、再審査に戻ります。",
